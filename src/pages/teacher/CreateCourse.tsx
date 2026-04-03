@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
-  MonitorPlay, BookOpen, ExternalLink, Link2, Eye,
+  MonitorPlay, BookOpen, ExternalLink, Link2, Eye, ImagePlus, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +74,9 @@ const CreateCourse = () => {
   const [isMandatory, setIsMandatory] = useState(false);
   const [deadline, setDeadline] = useState("");
   const [status, setStatus] = useState("draft");
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Content items
   const [contents, setContents] = useState<ContentItem[]>([]);
@@ -118,8 +121,38 @@ const CreateCourse = () => {
     setContents((prev) => prev.filter((c) => c.tempId !== tempId));
   };
 
+  const uploadThumbnail = async (courseId: string): Promise<string | null> => {
+    if (!thumbnailFile) return null;
+    const ext = thumbnailFile.name.split(".").pop();
+    const path = `${user!.id}/${courseId}.${ext}`;
+    const { error } = await supabase.storage
+      .from("course-thumbnails")
+      .upload(path, thumbnailFile, { upsert: true });
+    if (error) throw error;
+    const { data } = supabase.storage.from("course-thumbnails").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "오류", description: "이미지 크기는 5MB 이하여야 합니다.", variant: "destructive" });
+      return;
+    }
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  const removeThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const createMutation = useMutation({
     mutationFn: async () => {
+      // First create the course without thumbnail
       const { data: course, error: courseError } = await supabase
         .from("courses")
         .insert({
@@ -137,6 +170,15 @@ const CreateCourse = () => {
         .select()
         .single();
       if (courseError) throw courseError;
+
+      // Upload thumbnail if provided
+      if (thumbnailFile) {
+        const thumbnailUrl = await uploadThumbnail(course.id);
+        if (thumbnailUrl) {
+          await supabase.from("courses").update({ thumbnail_url: thumbnailUrl }).eq("id", course.id);
+          course.thumbnail_url = thumbnailUrl;
+        }
+      }
 
       if (contents.length > 0) {
         const contentRows = contents.map((c, idx) => ({
@@ -259,6 +301,39 @@ const CreateCourse = () => {
         {/* Course Info */}
         <div className="stat-card space-y-5">
           <h2 className="text-base font-semibold text-foreground border-b border-border pb-3">강좌 정보</h2>
+
+          {/* Thumbnail Upload */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">썸네일 이미지</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleThumbnailChange}
+              className="hidden"
+            />
+            {thumbnailPreview ? (
+              <div className="relative w-full h-44 rounded-xl overflow-hidden border border-border">
+                <img src={thumbnailPreview} alt="썸네일 미리보기" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={removeThumbnail}
+                  className="absolute top-2 right-2 h-7 w-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-32 rounded-xl border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ImagePlus className="h-6 w-6" />
+                <span className="text-xs">클릭하여 이미지 업로드 (최대 5MB)</span>
+              </button>
+            )}
+          </div>
 
           <div className="space-y-2">
             <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">강좌 제목 *</label>
