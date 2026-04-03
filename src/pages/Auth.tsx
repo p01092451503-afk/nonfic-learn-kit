@@ -58,7 +58,7 @@ const Auth = () => {
   return (
     <div className="flex min-h-screen">
       {/* Left - Visual Panel (white/light background) */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-white">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-white">
         <img
           src={loginBg}
           alt="NONFICTION LMS"
