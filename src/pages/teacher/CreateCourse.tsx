@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import type { Database } from "@/integrations/supabase/types";
@@ -55,8 +56,10 @@ const videoProviderOptions: { value: VideoProvider; label: string }[] = [
 const CreateCourse = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { isAdmin } = useUserRole();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const layoutRole = isAdmin ? "admin" : "teacher";
 
   // Course kind
   const [courseKind, setCourseKind] = useState<CourseKind>("video");
@@ -189,7 +192,7 @@ const CreateCourse = () => {
   };
 
   return (
-    <DashboardLayout role="teacher">
+    <DashboardLayout role={layoutRole}>
       <form onSubmit={handleSubmit} className="max-w-3xl space-y-8">
         <button type="button" onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" /> 돌아가기
