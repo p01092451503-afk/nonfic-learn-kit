@@ -1,16 +1,10 @@
 import {
-  BookOpen,
-  Clock,
-  Target,
-  TrendingUp,
-  Play,
-  Award,
-  Flame,
-  ArrowRight,
+  BookOpen, Clock, Target, TrendingUp, Play, Award, Flame, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { useUser } from "@/contexts/UserContext";
 
 const stats = [
   { label: "수강 중", value: "4", sub: "강좌", icon: BookOpen },
@@ -33,18 +27,19 @@ const recentActivities = [
 ];
 
 const StudentDashboard = () => {
+  const { profile } = useUser();
+  const displayName = profile?.full_name || "사용자";
+
   return (
     <DashboardLayout role="student">
       <div className="space-y-8 max-w-6xl">
-        {/* Welcome */}
         <div>
           <h1 className="text-2xl font-semibold text-foreground">
-            안녕하세요, 사용자님
+            안녕하세요, {displayName}님
           </h1>
           <p className="text-muted-foreground mt-1">오늘도 한 걸음 성장해봐요.</p>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <div key={stat.label} className="stat-card">
@@ -62,22 +57,16 @@ const StudentDashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Courses */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground">수강 중인 강좌</h2>
               <Button variant="ghost" size="sm" className="text-muted-foreground">
-                전체보기
-                <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                전체보기 <ArrowRight className="h-3.5 w-3.5 ml-1" />
               </Button>
             </div>
-
             <div className="space-y-3">
               {courses.map((course) => (
-                <div
-                  key={course.title}
-                  className="stat-card flex items-center gap-4 cursor-pointer group !p-4"
-                >
+                <div key={course.title} className="stat-card flex items-center gap-4 cursor-pointer group !p-4">
                   <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center shrink-0">
                     <Play className="h-5 w-5 text-accent-foreground" />
                   </div>
@@ -101,7 +90,6 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          {/* Recent Activity */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-foreground">최근 활동</h2>
             <div className="stat-card !p-0 divide-y divide-border">
@@ -109,9 +97,7 @@ const StudentDashboard = () => {
                 <div key={i} className="p-4 space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">{activity.action}</span>
-                    {activity.points && (
-                      <span className="text-xs font-semibold text-success">{activity.points}</span>
-                    )}
+                    {activity.points && <span className="text-xs font-semibold text-success">{activity.points}</span>}
                   </div>
                   <p className="text-xs text-muted-foreground">{activity.detail}</p>
                   <p className="text-[10px] text-muted-foreground/60">{activity.time}</p>
@@ -119,7 +105,6 @@ const StudentDashboard = () => {
               ))}
             </div>
 
-            {/* Gamification Summary */}
             <div className="stat-card space-y-3">
               <div className="flex items-center gap-2">
                 <Award className="h-5 w-5 text-warning" />
