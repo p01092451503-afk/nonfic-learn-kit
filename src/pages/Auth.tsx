@@ -117,7 +117,7 @@ const Auth = () => {
                     placeholder="홍길동"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="h-12 bg-white border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
+                    className="h-12 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
                     required
                   />
                 </div>
