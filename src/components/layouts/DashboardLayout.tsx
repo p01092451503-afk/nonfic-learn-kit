@@ -49,7 +49,7 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
 
   const activeRole = role || primaryRole;
   const navItems = activeRole === "admin" ? adminNav : activeRole === "teacher" ? teacherNav : studentNav;
-  const roleLabel = activeRole === "admin" ? "관리자" : activeRole === "teacher" ? "강사" : "학습자";
+  const roleLabel = activeRole === "admin" ? "Admin" : activeRole === "teacher" ? "Teacher" : "Student";
 
   const handleSignOut = async () => {
     await signOut();
