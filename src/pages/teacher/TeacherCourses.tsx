@@ -1,18 +1,13 @@
-import { BookOpen, Users, Plus, Search, Filter, ArrowRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Plus, Search, Filter } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import CourseCard from "@/components/CourseCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
-
-const statusLabel: Record<string, { text: string; className: string }> = {
-  published: { text: "공개", className: "text-success bg-success/10" },
-  draft: { text: "초안", className: "text-muted-foreground bg-secondary" },
-};
 
 const TeacherCourses = () => {
   const { user } = useUser();
@@ -32,15 +27,21 @@ const TeacherCourses = () => {
     enabled: !!user?.id,
   });
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("id, name, slug");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: enrollmentCounts = {} } = useQuery({
     queryKey: ["teacher-enrollment-counts", courses.map((c: any) => c.id)],
     queryFn: async () => {
       const ids = courses.map((c: any) => c.id);
       if (ids.length === 0) return {};
-      const { data, error } = await supabase
-        .from("enrollments")
-        .select("course_id")
-        .in("course_id", ids);
+      const { data, error } = await supabase.from("enrollments").select("course_id").in("course_id", ids);
       if (error) throw error;
       const counts: Record<string, number> = {};
       data.forEach((e: any) => { counts[e.course_id] = (counts[e.course_id] || 0) + 1; });
@@ -54,10 +55,7 @@ const TeacherCourses = () => {
     queryFn: async () => {
       const ids = courses.map((c: any) => c.id);
       if (ids.length === 0) return {};
-      const { data, error } = await supabase
-        .from("course_contents")
-        .select("course_id")
-        .in("course_id", ids);
+      const { data, error } = await supabase.from("course_contents").select("course_id").in("course_id", ids);
       if (error) throw error;
       const counts: Record<string, number> = {};
       data.forEach((e: any) => { counts[e.course_id] = (counts[e.course_id] || 0) + 1; });
@@ -66,6 +64,7 @@ const TeacherCourses = () => {
     enabled: courses.length > 0,
   });
 
+  const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
   const filtered = courses.filter((c: any) => c.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
@@ -98,34 +97,19 @@ const TeacherCourses = () => {
             <p className="text-sm text-muted-foreground">강좌가 없습니다.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((course: any) => {
-              const status = statusLabel[course.status] || statusLabel.draft;
-              const students = (enrollmentCounts as any)[course.id] || 0;
-              const contents = (contentCounts as any)[course.id] || 0;
+              const cat = categoryMap.get(course.category_id);
               return (
-                <Link key={course.id} to={`/courses/${course.id}`}>
-                  <div className="stat-card flex items-center gap-4 cursor-pointer group !p-4">
-                    <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center shrink-0">
-                      <BookOpen className="h-5 w-5 text-accent-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${status.className}`}>
-                          {status.text}
-                        </span>
-                      </div>
-                      <h3 className="text-sm font-medium text-foreground truncate">{course.title}</h3>
-                      <div className="flex items-center gap-4 mt-1">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Users className="h-3 w-3" /> {students}명
-                        </span>
-                        <span className="text-xs text-muted-foreground">{contents}개 콘텐츠</span>
-                      </div>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                  </div>
-                </Link>
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  categorySlug={cat?.slug}
+                  categoryName={cat?.name}
+                  studentCount={(enrollmentCounts as any)[course.id] || 0}
+                  contentCount={(contentCounts as any)[course.id] || 0}
+                  variant="teacher"
+                />
               );
             })}
           </div>

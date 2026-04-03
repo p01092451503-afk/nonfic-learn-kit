@@ -1,10 +1,9 @@
-import { BookOpen, Play, Search, Filter } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Search, Filter } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import CourseCard from "@/components/CourseCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useState } from "react";
@@ -26,6 +25,17 @@ const StudentCourses = () => {
     enabled: !!user?.id,
   });
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("id, name, slug");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
+
   const filtered = enrollments.filter((e: any) =>
     e.courses?.title?.toLowerCase().includes(search.toLowerCase())
   );
@@ -44,12 +54,7 @@ const StudentCourses = () => {
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="강좌 검색"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-10 rounded-xl border-border"
-            />
+            <Input placeholder="강좌 검색" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl border-border" />
           </div>
           <Button variant="outline" size="sm" className="rounded-xl gap-2">
             <Filter className="h-3.5 w-3.5" /> 필터
@@ -61,30 +66,20 @@ const StudentCourses = () => {
           {inProgress.length === 0 ? (
             <p className="text-sm text-muted-foreground">수강 중인 강좌가 없습니다.</p>
           ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {inProgress.map((enrollment: any) => (
-                <Link key={enrollment.id} to={`/courses/${enrollment.course_id}`}>
-                  <div className="stat-card cursor-pointer group hover:shadow-md transition-shadow">
-                    <div className="flex items-start gap-4">
-                      <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center shrink-0">
-                        <Play className="h-5 w-5 text-accent-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-foreground truncate">{enrollment.courses?.title}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {enrollment.courses?.difficulty_level || "기초"}
-                        </p>
-                        <div className="flex items-center gap-3 mt-3">
-                          <Progress value={Number(enrollment.progress) || 0} className="flex-1 h-1.5" />
-                          <span className="text-xs font-medium text-muted-foreground">
-                            {Math.round(Number(enrollment.progress) || 0)}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {inProgress.map((enrollment: any) => {
+                const cat = categoryMap.get(enrollment.courses?.category_id);
+                return (
+                  <CourseCard
+                    key={enrollment.id}
+                    course={enrollment.courses}
+                    categorySlug={cat?.slug}
+                    categoryName={cat?.name}
+                    progress={Number(enrollment.progress) || 0}
+                    variant="student"
+                  />
+                );
+              })}
             </div>
           )}
         </div>
@@ -94,25 +89,21 @@ const StudentCourses = () => {
           {completed.length === 0 ? (
             <p className="text-sm text-muted-foreground">완료한 강좌가 없습니다.</p>
           ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {completed.map((enrollment: any) => (
-                <Link key={enrollment.id} to={`/courses/${enrollment.course_id}`}>
-                  <div className="stat-card opacity-80">
-                    <div className="flex items-start gap-4">
-                      <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                        <BookOpen className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-foreground truncate">{enrollment.courses?.title}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {enrollment.courses?.difficulty_level || "기초"}
-                        </p>
-                        <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-2">수료 완료</p>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {completed.map((enrollment: any) => {
+                const cat = categoryMap.get(enrollment.courses?.category_id);
+                return (
+                  <CourseCard
+                    key={enrollment.id}
+                    course={enrollment.courses}
+                    categorySlug={cat?.slug}
+                    categoryName={cat?.name}
+                    isCompleted
+                    progress={100}
+                    variant="student"
+                  />
+                );
+              })}
             </div>
           )}
         </div>
