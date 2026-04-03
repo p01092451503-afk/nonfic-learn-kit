@@ -1,5 +1,5 @@
 import { BookOpen, Users, Plus, Search, Filter, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -76,9 +76,11 @@ const TeacherCourses = () => {
             <h1 className="text-2xl font-semibold text-foreground">강좌 관리</h1>
             <p className="text-muted-foreground mt-1">담당 강좌를 관리하세요.</p>
           </div>
-          <Button className="rounded-xl gap-2">
-            <Plus className="h-4 w-4" /> 새 강좌
-          </Button>
+          <Link to="/teacher/courses/new">
+            <Button className="rounded-xl gap-2">
+              <Plus className="h-4 w-4" /> 새 강좌
+            </Button>
+          </Link>
         </div>
 
         <div className="flex items-center gap-3">

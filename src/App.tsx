@@ -15,6 +15,7 @@ import StudentAchievements from "./pages/student/StudentAchievements";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import TeacherCourses from "./pages/teacher/TeacherCourses";
 import TeacherAssignments from "./pages/teacher/TeacherAssignments";
+import CreateCourse from "./pages/teacher/CreateCourse";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
             <Route path="/teacher/courses" element={<ProtectedRoute><TeacherCourses /></ProtectedRoute>} />
             <Route path="/teacher/assignments" element={<ProtectedRoute><TeacherAssignments /></ProtectedRoute>} />
+            <Route path="/teacher/courses/new" element={<ProtectedRoute><CreateCourse /></ProtectedRoute>} />
             <Route path="/teacher/students" element={<ProtectedRoute><TeacherStudents /></ProtectedRoute>} />
 
             {/* Admin */}
