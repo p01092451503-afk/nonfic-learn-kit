@@ -115,7 +115,6 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
             </div>
             <div className="hidden sm:block">
               <p className="text-sm font-medium text-foreground leading-none">{profile?.full_name || "사용자"}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{roleLabel}</p>
             </div>
           </div>
         </header>
