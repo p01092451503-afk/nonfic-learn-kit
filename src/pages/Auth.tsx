@@ -62,7 +62,7 @@ const Auth = () => {
         <img
           src={loginBg}
           alt="NONFICTION LMS"
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
           width={1920}
           height={1080}
         />
