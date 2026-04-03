@@ -90,7 +90,7 @@ const Auth = () => {
       </div>
 
       {/* Right - Form (warm/beige background) */}
-      <div className="flex-1 flex items-center justify-center px-6 lg:px-16 bg-accent">
+      <div className="flex-1 flex items-center justify-center px-6 lg:px-16" style={{ backgroundColor: 'hsl(28 30% 82%)' }}>
         <div className="w-full max-w-md space-y-10">
           <div className="lg:hidden text-center">
             <h1 className="font-display text-2xl tracking-wider text-foreground">NONFICTION</h1>
