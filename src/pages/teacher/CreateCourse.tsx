@@ -56,8 +56,10 @@ const videoProviderOptions: { value: VideoProvider; label: string }[] = [
 const CreateCourse = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { role } = useUserRole();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const layoutRole = role === "admin" ? "admin" : "teacher";
 
   // Course kind
   const [courseKind, setCourseKind] = useState<CourseKind>("video");
