@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, FileText,
-  Video, BarChart3, ExternalLink, Clock,
+  Video, BarChart3, ExternalLink, Clock, X, Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +27,7 @@ const ContentPlayer = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
 
   const { data: course } = useQuery({
     queryKey: ["course", courseId],
@@ -219,16 +220,17 @@ const ContentPlayer = () => {
         <div className="bg-foreground/5">
           {/* Mangoboard embed (flip learning) */}
           {isMangoboard(currentContent.video_url) && embedUrl ? (
-            <div className="w-full flex justify-center" style={{ height: "80vh", backgroundColor: "#1a1a1a" }}>
-              <div className="h-full" style={{ aspectRatio: "9/16", maxWidth: "100%" }}>
-                <iframe
-                  src={embedUrl}
-                  className="w-full h-full border-0"
-                  allowFullScreen
-                  title={currentContent.title}
-                  style={{ display: "block" }}
-                />
+            <div className="w-full flex flex-col items-center justify-center py-16 gap-4">
+              <div className="text-center space-y-3">
+                <div className="h-16 w-16 rounded-2xl bg-accent mx-auto flex items-center justify-center">
+                  <Play className="h-7 w-7 text-accent-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">{currentContent.title}</h3>
+                <p className="text-sm text-muted-foreground">콘텐츠를 팝업으로 열어 학습하세요</p>
               </div>
+              <Button onClick={() => setMangoPopupOpen(true)} className="gap-2">
+                <Maximize2 className="h-4 w-4" /> 콘텐츠 열기
+              </Button>
             </div>
           ) : currentContent.content_type === "video" && embedUrl ? (
             <div className="aspect-video max-h-[70vh] w-full">
@@ -345,6 +347,26 @@ const ContentPlayer = () => {
           </div>
         </div>
       </main>
+
+      {/* Mangoboard Popup Modal */}
+      {mangoPopupOpen && currentContent && isMangoboard(currentContent.video_url) && embedUrl && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center">
+          <button
+            onClick={() => setMangoPopupOpen(false)}
+            className="absolute top-4 right-4 z-[110] p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <div className="h-[95vh]" style={{ aspectRatio: "9/16", maxWidth: "95vw" }}>
+            <iframe
+              src={embedUrl}
+              className="w-full h-full border-0 rounded-lg"
+              allowFullScreen
+              title={currentContent.title}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
