@@ -7,6 +7,7 @@ import { UserProvider } from "@/contexts/UserContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import RoleBasedRedirect from "@/components/RoleBasedRedirect";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import StudentDashboard from "./pages/StudentDashboard";
 import StudentCourses from "./pages/student/StudentCourses";
 import StudentAssignments from "./pages/student/StudentAssignments";
@@ -32,6 +33,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<ProtectedRoute><RoleBasedRedirect /></ProtectedRoute>} />
 
             {/* Student */}

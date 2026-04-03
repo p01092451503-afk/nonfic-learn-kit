@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import loginBg from "@/assets/login-bg.jpg";
+
+const SAVED_EMAIL_KEY = "nonfiction_saved_email";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -17,6 +19,17 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem(SAVED_EMAIL_KEY);
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +55,11 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
+        if (rememberMe) {
+          localStorage.setItem(SAVED_EMAIL_KEY, email);
+        } else {
+          localStorage.removeItem(SAVED_EMAIL_KEY);
+        }
         navigate("/dashboard");
       }
     } catch (error: any) {
@@ -173,7 +191,11 @@ const Auth = () => {
                   />
                   <span className="text-sm text-muted-foreground">아이디 저장</span>
                 </label>
-                <button type="button" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <button
+                  type="button"
+                  onClick={() => { setShowForgotPassword(true); setResetEmail(email); }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
                   비밀번호 찾기
                 </button>
               </div>
@@ -205,8 +227,92 @@ const Auth = () => {
           </div>
         </div>
       </div>
+      {showForgotPassword && (
+        <ForgotPasswordModal
+          resetEmail={resetEmail}
+          setResetEmail={setResetEmail}
+          isResetting={isResetting}
+          onClose={() => setShowForgotPassword(false)}
+          onSubmit={async () => {
+            setIsResetting(true);
+            try {
+              const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+                redirectTo: `${window.location.origin}/reset-password`,
+              });
+              if (error) throw error;
+              toast({
+                title: "이메일 발송 완료",
+                description: "비밀번호 재설정 링크가 이메일로 전송되었습니다.",
+              });
+              setShowForgotPassword(false);
+            } catch (error: any) {
+              toast({
+                title: "오류",
+                description: error.message,
+                variant: "destructive",
+              });
+            } finally {
+              setIsResetting(false);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };
+
+const ForgotPasswordModal = ({
+  resetEmail,
+  setResetEmail,
+  isResetting,
+  onClose,
+  onSubmit,
+}: {
+  resetEmail: string;
+  setResetEmail: (v: string) => void;
+  isResetting: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
+}) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div
+      className="bg-background rounded-2xl p-8 w-full max-w-sm space-y-6 shadow-xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="space-y-2">
+        <h3 className="text-xl font-semibold text-foreground">비밀번호 찾기</h3>
+        <p className="text-sm text-muted-foreground">
+          가입 시 사용한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.
+        </p>
+      </div>
+      <div className="relative">
+        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="email"
+          placeholder="name@nonfiction.com"
+          value={resetEmail}
+          onChange={(e) => setResetEmail(e.target.value)}
+          className="h-12 pl-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
+          required
+        />
+      </div>
+      <div className="flex gap-3">
+        <Button type="button" variant="outline" className="flex-1 rounded-full" onClick={onClose}>
+          취소
+        </Button>
+        <Button
+          type="button"
+          variant="login"
+          size="xl"
+          className="flex-1"
+          disabled={isResetting || !resetEmail}
+          onClick={onSubmit}
+        >
+          {isResetting ? "발송 중..." : "재설정 링크 발송"}
+        </Button>
+      </div>
+    </div>
+  </div>
+);
 
 export default Auth;
