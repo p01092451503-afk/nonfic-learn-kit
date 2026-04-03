@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import loginBg from "@/assets/login-bg.jpg";
+import nonfictionLogo from "@/assets/nonfiction-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();

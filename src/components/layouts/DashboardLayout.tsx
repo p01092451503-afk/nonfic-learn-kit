@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import nonfictionLogo from "@/assets/nonfiction-logo.png";
 
 interface NavItem {
   label: string;
