@@ -153,7 +153,7 @@ const ContentPlayer = () => {
       <aside className={`fixed lg:sticky top-0 left-0 z-40 h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 ${
         sidebarOpen ? "w-72" : "w-0 lg:w-14 overflow-hidden"
       }`}>
-        <div className="p-4 border-b border-sidebar-border flex items-center justify-between min-w-[280px] lg:min-w-0">
+        <div className="p-4 pt-14 border-b border-sidebar-border flex items-center justify-between min-w-[280px] lg:min-w-0">
           {sidebarOpen && (
             <div className="flex-1 min-w-0">
               <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors">
