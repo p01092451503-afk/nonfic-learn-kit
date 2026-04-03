@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import nonfictionLogo from "@/assets/nonfiction-logo.svg";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,7 +69,12 @@ const Auth = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div>
-            <img src={nonfictionLogo} alt="NONFICTION" className="h-16 w-16 invert" />
+            <h1 className="font-display text-4xl tracking-wider text-primary-foreground">
+              NONFICTION
+            </h1>
+            <p className="mt-1 text-sm tracking-[0.3em] text-primary-foreground/70 uppercase">
+              Learning Management System
+            </p>
           </div>
           <div className="space-y-4">
             <h2 className="font-display text-3xl leading-snug text-primary-foreground">
@@ -78,7 +82,7 @@ const Auth = () => {
               가장 아름다운<br />
               성장입니다
             </h2>
-            <p className="text-sm text-primary-foreground/60 leading-relaxed">
+            <p className="text-sm text-primary-foreground/60 max-w-xs leading-relaxed">
               NONFICTION 사내교육 플랫폼에서 당신의 전문성을 키워보세요.
             </p>
           </div>
