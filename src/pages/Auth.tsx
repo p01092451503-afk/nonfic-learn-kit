@@ -62,17 +62,16 @@ const Auth = () => {
         <img
           src={loginBg}
           alt="NONFICTION LMS"
-          className="absolute inset-0 w-full h-full object-cover opacity-30"
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
           width={1920}
           height={1080}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-foreground/10 to-transparent" />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div>
             <h1 className="font-display text-4xl tracking-wider text-foreground">
               NONFICTION
             </h1>
-            <p className="mt-1 text-sm tracking-[0.3em] text-foreground/60 uppercase">
+            <p className="mt-1 text-sm tracking-[0.3em] text-foreground/50 uppercase">
               Learning Management System
             </p>
           </div>
