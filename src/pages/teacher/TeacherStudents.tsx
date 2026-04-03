@@ -15,6 +15,7 @@ import { ko } from "date-fns/locale";
 const TeacherStudents = () => {
   const { user } = useUser();
   const [search, setSearch] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
 
   // Fetch teacher's courses
   const { data: myCourses = [] } = useQuery({
