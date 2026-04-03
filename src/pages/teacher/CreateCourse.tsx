@@ -333,6 +333,7 @@ const CreateCourse = () => {
                 <span className="text-xs">클릭하여 이미지 업로드 (최대 5MB)</span>
               </button>
             )}
+          </div>
 
           <div className="space-y-2">
             <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">강좌 제목 *</label>
