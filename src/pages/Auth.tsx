@@ -57,8 +57,40 @@ const Auth = () => {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left - Form (white background) */}
-      <div className="flex-1 flex items-center justify-center px-6 lg:px-16 bg-white">
+      {/* Left - Visual Panel (white/light background) */}
+      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-white">
+        <img
+          src={loginBg}
+          alt="NONFICTION LMS"
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
+          width={1920}
+          height={1080}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-foreground/10 to-transparent" />
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <div>
+            <h1 className="font-display text-4xl tracking-wider text-foreground">
+              NONFICTION
+            </h1>
+            <p className="mt-1 text-sm tracking-[0.3em] text-foreground/60 uppercase">
+              Learning Management System
+            </p>
+          </div>
+          <div className="space-y-4">
+            <h2 className="font-display text-3xl leading-snug text-foreground">
+              배움은<br />
+              가장 아름다운<br />
+              성장입니다
+            </h2>
+            <p className="text-sm text-foreground/50 max-w-xs leading-relaxed">
+              NONFICTION 사내교육 플랫폼에서 당신의 전문성을 키워보세요.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right - Form (warm/beige background) */}
+      <div className="flex-1 flex items-center justify-center px-6 lg:px-16 bg-accent">
         <div className="w-full max-w-md space-y-10">
           <div className="lg:hidden text-center">
             <h1 className="font-display text-2xl tracking-wider text-foreground">NONFICTION</h1>
@@ -86,7 +118,7 @@ const Auth = () => {
                     placeholder="홍길동"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="h-12 bg-secondary border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
+                    className="h-12 bg-white border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
                     required
                   />
                 </div>
@@ -101,7 +133,7 @@ const Auth = () => {
                     placeholder="name@nonfiction.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 pl-11 bg-secondary border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
+                    className="h-12 pl-11 bg-white border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
                     required
                   />
                 </div>
@@ -116,7 +148,7 @@ const Auth = () => {
                     placeholder="비밀번호를 입력하세요"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 pl-11 pr-11 bg-secondary border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
+                    className="h-12 pl-11 pr-11 bg-white border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
                     required
                     minLength={6}
                   />
@@ -171,38 +203,6 @@ const Auth = () => {
               {isSignUp ? "이미 계정이 있으신가요? 로그인" : "계정이 없으신가요? 가입하기"}
             </button>
             <p className="text-xs text-muted-foreground/60">NONFICTION Internal Education Platform</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Right - Visual Panel */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
-        <img
-          src={loginBg}
-          alt="NONFICTION LMS"
-          className="absolute inset-0 w-full h-full object-cover"
-          width={1920}
-          height={1080}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <div>
-            <h1 className="font-display text-4xl tracking-wider text-primary-foreground">
-              NONFICTION
-            </h1>
-            <p className="mt-1 text-sm tracking-[0.3em] text-primary-foreground/70 uppercase">
-              Learning Management System
-            </p>
-          </div>
-          <div className="space-y-4">
-            <h2 className="font-display text-3xl leading-snug text-primary-foreground">
-              배움은<br />
-              가장 아름다운<br />
-              성장입니다
-            </h2>
-            <p className="text-sm text-primary-foreground/60 max-w-xs leading-relaxed">
-              NONFICTION 사내교육 플랫폼에서 당신의 전문성을 키워보세요.
-            </p>
           </div>
         </div>
       </div>
