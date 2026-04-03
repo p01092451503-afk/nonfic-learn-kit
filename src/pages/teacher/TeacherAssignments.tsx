@@ -55,7 +55,7 @@ const TeacherAssignments = () => {
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">과제 관리</h1>
-          <p className="text-muted-foreground mt-1">제출된 과제를 확인하고 채점하세요.</p>
+          <p className="text-sm text-muted-foreground mt-1">제출된 과제를 확인하고 채점하세요.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

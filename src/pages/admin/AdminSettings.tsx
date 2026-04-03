@@ -39,7 +39,7 @@ const AdminSettings = () => {
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">설정</h1>
-          <p className="text-muted-foreground mt-1">플랫폼 설정을 관리하세요.</p>
+          <p className="text-sm text-muted-foreground mt-1">플랫폼 설정을 관리하세요.</p>
         </div>
 
         {settingSections.map((section) => (

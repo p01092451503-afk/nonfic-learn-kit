@@ -167,10 +167,10 @@ const TeacherStudents = () => {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" /> 학생 관리
+            <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+              <Users className="h-6 w-6 text-primary" /> 학생 관리
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">학생들의 학습 진행 상황과 활동을 모니터링하세요</p>
+            <p className="text-sm text-muted-foreground mt-1">학생들의 학습 진행 상황과 활동을 모니터링하세요</p>
           </div>
           <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
             <SelectTrigger className="w-52 h-9 text-xs">

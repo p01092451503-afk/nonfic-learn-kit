@@ -113,7 +113,7 @@ const TeacherCourses = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">강좌 관리</h1>
-            <p className="text-muted-foreground mt-1">담당 강좌를 등록하고 관리하세요.</p>
+            <p className="text-sm text-muted-foreground mt-1">담당 강좌를 등록하고 관리하세요.</p>
           </div>
           <Link to="/teacher/courses/new">
             <Button className="rounded-xl gap-2">

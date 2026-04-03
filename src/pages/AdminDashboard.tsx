@@ -85,7 +85,7 @@ const AdminDashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">관리자 대시보드</h1>
-            <p className="text-muted-foreground mt-1">{displayName}님, 시스템 현황을 확인하세요.</p>
+            <p className="text-sm text-muted-foreground mt-1">{displayName}님, 시스템 현황을 확인하세요.</p>
           </div>
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-muted-foreground" />
