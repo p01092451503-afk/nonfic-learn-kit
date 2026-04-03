@@ -153,13 +153,20 @@ const ContentPlayer = () => {
       <aside className={`fixed lg:sticky top-0 left-0 z-40 h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 ${
         sidebarOpen ? "w-72" : "w-0 lg:w-14 overflow-hidden"
       }`}>
-        <div className="p-4 pt-14 border-b border-sidebar-border flex items-center justify-between min-w-[280px] lg:min-w-0">
+        {/* 강좌로 돌아가기 - 상단 고정 */}
+        {sidebarOpen && (
+          <div className="p-4 pb-2 min-w-[280px] lg:min-w-0">
+            <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors">
+              <ArrowLeft className="h-4 w-4" /> 강좌로 돌아가기
+            </Link>
+          </div>
+        )}
+
+        {/* 과정명 + 진행률 + 토글 */}
+        <div className="p-4 pt-6 border-b border-sidebar-border flex items-center justify-between min-w-[280px] lg:min-w-0">
           {sidebarOpen && (
             <div className="flex-1 min-w-0">
-              <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors">
-                <ArrowLeft className="h-4 w-4" /> 강좌로 돌아가기
-              </Link>
-              <h2 className="text-sm font-semibold text-foreground mt-4 truncate">{course?.title}</h2>
+              <h2 className="text-sm font-semibold text-foreground truncate">{course?.title}</h2>
               <div className="mt-2">
                 <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
                   <span>진행률</span>
