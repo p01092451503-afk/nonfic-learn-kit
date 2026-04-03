@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import loginBg from "@/assets/login-bg.jpg";
+import nonfictionLogo from "@/assets/nonfiction-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -69,10 +70,8 @@ const Auth = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div>
-            <h1 className="font-display text-4xl tracking-wider text-primary-foreground">
-              NONFICTION
-            </h1>
-            <p className="mt-1 text-sm tracking-[0.3em] text-primary-foreground/70 uppercase">
+            <img src={nonfictionLogo} alt="NONFICTION" className="h-16 w-16" />
+            <p className="mt-2 text-sm tracking-[0.3em] text-primary-foreground/70 uppercase">
               Learning Management System
             </p>
           </div>
@@ -93,7 +92,7 @@ const Auth = () => {
       <div className="flex-1 flex items-center justify-center px-6 lg:px-16">
         <div className="w-full max-w-md space-y-10">
           <div className="lg:hidden text-center">
-            <h1 className="font-display text-2xl tracking-wider text-foreground">NONFICTION</h1>
+            <img src={nonfictionLogo} alt="NONFICTION" className="h-12 w-12 mx-auto" />
           </div>
           <div className="hidden lg:block">
             <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">NONFICTION Education</p>

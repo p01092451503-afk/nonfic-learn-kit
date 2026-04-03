@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import nonfictionLogo from "@/assets/nonfiction-logo.png";
 
 interface NavItem {
   label: string;
@@ -68,9 +69,12 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
 
       <aside className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="p-6 flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-lg tracking-wider text-sidebar-primary">NONFICTION</h1>
-            <p className="text-[10px] tracking-[0.15em] text-muted-foreground uppercase mt-0.5">LMS · {roleLabel}</p>
+          <div className="flex items-center gap-3">
+            <img src={nonfictionLogo} alt="NONFICTION" className="h-10 w-10" />
+            <div>
+              <h1 className="font-display text-sm tracking-wider text-sidebar-primary">NONFICTION</h1>
+              <p className="text-[10px] tracking-[0.15em] text-muted-foreground uppercase">LMS · {roleLabel}</p>
+            </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
