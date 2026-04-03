@@ -225,23 +225,7 @@ const ContentPlayer = () => {
       <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden">
         {/* Video / Content Area */}
         <div className="bg-foreground/5">
-          {/* Mangoboard embed (flip learning) */}
-          {isMangoboard(currentContent.video_url) && embedUrl ? (
-            <div className="w-full flex items-center justify-center py-16">
-              <div className="flex items-center gap-5">
-                <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center shrink-0">
-                  <Play className="h-5 w-5 text-accent-foreground" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-base font-semibold text-foreground">{currentContent.title}</h3>
-                  <p className="text-sm text-muted-foreground">콘텐츠를 팝업으로 열어 학습하세요</p>
-                </div>
-                <Button onClick={() => setMangoPopupOpen(true)} size="sm" className="gap-2 ml-4">
-                  <Maximize2 className="h-4 w-4" /> 콘텐츠 열기
-                </Button>
-              </div>
-            </div>
-          ) : currentContent.content_type === "video" && embedUrl ? (
+          {isMangoboard(currentContent.video_url) && embedUrl ? null : currentContent.content_type === "video" && embedUrl ? (
             <div className="aspect-video max-h-[70vh] w-full">
               <iframe
                 src={embedUrl}
@@ -300,7 +284,14 @@ const ContentPlayer = () => {
                 {currentIndex + 1} / {contents.length}
               </span>
             </div>
-            <h1 className="text-xl font-semibold text-foreground">{currentContent.title}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-semibold text-foreground">{currentContent.title}</h1>
+              {isMangoboard(currentContent.video_url) && embedUrl && (
+                <Button onClick={() => setMangoPopupOpen(true)} size="sm" className="gap-1.5 shrink-0">
+                  <Play className="h-3.5 w-3.5" /> 학습하기
+                </Button>
+              )}
+            </div>
             {currentContent.description && (
               <p className="text-sm text-muted-foreground leading-relaxed">{currentContent.description}</p>
             )}
