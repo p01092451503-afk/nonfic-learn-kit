@@ -88,11 +88,19 @@ const TeacherStudents = () => {
   });
 
   const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
+  const courseMap = new Map(myCourses.map((c: any) => [c.id, c.title]));
+
+  // Filter enrollments by selected course
+  const filteredEnrollments = selectedCourseId === "all"
+    ? enrollments
+    : enrollments.filter((e: any) => e.course_id === selectedCourseId);
+
+  const filteredStudentIds = [...new Set(filteredEnrollments.map((e: any) => e.user_id))];
 
   // Build student data
-  const studentData = studentIds.map((id) => {
+  const studentData = filteredStudentIds.map((id) => {
     const profile = profileMap.get(id);
-    const studentEnrollments = enrollments.filter((e: any) => e.user_id === id);
+    const studentEnrollments = filteredEnrollments.filter((e: any) => e.user_id === id);
     const avgProgress = studentEnrollments.length > 0
       ? Math.round(studentEnrollments.reduce((sum: number, e: any) => sum + (Number(e.progress) || 0), 0) / studentEnrollments.length)
       : 0;
@@ -100,6 +108,9 @@ const TeacherStudents = () => {
     const completionRate = studentEnrollments.length > 0
       ? Math.round((completedCourses / studentEnrollments.length) * 100)
       : 0;
+
+    // Course names for this student
+    const courseNames = studentEnrollments.map((e: any) => courseMap.get(e.course_id) || "").filter(Boolean);
 
     // Last activity from content_progress
     const studentProgress = allProgress.filter((p: any) => p.user_id === id);
@@ -110,7 +121,6 @@ const TeacherStudents = () => {
         }, "")
       : null;
 
-    // Active if last activity within 7 days
     const isActive = lastActivity
       ? (Date.now() - new Date(lastActivity).getTime()) < 7 * 24 * 60 * 60 * 1000
       : false;
@@ -121,6 +131,7 @@ const TeacherStudents = () => {
       department: profile?.department || "-",
       position: profile?.position || "",
       courseCount: studentEnrollments.length,
+      courseNames,
       avgProgress,
       completionRate,
       lastActivity,
