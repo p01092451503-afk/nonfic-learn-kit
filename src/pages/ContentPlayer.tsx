@@ -214,7 +214,7 @@ const ContentPlayer = () => {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 flex flex-col min-h-screen transition-all ${sidebarOpen ? "" : ""}`}>
+      <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden">
         {/* Video / Content Area */}
         <div className="bg-foreground/5">
           {/* Mangoboard embed (flip learning) */}
