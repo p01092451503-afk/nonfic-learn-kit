@@ -274,7 +274,7 @@ const CreateCourse = () => {
             className={`stat-card !p-5 !shadow-none hover:!shadow-none hover:!translate-y-0 text-left transition-all border-2 ${
               courseKind === "flip"
                 ? "border-[hsl(var(--flip-bg))] ring-2 ring-[hsl(var(--flip-bg)/0.2)]"
-                : "border-transparent hover:border-border"
+                : "border-transparent"
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
