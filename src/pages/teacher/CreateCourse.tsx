@@ -507,7 +507,6 @@ const FlipContentEditor = ({
                 }}
                 placeholder="https://www.mangoboard.net/publish/52632315"
                 className="h-9 rounded-lg border-border text-xs pr-8"
-                required
               />
               {isValidMangoboard && (
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
