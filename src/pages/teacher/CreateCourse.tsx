@@ -281,7 +281,8 @@ const CreateCourse = () => {
 
       return course;
     },
-    onSuccess: (course) => {
+    onSuccess: async (course) => {
+      await deleteDraft();
       queryClient.invalidateQueries({ queryKey: ["teacher-courses"] });
       toast({ title: "강좌 생성 완료", description: `"${course.title}" 강좌가 생성되었습니다.` });
       navigate(`/courses/${course.id}`);
