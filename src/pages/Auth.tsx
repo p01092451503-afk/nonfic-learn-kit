@@ -92,7 +92,7 @@ const Auth = () => {
       <div className="flex-1 flex items-center justify-center px-6 lg:px-16">
         <div className="w-full max-w-md space-y-10">
           <div className="lg:hidden text-center">
-            <h1 className="font-display text-2xl tracking-wider text-foreground">NONFICTION</h1>
+            <img src={nonfictionLogo} alt="NONFICTION" className="h-12 w-12 mx-auto" />
           </div>
           <div className="hidden lg:block">
             <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">NONFICTION Education</p>
