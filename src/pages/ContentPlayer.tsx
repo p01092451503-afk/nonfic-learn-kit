@@ -217,7 +217,17 @@ const ContentPlayer = () => {
       <main className={`flex-1 flex flex-col min-h-screen transition-all ${sidebarOpen ? "" : ""}`}>
         {/* Video / Content Area */}
         <div className="bg-foreground/5">
-          {currentContent.content_type === "video" && embedUrl ? (
+          {/* Mangoboard embed (flip learning) */}
+          {isMangoboard(currentContent.video_url) && embedUrl ? (
+            <div className="w-full" style={{ height: "70vh" }}>
+              <iframe
+                src={embedUrl}
+                className="w-full h-full border-0"
+                allowFullScreen
+                title={currentContent.title}
+              />
+            </div>
+          ) : currentContent.content_type === "video" && embedUrl ? (
             <div className="aspect-video max-h-[70vh] w-full">
               <iframe
                 src={embedUrl}
