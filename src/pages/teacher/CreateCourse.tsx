@@ -250,7 +250,7 @@ const CreateCourse = () => {
           <button
             type="button"
             onClick={() => setCourseKind("flip")}
-            className={`stat-card !p-5 text-left transition-all border-2 ${
+            className={`stat-card !p-5 !shadow-none text-left transition-all border-2 ${
               courseKind === "flip"
                 ? "border-[hsl(var(--flip-bg))] ring-2 ring-[hsl(var(--flip-bg)/0.2)]"
                 : "border-transparent hover:border-border"
