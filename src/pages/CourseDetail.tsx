@@ -54,6 +54,7 @@ const emptyContent: ContentFormData = {
 const CourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useUser();
   const { primaryRole } = useUserRole();
   const { toast } = useToast();
@@ -65,8 +66,9 @@ const CourseDetail = () => {
   const [courseEditOpen, setCourseEditOpen] = useState(false);
   const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft" });
 
-  const isTeacherOrAdmin = primaryRole === "admin" || primaryRole === "teacher";
-  const role = primaryRole === "admin" ? "admin" : primaryRole === "teacher" ? "teacher" : "student";
+  const forceLearnView = searchParams.get("view") === "learn";
+  const isTeacherOrAdmin = !forceLearnView && (primaryRole === "admin" || primaryRole === "teacher");
+  const role = isTeacherOrAdmin ? (primaryRole === "admin" ? "admin" : "teacher") : "student";
 
   // --- Queries ---
   const { data: course, isLoading: courseLoading } = useQuery({
