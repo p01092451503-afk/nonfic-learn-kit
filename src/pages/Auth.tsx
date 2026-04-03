@@ -70,10 +70,8 @@ const Auth = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div>
-            <h1 className="font-display text-4xl tracking-wider text-primary-foreground">
-              NONFICTION
-            </h1>
-            <p className="mt-1 text-sm tracking-[0.3em] text-primary-foreground/70 uppercase">
+            <img src={nonfictionLogo} alt="NONFICTION" className="h-16 w-16" />
+            <p className="mt-2 text-sm tracking-[0.3em] text-primary-foreground/70 uppercase">
               Learning Management System
             </p>
           </div>
