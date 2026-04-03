@@ -51,6 +51,7 @@ interface CourseCardProps {
   progress?: number | null;
   isCompleted?: boolean;
   variant?: "student" | "teacher" | "admin";
+  href?: string;
 }
 
 const CourseCard = ({
@@ -63,13 +64,15 @@ const CourseCard = ({
   progress,
   isCompleted,
   variant = "student",
+  href,
 }: CourseCardProps) => {
   const gradient = categoryGradients[categorySlug || ""] || "from-primary to-primary/80";
   const isPublished = course.status === "published";
   const isDraft = course.status === "draft";
+  const linkTo = href || `/courses/${course.id}`;
 
   return (
-    <Link to={`/courses/${course.id}`} className="group block">
+    <Link to={linkTo} className="group block">
       <div className="stat-card !p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
         {/* Thumbnail area */}
         <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
