@@ -155,10 +155,10 @@ const ContentPlayer = () => {
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between min-w-[280px] lg:min-w-0">
           {sidebarOpen && (
             <div className="flex-1 min-w-0">
-              <Link to={`/courses/${courseId}`} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
-                <ArrowLeft className="h-3 w-3" /> 강좌로 돌아가기
+              <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors">
+                <ArrowLeft className="h-4 w-4" /> 강좌로 돌아가기
               </Link>
-              <h2 className="text-sm font-semibold text-foreground mt-2 truncate">{course?.title}</h2>
+              <h2 className="text-sm font-semibold text-foreground mt-4 truncate">{course?.title}</h2>
               <div className="mt-2">
                 <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
                   <span>진행률</span>
