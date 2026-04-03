@@ -152,10 +152,12 @@ const TeacherStudents = () => {
     s.department.toLowerCase().includes(search.toLowerCase())
   );
 
+  const selectedCourseName = selectedCourseId === "all" ? "전체 강좌" : (courseMap.get(selectedCourseId) || "");
+
   const stats = [
-    { label: "전체 학생", value: totalStudents, sub: `${myCourses.length}개 강좌`, icon: Users },
+    { label: "전체 학생", value: totalStudents, sub: selectedCourseId === "all" ? `${myCourses.length}개 강좌` : selectedCourseName, icon: Users },
     { label: "활성 학생", value: activeStudents, sub: totalStudents > 0 ? `${Math.round((activeStudents / totalStudents) * 100)}% 활동률` : "0%", icon: TrendingUp },
-    { label: "평균 진행률", value: `${avgProgressAll}%`, sub: "전체 강의 기준", icon: BookOpen },
+    { label: "평균 진행률", value: `${avgProgressAll}%`, sub: selectedCourseId === "all" ? "전체 강의 기준" : "선택 강좌 기준", icon: BookOpen },
     { label: "우수 학생", value: excellentStudents, sub: "90% 이상 완료", icon: Award },
   ];
 
