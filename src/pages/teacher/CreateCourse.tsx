@@ -118,8 +118,38 @@ const CreateCourse = () => {
     setContents((prev) => prev.filter((c) => c.tempId !== tempId));
   };
 
+  const uploadThumbnail = async (courseId: string): Promise<string | null> => {
+    if (!thumbnailFile) return null;
+    const ext = thumbnailFile.name.split(".").pop();
+    const path = `${user!.id}/${courseId}.${ext}`;
+    const { error } = await supabase.storage
+      .from("course-thumbnails")
+      .upload(path, thumbnailFile, { upsert: true });
+    if (error) throw error;
+    const { data } = supabase.storage.from("course-thumbnails").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "오류", description: "이미지 크기는 5MB 이하여야 합니다.", variant: "destructive" });
+      return;
+    }
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  const removeThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const createMutation = useMutation({
     mutationFn: async () => {
+      // First create the course without thumbnail
       const { data: course, error: courseError } = await supabase
         .from("courses")
         .insert({
