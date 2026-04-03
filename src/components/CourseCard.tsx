@@ -73,11 +73,17 @@ const CourseCard = ({
       <div className="stat-card !p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
         {/* Thumbnail area */}
         <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-4 right-4 h-24 w-24 rounded-full bg-white/30 blur-xl" />
-            <div className="absolute bottom-2 left-6 h-16 w-16 rounded-full bg-white/20 blur-lg" />
-          </div>
+          {/* Thumbnail image if available */}
+          {course.thumbnail_url && (
+            <img src={course.thumbnail_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover" />
+          )}
+          {/* Background pattern (fallback) */}
+          {!course.thumbnail_url && (
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-4 right-4 h-24 w-24 rounded-full bg-white/30 blur-xl" />
+              <div className="absolute bottom-2 left-6 h-16 w-16 rounded-full bg-white/20 blur-lg" />
+            </div>
+          )}
 
           {/* Top badges */}
           <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
