@@ -55,6 +55,11 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
+        if (rememberMe) {
+          localStorage.setItem(SAVED_EMAIL_KEY, email);
+        } else {
+          localStorage.removeItem(SAVED_EMAIL_KEY);
+        }
         navigate("/dashboard");
       }
     } catch (error: any) {
