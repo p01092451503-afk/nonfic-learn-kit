@@ -1,6 +1,7 @@
 import { Users, Search, TrendingUp, BookOpen, Award, MoreVertical } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import { ko } from "date-fns/locale";
 const TeacherStudents = () => {
   const { user } = useUser();
   const [search, setSearch] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
 
   // Fetch teacher's courses
   const { data: myCourses = [] } = useQuery({
@@ -86,11 +88,19 @@ const TeacherStudents = () => {
   });
 
   const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
+  const courseMap = new Map(myCourses.map((c: any) => [c.id, c.title]));
+
+  // Filter enrollments by selected course
+  const filteredEnrollments = selectedCourseId === "all"
+    ? enrollments
+    : enrollments.filter((e: any) => e.course_id === selectedCourseId);
+
+  const filteredStudentIds = [...new Set(filteredEnrollments.map((e: any) => e.user_id))];
 
   // Build student data
-  const studentData = studentIds.map((id) => {
+  const studentData = filteredStudentIds.map((id) => {
     const profile = profileMap.get(id);
-    const studentEnrollments = enrollments.filter((e: any) => e.user_id === id);
+    const studentEnrollments = filteredEnrollments.filter((e: any) => e.user_id === id);
     const avgProgress = studentEnrollments.length > 0
       ? Math.round(studentEnrollments.reduce((sum: number, e: any) => sum + (Number(e.progress) || 0), 0) / studentEnrollments.length)
       : 0;
@@ -98,6 +108,9 @@ const TeacherStudents = () => {
     const completionRate = studentEnrollments.length > 0
       ? Math.round((completedCourses / studentEnrollments.length) * 100)
       : 0;
+
+    // Course names for this student
+    const courseNames = studentEnrollments.map((e: any) => courseMap.get(e.course_id) || "").filter(Boolean);
 
     // Last activity from content_progress
     const studentProgress = allProgress.filter((p: any) => p.user_id === id);
@@ -108,7 +121,6 @@ const TeacherStudents = () => {
         }, "")
       : null;
 
-    // Active if last activity within 7 days
     const isActive = lastActivity
       ? (Date.now() - new Date(lastActivity).getTime()) < 7 * 24 * 60 * 60 * 1000
       : false;
@@ -119,6 +131,7 @@ const TeacherStudents = () => {
       department: profile?.department || "-",
       position: profile?.position || "",
       courseCount: studentEnrollments.length,
+      courseNames,
       avgProgress,
       completionRate,
       lastActivity,
@@ -139,10 +152,12 @@ const TeacherStudents = () => {
     s.department.toLowerCase().includes(search.toLowerCase())
   );
 
+  const selectedCourseName = selectedCourseId === "all" ? "전체 강좌" : (courseMap.get(selectedCourseId) || "");
+
   const stats = [
-    { label: "전체 학생", value: totalStudents, sub: `${myCourses.length}개 강좌`, icon: Users },
+    { label: "전체 학생", value: totalStudents, sub: selectedCourseId === "all" ? `${myCourses.length}개 강좌` : selectedCourseName, icon: Users },
     { label: "활성 학생", value: activeStudents, sub: totalStudents > 0 ? `${Math.round((activeStudents / totalStudents) * 100)}% 활동률` : "0%", icon: TrendingUp },
-    { label: "평균 진행률", value: `${avgProgressAll}%`, sub: "전체 강의 기준", icon: BookOpen },
+    { label: "평균 진행률", value: `${avgProgressAll}%`, sub: selectedCourseId === "all" ? "전체 강의 기준" : "선택 강좌 기준", icon: BookOpen },
     { label: "우수 학생", value: excellentStudents, sub: "90% 이상 완료", icon: Award },
   ];
 
@@ -150,13 +165,24 @@ const TeacherStudents = () => {
     <DashboardLayout role="teacher">
       <div className="space-y-6 max-w-6xl">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" /> 학생 관리
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">학생들의 학습 진행 상황과 활동을 모니터링하세요</p>
           </div>
+          <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+            <SelectTrigger className="w-52 h-9 text-xs">
+              <SelectValue placeholder="강좌 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체 강좌</SelectItem>
+              {myCourses.map((c: any) => (
+                <SelectItem key={c.id} value={c.id} className="text-xs">{c.title}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Stat cards */}
