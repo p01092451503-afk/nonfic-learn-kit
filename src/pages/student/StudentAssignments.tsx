@@ -1,24 +1,50 @@
 import { ClipboardList, Clock, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-
-const assignments = [
-  { title: "브랜드 포지셔닝 분석 리포트", course: "브랜드 마케팅 기초", dueDate: "2026-04-10", status: "pending", maxScore: 100 },
-  { title: "향료 블렌딩 실습 보고서", course: "향수 원료학 심화", dueDate: "2026-04-08", status: "submitted", maxScore: 100, score: null },
-  { title: "CX 개선 제안서", course: "고객 경험 디자인", dueDate: "2026-04-05", status: "graded", maxScore: 100, score: 92 },
-  { title: "매장 디스플레이 기획안", course: "비주얼 머천다이징", dueDate: "2026-04-15", status: "pending", maxScore: 100 },
-  { title: "마케팅 전략 분석", course: "브랜드 마케팅 기초", dueDate: "2026-03-28", status: "graded", maxScore: 100, score: 88 },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/contexts/UserContext";
 
 const statusConfig = {
-  pending: { label: "미제출", icon: AlertCircle, color: "text-warning" },
   submitted: { label: "제출 완료", icon: Clock, color: "text-info" },
   graded: { label: "채점 완료", icon: CheckCircle2, color: "text-success" },
+  returned: { label: "반환됨", icon: AlertCircle, color: "text-warning" },
 };
 
 const StudentAssignments = () => {
-  const pending = assignments.filter((a) => a.status === "pending");
-  const submitted = assignments.filter((a) => a.status === "submitted");
-  const graded = assignments.filter((a) => a.status === "graded");
+  const { user } = useUser();
+
+  const { data: submissions = [] } = useQuery({
+    queryKey: ["my-submissions", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("assignment_submissions")
+        .select("*, assignments(title, due_date, max_score, courses(title))")
+        .eq("student_id", user!.id)
+        .order("submitted_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: myAssignments = [] } = useQuery({
+    queryKey: ["my-assignments", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("assignments")
+        .select("*, courses(title)")
+        .eq("status", "published")
+        .order("due_date", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const submittedIds = new Set(submissions.map((s: any) => s.assignment_id));
+  const pending = myAssignments.filter((a: any) => !submittedIds.has(a.id));
+  const submitted = submissions.filter((s: any) => s.status === "submitted");
+  const graded = submissions.filter((s: any) => s.status === "graded" || s.status === "returned");
 
   return (
     <DashboardLayout role="student">
@@ -43,32 +69,74 @@ const StudentAssignments = () => {
           </div>
         </div>
 
-        <div className="space-y-3">
-          {assignments.map((assignment, i) => {
-            const config = statusConfig[assignment.status as keyof typeof statusConfig];
-            const StatusIcon = config.icon;
-            return (
-              <div key={i} className="stat-card flex items-center gap-4 cursor-pointer group !p-4">
+        {pending.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">미제출 과제</h2>
+            {pending.map((assignment: any) => (
+              <div key={assignment.id} className="stat-card flex items-center gap-4 cursor-pointer group !p-4">
                 <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
                   <ClipboardList className="h-4 w-4 text-accent-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-medium text-foreground truncate">{assignment.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{assignment.course}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{assignment.courses?.title}</p>
                 </div>
                 <div className="text-right shrink-0 space-y-1">
-                  <div className={`flex items-center gap-1 text-xs font-medium ${config.color}`}>
-                    <StatusIcon className="h-3 w-3" />
-                    {config.label}
-                    {assignment.status === "graded" && <span className="ml-1">{assignment.score}점</span>}
+                  <div className="flex items-center gap-1 text-xs font-medium text-warning">
+                    <AlertCircle className="h-3 w-3" /> 미제출
                   </div>
-                  <p className="text-[10px] text-muted-foreground">마감: {assignment.dueDate}</p>
+                  {assignment.due_date && (
+                    <p className="text-[10px] text-muted-foreground">
+                      마감: {new Date(assignment.due_date).toLocaleDateString("ko-KR")}
+                    </p>
+                  )}
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
+
+        {submissions.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">제출한 과제</h2>
+            {submissions.map((sub: any) => {
+              const config = statusConfig[sub.status as keyof typeof statusConfig] || statusConfig.submitted;
+              const StatusIcon = config.icon;
+              return (
+                <div key={sub.id} className="stat-card flex items-center gap-4 cursor-pointer group !p-4">
+                  <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
+                    <ClipboardList className="h-4 w-4 text-accent-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-foreground truncate">{sub.assignments?.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{sub.assignments?.courses?.title}</p>
+                  </div>
+                  <div className="text-right shrink-0 space-y-1">
+                    <div className={`flex items-center gap-1 text-xs font-medium ${config.color}`}>
+                      <StatusIcon className="h-3 w-3" />
+                      {config.label}
+                      {sub.status === "graded" && sub.score != null && (
+                        <span className="ml-1">{sub.score}/{sub.assignments?.max_score || 100}점</span>
+                      )}
+                    </div>
+                    {sub.submitted_at && (
+                      <p className="text-[10px] text-muted-foreground">
+                        {new Date(sub.submitted_at).toLocaleDateString("ko-KR")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {pending.length === 0 && submissions.length === 0 && (
+          <div className="stat-card text-center py-10">
+            <p className="text-sm text-muted-foreground">등록된 과제가 없습니다.</p>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
