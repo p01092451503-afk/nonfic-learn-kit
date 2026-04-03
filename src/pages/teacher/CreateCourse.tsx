@@ -542,7 +542,45 @@ const FlipContentEditor = ({
           </p>
         </div>
 
-        {/* Preview area */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase">콘텐츠 유형</label>
+            <Select
+              value={content.content_type}
+              onValueChange={(v) => onChange("content_type", v as ContentType)}
+            >
+              <SelectTrigger className="h-9 rounded-lg border-border text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="document">이미지/문서</SelectItem>
+                <SelectItem value="video">동영상</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase">소요 시간 (분)</label>
+            <Input
+              type="number"
+              value={content.duration_minutes ?? ""}
+              onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)}
+              placeholder="분"
+              className="h-9 rounded-lg border-border text-xs"
+              min="0"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-medium text-muted-foreground uppercase">설명</label>
+          <Textarea
+            value={content.description}
+            onChange={(e) => onChange("description", e.target.value)}
+            placeholder="콘텐츠에 대한 설명 (선택사항)"
+            className="min-h-[60px] rounded-lg border-border text-xs resize-none"
+          />
+        </div>
+
         {showPreview && isValidMangoboard && (
           <div className="rounded-xl border border-border overflow-hidden bg-muted/30">
             <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/50">
