@@ -264,7 +264,7 @@ const CreateCourse = () => {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="예: 브랜드 마케팅 기초"
               className="h-11 rounded-xl border-border"
-              required
+            
             />
           </div>
 
@@ -483,7 +483,6 @@ const FlipContentEditor = ({
           onChange={(e) => onChange("title", e.target.value)}
           placeholder="콘텐츠 제목 (예: 1강 - 마케팅 기초)"
           className="flex-1 h-9 rounded-lg border-border text-sm"
-          required
         />
         <Badge variant="secondary" className="text-[10px] shrink-0">플립러닝</Badge>
         <button type="button" onClick={onRemove} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
@@ -508,7 +507,6 @@ const FlipContentEditor = ({
                 }}
                 placeholder="https://www.mangoboard.net/publish/52632315"
                 className="h-9 rounded-lg border-border text-xs pr-8"
-                required
               />
               {isValidMangoboard && (
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
