@@ -284,7 +284,14 @@ const ContentPlayer = () => {
                 {currentIndex + 1} / {contents.length}
               </span>
             </div>
-            <h1 className="text-xl font-semibold text-foreground">{currentContent.title}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-semibold text-foreground">{currentContent.title}</h1>
+              {isMangoboard(currentContent.video_url) && embedUrl && (
+                <Button onClick={() => setMangoPopupOpen(true)} size="sm" className="gap-1.5 shrink-0">
+                  <Play className="h-3.5 w-3.5" /> 학습하기
+                </Button>
+              )}
+            </div>
             {currentContent.description && (
               <p className="text-sm text-muted-foreground leading-relaxed">{currentContent.description}</p>
             )}
