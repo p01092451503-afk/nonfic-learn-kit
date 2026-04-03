@@ -171,6 +171,15 @@ const CreateCourse = () => {
         .single();
       if (courseError) throw courseError;
 
+      // Upload thumbnail if provided
+      if (thumbnailFile) {
+        const thumbnailUrl = await uploadThumbnail(course.id);
+        if (thumbnailUrl) {
+          await supabase.from("courses").update({ thumbnail_url: thumbnailUrl }).eq("id", course.id);
+          course.thumbnail_url = thumbnailUrl;
+        }
+      }
+
       if (contents.length > 0) {
         const contentRows = contents.map((c, idx) => ({
           course_id: course.id,
