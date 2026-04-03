@@ -126,7 +126,7 @@ const TeacherDashboard = () => {
 
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between h-9">
               <h2 className="text-lg font-semibold text-foreground">내 강좌</h2>
               <Link to="/teacher/courses">
                 <Button variant="ghost" size="sm" className="text-muted-foreground">
@@ -163,7 +163,7 @@ const TeacherDashboard = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between h-9">
               <h2 className="text-lg font-semibold text-foreground">미채점 과제</h2>
               {pendingSubmissions.length > 0 && (
                 <span className="text-xs font-semibold text-destructive bg-destructive/10 px-2 py-1 rounded-full">
