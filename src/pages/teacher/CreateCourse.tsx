@@ -252,13 +252,13 @@ const CreateCourse = () => {
             onClick={() => setCourseKind("flip")}
             className={`stat-card !p-5 text-left transition-all border-2 ${
               courseKind === "flip"
-                ? "border-primary ring-2 ring-primary/20"
+                ? "border-[hsl(var(--flip-bg))] ring-2 ring-[hsl(var(--flip-bg)/0.2)]"
                 : "border-transparent hover:border-border"
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
               <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                courseKind === "flip" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                courseKind === "flip" ? "bg-[hsl(var(--flip-bg))] text-[hsl(var(--flip-foreground))]" : "bg-[hsl(var(--flip-bg)/0.15)] text-[hsl(var(--flip-bg))]"
               }`}>
                 <BookOpen className="h-5 w-5" />
               </div>
