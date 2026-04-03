@@ -1,18 +1,32 @@
 import {
-  ClipboardList, Clock, CheckCircle2, Plus, MoreHorizontal, FileText, Info,
+  ClipboardList, Clock, CheckCircle2, Plus, MoreHorizontal, FileText, Info, CalendarIcon,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { formatDistanceToNow } from "date-fns";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
 
 const statusLabel: Record<string, string> = {
   draft: "초안",
@@ -28,6 +42,34 @@ const statusStyle: Record<string, string> = {
 
 const TeacherAssignments = () => {
   const { user } = useUser();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Form state
+  const [formCourseId, setFormCourseId] = useState("");
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formInstructions, setFormInstructions] = useState("");
+  const [formMaxScore, setFormMaxScore] = useState("100");
+  const [formDueDate, setFormDueDate] = useState<Date | undefined>();
+  const [formStatus, setFormStatus] = useState<"draft" | "published">("draft");
+  const [formAllowLate, setFormAllowLate] = useState(false);
+
+  // Fetch teacher's courses for the dropdown
+  const { data: myCourses = [] } = useQuery({
+    queryKey: ["teacher-courses-list", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, title")
+        .eq("instructor_id", user!.id)
+        .order("title");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   // Fetch all assignments for teacher's courses
   const { data: assignments = [] } = useQuery({
@@ -43,7 +85,7 @@ const TeacherAssignments = () => {
     enabled: !!user?.id,
   });
 
-  // Fetch submissions for teacher's assignments
+  // Fetch submissions
   const { data: submissions = [] } = useQuery({
     queryKey: ["teacher-submissions", user?.id],
     queryFn: async () => {
@@ -75,6 +117,56 @@ const TeacherAssignments = () => {
 
   const profileMap = new Map(studentProfiles.map((p: any) => [p.user_id, p.full_name]));
 
+  // Create mutation
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("assignments").insert({
+        course_id: formCourseId,
+        title: formTitle,
+        description: formDescription || null,
+        instructions: formInstructions || null,
+        max_score: parseInt(formMaxScore) || 100,
+        due_date: formDueDate ? formDueDate.toISOString() : null,
+        status: formStatus,
+        allow_late_submission: formAllowLate,
+        created_by: user!.id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teacher-all-assignments"] });
+      toast({ title: "과제 생성 완료", description: `"${formTitle}" 과제가 생성되었습니다.` });
+      resetForm();
+      setDialogOpen(false);
+    },
+    onError: (e: any) => {
+      toast({ title: "오류", description: e.message, variant: "destructive" });
+    },
+  });
+
+  const resetForm = () => {
+    setFormCourseId("");
+    setFormTitle("");
+    setFormDescription("");
+    setFormInstructions("");
+    setFormMaxScore("100");
+    setFormDueDate(undefined);
+    setFormStatus("draft");
+    setFormAllowLate(false);
+  };
+
+  const handleSubmit = () => {
+    if (!formCourseId) {
+      toast({ title: "오류", description: "강좌를 선택해주세요.", variant: "destructive" });
+      return;
+    }
+    if (!formTitle.trim()) {
+      toast({ title: "오류", description: "과제 제목을 입력해주세요.", variant: "destructive" });
+      return;
+    }
+    createMutation.mutate();
+  };
+
   // Stats
   const totalAssignments = assignments.length;
   const pendingSubmissions = submissions.filter((s: any) => s.status === "submitted");
@@ -83,7 +175,6 @@ const TeacherAssignments = () => {
     ? Math.round(gradedSubmissions.reduce((sum: number, s: any) => sum + (s.score || 0), 0) / gradedSubmissions.length)
     : 0;
 
-  // Submission counts per assignment
   const submissionCountMap = new Map<string, { total: number; graded: number }>();
   submissions.forEach((s: any) => {
     const existing = submissionCountMap.get(s.assignment_id) || { total: 0, graded: 0 };
@@ -112,7 +203,7 @@ const TeacherAssignments = () => {
               과제를 생성하고 학생들의 제출물을 평가하세요.
             </p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4" /> 새 과제 만들기
           </Button>
         </div>
@@ -297,6 +388,135 @@ const TeacherAssignments = () => {
           </div>
         )}
       </div>
+
+      {/* Create Assignment Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg">새 과제 만들기</DialogTitle>
+            <DialogDescription>과제 정보를 입력하고 학생들에게 배포하세요.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 py-2">
+            {/* Course Select */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">강좌 선택 *</Label>
+              <Select value={formCourseId} onValueChange={setFormCourseId}>
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder="과제를 등록할 강좌를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {myCourses.map((c: any) => (
+                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Title */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">과제 제목 *</Label>
+              <Input
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
+                placeholder="예: 1주차 실습 과제"
+                className="rounded-xl"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">설명</Label>
+              <Textarea
+                value={formDescription}
+                onChange={(e) => setFormDescription(e.target.value)}
+                placeholder="과제에 대한 간단한 설명"
+                className="rounded-xl resize-none min-h-[80px]"
+              />
+            </div>
+
+            {/* Instructions */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">제출 안내</Label>
+              <Textarea
+                value={formInstructions}
+                onChange={(e) => setFormInstructions(e.target.value)}
+                placeholder="학생들에게 전달할 제출 방법 및 유의사항"
+                className="rounded-xl resize-none min-h-[80px]"
+              />
+            </div>
+
+            {/* Max Score & Due Date row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">배점</Label>
+                <Input
+                  type="number"
+                  value={formMaxScore}
+                  onChange={(e) => setFormMaxScore(e.target.value)}
+                  placeholder="100"
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">마감일</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full rounded-xl justify-start text-left font-normal h-10">
+                      <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                      {formDueDate ? format(formDueDate, "yyyy.MM.dd", { locale: ko }) : "날짜 선택"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formDueDate}
+                      onSelect={setFormDueDate}
+                      locale={ko}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* Status & Allow Late */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">상태</Label>
+                <Select value={formStatus} onValueChange={(v) => setFormStatus(v as "draft" | "published")}>
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">초안 (비공개)</SelectItem>
+                    <SelectItem value="published">공개</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">지각 제출 허용</Label>
+                <div className="flex items-center gap-2 h-10">
+                  <Switch checked={formAllowLate} onCheckedChange={setFormAllowLate} />
+                  <span className="text-sm text-muted-foreground">{formAllowLate ? "허용" : "불허"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-xl">
+              취소
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={createMutation.isPending}
+              className="rounded-xl"
+            >
+              {createMutation.isPending ? "생성 중..." : "과제 생성"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
