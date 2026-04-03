@@ -448,12 +448,27 @@ const CreateCourse = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">마감일</label>
-              <Input
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="h-11 rounded-xl border-border"
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={`h-11 w-full rounded-xl border-border justify-start text-left font-normal ${!deadline ? "text-muted-foreground" : ""}`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {deadline ? format(parse(deadline, "yyyy-MM-dd", new Date()), "yyyy년 M월 d일") : "날짜 선택"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 rounded-2xl shadow-lg border-border" align="start">
+                  <Calendar
+                    mode="single"
+                    locale={ko}
+                    selected={deadline ? parse(deadline, "yyyy-MM-dd", new Date()) : undefined}
+                    onSelect={(date) => setDeadline(date ? format(date, "yyyy-MM-dd") : "")}
+                    initialFocus
+                    className="rounded-2xl"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
