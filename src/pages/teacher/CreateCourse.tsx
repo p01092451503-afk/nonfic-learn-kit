@@ -85,6 +85,60 @@ const CreateCourse = () => {
 
   // Content items
   const [contents, setContents] = useState<ContentItem[]>([]);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  const buildDraftData = useCallback(() => ({
+    courseKind, title, description, categoryId, difficultyLevel,
+    estimatedHours, maxStudents, isMandatory, deadline, status, contents,
+  }), [courseKind, title, description, categoryId, difficultyLevel, estimatedHours, maxStudents, isMandatory, deadline, status, contents]);
+
+  const saveDraft = useCallback(async () => {
+    if (!user) return;
+    setSavingDraft(true);
+    try {
+      await (supabase.from("course_drafts" as any) as any).upsert({
+        user_id: user.id,
+        draft_data: buildDraftData(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+      setLastSaved(new Date());
+      toast({ title: "임시 저장 완료", description: "작업이 저장되었습니다." });
+    } catch {
+      toast({ title: "저장 실패", description: "임시 저장에 실패했습니다.", variant: "destructive" });
+    } finally {
+      setSavingDraft(false);
+    }
+  }, [user, buildDraftData, toast]);
+
+  useEffect(() => {
+    if (!user || draftLoaded) return;
+    (async () => {
+      const { data } = await (supabase.from("course_drafts" as any) as any).select("draft_data").eq("user_id", user.id).maybeSingle();
+      if (data?.draft_data) {
+        const d = data.draft_data as any;
+        if (d.courseKind) setCourseKind(d.courseKind);
+        if (d.title) setTitle(d.title);
+        if (d.description) setDescription(d.description);
+        if (d.categoryId) setCategoryId(d.categoryId);
+        if (d.difficultyLevel) setDifficultyLevel(d.difficultyLevel);
+        if (d.estimatedHours) setEstimatedHours(d.estimatedHours);
+        if (d.maxStudents) setMaxStudents(d.maxStudents);
+        if (d.isMandatory != null) setIsMandatory(d.isMandatory);
+        if (d.deadline) setDeadline(d.deadline);
+        if (d.status) setStatus(d.status);
+        if (d.contents?.length) setContents(d.contents);
+        toast({ title: "임시 저장 복원", description: "이전에 저장한 작업을 불러왔습니다." });
+      }
+      setDraftLoaded(true);
+    })();
+  }, [user, draftLoaded]);
+
+  const deleteDraft = useCallback(async () => {
+    if (!user) return;
+    await (supabase.from("course_drafts" as any) as any).delete().eq("user_id", user.id);
+  }, [user]);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
