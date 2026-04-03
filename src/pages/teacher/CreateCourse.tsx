@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3 } from "lucide-react";
+import {
+  ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
+  MonitorPlay, BookOpen, ExternalLink, Link2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +21,9 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ContentType = Database["public"]["Enums"]["content_type"];
 type VideoProvider = Database["public"]["Enums"]["video_provider"];
+
+// 강좌 유형: 동영상 강의 vs 플립러닝(망고보드)
+type CourseKind = "video" | "flip";
 
 interface ContentItem {
   tempId: string;
@@ -41,8 +48,8 @@ const contentTypeOptions: { value: ContentType; label: string; icon: React.Eleme
 const videoProviderOptions: { value: VideoProvider; label: string }[] = [
   { value: "youtube", label: "YouTube" },
   { value: "vimeo", label: "Vimeo" },
+  { value: "upload", label: "업로드 (CDN)" },
   { value: "custom", label: "직접 입력" },
-  { value: "upload", label: "업로드" },
 ];
 
 const CreateCourse = () => {
@@ -50,6 +57,9 @@ const CreateCourse = () => {
   const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Course kind
+  const [courseKind, setCourseKind] = useState<CourseKind>("video");
 
   // Course fields
   const [title, setTitle] = useState("");
@@ -85,9 +95,9 @@ const CreateCourse = () => {
         tempId: crypto.randomUUID(),
         title: "",
         description: "",
-        content_type: "video",
+        content_type: courseKind === "flip" ? "document" : "video",
         video_url: "",
-        video_provider: "",
+        video_provider: courseKind === "flip" ? "custom" : "",
         duration_minutes: null,
         is_preview: false,
         is_published: true,
@@ -107,7 +117,6 @@ const CreateCourse = () => {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      // 1. Create course
       const { data: course, error: courseError } = await supabase
         .from("courses")
         .insert({
@@ -126,7 +135,6 @@ const CreateCourse = () => {
         .single();
       if (courseError) throw courseError;
 
-      // 2. Create contents
       if (contents.length > 0) {
         const contentRows = contents.map((c, idx) => ({
           course_id: course.id,
@@ -169,6 +177,14 @@ const CreateCourse = () => {
       toast({ title: "오류", description: "모든 콘텐츠의 제목을 입력해주세요.", variant: "destructive" });
       return;
     }
+    // Validate mangoboard URLs for flip learning
+    if (courseKind === "flip") {
+      const noUrl = contents.find((c) => !c.video_url.trim());
+      if (noUrl) {
+        toast({ title: "오류", description: "모든 플립러닝 콘텐츠에 망고보드 링크를 입력해주세요.", variant: "destructive" });
+        return;
+      }
+    }
     createMutation.mutate();
   };
 
@@ -181,7 +197,60 @@ const CreateCourse = () => {
 
         <div>
           <h1 className="text-2xl font-semibold text-foreground">새 강좌 만들기</h1>
-          <p className="text-muted-foreground mt-1">강좌 정보를 입력하고 콘텐츠를 추가하세요.</p>
+          <p className="text-muted-foreground mt-1">강좌 유형을 선택하고 정보를 입력하세요.</p>
+        </div>
+
+        {/* Course Kind Selection */}
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            type="button"
+            onClick={() => setCourseKind("video")}
+            className={`stat-card !p-5 text-left transition-all border-2 ${
+              courseKind === "video"
+                ? "border-primary ring-2 ring-primary/20"
+                : "border-transparent hover:border-border"
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
+                courseKind === "video" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
+              }`}>
+                <MonitorPlay className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">동영상 강의</p>
+                <p className="text-[10px] text-muted-foreground">CDN 업로드 영상으로 수강</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              YouTube, Vimeo 또는 직접 업로드한 동영상을 통해 학습하는 강좌입니다.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setCourseKind("flip")}
+            className={`stat-card !p-5 text-left transition-all border-2 ${
+              courseKind === "flip"
+                ? "border-primary ring-2 ring-primary/20"
+                : "border-transparent hover:border-border"
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
+                courseKind === "flip" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
+              }`}>
+                <BookOpen className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">플립러닝</p>
+                <p className="text-[10px] text-muted-foreground">망고보드 콘텐츠로 학습</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              망고보드에서 제작한 이미지·동영상 콘텐츠 링크를 활용하는 강좌입니다.
+            </p>
+          </button>
         </div>
 
         {/* Course Info */}
@@ -303,8 +372,14 @@ const CreateCourse = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-foreground">강의 콘텐츠</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">강좌에 포함될 콘텐츠를 추가하세요 (나중에 추가할 수도 있습니다)</p>
+              <h2 className="text-base font-semibold text-foreground">
+                {courseKind === "flip" ? "플립러닝 콘텐츠" : "강의 콘텐츠"}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {courseKind === "flip"
+                  ? "망고보드 링크를 입력하여 콘텐츠를 추가하세요"
+                  : "강좌에 포함될 콘텐츠를 추가하세요 (나중에 추가할 수도 있습니다)"}
+              </p>
             </div>
             <Button type="button" variant="outline" size="sm" className="rounded-xl gap-2" onClick={addContent}>
               <Plus className="h-3.5 w-3.5" /> 콘텐츠 추가
@@ -313,7 +388,12 @@ const CreateCourse = () => {
 
           {contents.length === 0 ? (
             <div className="stat-card text-center py-10 border-dashed">
-              <p className="text-sm text-muted-foreground mb-3">아직 추가된 콘텐츠가 없습니다</p>
+              <div className="h-12 w-12 rounded-xl bg-accent mx-auto flex items-center justify-center mb-3">
+                {courseKind === "flip" ? <BookOpen className="h-5 w-5 text-accent-foreground" /> : <MonitorPlay className="h-5 w-5 text-accent-foreground" />}
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                {courseKind === "flip" ? "망고보드 콘텐츠를 추가해주세요" : "아직 추가된 콘텐츠가 없습니다"}
+              </p>
               <Button type="button" variant="outline" size="sm" className="rounded-xl gap-2" onClick={addContent}>
                 <Plus className="h-3.5 w-3.5" /> 첫 번째 콘텐츠 추가
               </Button>
@@ -321,13 +401,23 @@ const CreateCourse = () => {
           ) : (
             <div className="space-y-3">
               {contents.map((content, idx) => (
-                <ContentEditor
-                  key={content.tempId}
-                  content={content}
-                  index={idx}
-                  onChange={(field, value) => updateContent(content.tempId, field, value)}
-                  onRemove={() => removeContent(content.tempId)}
-                />
+                courseKind === "flip" ? (
+                  <FlipContentEditor
+                    key={content.tempId}
+                    content={content}
+                    index={idx}
+                    onChange={(field, value) => updateContent(content.tempId, field, value)}
+                    onRemove={() => removeContent(content.tempId)}
+                  />
+                ) : (
+                  <VideoContentEditor
+                    key={content.tempId}
+                    content={content}
+                    index={idx}
+                    onChange={(field, value) => updateContent(content.tempId, field, value)}
+                    onRemove={() => removeContent(content.tempId)}
+                  />
+                )
               ))}
             </div>
           )}
@@ -352,11 +442,145 @@ const CreateCourse = () => {
   );
 };
 
-const ContentEditor = ({
-  content,
-  index,
-  onChange,
-  onRemove,
+/* ───── Flip Learning (Mangoboard) Content Editor ───── */
+
+const FlipContentEditor = ({
+  content, index, onChange, onRemove,
+}: {
+  content: ContentItem;
+  index: number;
+  onChange: (field: keyof ContentItem, value: any) => void;
+  onRemove: () => void;
+}) => {
+  const isValidMangoboard = content.video_url.includes("mangoboard.net");
+
+  return (
+    <div className="stat-card !p-4 space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <GripVertical className="h-4 w-4" />
+          <span className="text-xs font-medium">{String(index + 1).padStart(2, "0")}</span>
+        </div>
+        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <BookOpen className="h-4 w-4 text-primary" />
+        </div>
+        <Input
+          value={content.title}
+          onChange={(e) => onChange("title", e.target.value)}
+          placeholder="콘텐츠 제목 (예: 1강 - 마케팅 기초)"
+          className="flex-1 h-9 rounded-lg border-border text-sm"
+          required
+        />
+        <Badge variant="secondary" className="text-[10px] shrink-0">플립러닝</Badge>
+        <button type="button" onClick={onRemove} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="pl-14 space-y-3">
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-medium text-muted-foreground uppercase flex items-center gap-1">
+            <Link2 className="h-3 w-3" /> 망고보드 링크 *
+          </label>
+          <div className="relative">
+            <Input
+              value={content.video_url}
+              onChange={(e) => {
+                onChange("video_url", e.target.value);
+                onChange("video_provider", "custom");
+              }}
+              placeholder="https://www.mangoboard.net/publish/52632315"
+              className="h-9 rounded-lg border-border text-xs pr-8"
+              required
+            />
+            {isValidMangoboard && (
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                <div className="h-4 w-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                </div>
+              </div>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            망고보드 공유 링크를 입력하세요 (예: www.mangoboard.net/publish/...)
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase">콘텐츠 유형</label>
+            <Select
+              value={content.content_type}
+              onValueChange={(v) => onChange("content_type", v as ContentType)}
+            >
+              <SelectTrigger className="h-9 rounded-lg border-border text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="document">이미지/문서</SelectItem>
+                <SelectItem value="video">동영상</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase">소요 시간 (분)</label>
+            <Input
+              type="number"
+              value={content.duration_minutes ?? ""}
+              onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)}
+              placeholder="분"
+              className="h-9 rounded-lg border-border text-xs"
+              min="0"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-medium text-muted-foreground uppercase">설명</label>
+          <Textarea
+            value={content.description}
+            onChange={(e) => onChange("description", e.target.value)}
+            placeholder="콘텐츠에 대한 설명 (선택사항)"
+            className="min-h-[60px] rounded-lg border-border text-xs resize-none"
+          />
+        </div>
+
+        {content.video_url && isValidMangoboard && (
+          <div className="rounded-xl border border-border overflow-hidden bg-muted/30">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/50">
+              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground truncate">{content.video_url}</span>
+            </div>
+            <div className="aspect-video">
+              <iframe
+                src={normalizeMangoboardUrl(content.video_url)}
+                className="w-full h-full"
+                title="망고보드 미리보기"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+            <Switch checked={content.is_preview} onCheckedChange={(v) => onChange("is_preview", v)} className="scale-75" />
+            미리보기 허용
+          </label>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+            <Switch checked={content.is_published} onCheckedChange={(v) => onChange("is_published", v)} className="scale-75" />
+            공개
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ───── Video Content Editor (existing, refactored) ───── */
+
+const VideoContentEditor = ({
+  content, index, onChange, onRemove,
 }: {
   content: ContentItem;
   index: number;
@@ -454,24 +678,26 @@ const ContentEditor = ({
 
       <div className="flex items-center gap-6 pl-14">
         <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-          <Switch
-            checked={content.is_preview}
-            onCheckedChange={(v) => onChange("is_preview", v)}
-            className="scale-75"
-          />
+          <Switch checked={content.is_preview} onCheckedChange={(v) => onChange("is_preview", v)} className="scale-75" />
           미리보기 허용
         </label>
         <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-          <Switch
-            checked={content.is_published}
-            onCheckedChange={(v) => onChange("is_published", v)}
-            className="scale-75"
-          />
+          <Switch checked={content.is_published} onCheckedChange={(v) => onChange("is_published", v)} className="scale-75" />
           공개
         </label>
       </div>
     </div>
   );
 };
+
+/* ───── Helpers ───── */
+
+function normalizeMangoboardUrl(url: string): string {
+  let normalized = url.trim();
+  if (!normalized.startsWith("http")) {
+    normalized = "https://" + normalized;
+  }
+  return normalized;
+}
 
 export default CreateCourse;

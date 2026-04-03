@@ -107,8 +107,21 @@ const ContentPlayer = () => {
     },
   });
 
+  const isMangoboard = (url: string | null) => {
+    return url?.includes("mangoboard.net") ?? false;
+  };
+
+  const normalizeMangoboardUrl = (url: string) => {
+    let normalized = url.trim();
+    if (!normalized.startsWith("http")) {
+      normalized = "https://" + normalized;
+    }
+    return normalized;
+  };
+
   const getVideoEmbed = (url: string | null, provider: string | null) => {
     if (!url) return null;
+    if (isMangoboard(url)) return normalizeMangoboardUrl(url);
     if (provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) {
       const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
       if (match) return `https://www.youtube.com/embed/${match[1]}`;
@@ -204,7 +217,17 @@ const ContentPlayer = () => {
       <main className={`flex-1 flex flex-col min-h-screen transition-all ${sidebarOpen ? "" : ""}`}>
         {/* Video / Content Area */}
         <div className="bg-foreground/5">
-          {currentContent.content_type === "video" && embedUrl ? (
+          {/* Mangoboard embed (flip learning) */}
+          {isMangoboard(currentContent.video_url) && embedUrl ? (
+            <div className="w-full" style={{ height: "70vh" }}>
+              <iframe
+                src={embedUrl}
+                className="w-full h-full border-0"
+                allowFullScreen
+                title={currentContent.title}
+              />
+            </div>
+          ) : currentContent.content_type === "video" && embedUrl ? (
             <div className="aspect-video max-h-[70vh] w-full">
               <iframe
                 src={embedUrl}
