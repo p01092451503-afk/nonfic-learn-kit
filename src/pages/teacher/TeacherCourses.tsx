@@ -108,12 +108,12 @@ const TeacherCourses = () => {
 
   return (
     <DashboardLayout role="teacher">
-      <div className="space-y-6 max-w-6xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">강좌 관리</h1>
-            <p className="text-muted-foreground mt-1">담당 강좌를 등록하고 관리하세요.</p>
+            <p className="text-sm text-muted-foreground mt-1">담당 강좌를 등록하고 관리하세요.</p>
           </div>
           <Link to="/teacher/courses/new">
             <Button className="rounded-xl gap-2">
@@ -144,7 +144,7 @@ const TeacherCourses = () => {
 
         {/* Toolbar */}
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 max-w-sm">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="강좌명 검색"

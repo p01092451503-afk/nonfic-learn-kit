@@ -97,14 +97,14 @@ const TeacherDashboard = () => {
 
   return (
     <DashboardLayout role="teacher">
-      <div className="space-y-6 max-w-6xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <LayoutDashboard className="h-5 w-5 text-primary" /> 강사 대시보드
+            <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+              <LayoutDashboard className="h-6 w-6 text-primary" /> 강사 대시보드
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">학생들의 학습을 관리하고 분석하세요</p>
+            <p className="text-sm text-muted-foreground mt-1">학생들의 학습을 관리하고 분석하세요</p>
           </div>
           <Button size="sm" className="gap-1.5 h-9" onClick={() => navigate("/teacher/courses/create")}>
             <Plus className="h-3.5 w-3.5" /> 새 강의 만들기

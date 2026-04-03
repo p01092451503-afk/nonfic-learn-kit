@@ -254,14 +254,14 @@ const StudentDashboard = () => {
 
   return (
     <DashboardLayout role="student">
-      <div className="space-y-8 max-w-6xl">
+      <div className="space-y-8">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
             <BarChart3 className="h-6 w-6 text-primary" />
             학습 대시보드
           </h1>
-          <p className="text-muted-foreground mt-1">안녕하세요! 오늘도 열심히 학습해봅시다</p>
+          <p className="text-sm text-muted-foreground mt-1">안녕하세요! 오늘도 열심히 학습해봅시다</p>
         </div>
 
         {/* Stat Cards */}

@@ -48,10 +48,10 @@ const StudentAssignments = () => {
 
   return (
     <DashboardLayout role="student">
-      <div className="space-y-8 max-w-4xl">
+      <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">과제</h1>
-          <p className="text-muted-foreground mt-1">과제 현황을 확인하고 제출하세요.</p>
+          <p className="text-sm text-muted-foreground mt-1">과제 현황을 확인하고 제출하세요.</p>
         </div>
 
         <div className="grid grid-cols-3 gap-4">

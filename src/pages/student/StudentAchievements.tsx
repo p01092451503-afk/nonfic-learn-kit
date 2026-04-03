@@ -88,10 +88,10 @@ const StudentAchievements = () => {
 
   return (
     <DashboardLayout role="student">
-      <div className="space-y-8 max-w-6xl">
+      <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">성취</h1>
-          <p className="text-muted-foreground mt-1">나의 학습 성과와 보상을 확인하세요.</p>
+          <p className="text-sm text-muted-foreground mt-1">나의 학습 성과와 보상을 확인하세요.</p>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

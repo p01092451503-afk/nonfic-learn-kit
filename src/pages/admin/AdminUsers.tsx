@@ -50,11 +50,11 @@ const AdminUsers = () => {
 
   return (
     <DashboardLayout role="admin">
-      <div className="space-y-8 max-w-5xl">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">사용자 관리</h1>
-            <p className="text-muted-foreground mt-1">사용자를 관리하고 역할을 설정하세요.</p>
+            <p className="text-sm text-muted-foreground mt-1">사용자를 관리하고 역할을 설정하세요.</p>
           </div>
           <Button className="rounded-xl gap-2">
             <UserPlus className="h-4 w-4" /> 사용자 추가
@@ -77,7 +77,7 @@ const AdminUsers = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-sm">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="이름 또는 부서 검색" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl border-border" />
           </div>
