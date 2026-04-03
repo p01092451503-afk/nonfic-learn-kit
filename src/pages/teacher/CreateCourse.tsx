@@ -271,10 +271,10 @@ const CreateCourse = () => {
           <button
             type="button"
             onClick={() => setCourseKind("flip")}
-            className={`stat-card !p-5 !shadow-none hover:!shadow-none hover:!translate-y-0 text-left transition-all border-2 ${
+            className={`stat-card !p-5 !shadow-none hover:!shadow-none hover:!translate-y-0 text-left transition-all ${
               courseKind === "flip"
-                ? "border-[hsl(var(--flip-bg))] ring-2 ring-[hsl(var(--flip-bg)/0.2)]"
-                : "border-transparent"
+                ? "bg-[hsl(var(--flip-bg)/0.08)]"
+                : ""
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
