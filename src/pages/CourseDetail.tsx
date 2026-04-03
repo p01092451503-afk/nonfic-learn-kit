@@ -145,7 +145,7 @@ const CourseDetail = () => {
     <DashboardLayout role={role}>
       <div className="max-w-4xl space-y-8">
         {/* Back */}
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <button onClick={() => navigate("/teacher/courses")} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" /> 목록으로
         </button>
 
