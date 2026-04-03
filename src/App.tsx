@@ -8,8 +8,17 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import RoleBasedRedirect from "@/components/RoleBasedRedirect";
 import Auth from "./pages/Auth";
 import StudentDashboard from "./pages/StudentDashboard";
+import StudentCourses from "./pages/student/StudentCourses";
+import StudentAssignments from "./pages/student/StudentAssignments";
+import StudentAchievements from "./pages/student/StudentAchievements";
 import TeacherDashboard from "./pages/TeacherDashboard";
+import TeacherCourses from "./pages/teacher/TeacherCourses";
+import TeacherAssignments from "./pages/teacher/TeacherAssignments";
+import TeacherStudents from "./pages/teacher/TeacherStudents";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminCourses from "./pages/admin/AdminCourses";
+import AdminSettings from "./pages/admin/AdminSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,9 +33,25 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Auth />} />
             <Route path="/dashboard" element={<ProtectedRoute><RoleBasedRedirect /></ProtectedRoute>} />
+
+            {/* Student */}
             <Route path="/student" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/courses" element={<ProtectedRoute><StudentCourses /></ProtectedRoute>} />
+            <Route path="/dashboard/assignments" element={<ProtectedRoute><StudentAssignments /></ProtectedRoute>} />
+            <Route path="/dashboard/achievements" element={<ProtectedRoute><StudentAchievements /></ProtectedRoute>} />
+
+            {/* Teacher */}
             <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
+            <Route path="/teacher/courses" element={<ProtectedRoute><TeacherCourses /></ProtectedRoute>} />
+            <Route path="/teacher/assignments" element={<ProtectedRoute><TeacherAssignments /></ProtectedRoute>} />
+            <Route path="/teacher/students" element={<ProtectedRoute><TeacherStudents /></ProtectedRoute>} />
+
+            {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/courses" element={<ProtectedRoute><AdminCourses /></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
