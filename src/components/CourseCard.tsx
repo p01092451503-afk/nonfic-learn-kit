@@ -51,6 +51,7 @@ interface CourseCardProps {
   progress?: number | null;
   isCompleted?: boolean;
   variant?: "student" | "teacher" | "admin";
+  href?: string;
 }
 
 const CourseCard = ({
