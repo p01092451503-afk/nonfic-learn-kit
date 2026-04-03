@@ -133,15 +133,36 @@ const CreateCourse = () => {
     return data.publicUrl;
   };
 
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const applyImageFile = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "오류", description: "이미지 크기는 5MB 이하여야 합니다.", variant: "destructive" });
       return;
     }
     setThumbnailFile(file);
     setThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) applyImageFile(file);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) { applyImageFile(file); break; }
+      }
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) applyImageFile(file);
   };
 
   const removeThumbnail = () => {
@@ -327,10 +348,14 @@ const CreateCourse = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-32 rounded-xl border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                onPaste={handlePaste}
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+                className="w-full h-32 rounded-xl border-2 border-dashed border-border hover:border-primary/50 focus:border-primary/50 focus:outline-none flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                tabIndex={0}
               >
                 <ImagePlus className="h-6 w-6" />
-                <span className="text-xs">클릭하여 이미지 업로드 (최대 5MB)</span>
+                <span className="text-xs">클릭, 드래그 또는 Ctrl+V로 이미지 붙여넣기 (최대 5MB)</span>
               </button>
             )}
           </div>
