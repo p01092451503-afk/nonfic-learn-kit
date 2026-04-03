@@ -611,6 +611,16 @@ const CreateCourse = () => {
             취소
           </Button>
           <Button
+            type="button"
+            variant="outline"
+            className="rounded-xl gap-2"
+            onClick={saveDraft}
+            disabled={savingDraft}
+          >
+            <Save className="h-4 w-4" />
+            {savingDraft ? "저장 중..." : "임시 저장"}
+          </Button>
+          <Button
             type="submit"
             variant="login"
             size="xl"
@@ -618,6 +628,11 @@ const CreateCourse = () => {
           >
             {createMutation.isPending ? "생성 중..." : "강좌 생성하기"}
           </Button>
+          {lastSaved && (
+            <span className="text-xs text-muted-foreground ml-auto">
+              마지막 저장: {format(lastSaved, "HH:mm:ss")}
+            </span>
+          )}
         </div>
       </form>
     </DashboardLayout>
