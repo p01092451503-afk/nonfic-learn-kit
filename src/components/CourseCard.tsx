@@ -64,10 +64,12 @@ const CourseCard = ({
   progress,
   isCompleted,
   variant = "student",
+  href,
 }: CourseCardProps) => {
   const gradient = categoryGradients[categorySlug || ""] || "from-primary to-primary/80";
   const isPublished = course.status === "published";
   const isDraft = course.status === "draft";
+  const linkTo = href || `/courses/${course.id}`;
 
   return (
     <Link to={`/courses/${course.id}`} className="group block">
