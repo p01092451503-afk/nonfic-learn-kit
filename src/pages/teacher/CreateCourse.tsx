@@ -348,10 +348,14 @@ const CreateCourse = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-32 rounded-xl border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                onPaste={handlePaste}
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+                className="w-full h-32 rounded-xl border-2 border-dashed border-border hover:border-primary/50 focus:border-primary/50 focus:outline-none flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                tabIndex={0}
               >
                 <ImagePlus className="h-6 w-6" />
-                <span className="text-xs">클릭하여 이미지 업로드 (최대 5MB)</span>
+                <span className="text-xs">클릭, 드래그 또는 Ctrl+V로 이미지 붙여넣기 (최대 5MB)</span>
               </button>
             )}
           </div>
