@@ -239,10 +239,17 @@ const StudentDashboard = () => {
   const assignmentCompletionRate = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
 
   const stats = [
-    { label: "수강 중인 강의", value: String(enrollmentStats?.inProgress || 0), sub: "수강 중인 강좌", icon: BookOpen },
-    { label: "학습 시간", value: `${gamification?.experience_points ? Math.round(gamification.experience_points / 60) : 0}h`, sub: "이번 주", icon: Clock },
-    { label: "완료한 과제", value: String(completedAssignments), sub: `총 ${totalAssignments}개 중`, icon: ClipboardCheck },
+    { label: "수강 중인 강의", value: String(enrollmentStats?.inProgress || 0), sub: "진행 중", icon: BookOpen },
+    { label: "수강 완료", value: String(enrollmentStats?.completed || 0), sub: `총 ${enrollmentStats?.total || 0}개 강좌 중`, icon: ClipboardCheck },
+    { label: "학습 시간", value: `${gamification?.experience_points ? Math.round(gamification.experience_points / 60) : 0}h`, sub: "누적 학습", icon: Clock },
     { label: "획득 뱃지", value: String(badgeCount), sub: "획득한 배지", icon: Award },
+  ];
+
+  const detailStats = [
+    { label: "연속 학습", value: `${gamification?.streak_days || 0}일`, sub: "연속 출석일", icon: TrendingUp },
+    { label: "레벨", value: `Lv.${gamification?.level || 1}`, sub: `${gamification?.experience_points || 0} XP`, icon: Star },
+    { label: "완료한 과제", value: String(completedAssignments), sub: `총 ${totalAssignments}개 중`, icon: ClipboardCheck },
+    { label: "총 포인트", value: String(gamification?.total_points || 0), sub: "누적 포인트", icon: Award },
   ];
 
   return (
