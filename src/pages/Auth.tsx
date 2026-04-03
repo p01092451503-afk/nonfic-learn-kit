@@ -3,24 +3,56 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import loginBg from "@/assets/login-bg.jpg";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [fullName, setFullName] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Supabase auth integration
-    setTimeout(() => {
+
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { name: fullName },
+          },
+        });
+        if (error) throw error;
+        toast({
+          title: "가입 완료",
+          description: "이메일 인증 링크를 확인해 주세요.",
+        });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      toast({
+        title: "오류",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-      navigate("/dashboard");
-    }, 1000);
+    }
   };
 
   return (
@@ -57,36 +89,43 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Right - Login Form */}
+      {/* Right - Form */}
       <div className="flex-1 flex items-center justify-center px-6 lg:px-16">
         <div className="w-full max-w-md space-y-10">
-          {/* Mobile Logo */}
           <div className="lg:hidden text-center">
-            <h1 className="font-display text-2xl tracking-wider text-foreground">
-              NONFICTION
-            </h1>
+            <h1 className="font-display text-2xl tracking-wider text-foreground">NONFICTION</h1>
           </div>
-
-          {/* Desktop Logo */}
           <div className="hidden lg:block">
-            <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">
-              NONFICTION Education
-            </p>
+            <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">NONFICTION Education</p>
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-2xl font-semibold text-foreground">로그인</h2>
+            <h2 className="text-2xl font-semibold text-foreground">
+              {isSignUp ? "계정 만들기" : "로그인"}
+            </h2>
             <p className="text-sm text-muted-foreground">
-              사내교육 시스템에 접속합니다
+              {isSignUp ? "사내교육 시스템에 가입합니다" : "사내교육 시스템에 접속합니다"}
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleAuth} className="space-y-6">
             <div className="space-y-4">
+              {isSignUp && (
+                <div className="space-y-2">
+                  <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">이름</label>
+                  <Input
+                    type="text"
+                    placeholder="홍길동"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="h-12 bg-secondary border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
+                    required
+                  />
+                </div>
+              )}
+
               <div className="space-y-2">
-                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  이메일
-                </label>
+                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">이메일</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -95,14 +134,13 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="h-12 pl-11 bg-secondary border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
+                    required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  비밀번호
-                </label>
+                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">비밀번호</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -111,6 +149,8 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-12 pl-11 pr-11 bg-secondary border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
+                    required
+                    minLength={6}
                   />
                   <button
                     type="button"
@@ -123,49 +163,46 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-foreground focus:ring-foreground/20"
-                />
-                <span className="text-sm text-muted-foreground">아이디 저장</span>
-              </label>
-              <button
-                type="button"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                비밀번호 찾기
-              </button>
-            </div>
+            {!isSignUp && (
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-foreground focus:ring-foreground/20"
+                  />
+                  <span className="text-sm text-muted-foreground">아이디 저장</span>
+                </label>
+                <button type="button" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  비밀번호 찾기
+                </button>
+              </div>
+            )}
 
-            <Button
-              type="submit"
-              variant="login"
-              size="xl"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" variant="login" size="xl" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  로그인 중...
+                  처리 중...
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  로그인
+                  {isSignUp ? "가입하기" : "로그인"}
                   <ArrowRight className="h-4 w-4" />
                 </span>
               )}
             </Button>
           </form>
 
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground/60">
-              NONFICTION Internal Education Platform
-            </p>
+          <div className="text-center space-y-3">
+            <button
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isSignUp ? "이미 계정이 있으신가요? 로그인" : "계정이 없으신가요? 가입하기"}
+            </button>
+            <p className="text-xs text-muted-foreground/60">NONFICTION Internal Education Platform</p>
           </div>
         </div>
       </div>
