@@ -67,10 +67,10 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
       )}
 
       <aside className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
-        <div className="p-6 flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-lg tracking-wider text-sidebar-primary">NONFICTION</h1>
-            <p className="text-[10px] tracking-[0.15em] text-muted-foreground uppercase mt-0.5">LMS · {roleLabel}</p>
+        <div className="p-6 flex flex-col items-center">
+          <div className="text-center">
+            <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
+            <p className="text-[10px] tracking-[0.15em] text-muted-foreground uppercase mt-1">{roleLabel}</p>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
