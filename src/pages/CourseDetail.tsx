@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BookOpen, Clock, Users, ArrowLeft, CheckCircle2, Lock,
   FileText, Video, ChevronRight, BarChart3, Plus, Pencil,
-  Trash2, GripVertical, Eye, EyeOff, Settings, ChevronUp, ChevronDown,
+  Trash2, Eye, EyeOff, Settings, ChevronUp, ChevronDown,
+  GripVertical, ExternalLink, Copy, MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -16,6 +17,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
@@ -27,6 +30,9 @@ const contentTypeIcon: Record<string, React.ElementType> = {
 };
 const contentTypeLabel: Record<string, string> = {
   video: "영상", document: "문서", quiz: "퀴즈", assignment: "과제", live: "라이브",
+};
+const providerLabel: Record<string, string> = {
+  youtube: "YouTube", vimeo: "Vimeo", custom: "플립러닝", upload: "업로드",
 };
 
 type ContentFormData = {
@@ -62,6 +68,7 @@ const CourseDetail = () => {
   const isTeacherOrAdmin = primaryRole === "admin" || primaryRole === "teacher";
   const role = primaryRole === "admin" ? "admin" : primaryRole === "teacher" ? "teacher" : "student";
 
+  // --- Queries ---
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", courseId],
     queryFn: async () => {
@@ -127,7 +134,7 @@ const CourseDetail = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["enrollment", courseId] });
-      toast({ title: "수강 등록 완료", description: "강좌에 등록되었습니다." });
+      toast({ title: "수강 등록 완료" });
     },
     onError: (e: any) => toast({ title: "오류", description: e.message, variant: "destructive" }),
   });
@@ -233,6 +240,8 @@ const CourseDetail = () => {
   const progressMap = new Map(progressData.map((p) => [p.content_id, p]));
   const completedCount = progressData.filter((p) => p.completed).length;
   const overallProgress = contents.length > 0 ? Math.round((completedCount / contents.length) * 100) : 0;
+  const publishedCount = contents.filter(c => c.is_published).length;
+  const totalDuration = contents.reduce((sum, c) => sum + (c.duration_minutes || 0), 0);
 
   if (courseLoading) {
     return (
@@ -255,197 +264,194 @@ const CourseDetail = () => {
     );
   }
 
-  return (
-    <DashboardLayout role={role}>
-      <div className="max-w-4xl space-y-8">
-        {/* Back */}
-        <button
-          onClick={() => navigate(role === "student" ? "/student/courses" : "/teacher/courses")}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" /> 목록으로
-        </button>
-
-        {/* Header */}
-        <div className="stat-card space-y-5">
-          <div className="flex items-start gap-5">
-            {course.thumbnail_url ? (
-              <img src={course.thumbnail_url} alt="" className="h-16 w-16 rounded-2xl object-cover shrink-0" />
-            ) : (
-              <div className="h-16 w-16 rounded-2xl bg-accent flex items-center justify-center shrink-0">
-                <BookOpen className="h-7 w-7 text-accent-foreground" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0 space-y-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
-                  {course.difficulty_level || "기초"}
-                </Badge>
-                {course.is_mandatory && <Badge variant="destructive" className="text-[10px]">필수</Badge>}
-                <Badge variant="outline" className="text-[10px]">
-                  {course.status === "published" ? "공개" : "비공개"}
-                </Badge>
-              </div>
-              <h1 className="text-xl font-semibold text-foreground">{course.title}</h1>
-              {course.description && (
-                <p className="text-sm text-muted-foreground leading-relaxed">{course.description}</p>
-              )}
-            </div>
-            {isTeacherOrAdmin && (
-              <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={openCourseEdit}>
-                <Settings className="h-3.5 w-3.5" /> 편집
-              </Button>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-6 text-xs text-muted-foreground pt-2 border-t border-border">
-            <span className="flex items-center gap-1.5"><Video className="h-3.5 w-3.5" /> {contents.length}개 콘텐츠</span>
-            {course.estimated_duration_hours && (
-              <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> 약 {course.estimated_duration_hours}시간</span>
-            )}
-            {isTeacherOrAdmin && (
-              <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> 수강생 {enrollmentCount}명</span>
-            )}
-            {!isTeacherOrAdmin && course.max_students && (
-              <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> 최대 {course.max_students}명</span>
-            )}
-          </div>
-
-          {/* Student enrollment */}
-          {role === "student" && (
-            <div className="pt-2">
-              {enrollment ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">수강 진행률</span>
-                    <span className="font-medium text-foreground">{overallProgress}%</span>
-                  </div>
-                  <Progress value={overallProgress} className="h-2" />
-                  <p className="text-xs text-muted-foreground">{completedCount}/{contents.length} 완료</p>
-                </div>
-              ) : (
-                <Button variant="login" size="xl" className="w-full sm:w-auto" onClick={() => enrollMutation.mutate()} disabled={enrollMutation.isPending}>
-                  {enrollMutation.isPending ? "등록 중..." : "수강 등록하기"}
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Content List */}
-        <div className="space-y-4">
+  // ===== TEACHER / ADMIN VIEW =====
+  if (isTeacherOrAdmin) {
+    return (
+      <DashboardLayout role={role}>
+        <div className="max-w-5xl space-y-5">
+          {/* Top bar */}
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">강의 콘텐츠</h2>
-            {isTeacherOrAdmin && (
-              <Button size="sm" className="gap-1.5" onClick={openAddContent}>
-                <Plus className="h-3.5 w-3.5" /> 콘텐츠 추가
+            <button
+              onClick={() => navigate(role === "admin" ? "/admin/courses" : "/teacher/courses")}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> 강좌 목록
+            </button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={openCourseEdit}>
+                <Settings className="h-3 w-3" /> 강좌 설정
               </Button>
-            )}
+              <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={openAddContent}>
+                <Plus className="h-3 w-3" /> 콘텐츠 추가
+              </Button>
+            </div>
           </div>
 
-          {contents.length === 0 ? (
-            <div className="stat-card text-center py-10 space-y-3">
-              <p className="text-sm text-muted-foreground">등록된 콘텐츠가 없습니다.</p>
-              {isTeacherOrAdmin && (
-                <Button variant="outline" size="sm" onClick={openAddContent} className="gap-1.5">
-                  <Plus className="h-3.5 w-3.5" /> 첫 번째 콘텐츠 추가하기
-                </Button>
+          {/* Course info compact card */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-start gap-4">
+              {course.thumbnail_url ? (
+                <img src={course.thumbnail_url} alt="" className="h-20 w-32 rounded-lg object-cover shrink-0" />
+              ) : (
+                <div className="h-20 w-32 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                  <BookOpen className="h-6 w-6 text-muted-foreground" />
+                </div>
               )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {contents.map((content, idx) => {
-                const progress = progressMap.get(content.id);
-                const isCompleted = progress?.completed;
-                const isAccessible = enrollment || role !== "student" || content.is_preview;
-                const Icon = contentTypeIcon[content.content_type || "video"] || Video;
-                const isUnpublished = !content.is_published;
-
-                return (
-                  <div
-                    key={content.id}
-                    className={`stat-card flex items-center gap-3 group transition-all ${
-                      isUnpublished && isTeacherOrAdmin ? "opacity-60 border-dashed" : ""
-                    } ${!isAccessible && !isTeacherOrAdmin ? "opacity-60" : "hover:shadow-md cursor-pointer"}`}
-                    onClick={() => {
-                      if (isAccessible || isTeacherOrAdmin) {
-                        navigate(`/courses/${courseId}/content/${content.id}`);
-                      }
-                    }}
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge
+                    variant={course.status === "published" ? "default" : "secondary"}
+                    className="text-[10px] h-5"
                   >
-                    {/* Reorder for teachers */}
-                    {isTeacherOrAdmin && (
-                      <div className="flex flex-col gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    {course.status === "published" ? "공개" : "비공개"}
+                  </Badge>
+                  {course.is_mandatory && (
+                    <Badge variant="destructive" className="text-[10px] h-5">필수</Badge>
+                  )}
+                  <Badge variant="outline" className="text-[10px] h-5">
+                    {course.difficulty_level === "intermediate" ? "중급" : course.difficulty_level === "advanced" ? "고급" : "초급"}
+                  </Badge>
+                </div>
+                <h1 className="text-base font-semibold text-foreground leading-snug">{course.title}</h1>
+                {course.description && (
+                  <p className="text-xs text-muted-foreground line-clamp-2">{course.description}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Quick stats */}
+            <div className="flex items-center gap-5 mt-3 pt-3 border-t border-border">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <BookOpen className="h-3 w-3" /> 콘텐츠 <span className="font-semibold text-foreground">{contents.length}</span>개
+                <span className="text-muted-foreground/50 mx-1">|</span>
+                공개 <span className="font-semibold text-foreground">{publishedCount}</span>개
+              </span>
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" /> 총 <span className="font-semibold text-foreground">{totalDuration}</span>분
+              </span>
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Users className="h-3 w-3" /> 수강생 <span className="font-semibold text-foreground">{enrollmentCount}</span>명
+              </span>
+            </div>
+          </div>
+
+          {/* Content management table */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="px-4 py-3 bg-secondary/30 border-b border-border flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground">콘텐츠 목록 ({contents.length})</h2>
+            </div>
+
+            {contents.length === 0 ? (
+              <div className="text-center py-12 space-y-3">
+                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center mx-auto">
+                  <BookOpen className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">등록된 콘텐츠가 없습니다.</p>
+                <Button variant="outline" size="sm" onClick={openAddContent} className="gap-1.5 text-xs">
+                  <Plus className="h-3 w-3" /> 첫 번째 콘텐츠 추가
+                </Button>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {contents.map((content, idx) => {
+                  const Icon = contentTypeIcon[content.content_type || "video"] || Video;
+                  const isUnpublished = !content.is_published;
+
+                  return (
+                    <div
+                      key={content.id}
+                      className={`flex items-center gap-2 px-3 py-2 hover:bg-accent/30 transition-colors group ${
+                        isUnpublished ? "opacity-50" : ""
+                      }`}
+                    >
+                      {/* Order controls */}
+                      <div className="flex flex-col shrink-0" onClick={(e) => e.stopPropagation()}>
                         <button
-                          className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                          className="p-0.5 text-muted-foreground/40 hover:text-foreground disabled:opacity-20 disabled:pointer-events-none"
                           disabled={idx === 0}
                           onClick={() => reorderMutation.mutate({ id: content.id, newIndex: idx - 1 })}
                         >
-                          <ChevronUp className="h-3.5 w-3.5" />
+                          <ChevronUp className="h-3 w-3" />
                         </button>
                         <button
-                          className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                          className="p-0.5 text-muted-foreground/40 hover:text-foreground disabled:opacity-20 disabled:pointer-events-none"
                           disabled={idx === contents.length - 1}
                           onClick={() => reorderMutation.mutate({ id: content.id, newIndex: idx + 1 })}
                         >
-                          <ChevronDown className="h-3.5 w-3.5" />
+                          <ChevronDown className="h-3 w-3" />
                         </button>
                       </div>
-                    )}
 
-                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
-                      isCompleted
-                        ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-accent text-accent-foreground"
-                    }`}>
-                      {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : !isAccessible && !isTeacherOrAdmin ? <Lock className="h-4 w-4" /> : <Icon className="h-5 w-5" />}
-                    </div>
+                      {/* Number */}
+                      <span className="text-[10px] font-mono text-muted-foreground w-5 text-center shrink-0">
+                        {String(idx + 1).padStart(2, "0")}
+                      </span>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground font-medium">{String(idx + 1).padStart(2, "0")}</span>
-                        <h3 className="text-sm font-medium text-foreground truncate">{content.title}</h3>
-                        {isTeacherOrAdmin && isUnpublished && (
-                          <Badge variant="outline" className="text-[10px] h-4 border-dashed">비공개</Badge>
-                        )}
+                      {/* Icon */}
+                      <div className="h-7 w-7 rounded-md bg-accent flex items-center justify-center shrink-0">
+                        <Icon className="h-3.5 w-3.5 text-accent-foreground" />
                       </div>
-                      <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                          {contentTypeLabel[content.content_type || "video"]}
-                        </span>
-                        {content.duration_minutes && (
-                          <span className="text-[10px] text-muted-foreground">{content.duration_minutes}분</span>
-                        )}
-                        {content.is_preview && <Badge variant="outline" className="text-[10px] h-4">미리보기</Badge>}
-                      </div>
-                    </div>
 
-                    {/* Teacher actions */}
-                    {isTeacherOrAdmin ? (
-                      <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      {/* Title & meta */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium text-foreground truncate">{content.title}</span>
+                          {isUnpublished && (
+                            <Badge variant="outline" className="text-[9px] h-4 border-dashed shrink-0">비공개</Badge>
+                          )}
+                          {content.is_preview && (
+                            <Badge variant="secondary" className="text-[9px] h-4 shrink-0">미리보기</Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Type badge */}
+                      <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded shrink-0 ${
+                        content.video_provider === "custom"
+                          ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                          : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+                      }`}>
+                        {content.video_provider === "custom" ? "플립" : "영상"}
+                      </span>
+
+                      {/* Duration */}
+                      <span className="text-[10px] text-muted-foreground w-10 text-right shrink-0">
+                        {content.duration_minutes ? `${content.duration_minutes}분` : "-"}
+                      </span>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                         <button
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                          title={content.is_published ? "비공개로 전환" : "공개로 전환"}
+                          className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent"
+                          title={content.is_published ? "비공개" : "공개"}
                           onClick={() => togglePublishMutation.mutate({ id: content.id, published: !content.is_published })}
                         >
-                          {content.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                          {content.is_published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                         </button>
                         <button
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                          onClick={() => openEditContent(content)}
+                          className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent"
+                          onClick={() => navigate(`/courses/${courseId}/content/${content.id}`)}
+                          title="미리보기"
                         >
-                          <Pencil className="h-4 w-4" />
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent"
+                          onClick={() => openEditContent(content)}
+                          title="편집"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <button className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                              <Trash2 className="h-4 w-4" />
+                            <button className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10" title="삭제">
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>콘텐츠 삭제</AlertDialogTitle>
-                              <AlertDialogDescription>"{content.title}"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</AlertDialogDescription>
+                              <AlertDialogDescription>"{content.title}"을(를) 삭제하시겠습니까?</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>취소</AlertDialogCancel>
@@ -454,123 +460,266 @@ const CourseDetail = () => {
                           </AlertDialogContent>
                         </AlertDialog>
                       </div>
-                    ) : (
-                      isAccessible && <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
-                    )}
-                  </div>
-                );
-              })}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Content Add/Edit Dialog */}
+        <ContentDialog
+          open={contentDialogOpen}
+          onOpenChange={setContentDialogOpen}
+          form={contentForm}
+          setForm={setContentForm}
+          editingId={editingContentId}
+          onSubmit={() => upsertContentMutation.mutate()}
+          isPending={upsertContentMutation.isPending}
+        />
+
+        {/* Course Edit Dialog */}
+        <CourseEditDialog
+          open={courseEditOpen}
+          onOpenChange={setCourseEditOpen}
+          form={courseForm}
+          setForm={setCourseForm}
+          onSubmit={() => updateCourseMutation.mutate(courseForm)}
+          isPending={updateCourseMutation.isPending}
+        />
+      </DashboardLayout>
+    );
+  }
+
+  // ===== STUDENT VIEW =====
+  return (
+    <DashboardLayout role="student">
+      <div className="max-w-4xl space-y-6">
+        <button
+          onClick={() => navigate("/dashboard/courses")}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> 나의 강의실
+        </button>
+
+        {/* Course header */}
+        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+          <div className="flex items-start gap-4">
+            {course.thumbnail_url ? (
+              <img src={course.thumbnail_url} alt="" className="h-16 w-16 rounded-xl object-cover shrink-0" />
+            ) : (
+              <div className="h-16 w-16 rounded-xl bg-accent flex items-center justify-center shrink-0">
+                <BookOpen className="h-7 w-7 text-accent-foreground" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0 space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="secondary" className="text-[10px]">{course.difficulty_level === "intermediate" ? "중급" : course.difficulty_level === "advanced" ? "고급" : "초급"}</Badge>
+                {course.is_mandatory && <Badge variant="destructive" className="text-[10px]">필수</Badge>}
+              </div>
+              <h1 className="text-lg font-semibold text-foreground">{course.title}</h1>
+              {course.description && <p className="text-xs text-muted-foreground">{course.description}</p>}
             </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t border-border">
+            <span className="flex items-center gap-1"><Video className="h-3 w-3" /> {contents.length}개 콘텐츠</span>
+            {course.estimated_duration_hours && (
+              <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 약 {course.estimated_duration_hours}시간</span>
+            )}
+          </div>
+
+          {enrollment ? (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">수강 진행률</span>
+                <span className="font-medium text-foreground">{overallProgress}%</span>
+              </div>
+              <Progress value={overallProgress} className="h-1.5" />
+              <p className="text-[10px] text-muted-foreground">{completedCount}/{contents.length} 완료</p>
+            </div>
+          ) : (
+            <Button className="w-full sm:w-auto" onClick={() => enrollMutation.mutate()} disabled={enrollMutation.isPending}>
+              {enrollMutation.isPending ? "등록 중..." : "수강 등록하기"}
+            </Button>
           )}
         </div>
+
+        {/* Content list */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-foreground">강의 콘텐츠</h2>
+          <div className="space-y-1.5">
+            {contents.filter(c => c.is_published).map((content, idx) => {
+              const progress = progressMap.get(content.id);
+              const isCompleted = progress?.completed;
+              const isAccessible = !!enrollment || content.is_preview;
+              const Icon = contentTypeIcon[content.content_type || "video"] || Video;
+
+              return (
+                <div
+                  key={content.id}
+                  className={`rounded-xl border border-border bg-card flex items-center gap-3 px-3 py-2.5 transition-all ${
+                    !isAccessible ? "opacity-50" : "hover:bg-accent/30 cursor-pointer"
+                  }`}
+                  onClick={() => isAccessible && navigate(`/courses/${courseId}/content/${content.id}`)}
+                >
+                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+                    isCompleted
+                      ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-accent text-accent-foreground"
+                  }`}>
+                    {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : !isAccessible ? <Lock className="h-3.5 w-3.5" /> : <Icon className="h-4 w-4" />}
+                  </div>
+                  <span className="text-xs text-muted-foreground font-mono">{String(idx + 1).padStart(2, "0")}</span>
+                  <span className="text-sm font-medium text-foreground truncate flex-1">{content.title}</span>
+                  <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
+                    content.video_provider === "custom"
+                      ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                      : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+                  }`}>
+                    {content.video_provider === "custom" ? "플립" : "영상"}
+                  </span>
+                  {content.duration_minutes && (
+                    <span className="text-[10px] text-muted-foreground shrink-0">{content.duration_minutes}분</span>
+                  )}
+                  {isAccessible && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
-
-      {/* Content Add/Edit Dialog */}
-      <Dialog open={contentDialogOpen} onOpenChange={setContentDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingContentId ? "콘텐츠 수정" : "콘텐츠 추가"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">제목 *</Label>
-              <Input value={contentForm.title} onChange={(e) => setContentForm(f => ({ ...f, title: e.target.value }))} placeholder="콘텐츠 제목" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">유형</Label>
-                <Select value={contentForm.content_type} onValueChange={(v) => setContentForm(f => ({ ...f, content_type: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="video">영상</SelectItem>
-                    <SelectItem value="document">문서</SelectItem>
-                    <SelectItem value="quiz">퀴즈</SelectItem>
-                    <SelectItem value="assignment">과제</SelectItem>
-                    <SelectItem value="live">라이브</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">재생시간 (분)</Label>
-                <Input type="number" value={contentForm.duration_minutes ?? ""} onChange={(e) => setContentForm(f => ({ ...f, duration_minutes: e.target.value ? Number(e.target.value) : null }))} placeholder="분" />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">영상/콘텐츠 URL</Label>
-              <Input value={contentForm.video_url} onChange={(e) => setContentForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://..." />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">영상 제공자</Label>
-              <Select value={contentForm.video_provider} onValueChange={(v) => setContentForm(f => ({ ...f, video_provider: v }))}>
-                <SelectTrigger><SelectValue placeholder="선택" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="youtube">YouTube</SelectItem>
-                  <SelectItem value="vimeo">Vimeo</SelectItem>
-                  <SelectItem value="custom">커스텀</SelectItem>
-                  <SelectItem value="upload">업로드</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">설명</Label>
-              <Textarea value={contentForm.description} onChange={(e) => setContentForm(f => ({ ...f, description: e.target.value }))} placeholder="콘텐츠 설명" rows={3} />
-            </div>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Switch checked={contentForm.is_published} onCheckedChange={(v) => setContentForm(f => ({ ...f, is_published: v }))} />
-                <Label className="text-xs">공개</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={contentForm.is_preview} onCheckedChange={(v) => setContentForm(f => ({ ...f, is_preview: v }))} />
-                <Label className="text-xs">미리보기 허용</Label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setContentDialogOpen(false)}>취소</Button>
-            <Button onClick={() => upsertContentMutation.mutate()} disabled={!contentForm.title.trim() || upsertContentMutation.isPending}>
-              {upsertContentMutation.isPending ? "저장 중..." : editingContentId ? "수정" : "추가"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Course Edit Dialog */}
-      <Dialog open={courseEditOpen} onOpenChange={setCourseEditOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>강좌 정보 수정</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">강좌 제목</Label>
-              <Input value={courseForm.title} onChange={(e) => setCourseForm(f => ({ ...f, title: e.target.value }))} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">설명</Label>
-              <Textarea value={courseForm.description} onChange={(e) => setCourseForm(f => ({ ...f, description: e.target.value }))} rows={4} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">상태</Label>
-              <Select value={courseForm.status} onValueChange={(v) => setCourseForm(f => ({ ...f, status: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">비공개</SelectItem>
-                  <SelectItem value="published">공개</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCourseEditOpen(false)}>취소</Button>
-            <Button onClick={() => updateCourseMutation.mutate(courseForm)} disabled={!courseForm.title.trim() || updateCourseMutation.isPending}>
-              {updateCourseMutation.isPending ? "저장 중..." : "저장"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   );
 };
+
+// --- Sub-components for dialogs ---
+
+const ContentDialog = ({
+  open, onOpenChange, form, setForm, editingId, onSubmit, isPending,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  form: ContentFormData;
+  setForm: React.Dispatch<React.SetStateAction<ContentFormData>>;
+  editingId: string | null;
+  onSubmit: () => void;
+  isPending: boolean;
+}) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="text-base">{editingId ? "콘텐츠 수정" : "콘텐츠 추가"}</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-3 py-1">
+        <div className="space-y-1">
+          <Label className="text-xs">제목 *</Label>
+          <Input className="h-9 text-sm" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} placeholder="콘텐츠 제목" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label className="text-xs">유형</Label>
+            <Select value={form.content_type} onValueChange={(v) => setForm(f => ({ ...f, content_type: v }))}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="video">영상</SelectItem>
+                <SelectItem value="document">문서</SelectItem>
+                <SelectItem value="quiz">퀴즈</SelectItem>
+                <SelectItem value="assignment">과제</SelectItem>
+                <SelectItem value="live">라이브</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">재생시간 (분)</Label>
+            <Input className="h-9 text-sm" type="number" value={form.duration_minutes ?? ""} onChange={(e) => setForm(f => ({ ...f, duration_minutes: e.target.value ? Number(e.target.value) : null }))} placeholder="분" />
+          </div>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">콘텐츠 URL</Label>
+          <Input className="h-9 text-sm" value={form.video_url} onChange={(e) => setForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://..." />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">제공자</Label>
+          <Select value={form.video_provider} onValueChange={(v) => setForm(f => ({ ...f, video_provider: v }))}>
+            <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="선택" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="youtube">YouTube</SelectItem>
+              <SelectItem value="vimeo">Vimeo</SelectItem>
+              <SelectItem value="custom">플립러닝 (망고보드 등)</SelectItem>
+              <SelectItem value="upload">업로드</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">설명</Label>
+          <Textarea className="text-sm" value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="콘텐츠 설명" rows={2} />
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <Switch checked={form.is_published} onCheckedChange={(v) => setForm(f => ({ ...f, is_published: v }))} />
+            <Label className="text-xs">공개</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={form.is_preview} onCheckedChange={(v) => setForm(f => ({ ...f, is_preview: v }))} />
+            <Label className="text-xs">미리보기 허용</Label>
+          </div>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>취소</Button>
+        <Button size="sm" onClick={onSubmit} disabled={!form.title.trim() || isPending}>
+          {isPending ? "저장 중..." : editingId ? "수정" : "추가"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
+
+const CourseEditDialog = ({
+  open, onOpenChange, form, setForm, onSubmit, isPending,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  form: { title: string; description: string; status: string };
+  setForm: React.Dispatch<React.SetStateAction<{ title: string; description: string; status: string }>>;
+  onSubmit: () => void;
+  isPending: boolean;
+}) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="text-base">강좌 정보 수정</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-3 py-1">
+        <div className="space-y-1">
+          <Label className="text-xs">강좌 제목</Label>
+          <Input className="h-9 text-sm" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">설명</Label>
+          <Textarea className="text-sm" value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">상태</Label>
+          <Select value={form.status} onValueChange={(v) => setForm(f => ({ ...f, status: v }))}>
+            <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">비공개</SelectItem>
+              <SelectItem value="published">공개</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>취소</Button>
+        <Button size="sm" onClick={onSubmit} disabled={!form.title.trim() || isPending}>
+          {isPending ? "저장 중..." : "저장"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
 
 export default CourseDetail;
