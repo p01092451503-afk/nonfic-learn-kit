@@ -147,7 +147,7 @@ const ContentPlayer = () => {
   const embedUrl = getVideoEmbed(currentContent.video_url, currentContent.video_provider);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background overflow-x-hidden">
       {/* Sidebar */}
       <aside className={`fixed lg:sticky top-0 left-0 z-40 h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 ${
         sidebarOpen ? "w-72" : "w-0 lg:w-14 overflow-hidden"
