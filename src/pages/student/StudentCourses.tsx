@@ -114,6 +114,7 @@ const StudentCourses = () => {
               progress={isCompleted ? 100 : Number(enrollment.progress) || 0}
               isCompleted={isCompleted}
               variant="student"
+              href={`/courses/${enrollment.courses?.id}?view=learn`}
             />
           );
         })}
