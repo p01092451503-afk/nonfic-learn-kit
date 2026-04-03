@@ -74,6 +74,9 @@ const CreateCourse = () => {
   const [isMandatory, setIsMandatory] = useState(false);
   const [deadline, setDeadline] = useState("");
   const [status, setStatus] = useState("draft");
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Content items
   const [contents, setContents] = useState<ContentItem[]>([]);
