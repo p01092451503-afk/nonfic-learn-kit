@@ -49,7 +49,7 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
 
   const activeRole = role || primaryRole;
   const navItems = activeRole === "admin" ? adminNav : activeRole === "teacher" ? teacherNav : studentNav;
-  const roleLabel = activeRole === "admin" ? "관리자" : activeRole === "teacher" ? "강사" : "학습자";
+  const roleLabel = activeRole === "admin" ? "Admin" : activeRole === "teacher" ? "Teacher" : "Student";
 
   const handleSignOut = async () => {
     await signOut();
@@ -67,11 +67,11 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
       )}
 
       <aside className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
-        <div className="p-6 flex flex-col items-center">
-          <div className="text-center">
-            <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
-            <p className="text-[10px] tracking-[0.15em] text-muted-foreground uppercase mt-1">{roleLabel}</p>
-          </div>
+        <div className="p-6 flex flex-col items-start">
+          <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
+          <span className="mt-1.5 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full">
+            {roleLabel}
+          </span>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
           </button>
