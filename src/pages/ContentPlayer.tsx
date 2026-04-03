@@ -222,55 +222,57 @@ const ContentPlayer = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden">
-        {/* Video / Content Area */}
-        <div className="bg-foreground/5">
-          {isMangoboard(currentContent.video_url) && embedUrl ? null : currentContent.content_type === "video" && embedUrl ? (
-            <div className="aspect-video max-h-[70vh] w-full">
-              <iframe
-                src={embedUrl}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title={currentContent.title}
-              />
-            </div>
-          ) : currentContent.content_type === "video" && currentContent.video_url ? (
-            <div className="aspect-video max-h-[70vh] w-full flex items-center justify-center">
-              <a
-                href={currentContent.video_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ExternalLink className="h-4 w-4" /> 외부 플레이어에서 열기
-              </a>
-            </div>
-          ) : (
-            <div className="aspect-video max-h-[50vh] w-full flex items-center justify-center">
-              <div className="text-center space-y-3">
-                <div className="h-16 w-16 rounded-2xl bg-accent mx-auto flex items-center justify-center">
-                  {currentContent.content_type === "document" ? (
-                    <FileText className="h-7 w-7 text-accent-foreground" />
-                  ) : (
-                    <Play className="h-7 w-7 text-accent-foreground" />
-                  )}
+      <main className="flex-1 flex items-center justify-center min-h-screen min-w-0 overflow-hidden p-6 lg:p-8">
+        <div className="w-full max-w-2xl space-y-6">
+          {/* Video embed for non-mangoboard */}
+          {!(isMangoboard(currentContent.video_url) && embedUrl) && (
+            <div className="bg-foreground/5 rounded-2xl overflow-hidden">
+              {currentContent.content_type === "video" && embedUrl ? (
+                <div className="aspect-video w-full">
+                  <iframe
+                    src={embedUrl}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={currentContent.title}
+                  />
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {currentContent.content_type === "document"
-                    ? "문서 콘텐츠"
-                    : currentContent.content_type === "quiz"
-                    ? "퀴즈"
-                    : "콘텐츠"}
-                </p>
-              </div>
+              ) : currentContent.content_type === "video" && currentContent.video_url ? (
+                <div className="aspect-video w-full flex items-center justify-center">
+                  <a
+                    href={currentContent.video_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" /> 외부 플레이어에서 열기
+                  </a>
+                </div>
+              ) : (
+                <div className="py-12 flex items-center justify-center">
+                  <div className="text-center space-y-3">
+                    <div className="h-14 w-14 rounded-2xl bg-accent mx-auto flex items-center justify-center">
+                      {currentContent.content_type === "document" ? (
+                        <FileText className="h-6 w-6 text-accent-foreground" />
+                      ) : (
+                        <Play className="h-6 w-6 text-accent-foreground" />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {currentContent.content_type === "document"
+                        ? "문서 콘텐츠"
+                        : currentContent.content_type === "quiz"
+                        ? "퀴즈"
+                        : "콘텐츠"}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-        </div>
 
-        {/* Info & Actions */}
-        <div className="flex-1 p-6 lg:p-8 space-y-6 max-w-4xl">
-          <div className="space-y-3">
+          {/* Info & Actions */}
+          <div className="space-y-4">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
                 {currentContent.content_type || "video"}
