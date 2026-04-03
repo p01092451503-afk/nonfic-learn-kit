@@ -347,6 +347,26 @@ const ContentPlayer = () => {
           </div>
         </div>
       </main>
+
+      {/* Mangoboard Popup Modal */}
+      {mangoPopupOpen && currentContent && isMangoboard(currentContent.video_url) && embedUrl && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center">
+          <button
+            onClick={() => setMangoPopupOpen(false)}
+            className="absolute top-4 right-4 z-[110] p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <div className="h-[95vh]" style={{ aspectRatio: "9/16", maxWidth: "95vw" }}>
+            <iframe
+              src={embedUrl}
+              className="w-full h-full border-0 rounded-lg"
+              allowFullScreen
+              title={currentContent.title}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
