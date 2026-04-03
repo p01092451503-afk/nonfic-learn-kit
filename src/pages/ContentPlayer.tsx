@@ -235,9 +235,18 @@ const ContentPlayer = () => {
                 {isCompleted ? <CheckCircle2 className="h-3.5 w-3.5" /> : String(idx + 1).padStart(2, "0")}
               </div>
               <span className="truncate flex-1">{c.title}</span>
-              {c.duration_minutes && (
-                <span className="text-[10px] text-muted-foreground shrink-0">{c.duration_minutes}분</span>
-              )}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
+                  c.video_provider === "custom"
+                    ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                    : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+                }`}>
+                  {c.video_provider === "custom" ? "플립" : "영상"}
+                </span>
+                {c.duration_minutes && (
+                  <span className="text-[10px] text-muted-foreground">{c.duration_minutes}분</span>
+                )}
+              </div>
             </button>
           );
         })}
