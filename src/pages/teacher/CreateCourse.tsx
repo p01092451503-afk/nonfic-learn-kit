@@ -207,31 +207,6 @@ const CreateCourse = () => {
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={() => setCourseKind("video")}
-            className={`stat-card !p-5 text-left transition-all border-2 ${
-              courseKind === "video"
-                ? "border-primary ring-2 ring-primary/20"
-                : "border-transparent hover:border-border"
-            }`}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                courseKind === "video" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
-              }`}>
-                <MonitorPlay className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">동영상 강의</p>
-                <p className="text-[10px] text-muted-foreground">CDN 업로드 영상으로 수강</p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              YouTube, Vimeo 또는 직접 업로드한 동영상을 통해 학습하는 강좌입니다.
-            </p>
-          </button>
-
-          <button
-            type="button"
             onClick={() => setCourseKind("flip")}
             className={`stat-card !p-5 text-left transition-all border-2 ${
               courseKind === "flip"
@@ -241,7 +216,7 @@ const CreateCourse = () => {
           >
             <div className="flex items-center gap-3 mb-3">
               <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                courseKind === "flip" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
+                courseKind === "flip" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
               }`}>
                 <BookOpen className="h-5 w-5" />
               </div>
@@ -252,6 +227,31 @@ const CreateCourse = () => {
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               망고보드에서 제작한 이미지·동영상 콘텐츠 링크를 활용하는 강좌입니다.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setCourseKind("video")}
+            className={`stat-card !p-5 text-left transition-all border-2 ${
+              courseKind === "video"
+                ? "border-primary ring-2 ring-primary/20"
+                : "border-transparent hover:border-border"
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
+                courseKind === "video" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              }`}>
+                <MonitorPlay className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">동영상 강의</p>
+                <p className="text-[10px] text-muted-foreground">CDN 업로드 영상으로 수강</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              YouTube, Vimeo 또는 직접 업로드한 동영상을 통해 학습하는 강좌입니다.
             </p>
           </button>
         </div>
