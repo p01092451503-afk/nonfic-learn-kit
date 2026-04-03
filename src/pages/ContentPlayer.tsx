@@ -27,6 +27,7 @@ const ContentPlayer = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
 
   const { data: course } = useQuery({
     queryKey: ["course", courseId],
