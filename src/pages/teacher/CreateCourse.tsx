@@ -452,7 +452,17 @@ const FlipContentEditor = ({
   onChange: (field: keyof ContentItem, value: any) => void;
   onRemove: () => void;
 }) => {
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
   const isValidMangoboard = content.video_url.includes("mangoboard.net");
+
+  const handlePreview = () => {
+    if (!isValidMangoboard) return;
+    setPreviewError(false);
+    setPreviewLoading(true);
+    setShowPreview(true);
+  };
 
   return (
     <div className="stat-card !p-4 space-y-4">
@@ -482,81 +492,106 @@ const FlipContentEditor = ({
           <label className="text-[10px] font-medium text-muted-foreground uppercase flex items-center gap-1">
             <Link2 className="h-3 w-3" /> 망고보드 링크 *
           </label>
-          <div className="relative">
-            <Input
-              value={content.video_url}
-              onChange={(e) => {
-                onChange("video_url", e.target.value);
-                onChange("video_provider", "custom");
-              }}
-              placeholder="https://www.mangoboard.net/publish/52632315"
-              className="h-9 rounded-lg border-border text-xs pr-8"
-              required
-            />
-            {isValidMangoboard && (
-              <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                <div className="h-4 w-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                value={content.video_url}
+                onChange={(e) => {
+                  onChange("video_url", e.target.value);
+                  onChange("video_provider", "custom");
+                  setShowPreview(false);
+                  setPreviewError(false);
+                }}
+                placeholder="https://www.mangoboard.net/publish/52632315"
+                className="h-9 rounded-lg border-border text-xs pr-8"
+                required
+              />
+              {isValidMangoboard && (
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                  <div className="h-4 w-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                  </div>
                 </div>
-              </div>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-lg gap-1.5 text-xs shrink-0 h-9"
+              disabled={!isValidMangoboard}
+              onClick={handlePreview}
+            >
+              <Eye className="h-3.5 w-3.5" />
+              미리보기
+            </Button>
+            {isValidMangoboard && (
+              <a
+                href={normalizeMangoboardUrl(content.video_url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+                title="새 탭에서 열기"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
             )}
           </div>
           <p className="text-[10px] text-muted-foreground">
-            망고보드 공유 링크를 입력하세요 (예: www.mangoboard.net/publish/...)
+            망고보드 공유 링크를 입력 후 미리보기 버튼을 눌러 확인하세요
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-medium text-muted-foreground uppercase">콘텐츠 유형</label>
-            <Select
-              value={content.content_type}
-              onValueChange={(v) => onChange("content_type", v as ContentType)}
-            >
-              <SelectTrigger className="h-9 rounded-lg border-border text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="document">이미지/문서</SelectItem>
-                <SelectItem value="video">동영상</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-medium text-muted-foreground uppercase">소요 시간 (분)</label>
-            <Input
-              type="number"
-              value={content.duration_minutes ?? ""}
-              onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)}
-              placeholder="분"
-              className="h-9 rounded-lg border-border text-xs"
-              min="0"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-medium text-muted-foreground uppercase">설명</label>
-          <Textarea
-            value={content.description}
-            onChange={(e) => onChange("description", e.target.value)}
-            placeholder="콘텐츠에 대한 설명 (선택사항)"
-            className="min-h-[60px] rounded-lg border-border text-xs resize-none"
-          />
-        </div>
-
-        {content.video_url && isValidMangoboard && (
+        {/* Preview area */}
+        {showPreview && isValidMangoboard && (
           <div className="rounded-xl border border-border overflow-hidden bg-muted/30">
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/50">
-              <ExternalLink className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground truncate">{content.video_url}</span>
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/50">
+              <div className="flex items-center gap-2 min-w-0">
+                <Eye className="h-3 w-3 text-muted-foreground shrink-0" />
+                <span className="text-[10px] text-muted-foreground truncate">{content.video_url}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors shrink-0 ml-2"
+              >
+                닫기
+              </button>
             </div>
-            <div className="aspect-video">
+            <div className="relative aspect-video">
+              {previewLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs text-muted-foreground">로딩 중...</span>
+                  </div>
+                </div>
+              )}
+              {previewError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
+                  <div className="flex flex-col items-center gap-2 text-center px-4">
+                    <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+                      <ExternalLink className="h-5 w-5 text-destructive" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">미리보기를 불러올 수 없습니다</p>
+                    <a
+                      href={normalizeMangoboardUrl(content.video_url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline"
+                    >
+                      새 탭에서 직접 열기
+                    </a>
+                  </div>
+                </div>
+              )}
               <iframe
                 src={normalizeMangoboardUrl(content.video_url)}
                 className="w-full h-full"
                 title="망고보드 미리보기"
                 allowFullScreen
+                onLoad={() => setPreviewLoading(false)}
+                onError={() => { setPreviewLoading(false); setPreviewError(true); }}
               />
             </div>
           </div>
