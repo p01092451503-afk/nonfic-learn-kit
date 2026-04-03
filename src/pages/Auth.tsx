@@ -66,8 +66,15 @@ const Auth = () => {
           width={1920}
           height={1080}
         />
-        <div className="relative z-10 flex flex-col justify-end p-12 w-full">
-
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <div>
+            <h1 className="font-display text-4xl tracking-wider text-foreground">
+              NONFICTION
+            </h1>
+            <p className="mt-1 text-sm tracking-[0.3em] text-foreground/50 uppercase">
+              Learning Management System
+            </p>
+          </div>
           <div className="space-y-4">
             <h2 className="font-display text-3xl leading-snug text-foreground">
               배움은<br />
