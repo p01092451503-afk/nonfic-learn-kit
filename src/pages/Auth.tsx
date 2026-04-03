@@ -147,7 +147,7 @@ const Auth = () => {
                     placeholder="비밀번호를 입력하세요"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 pl-11 pr-11 bg-white border-0 rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
+                    className="h-12 pl-11 pr-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
                     required
                     minLength={6}
                   />
