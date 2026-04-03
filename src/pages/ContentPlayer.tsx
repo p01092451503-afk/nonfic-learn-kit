@@ -219,7 +219,7 @@ const ContentPlayer = () => {
         <div className="bg-foreground/5">
           {/* Mangoboard embed (flip learning) */}
           {isMangoboard(currentContent.video_url) && embedUrl ? (
-            <div className="w-full flex justify-center bg-foreground/10" style={{ height: "80vh" }}>
+            <div className="w-full flex justify-center" style={{ height: "80vh", backgroundColor: "#1a1a1a" }}>
               <div className="h-full" style={{ aspectRatio: "9/16", maxWidth: "100%" }}>
                 <iframe
                   src={embedUrl}
