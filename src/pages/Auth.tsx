@@ -191,7 +191,11 @@ const Auth = () => {
                   />
                   <span className="text-sm text-muted-foreground">아이디 저장</span>
                 </label>
-                <button type="button" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <button
+                  type="button"
+                  onClick={() => { setShowForgotPassword(true); setResetEmail(email); }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
                   비밀번호 찾기
                 </button>
               </div>
