@@ -285,10 +285,14 @@ const CreateCourse = () => {
                 <SelectTrigger className="h-11 rounded-xl border-border">
                   <SelectValue placeholder="선택" />
                 </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat: any) => (
-                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                  ))}
+                <SelectContent position="popper" className="z-[9999] max-h-60 overflow-y-auto">
+                  {categories.length === 0 ? (
+                    <SelectItem value="__empty" disabled>카테고리 없음</SelectItem>
+                  ) : (
+                    categories.map((cat: any) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
