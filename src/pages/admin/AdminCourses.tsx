@@ -1,17 +1,12 @@
-import { BookOpen, Plus, Users, Search, Filter, ArrowRight, BarChart3 } from "lucide-react";
+import { Plus, Users, Search, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import CourseCard from "@/components/CourseCard";
 import { supabase } from "@/integrations/supabase/client";
-
-const statusLabel: Record<string, { text: string; className: string }> = {
-  published: { text: "공개", className: "text-success bg-success/10" },
-  draft: { text: "초안", className: "text-muted-foreground bg-secondary" },
-};
 
 const AdminCourses = () => {
   const [search, setSearch] = useState("");
@@ -28,12 +23,19 @@ const AdminCourses = () => {
     },
   });
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("id, name, slug");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: enrollments = [] } = useQuery({
     queryKey: ["admin-all-enrollments"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("enrollments")
-        .select("course_id, progress");
+      const { data, error } = await supabase.from("enrollments").select("course_id, progress");
       if (error) throw error;
       return data;
     },
@@ -44,17 +46,16 @@ const AdminCourses = () => {
     queryFn: async () => {
       const ids = [...new Set(courses.map((c: any) => c.instructor_id).filter(Boolean))];
       if (ids.length === 0) return [];
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("user_id, full_name")
-        .in("user_id", ids);
+      const { data, error } = await supabase.from("profiles").select("user_id, full_name").in("user_id", ids);
       if (error) throw error;
       return data;
     },
     enabled: courses.length > 0,
   });
 
+  const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
   const instructorMap = new Map(instructorProfiles.map((p: any) => [p.user_id, p.full_name]));
+
   const enrollmentMap = new Map<string, { count: number; avgProgress: number }>();
   const grouped: Record<string, { total: number; progress: number }> = {};
   enrollments.forEach((e: any) => {
@@ -115,44 +116,20 @@ const AdminCourses = () => {
             <p className="text-sm text-muted-foreground">강좌가 없습니다.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((course: any) => {
-              const status = statusLabel[course.status] || statusLabel.draft;
+              const cat = categoryMap.get(course.category_id);
               const enrollment = enrollmentMap.get(course.id);
               return (
-                <Link key={course.id} to={`/courses/${course.id}`}>
-                  <div className="stat-card flex items-center gap-4 cursor-pointer group !p-4">
-                    <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center shrink-0">
-                      <BarChart3 className="h-5 w-5 text-accent-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${status.className}`}>
-                          {status.text}
-                        </span>
-                        {course.difficulty_level && (
-                          <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">{course.difficulty_level}</span>
-                        )}
-                      </div>
-                      <h3 className="text-sm font-medium text-foreground truncate">{course.title}</h3>
-                      <div className="flex items-center gap-4 mt-1">
-                        <span className="text-xs text-muted-foreground">
-                          강사: {instructorMap.get(course.instructor_id) || "-"}
-                        </span>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Users className="h-3 w-3" /> {enrollment?.count || 0}명
-                        </span>
-                      </div>
-                      {enrollment && enrollment.count > 0 && (
-                        <div className="flex items-center gap-3 mt-2">
-                          <Progress value={enrollment.avgProgress} className="flex-1 h-1.5" />
-                          <span className="text-xs text-muted-foreground">{enrollment.avgProgress}%</span>
-                        </div>
-                      )}
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                  </div>
-                </Link>
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  categorySlug={cat?.slug}
+                  categoryName={cat?.name}
+                  studentCount={enrollment?.count || 0}
+                  instructorName={instructorMap.get(course.instructor_id)}
+                  variant="admin"
+                />
               );
             })}
           </div>

@@ -1,0 +1,188 @@
+import { Link } from "react-router-dom";
+import {
+  Clock, Users, BookOpen, Star, Sparkles,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+
+// Category → gradient color mapping
+const categoryGradients: Record<string, string> = {
+  marketing: "from-orange-500 to-pink-500",
+  sales: "from-blue-500 to-cyan-500",
+  "product-development": "from-purple-500 to-indigo-500",
+  "skin-science": "from-rose-400 to-pink-600",
+  "beauty-trends": "from-fuchsia-500 to-violet-500",
+  "design-creative": "from-amber-400 to-orange-500",
+  "quality-regulation": "from-emerald-500 to-teal-500",
+  "scm-logistics": "from-sky-500 to-blue-600",
+  "management-leadership": "from-slate-500 to-zinc-600",
+  "finance-accounting": "from-green-500 to-emerald-600",
+  "hr-culture": "from-pink-400 to-rose-500",
+  "it-digital": "from-violet-500 to-purple-600",
+  "customer-service": "from-cyan-400 to-blue-500",
+  "legal-compliance": "from-gray-500 to-slate-600",
+  "self-development": "from-yellow-400 to-amber-500",
+  "safety-environment": "from-lime-500 to-green-600",
+};
+
+const difficultyLabel: Record<string, string> = {
+  beginner: "초급",
+  intermediate: "중급",
+  advanced: "고급",
+};
+
+interface CourseCardProps {
+  course: {
+    id: string;
+    title: string;
+    description?: string | null;
+    status?: string | null;
+    difficulty_level?: string | null;
+    estimated_duration_hours?: number | null;
+    is_mandatory?: boolean | null;
+    thumbnail_url?: string | null;
+    category_id?: string | null;
+  };
+  categorySlug?: string | null;
+  categoryName?: string | null;
+  studentCount?: number;
+  contentCount?: number;
+  instructorName?: string | null;
+  progress?: number | null;
+  isCompleted?: boolean;
+  variant?: "student" | "teacher" | "admin";
+}
+
+const CourseCard = ({
+  course,
+  categorySlug,
+  categoryName,
+  studentCount,
+  contentCount,
+  instructorName,
+  progress,
+  isCompleted,
+  variant = "student",
+}: CourseCardProps) => {
+  const gradient = categoryGradients[categorySlug || ""] || "from-primary to-primary/80";
+  const isPublished = course.status === "published";
+  const isDraft = course.status === "draft";
+
+  return (
+    <Link to={`/courses/${course.id}`} className="group block">
+      <div className="stat-card !p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        {/* Thumbnail area */}
+        <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
+          {/* Background pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-4 right-4 h-24 w-24 rounded-full bg-white/30 blur-xl" />
+            <div className="absolute bottom-2 left-6 h-16 w-16 rounded-full bg-white/20 blur-lg" />
+          </div>
+
+          {/* Top badges */}
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
+            {isDraft && (
+              <span className="text-[10px] font-semibold bg-background/90 text-foreground px-2.5 py-1 rounded-lg backdrop-blur-sm">
+                초안
+              </span>
+            )}
+            {!isDraft && !isPublished && (
+              <span className="text-[10px] font-semibold bg-amber-500 text-white px-2.5 py-1 rounded-lg">
+                오픈예정
+              </span>
+            )}
+            {course.is_mandatory && (
+              <span className="text-[10px] font-semibold bg-destructive text-destructive-foreground px-2.5 py-1 rounded-lg">
+                필수
+              </span>
+            )}
+          </div>
+
+          {/* Bottom overlay info */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+            {categoryName && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-white/90 bg-white/20 px-2 py-0.5 rounded-md backdrop-blur-sm mb-1.5">
+                <Sparkles className="h-2.5 w-2.5" /> {categoryName}
+              </span>
+            )}
+            <h3 className="text-sm font-bold text-white leading-snug line-clamp-2">
+              {course.title}
+            </h3>
+          </div>
+
+          {/* Difficulty badge */}
+          {course.difficulty_level && (
+            <div className="absolute top-3 right-3">
+              <span className="text-[10px] font-bold bg-white/90 text-foreground px-2 py-1 rounded-lg backdrop-blur-sm">
+                {difficultyLabel[course.difficulty_level] || course.difficulty_level}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Card body */}
+        <div className="p-3.5 space-y-2.5">
+          {/* Description */}
+          {course.description && (
+            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+              {course.description}
+            </p>
+          )}
+
+          {/* Meta info */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && (
+              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" /> {course.estimated_duration_hours}시간
+              </span>
+            )}
+            {studentCount != null && (
+              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <Users className="h-3 w-3" /> {studentCount}명
+              </span>
+            )}
+            {contentCount != null && (
+              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <BookOpen className="h-3 w-3" /> {contentCount}강
+              </span>
+            )}
+            {instructorName && (
+              <span className="text-[10px] text-muted-foreground">
+                {instructorName}
+              </span>
+            )}
+          </div>
+
+          {/* Progress (student view) */}
+          {progress != null && !isCompleted && (
+            <div className="flex items-center gap-2.5">
+              <Progress value={progress} className="flex-1 h-1.5" />
+              <span className="text-[10px] font-medium text-muted-foreground">{Math.round(progress)}%</span>
+            </div>
+          )}
+
+          {isCompleted && (
+            <div className="flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+              <span className="text-xs font-medium text-green-600 dark:text-green-400">수료 완료</span>
+            </div>
+          )}
+
+          {/* Status badge row for teacher/admin */}
+          {(variant === "teacher" || variant === "admin") && (
+            <div className="flex items-center gap-1.5">
+              <Badge
+                variant={isPublished ? "default" : "secondary"}
+                className="text-[10px] h-5"
+              >
+                {isPublished ? "공개" : "초안"}
+              </Badge>
+            </div>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+};
+
+export default CourseCard;
