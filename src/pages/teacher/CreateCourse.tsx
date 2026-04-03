@@ -133,15 +133,36 @@ const CreateCourse = () => {
     return data.publicUrl;
   };
 
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const applyImageFile = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "오류", description: "이미지 크기는 5MB 이하여야 합니다.", variant: "destructive" });
       return;
     }
     setThumbnailFile(file);
     setThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) applyImageFile(file);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) { applyImageFile(file); break; }
+      }
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) applyImageFile(file);
   };
 
   const removeThumbnail = () => {
