@@ -72,7 +72,7 @@ const CourseCard = ({
   const linkTo = href || `/courses/${course.id}`;
 
   return (
-    <Link to={`/courses/${course.id}`} className="group block">
+    <Link to={linkTo} className="group block">
       <div className="stat-card !p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
         {/* Thumbnail area */}
         <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
