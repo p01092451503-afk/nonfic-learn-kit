@@ -264,7 +264,7 @@ const CreateCourse = () => {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="예: 브랜드 마케팅 기초"
               className="h-11 rounded-xl border-border"
-              required
+            
             />
           </div>
 
