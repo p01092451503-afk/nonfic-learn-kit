@@ -52,7 +52,7 @@ const TeacherAssignments = () => {
 
   return (
     <DashboardLayout role="teacher">
-      <div className="space-y-8 max-w-4xl">
+      <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">과제 관리</h1>
           <p className="text-muted-foreground mt-1">제출된 과제를 확인하고 채점하세요.</p>

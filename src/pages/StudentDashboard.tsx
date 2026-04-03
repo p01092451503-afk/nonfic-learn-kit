@@ -254,7 +254,7 @@ const StudentDashboard = () => {
 
   return (
     <DashboardLayout role="student">
-      <div className="space-y-8 max-w-6xl">
+      <div className="space-y-8">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">

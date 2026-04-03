@@ -50,7 +50,7 @@ const AdminUsers = () => {
 
   return (
     <DashboardLayout role="admin">
-      <div className="space-y-8 max-w-5xl">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">사용자 관리</h1>
