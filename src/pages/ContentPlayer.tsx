@@ -336,7 +336,8 @@ const ContentPlayer = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-background overflow-x-hidden">
+    <DashboardLayout role={layoutRole} contentClassName="flex-1 flex flex-col min-h-0 p-0">
+    <div className="flex flex-1 min-h-0 overflow-x-hidden">
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileSidebarOpen(false)} />
