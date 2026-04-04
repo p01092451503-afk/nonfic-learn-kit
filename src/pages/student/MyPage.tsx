@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { User, Lock, Camera, Check, ArrowRight } from "lucide-react";
+import { User, Lock, Camera, Check, ArrowRight, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-import loginBg from "@/assets/login-bg.jpg";
 
 const PRESET_AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`);
 
@@ -99,34 +100,96 @@ const MyPage = () => {
 
   const currentAvatar = profile?.avatar_url;
 
+  // Stats for the header
+  const { data: enrollmentStats } = useQuery({
+    queryKey: ["mypage-enrollment-stats", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("enrollments")
+        .select("status, completed_at")
+        .eq("user_id", user!.id)
+        .eq("status", "approved");
+      if (error) throw error;
+      const inProgress = data.filter((e: any) => !e.completed_at).length;
+      const completed = data.filter((e: any) => e.completed_at).length;
+      return { inProgress, completed, total: data.length };
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: gamification } = useQuery({
+    queryKey: ["mypage-gamification", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_gamification")
+        .select("*")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: badgeCount = 0 } = useQuery({
+    queryKey: ["mypage-badges", user?.id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("user_badges")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!user?.id,
+  });
+
   return (
     <DashboardLayout role="student">
       <div className="space-y-0 -m-6 lg:-m-8">
-        {/* Hero */}
-        <div className="relative h-40 lg:h-48 overflow-hidden">
-          <img src={loginBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/5 to-transparent" />
-          <div className="relative z-10 flex items-end h-full px-6 lg:px-10 pb-6">
-            <div className="flex items-center gap-5">
-              <div className="h-20 w-20 rounded-full border-4 border-card bg-card shadow-lg overflow-hidden flex items-center justify-center">
-                {currentAvatar ? (
-                  <img src={currentAvatar} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-2xl font-bold text-muted-foreground">
-                    {profile?.full_name?.slice(0, 2) || "?"}
-                  </span>
+        {/* Hero — catalog-style */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-secondary via-background to-accent/30">
+          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-accent/20 blur-3xl -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-1/4 w-56 h-56 rounded-full bg-secondary/40 blur-2xl translate-y-1/2" />
+
+          <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+            {/* Left: avatar + info */}
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 border-2 border-border shadow-sm">
+                <AvatarImage src={currentAvatar || ""} />
+                <AvatarFallback className="bg-card text-foreground text-lg font-semibold">
+                  {profile?.full_name?.charAt(0) || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <h1 className="text-xl font-semibold text-foreground">{profile?.full_name || t("common.user")}</h1>
+                <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+                {(profile?.department || profile?.position) && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{profile?.department} {profile?.position}</p>
                 )}
               </div>
-              <div>
-                <h1 className="text-xl font-semibold text-foreground">{profile?.full_name || t("common.user")}</h1>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
-              </div>
+            </div>
+
+            {/* Right: stats */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {[
+                { value: enrollmentStats?.inProgress || 0, label: t("dashboard.inProgress"), icon: BookOpen },
+                { value: enrollmentStats?.completed || 0, label: t("dashboard.coursesCompleted"), icon: Trophy },
+                { value: `Lv.${gamification?.level || 1}`, label: `${gamification?.experience_points || 0} XP`, icon: Star },
+                { value: badgeCount, label: t("dashboard.earnedBadges"), icon: TrendingUp },
+              ].map((stat, i) => (
+                <div key={i} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-center flex-1 sm:flex-none sm:min-w-[76px] shadow-sm">
+                  <stat.icon className="h-3.5 w-3.5 text-muted-foreground mx-auto mb-1" />
+                  <p className="text-base sm:text-lg font-bold text-foreground leading-none">{stat.value}</p>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1 leading-tight">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="px-6 lg:px-10 py-8">
+        <div className="px-4 sm:px-6 lg:px-10 py-6 sm:py-8">
           <Tabs defaultValue="profile" className="space-y-6">
             <TabsList className="bg-secondary/50 rounded-xl p-1">
               <TabsTrigger value="profile" className="rounded-lg gap-1.5 text-sm">
