@@ -316,7 +316,7 @@ const ContentPlayer = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden">
-        {/* 개선6: 모바일 헤더 */}
+        {/* 모바일 헤더 */}
         <header className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30">
           <button
             onClick={() => setMobileSidebarOpen(true)}
@@ -326,15 +326,32 @@ const ContentPlayer = () => {
           </button>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">{course?.title}</p>
-            <p className="text-[10px] text-muted-foreground">{currentIndex + 1} / {contents.length} 차시</p>
+            <p className="text-[11px] text-muted-foreground">{currentIndex + 1} / {contents.length} 차시</p>
           </div>
         </header>
 
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-8">
-          <div className="w-full max-w-2xl space-y-8">
-            {/* Video embed for non-mangoboard */}
+        {/* 데스크톱 상단 바 */}
+        <header className="hidden lg:flex items-center gap-4 px-8 py-3 border-b border-border bg-background/60 backdrop-blur-sm sticky top-0 z-30">
+          <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors shrink-0">
+            <ArrowLeft className="h-4 w-4" /> {course?.title}
+          </Link>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{currentIndex + 1}</span>
+            <span>/</span>
+            <span>{contents.length} 차시</span>
+          </div>
+          <div className="flex items-center gap-2 ml-4">
+            <Progress value={overallProgress} className="w-24 h-1.5" />
+            <span className="text-xs text-muted-foreground font-medium">{overallProgress}%</span>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="w-full max-w-6xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
+            {/* Video embed for non-mangoboard - full width on desktop */}
             {!(isMangoboard(currentContent.video_url) && embedUrl) && (
-              <div className="bg-foreground/5 rounded-2xl overflow-hidden">
+              <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6 lg:mb-8">
                 {currentContent.content_type === "video" && embedUrl ? (
                   <div className="aspect-video w-full">
                     <iframe
@@ -351,22 +368,22 @@ const ContentPlayer = () => {
                       href={currentContent.video_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex items-center gap-2 text-base text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      <ExternalLink className="h-4 w-4" /> 외부 플레이어에서 열기
+                      <ExternalLink className="h-5 w-5" /> 외부 플레이어에서 열기
                     </a>
                   </div>
                 ) : (
-                  <div className="py-12 flex items-center justify-center">
+                  <div className="py-16 flex items-center justify-center">
                     <div className="text-center space-y-3">
-                      <div className="h-14 w-14 rounded-2xl bg-accent mx-auto flex items-center justify-center">
+                      <div className="h-16 w-16 rounded-2xl bg-accent mx-auto flex items-center justify-center">
                         {currentContent.content_type === "document" ? (
-                          <FileText className="h-6 w-6 text-accent-foreground" />
+                          <FileText className="h-7 w-7 text-accent-foreground" />
                         ) : (
-                          <Play className="h-6 w-6 text-accent-foreground" />
+                          <Play className="h-7 w-7 text-accent-foreground" />
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-base text-muted-foreground">
                         {contentTypeLabel[currentContent.content_type || "video"] || "콘텐츠"}
                       </p>
                     </div>
@@ -375,112 +392,183 @@ const ContentPlayer = () => {
               </div>
             )}
 
-            {/* 개선3: 메타 정보 뱃지 강화 */}
-            <div className="space-y-5">
-              <div className="flex items-center gap-3 flex-wrap">
-                <Badge className="text-xs font-semibold px-3 py-1 bg-foreground text-background rounded-lg uppercase tracking-wider">
-                  {contentTypeLabel[currentContent.content_type || "video"] || currentContent.content_type || "video"}
-                </Badge>
-                {currentContent.duration_minutes && (
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-secondary px-3 py-1 rounded-lg">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span className="font-medium">{currentContent.duration_minutes}분</span>
+            {/* Two column layout on desktop */}
+            <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+              {/* Left: Main content info */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* 메타 뱃지 */}
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <Badge className="text-xs font-semibold px-3 py-1.5 bg-foreground text-background rounded-lg uppercase tracking-wider">
+                    {contentTypeLabel[currentContent.content_type || "video"] || currentContent.content_type || "video"}
+                  </Badge>
+                  {currentContent.duration_minutes && (
+                    <div className="flex items-center gap-1.5 text-sm text-foreground bg-secondary px-3 py-1.5 rounded-lg">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span className="font-medium">{currentContent.duration_minutes}분</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 제목 */}
+                <div className="flex items-start gap-4 flex-wrap">
+                  <h1 className="text-2xl lg:text-3xl font-bold text-foreground leading-tight flex-1">{currentContent.title}</h1>
+                  {isMangoboard(currentContent.video_url) && embedUrl && (
+                    <Button onClick={() => setMangoPopupOpen(true)} size="lg" className="gap-2 shrink-0 text-base">
+                      <Play className="h-4 w-4" /> 학습하기
+                    </Button>
+                  )}
+                </div>
+
+                {/* 설명 */}
+                {currentContent.description && (
+                  <div className="bg-secondary/40 rounded-2xl p-5 lg:p-7">
+                    <p className="text-sm lg:text-base text-foreground/80 leading-7 lg:leading-8 whitespace-pre-line break-keep">
+                      {currentContent.description}
+                    </p>
                   </div>
                 )}
-                <div className="text-sm text-muted-foreground bg-secondary px-3 py-1 rounded-lg font-medium">
-                  {currentIndex + 1} / {contents.length}
-                </div>
-              </div>
 
-              {/* 제목 + 학습하기 버튼 */}
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl font-semibold text-foreground">{currentContent.title}</h1>
-                {isMangoboard(currentContent.video_url) && embedUrl && (
-                  <Button onClick={() => setMangoPopupOpen(true)} size="sm" className="gap-1.5 shrink-0">
-                    <Play className="h-3.5 w-3.5" /> 학습하기
-                  </Button>
-                )}
-              </div>
-
-              {/* 개선1: 설명 텍스트 가독성 향상 */}
-              {currentContent.description && (
-                <div className="bg-secondary/40 rounded-2xl p-5 lg:p-6">
-                  <p className="text-sm text-muted-foreground leading-7 whitespace-pre-line break-keep">
-                    {currentContent.description}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* 개선4: 학습 완료 표시 강조 */}
-            {currentProgress?.completed ? (
-              <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl px-5 py-4">
-                <div className="h-10 w-10 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-green-700 dark:text-green-300">학습 완료</p>
-                  <p className="text-xs text-green-600/70 dark:text-green-400/70">이 차시를 성공적으로 완료했습니다.</p>
-                </div>
-              </div>
-            ) : user && (
-              <Button
-                variant="login"
-                size="xl"
-                onClick={() => markCompleteMutation.mutate()}
-                disabled={markCompleteMutation.isPending}
-                className="w-full sm:w-auto"
-              >
-                {markCompleteMutation.isPending ? "처리 중..." : "학습 완료 표시"}
-              </Button>
-            )}
-
-            {/* 개선2: 하단 네비게이션 균형 배치 */}
-            <div className="flex items-center justify-between pt-6 border-t border-border">
-              <div className="flex-1">
-                {prevContent ? (
-                  <Button
-                    variant="outline"
-                    className="rounded-xl gap-2"
-                    onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    <div className="text-left hidden sm:block">
-                      <span className="text-[10px] text-muted-foreground block">이전 차시</span>
-                      <span className="text-xs truncate max-w-[120px] block">{prevContent.title}</span>
+                {/* 학습 완료 / 버튼 */}
+                {currentProgress?.completed ? (
+                  <div className="flex items-center gap-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl px-6 py-5">
+                    <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
                     </div>
-                    <span className="sm:hidden text-sm">이전</span>
+                    <div>
+                      <p className="text-base font-semibold text-green-700 dark:text-green-300">학습 완료</p>
+                      <p className="text-sm text-green-600/70 dark:text-green-400/70">이 차시를 성공적으로 완료했습니다.</p>
+                    </div>
+                  </div>
+                ) : user && (
+                  <Button
+                    variant="login"
+                    size="xl"
+                    onClick={() => markCompleteMutation.mutate()}
+                    disabled={markCompleteMutation.isPending}
+                    className="w-full lg:w-auto text-base"
+                  >
+                    {markCompleteMutation.isPending ? "처리 중..." : "학습 완료 표시"}
                   </Button>
-                ) : (
-                  <div />
                 )}
+
+                {/* 하단 네비게이션 */}
+                <div className="flex items-center justify-between pt-6 border-t border-border">
+                  <div className="flex-1">
+                    {prevContent ? (
+                      <Button
+                        variant="outline"
+                        className="rounded-xl gap-2"
+                        onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        <div className="text-left hidden sm:block">
+                          <span className="text-[10px] text-muted-foreground block">이전 차시</span>
+                          <span className="text-xs truncate max-w-[140px] block">{prevContent.title}</span>
+                        </div>
+                        <span className="sm:hidden text-sm">이전</span>
+                      </Button>
+                    ) : (
+                      <div />
+                    )}
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    className="rounded-xl gap-2 text-muted-foreground hover:text-foreground hidden lg:hidden"
+                    onClick={() => navigate(`/courses/${courseId}`)}
+                  >
+                    <ArrowLeft className="h-4 w-4" /> 강좌 목록
+                  </Button>
+
+                  {/* 모바일 강좌 목록 버튼 */}
+                  <Button
+                    variant="ghost"
+                    className="rounded-xl gap-2 text-muted-foreground hover:text-foreground lg:hidden"
+                    onClick={() => navigate(`/courses/${courseId}`)}
+                  >
+                    <ArrowLeft className="h-4 w-4" /> 강좌 목록
+                  </Button>
+
+                  <div className="flex-1 flex justify-end">
+                    {nextContent ? (
+                      <Button
+                        variant="outline"
+                        className="rounded-xl gap-2"
+                        onClick={() => navigate(`/courses/${courseId}/content/${nextContent.id}`)}
+                      >
+                        <div className="text-right hidden sm:block">
+                          <span className="text-[10px] text-muted-foreground block">다음 차시</span>
+                          <span className="text-xs truncate max-w-[140px] block">{nextContent.title}</span>
+                        </div>
+                        <span className="sm:hidden text-sm">다음</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <div />
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <Button
-                variant="ghost"
-                className="rounded-xl gap-2 text-muted-foreground hover:text-foreground"
-                onClick={() => navigate(`/courses/${courseId}`)}
-              >
-                <ArrowLeft className="h-4 w-4" /> 강좌 목록
-              </Button>
-
-              <div className="flex-1 flex justify-end">
-                {nextContent ? (
-                  <Button
-                    variant="outline"
-                    className="rounded-xl gap-2"
-                    onClick={() => navigate(`/courses/${courseId}/content/${nextContent.id}`)}
-                  >
-                    <div className="text-right hidden sm:block">
-                      <span className="text-[10px] text-muted-foreground block">다음 차시</span>
-                      <span className="text-xs truncate max-w-[120px] block">{nextContent.title}</span>
+              {/* Right: Course progress sidebar (desktop only) */}
+              <div className="hidden lg:block space-y-4">
+                <div className="rounded-2xl border border-border bg-card p-5 sticky top-20">
+                  <h3 className="text-sm font-semibold text-foreground mb-4">학습 진행 현황</h3>
+                  
+                  {/* Progress circle */}
+                  <div className="flex items-center justify-center mb-5">
+                    <div className="relative h-28 w-28">
+                      <svg className="h-28 w-28 -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--border))" strokeWidth="8" />
+                        <circle
+                          cx="50" cy="50" r="42" fill="none"
+                          stroke="hsl(var(--primary))" strokeWidth="8"
+                          strokeLinecap="round"
+                          strokeDasharray={`${overallProgress * 2.64} 264`}
+                          className="transition-all duration-500"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-foreground">{overallProgress}%</span>
+                        <span className="text-[10px] text-muted-foreground">완료</span>
+                      </div>
                     </div>
-                    <span className="sm:hidden text-sm">다음</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div />
-                )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm mb-4 px-2">
+                    <span className="text-muted-foreground">완료한 차시</span>
+                    <span className="font-semibold text-foreground">{completedCount} / {contents.length}</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {contents.map((c, idx) => {
+                      const isActive = c.id === contentId;
+                      const isCompleted = progressMap.get(c.id)?.completed;
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => navigate(`/courses/${courseId}/content/${c.id}`)}
+                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 text-sm transition-all ${
+                            isActive
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                          }`}
+                        >
+                          <div className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-medium ${
+                            isCompleted
+                              ? "bg-green-500 text-white"
+                              : isActive
+                              ? "bg-primary text-primary-foreground"
+                              : "border border-border text-muted-foreground"
+                          }`}>
+                            {isCompleted ? <CheckCircle2 className="h-3 w-3" /> : idx + 1}
+                          </div>
+                          <span className="truncate flex-1 text-xs">{c.title}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
