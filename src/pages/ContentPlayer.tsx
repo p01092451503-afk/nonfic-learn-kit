@@ -391,7 +391,7 @@ const ContentPlayer = () => {
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <div>
                   {prevContent ? (
-                    <Button variant="ghost" className="rounded-xl gap-2 text-muted-foreground hover:text-foreground" onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}>
+                    <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}>
                       <ChevronLeft className="h-4 w-4" />
                       <span className="text-sm">{t("common.previous")}</span>
                     </Button>
