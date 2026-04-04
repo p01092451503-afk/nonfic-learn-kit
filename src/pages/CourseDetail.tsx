@@ -79,9 +79,15 @@ const CourseDetail = () => {
   const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft", is_mandatory: false, deadline: "" });
   const [courseEnForm, setCourseEnForm] = useState({ title: "", description: "" });
 
+  // Determine view context from URL path: /admin/courses/:id → admin, otherwise check role
+  const isAdminRoute = location.pathname.startsWith("/admin/courses/");
   const forceLearnView = searchParams.get("view") === "learn";
-  const isTeacherOrAdmin = !forceLearnView && (primaryRole === "admin" || primaryRole === "teacher");
-  const role = isTeacherOrAdmin ? (primaryRole === "admin" ? "admin" : "teacher") : "student";
+  const isTeacherOrAdmin = !forceLearnView && (isAdminRoute ? primaryRole === "admin" : primaryRole === "teacher" || primaryRole === "admin");
+  const role: "admin" | "teacher" | "student" = isAdminRoute && primaryRole === "admin"
+    ? "admin"
+    : !forceLearnView && !isAdminRoute && primaryRole === "teacher"
+    ? "teacher"
+    : "student";
 
   // --- Queries ---
   const { data: course, isLoading: courseLoading } = useQuery({
