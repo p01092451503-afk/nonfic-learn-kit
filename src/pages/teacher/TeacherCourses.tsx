@@ -120,22 +120,22 @@ const TeacherCourses = () => {
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">{t("teacher.totalCoursesCount")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="stat-card !p-3 sm:!p-4">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("teacher.totalCoursesCount")}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.total}</p>
           </div>
-          <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">{t("teacher.publishedCourses")}</p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.published}</p>
+          <div className="stat-card !p-3 sm:!p-4">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("teacher.publishedCourses")}</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.published}</p>
           </div>
-          <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">{t("teacher.drafts")}</p>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.draft}</p>
+          <div className="stat-card !p-3 sm:!p-4">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("teacher.drafts")}</p>
+            <p className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.draft}</p>
           </div>
-          <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">{t("teacher.totalStudentsLabel")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{stats.totalStudents}</p>
+          <div className="stat-card !p-3 sm:!p-4">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("teacher.totalStudentsLabel")}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.totalStudents}</p>
           </div>
         </div>
 
