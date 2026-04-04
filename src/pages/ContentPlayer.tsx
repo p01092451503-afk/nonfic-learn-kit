@@ -563,7 +563,7 @@ const ContentPlayer = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Mangoboard Popup */}
       {mangoPopupOpen && currentContent && isMangoboard(localVideoUrl) && embedUrl && (
