@@ -166,11 +166,11 @@ const CourseCatalog = () => {
   });
 
   const { data: enrollments = [] } = useQuery({
-    queryKey: ["my-enrollment-ids", user?.id],
+    queryKey: ["my-enrollment-status", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("enrollments").select("course_id").eq("user_id", user!.id);
+      const { data, error } = await supabase.from("enrollments").select("course_id, status").eq("user_id", user!.id);
       if (error) throw error;
-      return data.map((e) => e.course_id);
+      return data;
     },
     enabled: !!user?.id,
   });
