@@ -424,14 +424,7 @@ const ContentPlayer = () => {
                 </div>
 
                 {/* 제목 */}
-                <div className="flex items-start gap-4 flex-wrap">
-                  <h1 className="text-2xl lg:text-3xl font-bold text-foreground leading-tight flex-1">{currentContent.title}</h1>
-                  {isMangoboard(currentContent.video_url) && embedUrl && (
-                    <Button onClick={() => setMangoPopupOpen(true)} size="lg" className="gap-2 shrink-0 text-base">
-                      <Play className="h-4 w-4" /> 학습하기
-                    </Button>
-                  )}
-                </div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground leading-tight">{currentContent.title}</h1>
 
                 {/* 설명 */}
                 {currentContent.description && (
