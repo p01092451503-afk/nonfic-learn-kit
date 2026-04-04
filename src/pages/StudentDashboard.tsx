@@ -292,11 +292,11 @@ const StudentDashboard = () => {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary" aria-hidden="true" />
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" aria-hidden="true" />
             {t("dashboard.learningDashboard")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("dashboard.hello")}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("dashboard.hello")}</p>
         </div>
 
         {/* Stat Cards */}
