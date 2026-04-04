@@ -14,24 +14,22 @@ import {
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
+import { useTranslation } from "react-i18next";
 
-const statusLabel: Record<string, string> = {
-  draft: "초안",
-  published: "공개",
-  archived: "보관",
-};
+const TeacherCourses = () => {
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
-const statusColor: Record<string, string> = {
-  draft: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  published: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  archived: "bg-secondary text-muted-foreground",
-};
-
-const difficultyLabel: Record<string, string> = {
-  beginner: "초급",
-  intermediate: "중급",
-  advanced: "고급",
-};
+  const statusLabel: Record<string, string> = {
+    draft: t("teacher.draft"), published: t("teacher.open"), archived: t("teacher.archived"),
+  };
+  const difficultyLabel: Record<string, string> = {
+    beginner: t("teacher.beginner"), intermediate: t("teacher.intermediate"), advanced: t("teacher.advanced"),
+  };
 
 const TeacherCourses = () => {
   const { user } = useUser();
