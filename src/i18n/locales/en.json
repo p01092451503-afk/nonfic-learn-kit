@@ -789,6 +789,9 @@
   "catalog": {
     "title": "Course Catalog",
     "subtitle": "Explore and enroll in NONFICTION's diverse training courses.",
+    "totalCourses": "Courses",
+    "totalCategories": "Categories",
+    "myEnrolled": "Enrolled",
     "allCourses": "All Courses",
     "searchPlaceholder": "Search courses...",
     "resultCount": "{{count}} courses",
