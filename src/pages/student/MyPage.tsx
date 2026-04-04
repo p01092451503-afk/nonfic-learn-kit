@@ -305,13 +305,13 @@ const MyPage = () => {
                     <button
                       key={url}
                       onClick={() => setSelectedAvatar(url)}
-                      className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
+                      className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 bg-accent ${
                         selectedAvatar === url
                           ? "border-primary ring-2 ring-primary/20 shadow-md"
                           : "border-border hover:border-muted-foreground/30"
                       }`}
                     >
-                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={url} alt="" className="w-full h-full object-contain p-1" loading="lazy" />
                       {selectedAvatar === url && (
                         <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
                           <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
