@@ -347,12 +347,12 @@ const ContentPlayer = () => {
         </div>
       )}
 
-      <aside className={`hidden lg:flex sticky top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border flex-col transition-all duration-300 ${sidebarOpen ? "w-72" : "w-0 overflow-hidden"}`}>
+      <aside className={`hidden lg:flex sticky top-16 h-[calc(100vh-4rem)] bg-sidebar border-r border-sidebar-border flex-col transition-all duration-300 ${sidebarOpen ? "w-72" : "w-0 overflow-hidden"}`}>
         {sidebarOpen && <SidebarContent />}
       </aside>
 
       {!sidebarOpen && (
-        <button onClick={() => setSidebarOpen(true)} className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-sidebar border border-sidebar-border rounded-r-lg hover:bg-accent text-muted-foreground transition-colors">
+        <button onClick={() => setSidebarOpen(true)} className="hidden lg:flex sticky top-1/2 z-30 p-2 bg-sidebar border border-sidebar-border rounded-r-lg hover:bg-accent text-muted-foreground transition-colors h-fit">
           <ChevronRight className="h-4 w-4" />
         </button>
       )}
