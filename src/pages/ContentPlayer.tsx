@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, FileText,
-  Video, BarChart3, ExternalLink, Clock, X, Menu,
+  Video, BarChart3, ExternalLink, Clock, X, Menu, RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { useVideoProgress } from "@/hooks/useVideoProgress";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
@@ -113,6 +114,8 @@ const ContentPlayer = () => {
     return course?.title || "";
   };
 
+  const isMangoboard = (url: string | null) => url?.includes("mangoboard.net") ?? false;
+
   const currentContent = contents.find((c) => c.id === contentId);
   const currentIndex = contents.findIndex((c) => c.id === contentId);
   const prevContent = currentIndex > 0 ? contents[currentIndex - 1] : null;
@@ -121,6 +124,57 @@ const ContentPlayer = () => {
   const currentProgress = progressMap.get(contentId || "");
   const completedCount = progressData.filter((p) => p.completed).length;
   const overallProgress = contents.length > 0 ? Math.round((completedCount / contents.length) * 100) : 0;
+
+  // Determine if current content is a YouTube/Vimeo video
+  const localVideoUrlForHook = currentContent ? getVideoUrl(currentContent) : null;
+  const localProviderForHook = currentContent ? getVideoProvider(currentContent) : null;
+  const isYouTube = (url: string | null, provider: string | null) =>
+    provider === "youtube" || url?.includes("youtube.com") || url?.includes("youtu.be");
+  const isVimeo = (url: string | null, provider: string | null) =>
+    provider === "vimeo" || url?.includes("vimeo.com");
+  const isTrackableVideo = !!(currentContent && localVideoUrlForHook && !isMangoboard(localVideoUrlForHook) &&
+    (isYouTube(localVideoUrlForHook, localProviderForHook) || isVimeo(localVideoUrlForHook, localProviderForHook)));
+
+  const videoProgress = useVideoProgress({
+    userId: user?.id,
+    contentId,
+    courseId,
+    durationMinutes: currentContent?.duration_minutes ?? undefined,
+    existingProgress: currentProgress,
+    enabled: isTrackableVideo,
+  });
+
+  const videoIframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  // Auto-complete toast for video
+  useEffect(() => {
+    if (videoProgress.autoCompleted) {
+      toast({ title: t("contentPlayer.autoCompleted"), description: t("contentPlayer.autoCompletedDesc") });
+      queryClient.invalidateQueries({ queryKey: ["content-progress", courseId] });
+    }
+  }, [videoProgress.autoCompleted]);
+
+  // Initialize YouTube/Vimeo player when iframe mounts
+  const videoIframeCallback = useCallback(
+    (el: HTMLIFrameElement | null) => {
+      if (!el || !currentContent || !isTrackableVideo) return;
+      videoIframeRef.current = el;
+      const url = localVideoUrlForHook!;
+      if (isYouTube(url, localProviderForHook)) {
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
+        if (match) videoProgress.initYouTube(el, match[1]);
+      } else if (isVimeo(url, localProviderForHook)) {
+        videoProgress.initVimeo(el);
+      }
+    },
+    [currentContent?.id, isTrackableVideo]
+  );
+
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
 
   useEffect(() => {
     if (activeItemRef.current) {
@@ -170,7 +224,6 @@ const ContentPlayer = () => {
     },
   });
 
-  const isMangoboard = (url: string | null) => url?.includes("mangoboard.net") ?? false;
 
   const normalizeMangoboardUrl = (url: string) => {
     let normalized = url.trim();
@@ -183,7 +236,14 @@ const ContentPlayer = () => {
     if (isMangoboard(url)) return normalizeMangoboardUrl(url);
     if (provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) {
       const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
-      if (match) return `https://www.youtube.com/embed/${match[1]}`;
+      if (match) {
+        const params = new URLSearchParams({
+          enablejsapi: "1",
+          origin: window.location.origin,
+          ...(videoProgress.resumePosition > 0 && !currentProgress?.completed ? { start: String(videoProgress.resumePosition) } : {}),
+        });
+        return `https://www.youtube.com/embed/${match[1]}?${params.toString()}`;
+      }
     }
     if (provider === "vimeo" || url.includes("vimeo.com")) {
       const match = url.match(/vimeo\.com\/(\d+)/);
@@ -328,8 +388,39 @@ const ContentPlayer = () => {
                   </div>
                 </button>
               ) : currentContent.content_type === "video" && embedUrl ? (
-                <div className="aspect-video w-full">
-                  <iframe src={embedUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={localTitle} />
+                <div className="relative">
+                  <div className="aspect-video w-full">
+                    <iframe
+                      ref={isTrackableVideo ? videoIframeCallback : undefined}
+                      id={`video-player-${contentId}`}
+                      src={embedUrl}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={localTitle}
+                    />
+                  </div>
+                  {/* Video progress bar & resume indicator */}
+                  {isTrackableVideo && (
+                    <div className="px-4 py-2.5 bg-secondary/60 flex items-center gap-3 text-xs">
+                      <span className="text-muted-foreground shrink-0">{t("contentPlayer.watchProgress")}</span>
+                      <Progress value={videoProgress.duration > 0 ? (videoProgress.currentTime / videoProgress.duration) * 100 : (currentProgress?.progress_percentage || 0)} className="h-1.5 flex-1" />
+                      <span className="text-muted-foreground font-medium shrink-0">
+                        {videoProgress.duration > 0
+                          ? `${formatTime(videoProgress.currentTime)} / ${formatTime(videoProgress.duration)}`
+                          : `${Math.round(currentProgress?.progress_percentage || 0)}%`}
+                      </span>
+                      {videoProgress.resumePosition > 0 && !currentProgress?.completed && (
+                        <Badge variant="outline" className="text-[10px] gap-1 shrink-0">
+                          <RotateCcw className="h-3 w-3" />
+                          {t("contentPlayer.resumeFrom", { time: formatTime(videoProgress.resumePosition) })}
+                        </Badge>
+                      )}
+                      {!currentProgress?.completed && (
+                        <span className="text-[10px] text-muted-foreground/70 shrink-0">{t("contentPlayer.autoCompleteAt80")}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : currentContent.content_type === "video" && localVideoUrl ? (
                 <div className="aspect-video w-full flex items-center justify-center">
