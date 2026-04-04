@@ -372,8 +372,6 @@ const TeacherStudents = () => {
         </div>
       </div>
     </DashboardLayout>
-  );
-};
 
       {/* Send Message Dialog */}
       <Dialog open={msgOpen} onOpenChange={setMsgOpen}>
