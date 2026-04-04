@@ -390,7 +390,7 @@ const CourseDetail = () => {
   if (isTeacherOrAdmin) {
     return (
       <DashboardLayout role={role}>
-        <div className="max-w-5xl space-y-5">
+        <div className="space-y-5">
           <div className="flex items-center justify-between">
             <button onClick={() => navigate(role === "admin" ? "/admin/courses" : "/teacher/courses")} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="h-3.5 w-3.5" /> {t("course.backToCourseList")}
