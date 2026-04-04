@@ -253,16 +253,34 @@ const CourseCatalog = () => {
       <div className="space-y-0 -m-6 lg:-m-8">
         {/* Hero banner — Toss-style minimal */}
         <div className="px-6 lg:px-10 pt-8 pb-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-12 w-12 border-2 border-border">
-              <AvatarImage src={profile?.avatar_url || ""} />
-              <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-medium">
-                {profile?.full_name?.charAt(0) || "?"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-xl font-semibold text-foreground">{t("catalog.title")}</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">{t("catalog.subtitle")}</p>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-12 w-12 border-2 border-border">
+                <AvatarImage src={profile?.avatar_url || ""} />
+                <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-medium">
+                  {profile?.full_name?.charAt(0) || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-xl font-semibold text-foreground">{t("catalog.title")}</h1>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("catalog.subtitle")}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <p className="text-lg font-bold text-foreground">{courses.length}</p>
+                <p className="text-[11px] text-muted-foreground">{t("catalog.totalCourses")}</p>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="text-center">
+                <p className="text-lg font-bold text-foreground">{categories.length}</p>
+                <p className="text-[11px] text-muted-foreground">{t("catalog.totalCategories")}</p>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="text-center">
+                <p className="text-lg font-bold text-foreground">{enrollments.filter((e: any) => e.status === "approved").length}</p>
+                <p className="text-[11px] text-muted-foreground">{t("catalog.myEnrolled")}</p>
+              </div>
             </div>
           </div>
         </div>
