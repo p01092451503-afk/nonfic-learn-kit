@@ -417,7 +417,7 @@ const StudentDashboard = () => {
                           }
                         }}
                       >
-                        <Play className="h-3.5 w-3.5" /> {t("common.continue")}
+                        <Play className="h-3.5 w-3.5" aria-hidden="true" /> {t("common.continue")}
                       </Button>
                     </div>
 
