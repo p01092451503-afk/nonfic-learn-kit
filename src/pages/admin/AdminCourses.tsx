@@ -38,6 +38,8 @@ const AdminCourses = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title" | "students">("newest");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const { t } = useTranslation();
 
