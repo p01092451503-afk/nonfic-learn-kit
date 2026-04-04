@@ -530,8 +530,17 @@ const ContentPlayer = () => {
               {mangoAutoCompleted && <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />}
             </div>
           </div>
-          <div className="h-[95vh]" style={{ aspectRatio: "9/16", maxWidth: "95vw" }}>
-            <iframe src={embedUrl} className="w-full h-full border-0 rounded-lg" allowFullScreen title={localTitle} />
+          <div className="w-[95vw] h-[calc(95vh-60px)] sm:h-[95vh] sm:w-auto" style={{ aspectRatio: window.innerWidth < 640 ? undefined : "9/16", maxWidth: "95vw" }}>
+            <iframe
+              src={embedUrl}
+              className="w-full h-full border-0 rounded-lg"
+              allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation"
+              referrerPolicy="no-referrer-when-downgrade"
+              title={localTitle}
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            />
           </div>
         </div>
       )}
