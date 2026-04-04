@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BookOpen, Clock, Users, ArrowLeft, CheckCircle2, Lock,
@@ -62,6 +62,7 @@ const emptyI18n: ContentI18nData = {
 const CourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { user } = useUser();
   const { primaryRole } = useUserRole();
@@ -78,9 +79,17 @@ const CourseDetail = () => {
   const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft", is_mandatory: false, deadline: "" });
   const [courseEnForm, setCourseEnForm] = useState({ title: "", description: "" });
 
+  // Determine view context: /admin/courses/:id → admin, ?view=learn → student, else use primaryRole
+  const isAdminRoute = location.pathname.startsWith("/admin/courses/");
   const forceLearnView = searchParams.get("view") === "learn";
-  const isTeacherOrAdmin = !forceLearnView && (primaryRole === "admin" || primaryRole === "teacher");
-  const role = isTeacherOrAdmin ? (primaryRole === "admin" ? "admin" : "teacher") : "student";
+  const role: "admin" | "teacher" | "student" = forceLearnView
+    ? "student"
+    : isAdminRoute && primaryRole === "admin"
+    ? "admin"
+    : primaryRole === "teacher"
+    ? "teacher"
+    : "student";
+  const isTeacherOrAdmin = role === "admin" || role === "teacher";
 
   // --- Queries ---
   const { data: course, isLoading: courseLoading } = useQuery({

@@ -369,7 +369,7 @@ const StudentDashboard = () => {
                         </div>
                       )}
                     </div>
-                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5" onClick={() => navigate(`/courses/${mc.id}`)}>
+                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5" onClick={() => navigate(`/courses/${mc.id}?view=learn`)}>
                       <Play className="h-3.5 w-3.5" /> {t("common.continue")}
                     </Button>
                   </div>
@@ -413,7 +413,7 @@ const StudentDashboard = () => {
                           if (nextContent) {
                             navigate(`/courses/${enrollment.course_id}/content/${nextContent.id}`);
                           } else {
-                            navigate(`/courses/${enrollment.course_id}`);
+                            navigate(`/courses/${enrollment.course_id}?view=learn`);
                           }
                         }}
                       >
@@ -503,7 +503,7 @@ const StudentDashboard = () => {
                     <Button
                       size="sm"
                       className="shrink-0 rounded-full"
-                      onClick={() => navigate(`/courses/${course.id}`)}
+                      onClick={() => navigate(`/courses/${course.id}?view=learn`)}
                     >
                       {t("common.details")}
                     </Button>
