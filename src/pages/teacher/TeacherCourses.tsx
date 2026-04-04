@@ -262,7 +262,7 @@ const TeacherCourses = () => {
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-center">
                         <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                          <Users className="h-3 w-3" /> {students}
+                          <Users className="h-3 w-3" aria-hidden="true" /> {students}
                         </div>
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-center">
