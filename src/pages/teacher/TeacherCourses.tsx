@@ -162,18 +162,22 @@ const TeacherCourses = () => {
               <SelectItem value="draft">{t("teacher.draft")}</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex items-center border border-border rounded-xl overflow-hidden">
+          <div className="flex items-center border border-border rounded-xl overflow-hidden" role="group" aria-label={t("teacher.viewMode", "보기 모드")}>
             <button
               onClick={() => setViewMode("list")}
               className={`p-2.5 transition-colors ${viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"}`}
+              aria-label={t("teacher.listView", "목록 보기")}
+              aria-pressed={viewMode === "list"}
             >
-              <List className="h-4 w-4" />
+              <List className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               onClick={() => setViewMode("grid")}
               className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"}`}
+              aria-label={t("teacher.gridView", "그리드 보기")}
+              aria-pressed={viewMode === "grid"}
             >
-              <LayoutGrid className="h-4 w-4" />
+              <LayoutGrid className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>
