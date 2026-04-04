@@ -266,6 +266,9 @@ const ContentPlayer = () => {
         <div className="h-5 w-px bg-border" />
         <h1 className="text-sm font-semibold text-foreground truncate flex-1">{getCourseTitle()}</h1>
         <div className="flex items-center gap-3 shrink-0">
+          <button onClick={() => setMobileCurriculumOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-accent text-muted-foreground transition-colors" title={t("course.learningProgress")}>
+            <List className="h-5 w-5" />
+          </button>
           <span className="text-xs text-muted-foreground">
             <span className="font-semibold text-foreground">{currentIndex + 1}</span> / {contents.length} {t("course.lesson")}
           </span>
