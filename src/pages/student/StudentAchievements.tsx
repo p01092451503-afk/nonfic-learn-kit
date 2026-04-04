@@ -82,38 +82,38 @@ const StudentAchievements = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("achievements.subtitle")}</p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="stat-card text-center">
-            <TrendingUp className="h-5 w-5 text-muted-foreground mx-auto mb-3" />
-            <p className="text-3xl font-bold text-foreground">Lv.{level}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("achievements.currentLevel")}</p>
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4" aria-label={t("achievements.title")}>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("achievements.currentLevel")}>
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mx-auto mb-2 sm:mb-3" aria-hidden="true" />
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">Lv.{level}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("achievements.currentLevel")}</p>
           </div>
-          <div className="stat-card text-center">
-            <Zap className="h-5 w-5 text-warning mx-auto mb-3" />
-            <p className="text-3xl font-bold text-foreground">{totalPoints}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("achievements.totalPoints")}</p>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("achievements.totalPoints")}>
+            <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-warning mx-auto mb-2 sm:mb-3" aria-hidden="true" />
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">{totalPoints}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("achievements.totalPoints")}</p>
           </div>
-          <div className="stat-card text-center">
-            <Flame className="h-5 w-5 text-destructive mx-auto mb-3" />
-            <p className="text-3xl font-bold text-foreground">{streak}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("achievements.consecutiveDays")}</p>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("achievements.consecutiveDays")}>
+            <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-destructive mx-auto mb-2 sm:mb-3" aria-hidden="true" />
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">{streak}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("achievements.consecutiveDays")}</p>
           </div>
-          <div className="stat-card text-center">
-            <Award className="h-5 w-5 text-success mx-auto mb-3" />
-            <p className="text-3xl font-bold text-foreground">{myBadges.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("achievements.earnedBadges")}</p>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("achievements.earnedBadges")}>
+            <Award className="h-4 w-4 sm:h-5 sm:w-5 text-success mx-auto mb-2 sm:mb-3" aria-hidden="true" />
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">{myBadges.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("achievements.earnedBadges")}</p>
           </div>
-        </div>
+        </section>
 
-        <div className="stat-card">
+        <div className="stat-card !p-4 sm:!p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">{t("achievements.nextLevel")}</span>
-            <span className="text-xs text-muted-foreground">{xp} / {nextLevelXp} XP</span>
+            <span className="text-xs sm:text-sm font-medium text-foreground">{t("achievements.nextLevel")}</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground">{xp} / {nextLevelXp} XP</span>
           </div>
-          <Progress value={xpProgress} className="h-2" />
+          <Progress value={xpProgress} className="h-2" aria-label={`XP ${t("achievements.nextLevel")}: ${xp}/${nextLevelXp}`} />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-lg font-semibold text-foreground">{t("achievements.badgeCollection")}</h2>
             {allBadges.length === 0 ? (

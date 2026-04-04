@@ -292,11 +292,11 @@ const StudentDashboard = () => {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary" aria-hidden="true" />
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" aria-hidden="true" />
             {t("dashboard.learningDashboard")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("dashboard.hello")}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("dashboard.hello")}</p>
         </div>
 
         {/* Stat Cards */}
@@ -343,16 +343,16 @@ const StudentDashboard = () => {
                 const isToday = mc.daysLeft === 0;
                 const isUrgent = mc.daysLeft !== null && mc.daysLeft <= 3;
                 return (
-                  <div key={mc.id} className={`stat-card !p-4 flex items-center gap-4 ${isOverdue ? "border-destructive/40 bg-destructive/5" : isUrgent ? "border-orange-300 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/10" : ""}`}>
+                  <div key={mc.id} className={`stat-card !p-3 sm:!p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 ${isOverdue ? "border-destructive/40 bg-destructive/5" : isUrgent ? "border-orange-300 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/10" : ""}`} role="article" aria-label={mc.title}>
                     <div className="flex-1 min-w-0 space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-sm font-semibold text-foreground truncate">{mc.title}</h3>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
                           isOverdue ? "bg-destructive/10 text-destructive" :
                           isToday ? "bg-destructive/10 text-destructive" :
                           isUrgent ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
                           "bg-muted text-muted-foreground"
-                        }`}>
+                        }`} role="status">
                           {isOverdue ? t("mandatory.overdue") :
                            isToday ? t("mandatory.today") :
                            mc.daysLeft !== null ? t("mandatory.daysLeft", { days: mc.daysLeft }) : ""}
@@ -365,11 +365,11 @@ const StudentDashboard = () => {
                       {mc.deadline && (
                         <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                           <Calendar className="h-3 w-3" aria-hidden="true" />
-                          <span>{t("mandatory.deadline")}: {mc.deadline}</span>
+                          <time dateTime={mc.deadline}>{t("mandatory.deadline")}: {mc.deadline}</time>
                         </div>
                       )}
                     </div>
-                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5" onClick={() => navigate(`/courses/${mc.id}?view=learn`)} aria-label={`${mc.title} - ${t("common.continue")}`}>
+                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5 w-full sm:w-auto" onClick={() => navigate(`/courses/${mc.id}?view=learn`)} aria-label={`${mc.title} - ${t("common.continue")}`}>
                       <Play className="h-3.5 w-3.5" aria-hidden="true" /> {t("common.continue")}
                     </Button>
                   </div>
@@ -397,18 +397,18 @@ const StudentDashboard = () => {
                 const instructorName = instructorMap.get(enrollment.courses?.instructor_id) || t("dashboard.instructor");
 
                 return (
-                  <div key={enrollment.id} className="stat-card !p-5 space-y-3">
-                    <div className="flex items-start justify-between gap-4">
+                  <div key={enrollment.id} className="stat-card !p-4 sm:!p-5 space-y-3" role="article" aria-label={enrollment.courses?.title}>
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
                       <div className="space-y-1 min-w-0 flex-1">
-                        <h3 className="text-base font-semibold text-foreground truncate">
+                        <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">
                           {enrollment.courses?.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground">{instructorName}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{instructorName}</p>
                       </div>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="gap-1.5 shrink-0 rounded-full"
+                        className="gap-1.5 shrink-0 rounded-full w-full sm:w-auto"
                         onClick={() => {
                           if (nextContent) {
                             navigate(`/courses/${enrollment.course_id}/content/${nextContent.id}?view=learn`);
@@ -416,6 +416,7 @@ const StudentDashboard = () => {
                             navigate(`/courses/${enrollment.course_id}?view=learn`);
                           }
                         }}
+                        aria-label={`${enrollment.courses?.title} - ${t("common.continue")}`}
                       >
                         <Play className="h-3.5 w-3.5" aria-hidden="true" /> {t("common.continue")}
                       </Button>
@@ -442,7 +443,7 @@ const StudentDashboard = () => {
         </div>
 
         {/* 학습 통계 + 추천 강의 */}
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* 학습 통계 */}
           <div className="stat-card !p-6 space-y-5">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
@@ -492,7 +493,7 @@ const StudentDashboard = () => {
             ) : (
               <div className="space-y-3">
                 {recommendedCourses.map((course: any) => (
-                  <div key={course.id} className="stat-card !p-4 flex items-center justify-between gap-4">
+                  <div key={course.id} className="stat-card !p-3 sm:!p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4" role="article" aria-label={course.title}>
                     <div className="min-w-0 flex-1 space-y-1">
                       <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
                       <p className="text-xs text-muted-foreground">{recInstructorMap.get(course.instructor_id) || t("dashboard.instructor")}</p>
@@ -503,8 +504,9 @@ const StudentDashboard = () => {
                     </div>
                     <Button
                       size="sm"
-                      className="shrink-0 rounded-full"
+                      className="shrink-0 rounded-full w-full sm:w-auto"
                       onClick={() => navigate(`/courses/${course.id}?view=learn`)}
+                      aria-label={`${course.title} - ${t("common.details")}`}
                     >
                       {t("common.details")}
                     </Button>

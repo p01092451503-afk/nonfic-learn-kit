@@ -97,20 +97,20 @@ const StudentAssignments = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("assignments.subtitle")}</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="stat-card text-center">
-            <p className="text-2xl font-bold text-warning">{pending.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("assignments.unsubmitted")}</p>
+        <section className="grid grid-cols-3 gap-2 sm:gap-4" aria-label={t("assignments.title")}>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("assignments.unsubmitted")}>
+            <p className="text-xl sm:text-2xl font-bold text-warning">{pending.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("assignments.unsubmitted")}</p>
           </div>
-          <div className="stat-card text-center">
-            <p className="text-2xl font-bold text-info">{submitted.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("assignments.waitingGrade")}</p>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("assignments.waitingGrade")}>
+            <p className="text-xl sm:text-2xl font-bold text-info">{submitted.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("assignments.waitingGrade")}</p>
           </div>
-          <div className="stat-card text-center">
-            <p className="text-2xl font-bold text-success">{graded.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("assignments.graded")}</p>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("assignments.graded")}>
+            <p className="text-xl sm:text-2xl font-bold text-success">{graded.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("assignments.graded")}</p>
           </div>
-        </div>
+        </section>
 
         {/* Pending assignments */}
         {pending.length > 0 && (
@@ -119,29 +119,37 @@ const StudentAssignments = () => {
             {pending.map((assignment: any) => (
               <div
                 key={assignment.id}
-                className="stat-card flex items-center gap-4 cursor-pointer group !p-4 hover:shadow-md transition-all"
+                className="stat-card flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 cursor-pointer group !p-3 sm:!p-4 hover:shadow-md transition-all"
                 onClick={() => { setSubmitTarget(assignment); setSubmissionText(""); }}
+                role="button"
+                tabIndex={0}
+                aria-label={`${assignment.title} - ${t("common.submit")}`}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSubmitTarget(assignment); setSubmissionText(""); } }}
               >
-                <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
-                  <ClipboardList className="h-4 w-4 text-accent-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium text-foreground truncate">{assignment.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{assignment.courses?.title}</p>
-                </div>
-                <div className="text-right shrink-0 space-y-1">
-                  <div className="flex items-center gap-1 text-xs font-medium text-warning">
-                    <AlertCircle className="h-3 w-3" /> {t("assignments.unsubmitted")}
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0" aria-hidden="true">
+                    <ClipboardList className="h-4 w-4 text-accent-foreground" />
                   </div>
-                  {assignment.due_date && (
-                    <p className="text-[10px] text-muted-foreground">
-                      {t("assignments.dueDate", { date: formatDate(assignment.due_date) })}
-                    </p>
-                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-foreground truncate">{assignment.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{assignment.courses?.title}</p>
+                  </div>
                 </div>
-                <Button size="sm" variant="outline" className="rounded-xl text-xs shrink-0 gap-1.5">
-                  <Send className="h-3 w-3" /> {t("common.submit")}
-                </Button>
+                <div className="flex items-center justify-between sm:justify-end gap-3">
+                  <div className="text-left sm:text-right shrink-0 space-y-1">
+                    <div className="flex items-center gap-1 text-xs font-medium text-warning" role="status">
+                      <AlertCircle className="h-3 w-3" aria-hidden="true" /> {t("assignments.unsubmitted")}
+                    </div>
+                    {assignment.due_date && (
+                      <p className="text-[10px] text-muted-foreground">
+                        {t("assignments.dueDate", { date: formatDate(assignment.due_date) })}
+                      </p>
+                    )}
+                  </div>
+                  <Button size="sm" variant="outline" className="rounded-xl text-xs shrink-0 gap-1.5" tabIndex={-1} aria-hidden="true">
+                    <Send className="h-3 w-3" /> {t("common.submit")}
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -157,29 +165,37 @@ const StudentAssignments = () => {
               return (
                 <div
                   key={sub.id}
-                  className="stat-card flex items-center gap-4 cursor-pointer group !p-4 hover:shadow-md transition-all"
+                  className="stat-card flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 cursor-pointer group !p-3 sm:!p-4 hover:shadow-md transition-all"
                   onClick={() => setViewTarget(sub)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${sub.assignments?.title} - ${config.label}`}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setViewTarget(sub); } }}
                 >
-                  <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
-                    <ClipboardList className="h-4 w-4 text-accent-foreground" />
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0" aria-hidden="true">
+                      <ClipboardList className="h-4 w-4 text-accent-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-foreground truncate">{sub.assignments?.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">{sub.assignments?.courses?.title}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-foreground truncate">{sub.assignments?.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{sub.assignments?.courses?.title}</p>
-                  </div>
-                  <div className="text-right shrink-0 space-y-1">
-                    <div className={`flex items-center gap-1 text-xs font-medium ${config.color}`}>
-                      <StatusIcon className="h-3 w-3" />
-                      {config.label}
-                      {sub.status === "graded" && sub.score != null && (
-                        <span className="ml-1">{sub.score}/{sub.assignments?.max_score || 100}{t("common.points")}</span>
+                  <div className="flex items-center justify-between sm:justify-end gap-3">
+                    <div className="text-left sm:text-right shrink-0 space-y-1">
+                      <div className={`flex items-center gap-1 text-xs font-medium ${config.color}`} role="status">
+                        <StatusIcon className="h-3 w-3" aria-hidden="true" />
+                        {config.label}
+                        {sub.status === "graded" && sub.score != null && (
+                          <span className="ml-1">{sub.score}/{sub.assignments?.max_score || 100}{t("common.points")}</span>
+                        )}
+                      </div>
+                      {sub.submitted_at && (
+                        <p className="text-[10px] text-muted-foreground"><time dateTime={sub.submitted_at}>{formatDate(sub.submitted_at)}</time></p>
                       )}
                     </div>
-                    {sub.submitted_at && (
-                      <p className="text-[10px] text-muted-foreground">{formatDate(sub.submitted_at)}</p>
-                    )}
+                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" aria-hidden="true" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </div>
               );
             })}
