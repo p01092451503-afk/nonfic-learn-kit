@@ -97,20 +97,20 @@ const StudentAssignments = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("assignments.subtitle")}</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="stat-card text-center">
-            <p className="text-2xl font-bold text-warning">{pending.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("assignments.unsubmitted")}</p>
+        <section className="grid grid-cols-3 gap-2 sm:gap-4" aria-label={t("assignments.title")}>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("assignments.unsubmitted")}>
+            <p className="text-xl sm:text-2xl font-bold text-warning">{pending.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("assignments.unsubmitted")}</p>
           </div>
-          <div className="stat-card text-center">
-            <p className="text-2xl font-bold text-info">{submitted.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("assignments.waitingGrade")}</p>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("assignments.waitingGrade")}>
+            <p className="text-xl sm:text-2xl font-bold text-info">{submitted.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("assignments.waitingGrade")}</p>
           </div>
-          <div className="stat-card text-center">
-            <p className="text-2xl font-bold text-success">{graded.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("assignments.graded")}</p>
+          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("assignments.graded")}>
+            <p className="text-xl sm:text-2xl font-bold text-success">{graded.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("assignments.graded")}</p>
           </div>
-        </div>
+        </section>
 
         {/* Pending assignments */}
         {pending.length > 0 && (
