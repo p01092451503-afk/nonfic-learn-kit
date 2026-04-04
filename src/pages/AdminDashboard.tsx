@@ -9,10 +9,12 @@ import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const AdminDashboard = () => {
   const { profile } = useUser();
-  const displayName = profile?.full_name || "관리자";
+  const { t, i18n } = useTranslation();
+  const displayName = profile?.full_name || t("roles.adminLabel");
 
   const { data: profileCount = 0 } = useQuery({
     queryKey: ["admin-dash-profile-count"],
@@ -73,19 +75,26 @@ const AdminDashboard = () => {
     .slice(0, 4);
 
   const stats = [
-    { label: "전체 사용자", value: String(profileCount), sub: "명", icon: Users },
-    { label: "활성 강좌", value: String(activeCourses), sub: "개", icon: BookOpen },
-    { label: "평균 수료율", value: String(avgCompletion), sub: "%", icon: TrendingUp },
-    { label: "총 수강", value: String(enrollments.length), sub: "건", icon: Activity },
+    { label: t("admin.totalUsers"), value: String(profileCount), sub: t("common.people"), icon: Users },
+    { label: t("admin.activeCourses"), value: String(activeCourses), sub: t("common.count"), icon: BookOpen },
+    { label: t("admin.avgCompletionRate"), value: String(avgCompletion), sub: t("common.percent"), icon: TrendingUp },
+    { label: t("admin.totalEnrollments"), value: String(enrollments.length), sub: t("common.cases"), icon: Activity },
   ];
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return i18n.language?.startsWith("en")
+      ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+      : d.toLocaleDateString("ko-KR");
+  };
 
   return (
     <DashboardLayout role="admin">
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">관리자 대시보드</h1>
-            <p className="text-sm text-muted-foreground mt-1">{displayName}님, 시스템 현황을 확인하세요.</p>
+            <h1 className="text-2xl font-semibold text-foreground">{t("admin.adminDashboard")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("admin.checkSystem", { name: displayName })}</p>
           </div>
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-muted-foreground" />
@@ -111,16 +120,16 @@ const AdminDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">강좌 현황</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("admin.courseStatus")}</h2>
               <Link to="/admin/courses">
                 <Button variant="ghost" size="sm" className="text-muted-foreground">
-                  전체보기 <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                  {t("common.viewAll")} <ArrowRight className="h-3.5 w-3.5 ml-1" />
                 </Button>
               </Link>
             </div>
             {topCourses.length === 0 ? (
               <div className="stat-card text-center py-8">
-                <p className="text-sm text-muted-foreground">강좌가 없습니다.</p>
+                <p className="text-sm text-muted-foreground">{t("admin.noCourses")}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -141,7 +150,7 @@ const AdminDashboard = () => {
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-sm font-semibold text-foreground">{course.enrollment?.count || 0}</p>
-                        <p className="text-[10px] text-muted-foreground">수강생</p>
+                        <p className="text-[10px] text-muted-foreground">{t("admin.enrolledStudents")}</p>
                       </div>
                     </div>
                   </Link>
@@ -152,7 +161,7 @@ const AdminDashboard = () => {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">최근 가입</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("admin.recentSignups")}</h2>
               <Link to="/admin/users">
                 <Button variant="ghost" size="sm" className="text-muted-foreground">
                   <UserPlus className="h-3.5 w-3.5" />
@@ -161,7 +170,7 @@ const AdminDashboard = () => {
             </div>
             {recentProfiles.length === 0 ? (
               <div className="stat-card text-center py-6">
-                <p className="text-sm text-muted-foreground">최근 가입자가 없습니다.</p>
+                <p className="text-sm text-muted-foreground">{t("admin.noRecentSignups")}</p>
               </div>
             ) : (
               <div className="stat-card !p-0 divide-y divide-border">
@@ -175,7 +184,7 @@ const AdminDashboard = () => {
                       <p className="text-xs text-muted-foreground">{rp.department || "-"}</p>
                     </div>
                     <span className="text-[10px] text-muted-foreground">
-                      {rp.created_at ? new Date(rp.created_at).toLocaleDateString("ko-KR") : ""}
+                      {rp.created_at ? formatDate(rp.created_at) : ""}
                     </span>
                   </div>
                 ))}

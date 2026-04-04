@@ -8,11 +8,13 @@ import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const StudentDashboard = () => {
   const { user, profile } = useUser();
   const navigate = useNavigate();
-  const displayName = profile?.full_name || "사용자";
+  const { t } = useTranslation();
+  const displayName = profile?.full_name || t("common.user");
 
   // 수강 중인 강좌 (진행 중)
   const { data: enrollments = [] } = useQuery({
@@ -239,17 +241,17 @@ const StudentDashboard = () => {
   const assignmentCompletionRate = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
 
   const stats = [
-    { label: "수강 중인 강의", value: String(enrollmentStats?.inProgress || 0), sub: "진행 중", icon: BookOpen },
-    { label: "수강 완료", value: String(enrollmentStats?.completed || 0), sub: `총 ${enrollmentStats?.total || 0}개 강좌 중`, icon: ClipboardCheck },
-    { label: "학습 시간", value: `${gamification?.experience_points ? Math.round(gamification.experience_points / 60) : 0}h`, sub: "누적 학습", icon: Clock },
-    { label: "획득 뱃지", value: String(badgeCount), sub: "획득한 배지", icon: Award },
+    { label: t("dashboard.coursesInProgress"), value: String(enrollmentStats?.inProgress || 0), sub: t("dashboard.inProgress"), icon: BookOpen },
+    { label: t("dashboard.coursesCompleted"), value: String(enrollmentStats?.completed || 0), sub: t("dashboard.totalCourses", { count: enrollmentStats?.total || 0 }), icon: ClipboardCheck },
+    { label: t("dashboard.learningTime"), value: `${gamification?.experience_points ? Math.round(gamification.experience_points / 60) : 0}h`, sub: t("dashboard.cumulativeLearning"), icon: Clock },
+    { label: t("dashboard.badgesEarned"), value: String(badgeCount), sub: t("dashboard.earnedBadges"), icon: Award },
   ];
 
   const detailStats = [
-    { label: "연속 학습", value: `${gamification?.streak_days || 0}일`, sub: "연속 출석일", icon: TrendingUp },
-    { label: "레벨", value: `Lv.${gamification?.level || 1}`, sub: `${gamification?.experience_points || 0} XP`, icon: Star },
-    { label: "완료한 과제", value: String(completedAssignments), sub: `총 ${totalAssignments}개 중`, icon: ClipboardCheck },
-    { label: "총 포인트", value: String(gamification?.total_points || 0), sub: "누적 포인트", icon: Award },
+    { label: t("dashboard.consecutiveLearning"), value: `${gamification?.streak_days || 0}${t("common.days")}`, sub: t("dashboard.consecutiveDays"), icon: TrendingUp },
+    { label: t("dashboard.level"), value: `Lv.${gamification?.level || 1}`, sub: `${gamification?.experience_points || 0} XP`, icon: Star },
+    { label: t("dashboard.completedAssignments"), value: String(completedAssignments), sub: t("dashboard.totalAssignmentsSub", { count: totalAssignments }), icon: ClipboardCheck },
+    { label: t("dashboard.totalPoints"), value: String(gamification?.total_points || 0), sub: t("dashboard.cumulativePoints"), icon: Award },
   ];
 
   return (
@@ -259,9 +261,9 @@ const StudentDashboard = () => {
         <div>
           <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
             <BarChart3 className="h-6 w-6 text-primary" />
-            학습 대시보드
+            {t("dashboard.learningDashboard")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">안녕하세요! 오늘도 열심히 학습해봅시다</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("dashboard.hello")}</p>
         </div>
 
         {/* Stat Cards */}
@@ -293,20 +295,20 @@ const StudentDashboard = () => {
         </div>
         <div className="stat-card !p-6 space-y-5">
           <div>
-            <h2 className="text-lg font-bold text-foreground">진행 중인 강의</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">계속해서 학습을 진행하세요</p>
+            <h2 className="text-lg font-bold text-foreground">{t("dashboard.ongoingCourses")}</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{t("dashboard.continueStudy")}</p>
           </div>
 
           {enrollments.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground">수강 중인 강좌가 없습니다.</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.noCourses")}</p>
             </div>
           ) : (
             <div className="space-y-4">
               {enrollments.map((enrollment: any) => {
                 const nextContent = getNextContent(enrollment.course_id);
                 const progress = Math.round(Number(enrollment.progress) || 0);
-                const instructorName = instructorMap.get(enrollment.courses?.instructor_id) || "강사";
+                const instructorName = instructorMap.get(enrollment.courses?.instructor_id) || t("dashboard.instructor");
 
                 return (
                   <div key={enrollment.id} className="stat-card !p-5 space-y-3">
@@ -329,13 +331,13 @@ const StudentDashboard = () => {
                           }
                         }}
                       >
-                        <Play className="h-3.5 w-3.5" /> 계속하기
+                        <Play className="h-3.5 w-3.5" /> {t("common.continue")}
                       </Button>
                     </div>
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">진행률</span>
+                        <span className="text-muted-foreground">{t("dashboard.progressRate")}</span>
                         <span className="font-semibold text-foreground">{progress}%</span>
                       </div>
                       <Progress value={progress} className="h-2.5" />
@@ -343,7 +345,7 @@ const StudentDashboard = () => {
 
                     {nextContent && (
                       <p className="text-xs text-muted-foreground">
-                        다음: {nextContent.title}
+                        {t("dashboard.nextLesson", { title: nextContent.title })}
                       </p>
                     )}
                   </div>
@@ -358,12 +360,12 @@ const StudentDashboard = () => {
           {/* 학습 통계 */}
           <div className="stat-card !p-6 space-y-5">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" /> 학습 통계
+              <TrendingUp className="h-5 w-5" /> {t("dashboard.learningStats")}
             </h2>
             <div className="space-y-5">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">주간 목표</span>
+                  <span className="text-muted-foreground">{t("dashboard.weeklyGoal")}</span>
                   <span className="font-semibold text-foreground">
                     {gamification?.experience_points ? Math.round(gamification.experience_points / 60) : 0}h / 20h
                   </span>
@@ -375,15 +377,15 @@ const StudentDashboard = () => {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">과제 완료율</span>
+                  <span className="text-muted-foreground">{t("dashboard.assignmentCompletionRate")}</span>
                   <span className="font-semibold text-foreground">{assignmentCompletionRate}%</span>
                 </div>
                 <Progress value={assignmentCompletionRate} className="h-3" />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">평균 점수</span>
-                  <span className="font-semibold text-foreground">{enrollmentStats?.avgProgress || 0}점</span>
+                  <span className="text-muted-foreground">{t("dashboard.averageScore")}</span>
+                  <span className="font-semibold text-foreground">{enrollmentStats?.avgProgress || 0}{t("common.points")}</span>
                 </div>
                 <Progress value={enrollmentStats?.avgProgress || 0} className="h-3" />
               </div>
@@ -393,12 +395,12 @@ const StudentDashboard = () => {
           {/* 추천 강의 */}
           <div className="stat-card !p-6 space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-foreground">추천 강의</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">학습 패턴을 분석하여 추천합니다</p>
+              <h2 className="text-lg font-bold text-foreground">{t("dashboard.recommendedCourses")}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("dashboard.recommendedDesc")}</p>
             </div>
             {recommendedCourses.length === 0 ? (
               <div className="text-center py-6">
-                <p className="text-sm text-muted-foreground">추천 강의가 없습니다.</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.noRecommended")}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -406,10 +408,10 @@ const StudentDashboard = () => {
                   <div key={course.id} className="stat-card !p-4 flex items-center justify-between gap-4">
                     <div className="min-w-0 flex-1 space-y-1">
                       <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
-                      <p className="text-xs text-muted-foreground">{recInstructorMap.get(course.instructor_id) || "강사"}</p>
+                      <p className="text-xs text-muted-foreground">{recInstructorMap.get(course.instructor_id) || t("dashboard.instructor")}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                        <span>{(recEnrollCountMap.get(course.id) || 0).toLocaleString()} 수강생</span>
+                        <span>{(recEnrollCountMap.get(course.id) || 0).toLocaleString()} {t("dashboard.students")}</span>
                       </div>
                     </div>
                     <Button
@@ -417,7 +419,7 @@ const StudentDashboard = () => {
                       className="shrink-0 rounded-full"
                       onClick={() => navigate(`/courses/${course.id}`)}
                     >
-                      자세히 보기
+                      {t("common.details")}
                     </Button>
                   </div>
                 ))}
