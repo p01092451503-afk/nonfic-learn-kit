@@ -346,8 +346,8 @@ const CourseCatalog = () => {
                 </div>
               )}
             </>
+          )}
         </div>
-      </div>
     </DashboardLayout>
   );
 };
