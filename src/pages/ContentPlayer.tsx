@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft, ChevronRight, CheckCircle2, Play, FileText,
-  Video, BarChart3, ExternalLink, Clock, X, RotateCcw,
+  Video, BarChart3, ExternalLink, Clock, X, RotateCcw, List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
