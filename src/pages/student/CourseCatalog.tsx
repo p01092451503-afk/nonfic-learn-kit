@@ -255,9 +255,9 @@ const CourseCatalog = () => {
         <div className="px-6 lg:px-10 pt-8 pb-6">
           <div className="flex items-center gap-4">
             <Avatar className="h-12 w-12 border-2 border-border">
-              <AvatarImage src={user?.profile?.avatar_url || ""} />
+              <AvatarImage src={profile?.avatar_url || ""} />
               <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-medium">
-                {user?.profile?.full_name?.charAt(0) || "?"}
+                {profile?.full_name?.charAt(0) || "?"}
               </AvatarFallback>
             </Avatar>
             <div>
