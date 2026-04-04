@@ -234,7 +234,7 @@ const CourseCatalog = () => {
   const isCarouselView = activeCategory === "all" && !search;
 
   const carouselHelpers = {
-    categoryMap, enrolledSet, countMap, contentCountMap, t,
+    categoryMap, enrollmentStatusMap, countMap, contentCountMap, t,
     onEnroll: (id: string) => enrollMutation.mutate(id),
     isPending: enrollMutation.isPending,
     setActiveCategory,
