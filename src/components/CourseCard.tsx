@@ -34,7 +34,7 @@ const CourseCard = ({ course, categorySlug, categoryName, studentCount, contentC
   return (
     <Link to={linkTo} className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl" aria-label={course.title}>
       <div className="stat-card !p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-        <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
+        <div className={`relative aspect-[16/10] bg-gradient-to-br ${gradient} overflow-hidden`}>
           {course.thumbnail_url && <img src={course.thumbnail_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover" />}
           {!course.thumbnail_url && (
             <div className="absolute inset-0 opacity-10">
