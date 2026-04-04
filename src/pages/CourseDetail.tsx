@@ -338,7 +338,13 @@ const CourseDetail = () => {
   };
   const openCourseEdit = () => {
     if (!course) return;
-    setCourseForm({ title: course.title, description: course.description || "", status: course.status || "draft" });
+    setCourseForm({
+      title: course.title,
+      description: course.description || "",
+      status: course.status || "draft",
+      is_mandatory: course.is_mandatory || false,
+      deadline: course.deadline || "",
+    });
     const enCourse = courseI18n?.find((i: any) => i.language_code === "en");
     setCourseEnForm({ title: enCourse?.title || "", description: enCourse?.description || "" });
     setCourseEditOpen(true);
