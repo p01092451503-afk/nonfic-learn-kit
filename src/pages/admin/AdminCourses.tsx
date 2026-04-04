@@ -186,6 +186,31 @@ const AdminCourses = () => {
               <SelectItem value="draft">{t("teacher.draft")}</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-36 rounded-xl h-10">
+              <SelectValue placeholder={t("course.category") || "카테고리"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.all") || "전체"}</SelectItem>
+              {categories.map((cat: any) => (
+                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+            <SelectTrigger className="w-32 rounded-xl h-10">
+              <div className="flex items-center gap-1.5">
+                <ArrowUpDown className="h-3.5 w-3.5" />
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">{t("common.newest") || "최신순"}</SelectItem>
+              <SelectItem value="oldest">{t("common.oldest") || "오래된순"}</SelectItem>
+              <SelectItem value="title">{t("common.nameOrder") || "이름순"}</SelectItem>
+              <SelectItem value="students">{t("common.popularOrder") || "수강생순"}</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="flex items-center border border-border rounded-xl overflow-hidden">
             <button
               onClick={() => setViewMode("list")}
