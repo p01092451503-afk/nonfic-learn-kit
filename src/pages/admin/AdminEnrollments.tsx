@@ -242,7 +242,7 @@ const AdminEnrollments = () => {
                               size="sm"
                               variant="outline"
                               className="h-7 rounded-lg text-xs gap-1 text-green-600 border-green-300 hover:bg-green-50"
-                              onClick={() => updateStatusMutation.mutate({ enrollmentId: enrollment.id, status: "approved" })}
+                              onClick={() => updateStatusMutation.mutate({ enrollmentId: enrollment.id, newStatus: "approved" })}
                               disabled={updateStatusMutation.isPending}
                             >
                               <CheckCircle2 className="h-3 w-3" /> {t("enrollment.approve")}
