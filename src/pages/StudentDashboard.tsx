@@ -443,7 +443,7 @@ const StudentDashboard = () => {
         </div>
 
         {/* 학습 통계 + 추천 강의 */}
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* 학습 통계 */}
           <div className="stat-card !p-6 space-y-5">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
