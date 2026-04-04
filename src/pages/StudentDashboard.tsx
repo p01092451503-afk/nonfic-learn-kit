@@ -446,7 +446,7 @@ const StudentDashboard = () => {
           {/* 학습 통계 */}
           <div className="stat-card !p-6 space-y-5">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" /> {t("dashboard.learningStats")}
+              <TrendingUp className="h-5 w-5" aria-hidden="true" /> {t("dashboard.learningStats")}
             </h2>
             <div className="space-y-5">
               <div className="space-y-2">
