@@ -162,7 +162,7 @@ const TeacherDashboard = () => {
                         </Badge>
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-[11px] text-muted-foreground"><Users className="h-3 w-3 inline mr-0.5" />{studentCount}{t("common.people")}</span>
+                        <span className="text-[11px] text-muted-foreground"><Users className="h-3 w-3 inline mr-0.5" aria-hidden="true" />{studentCount}{t("common.people")}</span>
                         <span className="text-[11px] text-muted-foreground">{t("teacher.progressPercent", { percent: avgProgress })}</span>
                       </div>
                     </div>
