@@ -181,7 +181,7 @@ const TeacherDashboard = () => {
             </div>
             {recentSubmissions.length === 0 ? (
               <div className="text-center py-10">
-                <ClipboardCheck className="h-7 w-7 text-muted-foreground/30 mx-auto mb-2" />
+                <ClipboardCheck className="h-7 w-7 text-muted-foreground/30 mx-auto mb-2" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">{t("teacher.noSubmissions")}</p>
               </div>
             ) : (

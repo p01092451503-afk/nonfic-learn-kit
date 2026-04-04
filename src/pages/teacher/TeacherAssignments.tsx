@@ -338,8 +338,8 @@ const TeacherAssignments = () => {
                         <td className="px-4 py-4 text-center">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" aria-label={t("common.manage")}>
+                                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-36">

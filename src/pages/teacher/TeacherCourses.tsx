@@ -339,8 +339,8 @@ const TeacherCourses = () => {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg shrink-0">
-                            <MoreHorizontal className="h-3.5 w-3.5" />
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg shrink-0" aria-label={t("teacher.actions")}>
+                            <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">

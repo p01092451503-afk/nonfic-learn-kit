@@ -366,7 +366,7 @@ const TeacherStudents = () => {
       <Dialog open={msgOpen} onOpenChange={setMsgOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Send className="h-4 w-4" /> {t("students.messageDialogTitle")}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Send className="h-4 w-4" aria-hidden="true" /> {t("students.messageDialogTitle")}</DialogTitle>
             <DialogDescription>{t("students.messageDialogDesc", { name: msgTarget?.name })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
