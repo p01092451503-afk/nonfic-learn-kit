@@ -258,12 +258,12 @@ const TeacherAssignments = () => {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <ClipboardList className="h-6 w-6 text-primary" /> {t("assignments.assignmentManagement")}
+              <ClipboardList className="h-6 w-6 text-primary" aria-hidden="true" /> {t("assignments.assignmentManagement")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{t("assignments.createAndGrade")}</p>
           </div>
-          <Button className="gap-2" onClick={() => { resetForm(); setEditingAssignment(null); setDialogOpen(true); }}>
-            <Plus className="h-4 w-4" /> {t("assignments.createAssignment")}
+          <Button className="gap-2" onClick={() => { resetForm(); setEditingAssignment(null); setDialogOpen(true); }} aria-label={t("assignments.createAssignment")}>
+            <Plus className="h-4 w-4" aria-hidden="true" /> {t("assignments.createAssignment")}
           </Button>
         </div>
 
