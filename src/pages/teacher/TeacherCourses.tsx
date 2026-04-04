@@ -113,8 +113,8 @@ const TeacherCourses = () => {
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("teacher.manageCourses")}</p>
           </div>
           <Link to="/teacher/courses/new">
-            <Button className="rounded-xl gap-2 w-full sm:w-auto">
-              <Plus className="h-4 w-4" /> {t("teacher.newCourse")}
+            <Button className="rounded-xl gap-2 w-full sm:w-auto" aria-label={t("teacher.newCourse")}>
+              <Plus className="h-4 w-4" aria-hidden="true" /> {t("teacher.newCourse")}
             </Button>
           </Link>
         </div>
