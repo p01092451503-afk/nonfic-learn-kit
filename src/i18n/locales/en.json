@@ -88,7 +88,8 @@
     "settings": "Settings",
     "learningManagement": "Learning Mgmt",
     "attendanceManagement": "Attendance Mgmt",
-    "completionManagement": "Completion Mgmt"
+    "completionManagement": "Completion Mgmt",
+    "courseCatalog": "Browse Courses"
   },
   "roles": {
     "student": "Student",
@@ -782,5 +783,17 @@
     "send": "Send Message",
     "sent": "Message sent.",
     "teacherMessage": "Teacher Message"
+  },
+  "catalog": {
+    "title": "Course Catalog",
+    "subtitle": "Explore and enroll in NONFICTION's diverse training courses.",
+    "allCourses": "All Courses",
+    "searchPlaceholder": "Search courses...",
+    "resultCount": "{{count}} courses",
+    "noCourses": "No courses found.",
+    "enroll": "Enroll",
+    "enrollSuccess": "Successfully enrolled!",
+    "continueLearning": "Continue Learning",
+    "enrolled": "Enrolled"
   }
 }

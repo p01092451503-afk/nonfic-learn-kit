@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings,
+  LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings, Compass,
   LogOut, Menu, X, ChevronRight, GraduationCap, CalendarCheck,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -36,6 +36,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
 
   const studentNav: NavItem[] = [
     { label: t("nav.dashboard"), href: "/student", icon: LayoutDashboard },
+    { label: t("nav.courseCatalog"), href: "/catalog", icon: Compass },
     { label: t("nav.myCourses"), href: "/dashboard/courses", icon: BookOpen },
     { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList },
     { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy },
