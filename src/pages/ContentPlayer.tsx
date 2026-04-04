@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft, ChevronRight, CheckCircle2, Play, FileText,
-  Video, BarChart3, ExternalLink, Clock, X, RotateCcw,
+  Video, BarChart3, ExternalLink, Clock, X, RotateCcw, List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -13,6 +13,10 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
+import {
+  Drawer, DrawerContent, DrawerHeader, DrawerTitle,
+} from "@/components/ui/drawer";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
@@ -31,6 +35,7 @@ const ContentPlayer = () => {
   const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
   const [mangoElapsed, setMangoElapsed] = useState(0);
   const mangoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [mobileCurriculumOpen, setMobileCurriculumOpen] = useState(false);
   const activeItemRef = useRef<HTMLButtonElement>(null);
 
   const contentTypeLabel: Record<string, string> = {
@@ -261,6 +266,9 @@ const ContentPlayer = () => {
         <div className="h-5 w-px bg-border" />
         <h1 className="text-sm font-semibold text-foreground truncate flex-1">{getCourseTitle()}</h1>
         <div className="flex items-center gap-3 shrink-0">
+          <button onClick={() => setMobileCurriculumOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-accent text-muted-foreground transition-colors" title={t("course.learningProgress")}>
+            <List className="h-5 w-5" />
+          </button>
           <span className="text-xs text-muted-foreground">
             <span className="font-semibold text-foreground">{currentIndex + 1}</span> / {contents.length} {t("course.lesson")}
           </span>
@@ -488,6 +496,37 @@ const ContentPlayer = () => {
           </div>
         </div>
       )}
+      {/* Mobile curriculum drawer */}
+      <Drawer open={mobileCurriculumOpen} onOpenChange={setMobileCurriculumOpen}>
+        <DrawerContent className="max-h-[80vh]">
+          <DrawerHeader className="pb-2">
+            <DrawerTitle className="text-base">{t("course.learningProgress")}</DrawerTitle>
+            <p className="text-xs text-muted-foreground">{completedCount} / {contents.length} {t("course.completed")} · {overallProgress}%</p>
+            <Progress value={overallProgress} className="h-2 mt-2" />
+          </DrawerHeader>
+          <ScrollArea className="flex-1 px-4 pb-4 max-h-[55vh]">
+            <div className="space-y-0.5">
+              {contents.map((c, idx) => {
+                const isActive = c.id === contentId;
+                const isCompleted = progressMap.get(c.id)?.completed;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => { setMobileCurriculumOpen(false); navigate(`/courses/${courseId}/content/${c.id}`); }}
+                    className={`w-full text-left px-3 py-3 rounded-xl flex items-center gap-3 text-sm transition-all ${isActive ? "bg-primary/10 text-primary font-semibold ring-1 ring-primary/20" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}
+                  >
+                    <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-xs font-medium ${isCompleted ? "bg-green-500 text-white" : isActive ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
+                      {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : idx + 1}
+                    </div>
+                    <span className="truncate flex-1">{getTitle(c)}</span>
+                    {c.duration_minutes && <span className="text-[11px] text-muted-foreground shrink-0">{c.duration_minutes}{t("common.minutes")}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };
