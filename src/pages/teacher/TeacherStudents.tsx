@@ -358,7 +358,7 @@ const TeacherStudents = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36">
                             <DropdownMenuItem className="text-xs" onClick={(e) => { e.stopPropagation(); navigate(`/teacher/students/${student.userId}`); }}>학습 현황 보기</DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs">메시지 보내기</DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs" onClick={(e) => { e.stopPropagation(); openMessage(student.userId, student.name); }}>메시지 보내기</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
