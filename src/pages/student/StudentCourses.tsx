@@ -103,7 +103,7 @@ const StudentCourses = () => {
           </div>
           {!isCompleted && (
             <div className="flex items-center gap-3">
-              <Progress value={progress} className="flex-1 h-1.5 max-w-xs" />
+              <Progress value={progress} className="flex-1 h-1.5 max-w-xs" aria-label={`${t("dashboard.progressRate")}: ${Math.round(progress)}%`} />
               <span className="text-xs font-medium text-muted-foreground">{Math.round(progress)}%</span>
             </div>
           )}
