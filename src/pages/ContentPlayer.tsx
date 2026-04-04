@@ -236,7 +236,14 @@ const ContentPlayer = () => {
     if (isMangoboard(url)) return normalizeMangoboardUrl(url);
     if (provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) {
       const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
-      if (match) return `https://www.youtube.com/embed/${match[1]}`;
+      if (match) {
+        const params = new URLSearchParams({
+          enablejsapi: "1",
+          origin: window.location.origin,
+          ...(videoProgress.resumePosition > 0 && !currentProgress?.completed ? { start: String(videoProgress.resumePosition) } : {}),
+        });
+        return `https://www.youtube.com/embed/${match[1]}?${params.toString()}`;
+      }
     }
     if (provider === "vimeo" || url.includes("vimeo.com")) {
       const match = url.match(/vimeo\.com\/(\d+)/);
