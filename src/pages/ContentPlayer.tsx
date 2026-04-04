@@ -357,7 +357,7 @@ const ContentPlayer = () => {
         </button>
       )}
 
-      <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30">
           <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg hover:bg-accent text-muted-foreground">
             <Menu className="h-5 w-5" />
