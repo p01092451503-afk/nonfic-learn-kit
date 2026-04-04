@@ -328,7 +328,7 @@ const CourseCatalog = () => {
                         course={course}
                         cat={cat}
                         gradient={gradient}
-                        isEnrolled={enrolledSet.has(course.id)}
+                        enrollmentStatus={enrollmentStatusMap.get(course.id)}
                         studentCount={countMap.get(course.id) || 0}
                         lessons={contentCountMap.get(course.id) || 0}
                         onEnroll={(id: string) => enrollMutation.mutate(id)}
