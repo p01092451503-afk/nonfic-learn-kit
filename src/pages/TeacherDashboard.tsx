@@ -142,7 +142,7 @@ const TeacherDashboard = () => {
                   : 0;
 
                 return (
-                  <Link key={course.id} to={`/courses/${course.id}`} className="flex items-center gap-4 px-5 py-3 hover:bg-accent/20 transition-colors group">
+                  <Link key={course.id} to={`/teacher/courses/${course.id}`} className="flex items-center gap-4 px-5 py-3 hover:bg-accent/20 transition-colors group">
                     {course.thumbnail_url ? (
                       <img src={course.thumbnail_url} alt="" className="h-10 w-14 rounded-lg object-cover shrink-0" />
                     ) : (

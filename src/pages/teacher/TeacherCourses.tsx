@@ -217,7 +217,7 @@ const TeacherCourses = () => {
                     <tr
                       key={course.id}
                       className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/courses/${course.id}`)}
+                      onClick={() => navigate(`/teacher/courses/${course.id}`)}
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -276,10 +276,10 @@ const TeacherCourses = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/courses/${course.id}`); }}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
                               <Eye className="h-3.5 w-3.5 mr-2" /> 미리보기
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/courses/${course.id}`); }}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
                               <Edit className="h-3.5 w-3.5 mr-2" /> 수정
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -303,7 +303,7 @@ const TeacherCourses = () => {
                 <div
                   key={course.id}
                   className="stat-card !p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 group"
-                  onClick={() => navigate(`/courses/${course.id}`)}
+                  onClick={() => navigate(`/teacher/courses/${course.id}`)}
                 >
                   {/* Thumbnail */}
                   <div className="relative h-36 bg-secondary overflow-hidden">
@@ -343,10 +343,10 @@ const TeacherCourses = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/courses/${course.id}`); }}>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
                             <Eye className="h-3.5 w-3.5 mr-2" /> 미리보기
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/courses/${course.id}`); }}>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
                             <Edit className="h-3.5 w-3.5 mr-2" /> 수정
                           </DropdownMenuItem>
                         </DropdownMenuContent>
