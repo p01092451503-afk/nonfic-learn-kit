@@ -503,7 +503,7 @@ const StudentDashboard = () => {
                     <Button
                       size="sm"
                       className="shrink-0 rounded-full"
-                      onClick={() => navigate(`/courses/${course.id}`)}
+                      onClick={() => navigate(`/courses/${course.id}?view=learn`)}
                     >
                       {t("common.details")}
                     </Button>
