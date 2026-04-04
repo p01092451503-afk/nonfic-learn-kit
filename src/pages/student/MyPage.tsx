@@ -148,10 +148,7 @@ const MyPage = () => {
     <DashboardLayout role="student">
       <div className="space-y-0 -m-6 lg:-m-8">
         {/* Hero — catalog-style */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-secondary via-background to-accent/30">
-          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-accent/20 blur-3xl -translate-y-1/2 translate-x-1/4" />
-          <div className="absolute bottom-0 left-1/4 w-56 h-56 rounded-full bg-secondary/40 blur-2xl translate-y-1/2" />
-
+        <div className="border-y border-foreground/15">
           <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
             {/* Left: avatar + info */}
             <div className="flex items-center gap-4">
@@ -178,7 +175,7 @@ const MyPage = () => {
                 { value: `Lv.${gamification?.level || 1}`, label: `${gamification?.experience_points || 0} XP`, icon: Star },
                 { value: badgeCount, label: t("dashboard.earnedBadges"), icon: TrendingUp },
               ].map((stat, i) => (
-                <div key={i} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-center flex-1 sm:flex-none sm:min-w-[76px] shadow-sm">
+                <div key={i} className="border border-border rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-center flex-1 sm:flex-none sm:min-w-[76px]">
                   <stat.icon className="h-3.5 w-3.5 text-muted-foreground mx-auto mb-1" />
                   <p className="text-base sm:text-lg font-bold text-foreground leading-none">{stat.value}</p>
                   <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1 leading-tight">{stat.label}</p>
