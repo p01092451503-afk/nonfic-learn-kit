@@ -300,18 +300,18 @@ const StudentDashboard = () => {
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label={t("dashboard.stats", "학습 통계")}>
           {stats.map((stat) => (
-            <div key={stat.label} className="stat-card !p-4 sm:!p-6">
+            <div key={stat.label} className="stat-card !p-4 sm:!p-6" role="group" aria-label={stat.label}>
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <span className="text-xs sm:text-sm text-muted-foreground leading-tight">{stat.label}</span>
-                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" />
+                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" aria-hidden="true" />
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
             </div>
           ))}
-        </div>
+        </section>
 
         {/* Detail Stats */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
