@@ -201,13 +201,13 @@ const TeacherCourses = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-secondary/30">
-                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.courseName")}</th>
-                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("teacher.category")}</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.status")}</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("teacher.difficulty")}</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.studentCount")}</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.contentCount")}</th>
-                  <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.actions")}</th>
+                   <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.courseName")}</th>
+                   <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("teacher.category")}</th>
+                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.status")}</th>
+                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("teacher.difficulty")}</th>
+                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.studentCount")}</th>
+                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.contentCount")}</th>
+                   <th scope="col" className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.actions")}</th>
                 </tr>
               </thead>
               <tbody>
