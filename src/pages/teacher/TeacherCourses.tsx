@@ -186,11 +186,11 @@ const TeacherCourses = () => {
         {filtered.length === 0 ? (
           <div className="stat-card text-center py-16">
             <div className="space-y-3">
-              <BookOpen className="h-10 w-10 text-muted-foreground mx-auto" />
+              <BookOpen className="h-10 w-10 text-muted-foreground mx-auto" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">{t("teacher.noCourseFound")}</p>
               <Link to="/teacher/courses/new">
                 <Button size="sm" className="rounded-xl gap-2 mt-2">
-                  <Plus className="h-3.5 w-3.5" /> {t("teacher.createFirst")}
+                  <Plus className="h-3.5 w-3.5" aria-hidden="true" /> {t("teacher.createFirst")}
                 </Button>
               </Link>
             </div>
