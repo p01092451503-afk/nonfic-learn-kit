@@ -72,7 +72,19 @@ const CourseCard = ({ course, categorySlug, categoryName, studentCount, contentC
             <div className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /><span className="text-xs font-medium text-green-600 dark:text-green-400">{t("course.completionLabel")}</span></div>
           )}
           {(variant === "teacher" || variant === "admin") && (
-            <div className="flex items-center gap-1.5"><Badge variant={isPublished ? "default" : "secondary"} className="text-[10px] h-5">{isPublished ? t("teacher.published") : t("teacher.draft")}</Badge></div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Badge variant={isPublished ? "default" : "secondary"} className="text-[10px] h-5">{isPublished ? t("teacher.published") : t("teacher.draft")}</Badge>
+              {course.is_mandatory && <Badge variant="destructive" className="text-[10px] h-5 gap-0.5"><AlertTriangle className="h-2.5 w-2.5" />{t("common.required")}</Badge>}
+              {course.deadline && (() => {
+                const daysLeft = Math.ceil((new Date(course.deadline).getTime() - Date.now()) / 86400000);
+                return (
+                  <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                    <CalendarClock className="h-3 w-3" />
+                    {daysLeft > 0 ? `D-${daysLeft}` : daysLeft === 0 ? "D-Day" : t("student.overdue")}
+                  </span>
+                );
+              })()}
+            </div>
           )}
         </div>
       </div>
