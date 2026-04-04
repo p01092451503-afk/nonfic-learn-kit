@@ -33,16 +33,8 @@ const ContentPlayer = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Determine layout role from URL context
-  const searchParams = new URLSearchParams(location.search);
-  const forceLearnView = searchParams.get("view") === "learn";
-  const layoutRole: "student" | "teacher" | "admin" = forceLearnView
-    ? "student"
-    : location.pathname.startsWith("/admin/")
-    ? "admin"
-    : primaryRole === "teacher"
-    ? "teacher"
-    : "student";
+  // Content player is always a learning view → default to student
+  const layoutRole: "student" | "teacher" | "admin" = "student";
   const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
   const [mangoElapsed, setMangoElapsed] = useState(0);
   const mangoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);

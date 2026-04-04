@@ -79,10 +79,11 @@ const CourseDetail = () => {
   const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft", is_mandatory: false, deadline: "" });
   const [courseEnForm, setCourseEnForm] = useState({ title: "", description: "" });
 
-  // Determine view context: /admin/courses/:id → admin, ?view=learn → student, else use primaryRole
+  // Determine view context: /admin/courses/:id → admin, ?view=learn → student, /courses/:id (non-admin) → student, else use primaryRole
   const isAdminRoute = location.pathname.startsWith("/admin/courses/");
   const forceLearnView = searchParams.get("view") === "learn";
-  const role: "admin" | "teacher" | "student" = forceLearnView
+  const isGenericCourseRoute = location.pathname.startsWith("/courses/") && !isAdminRoute;
+  const role: "admin" | "teacher" | "student" = forceLearnView || isGenericCourseRoute
     ? "student"
     : isAdminRoute && primaryRole === "admin"
     ? "admin"
@@ -90,6 +91,7 @@ const CourseDetail = () => {
     ? "teacher"
     : "student";
   const isTeacherOrAdmin = role === "admin" || role === "teacher";
+  const viewParam = role === "student" ? "?view=learn" : "";
 
   // --- Queries ---
   const { data: course, isLoading: courseLoading } = useQuery({
@@ -489,7 +491,7 @@ const CourseDetail = () => {
                         <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => togglePublishMutation.mutate({ id: content.id, published: !content.is_published })}>
                           {content.is_published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                         </button>
-                        <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => navigate(`/courses/${courseId}/content/${content.id}`)}>
+                        <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => navigate(`/courses/${courseId}/content/${content.id}${viewParam}`)}>
                           <ExternalLink className="h-3.5 w-3.5" />
                         </button>
                         <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => openEditContent(content)}>
@@ -607,7 +609,7 @@ const CourseDetail = () => {
               const isAccessible = !!enrollment || content.is_preview;
               const Icon = contentTypeIcon[content.content_type || "video"] || Video;
               return (
-                <div key={content.id} className={`rounded-xl border border-border bg-card flex items-center gap-3 px-3 py-2.5 transition-all ${!isAccessible ? "opacity-50" : "hover:bg-accent/30 cursor-pointer"}`} onClick={() => isAccessible && navigate(`/courses/${courseId}/content/${content.id}`)}>
+                <div key={content.id} className={`rounded-xl border border-border bg-card flex items-center gap-3 px-3 py-2.5 transition-all ${!isAccessible ? "opacity-50" : "hover:bg-accent/30 cursor-pointer"}`} onClick={() => isAccessible && navigate(`/courses/${courseId}/content/${content.id}${viewParam}`)}>
                   <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isCompleted ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : "bg-accent text-accent-foreground"}`}>
                     {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : !isAccessible ? <Lock className="h-3.5 w-3.5" /> : <Icon className="h-4 w-4" />}
                   </div>
