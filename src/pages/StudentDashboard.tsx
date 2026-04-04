@@ -426,7 +426,7 @@ const StudentDashboard = () => {
                         <span className="text-muted-foreground">{t("dashboard.progressRate")}</span>
                         <span className="font-semibold text-foreground">{progress}%</span>
                       </div>
-                      <Progress value={progress} className="h-2.5" />
+                      <Progress value={progress} className="h-2.5" aria-label={`${t("dashboard.progressRate")}: ${progress}%`} />
                     </div>
 
                     {nextContent && (
