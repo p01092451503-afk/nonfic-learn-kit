@@ -1,5 +1,5 @@
-import { Users, Search, TrendingUp, BookOpen, Award, MoreVertical } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Users, Search, TrendingUp, BookOpen, Award, MoreVertical, Send } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,17 +7,55 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
+import { toast } from "sonner";
 
 const TeacherStudents = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
+  const [msgOpen, setMsgOpen] = useState(false);
+  const [msgTarget, setMsgTarget] = useState<{ userId: string; name: string } | null>(null);
+  const [msgTitle, setMsgTitle] = useState("");
+  const [msgBody, setMsgBody] = useState("");
+  const queryClient = useQueryClient();
+
+  const sendMessageMutation = useMutation({
+    mutationFn: async () => {
+      if (!msgTarget) throw new Error("No target");
+      const { error } = await supabase.from("notifications").insert({
+        user_id: msgTarget.userId,
+        title: msgTitle || "강사 메시지",
+        message: msgBody,
+        type: "message",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("메시지를 전송했습니다.");
+      setMsgOpen(false);
+      setMsgTitle("");
+      setMsgBody("");
+      setMsgTarget(null);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const openMessage = (userId: string, name: string) => {
+    setMsgTarget({ userId, name });
+    setMsgTitle("");
+    setMsgBody("");
+    setMsgOpen(true);
+  };
 
   // Fetch teacher's courses
   const { data: myCourses = [] } = useQuery({
@@ -164,6 +202,7 @@ const TeacherStudents = () => {
   ];
 
   return (
+    <>
     <DashboardLayout role="teacher">
       <div className="space-y-6">
         {/* Header */}
@@ -320,7 +359,7 @@ const TeacherStudents = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36">
                             <DropdownMenuItem className="text-xs" onClick={(e) => { e.stopPropagation(); navigate(`/teacher/students/${student.userId}`); }}>학습 현황 보기</DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs">메시지 보내기</DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs" onClick={(e) => { e.stopPropagation(); openMessage(student.userId, student.name); }}>메시지 보내기</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -333,6 +372,31 @@ const TeacherStudents = () => {
         </div>
       </div>
     </DashboardLayout>
+
+      {/* Send Message Dialog */}
+      <Dialog open={msgOpen} onOpenChange={setMsgOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Send className="h-4 w-4" /> 메시지 보내기</DialogTitle>
+            <DialogDescription>{msgTarget?.name}님에게 알림 메시지를 보냅니다.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>제목</Label>
+              <Input value={msgTitle} onChange={(e) => setMsgTitle(e.target.value)} placeholder="메시지 제목" className="mt-1" />
+            </div>
+            <div>
+              <Label>내용</Label>
+              <Textarea value={msgBody} onChange={(e) => setMsgBody(e.target.value)} placeholder="메시지 내용을 입력하세요" className="mt-1" rows={4} />
+            </div>
+            <Button className="w-full rounded-xl gap-2" onClick={() => sendMessageMutation.mutate()} disabled={!msgBody.trim() || sendMessageMutation.isPending}>
+              <Send className="h-4 w-4" />
+              {sendMessageMutation.isPending ? "전송 중..." : "메시지 전송"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
