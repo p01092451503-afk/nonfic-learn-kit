@@ -1,0 +1,212 @@
+import { useRef, useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+
+interface UseVideoProgressOptions {
+  userId: string | undefined;
+  contentId: string | undefined;
+  courseId: string | undefined;
+  durationMinutes: number | undefined;
+  existingProgress: any;
+  enabled: boolean;
+}
+
+/**
+ * Manages YouTube / Vimeo IFrame API progress tracking.
+ * – Saves position every 10 s
+ * – Auto-completes at 80 %
+ * – Resumes from last saved position
+ */
+export function useVideoProgress({
+  userId,
+  contentId,
+  courseId,
+  durationMinutes,
+  existingProgress,
+  enabled,
+}: UseVideoProgressOptions) {
+  const queryClient = useQueryClient();
+  const [playerReady, setPlayerReady] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [autoCompleted, setAutoCompleted] = useState(false);
+  const ytPlayerRef = useRef<any>(null);
+  const vimeoPlayerRef = useRef<any>(null);
+  const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const hasResumedRef = useRef(false);
+
+  const resumePosition = existingProgress?.last_position_seconds || 0;
+  const isCompleted = existingProgress?.completed || false;
+
+  // ─── Upsert progress to DB ───
+  const saveProgress = useCallback(
+    async (posSeconds: number, pct: number, completed: boolean) => {
+      if (!userId || !contentId) return;
+      const payload = {
+        user_id: userId,
+        content_id: contentId,
+        last_position_seconds: Math.round(posSeconds),
+        progress_percentage: Math.round(pct),
+        completed,
+        completed_at: completed ? new Date().toISOString() : null,
+        last_accessed_at: new Date().toISOString(),
+      };
+
+      if (existingProgress?.id) {
+        await supabase
+          .from("content_progress")
+          .update(payload)
+          .eq("id", existingProgress.id);
+      } else {
+        await supabase.from("content_progress").insert(payload);
+      }
+
+      if (completed) {
+        queryClient.invalidateQueries({ queryKey: ["content-progress", courseId] });
+      }
+    },
+    [userId, contentId, courseId, existingProgress?.id, queryClient]
+  );
+
+  // ─── YouTube API ───
+  const initYouTube = useCallback(
+    (iframeEl: HTMLIFrameElement, videoId: string) => {
+      iframeRef.current = iframeEl;
+
+      // Load API script once
+      if (!(window as any).YT) {
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+      }
+
+      const create = () => {
+        if (ytPlayerRef.current) {
+          try { ytPlayerRef.current.destroy(); } catch {}
+        }
+        ytPlayerRef.current = new (window as any).YT.Player(iframeEl, {
+          videoId,
+          playerVars: {
+            autoplay: 0,
+            start: resumePosition > 0 && !isCompleted ? resumePosition : 0,
+            enablejsapi: 1,
+            origin: window.location.origin,
+          },
+          events: {
+            onReady: () => setPlayerReady(true),
+            onStateChange: (e: any) => {
+              if (e.data === (window as any).YT.PlayerState.PLAYING) {
+                startPolling("youtube");
+              } else {
+                stopPolling();
+              }
+            },
+          },
+        });
+      };
+
+      if ((window as any).YT?.Player) {
+        create();
+      } else {
+        (window as any).onYouTubeIframeAPIReady = create;
+      }
+    },
+    [resumePosition, isCompleted]
+  );
+
+  // ─── Vimeo API ───
+  const initVimeo = useCallback(
+    async (iframeEl: HTMLIFrameElement) => {
+      iframeRef.current = iframeEl;
+
+      // Load Vimeo player script once
+      if (!(window as any).Vimeo) {
+        await new Promise<void>((resolve) => {
+          const s = document.createElement("script");
+          s.src = "https://player.vimeo.com/api/player.js";
+          s.onload = () => resolve();
+          document.head.appendChild(s);
+        });
+      }
+
+      const player = new (window as any).Vimeo.Player(iframeEl);
+      vimeoPlayerRef.current = player;
+
+      player.ready().then(async () => {
+        setPlayerReady(true);
+        if (resumePosition > 0 && !isCompleted) {
+          await player.setCurrentTime(resumePosition);
+        }
+      });
+
+      player.on("play", () => startPolling("vimeo"));
+      player.on("pause", () => stopPolling());
+      player.on("ended", () => stopPolling());
+    },
+    [resumePosition, isCompleted]
+  );
+
+  // ─── Polling loop ───
+  const startPolling = useCallback(
+    (type: "youtube" | "vimeo") => {
+      stopPolling();
+      saveIntervalRef.current = setInterval(async () => {
+        let cur = 0;
+        let dur = 0;
+
+        if (type === "youtube" && ytPlayerRef.current) {
+          cur = ytPlayerRef.current.getCurrentTime?.() || 0;
+          dur = ytPlayerRef.current.getDuration?.() || 0;
+        } else if (type === "vimeo" && vimeoPlayerRef.current) {
+          cur = (await vimeoPlayerRef.current.getCurrentTime()) || 0;
+          dur = (await vimeoPlayerRef.current.getDuration()) || 0;
+        }
+
+        setCurrentTime(cur);
+        setDuration(dur);
+
+        if (dur <= 0) return;
+        const pct = (cur / dur) * 100;
+        const shouldComplete = pct >= 80 && !isCompleted && !autoCompleted;
+
+        if (shouldComplete) {
+          setAutoCompleted(true);
+          await saveProgress(cur, pct, true);
+        } else {
+          await saveProgress(cur, pct, isCompleted || autoCompleted);
+        }
+      }, 10000);
+    },
+    [isCompleted, autoCompleted, saveProgress]
+  );
+
+  const stopPolling = useCallback(() => {
+    if (saveIntervalRef.current) {
+      clearInterval(saveIntervalRef.current);
+      saveIntervalRef.current = null;
+    }
+  }, []);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      stopPolling();
+      if (ytPlayerRef.current) {
+        try { ytPlayerRef.current.destroy(); } catch {}
+        ytPlayerRef.current = null;
+      }
+      vimeoPlayerRef.current = null;
+    };
+  }, [contentId]);
+
+  return {
+    initYouTube,
+    initVimeo,
+    playerReady,
+    currentTime,
+    duration,
+    autoCompleted,
+    resumePosition,
+  };
+}
