@@ -23,12 +23,26 @@ const contentTypeIcon: Record<string, React.ElementType> = {
 const ContentPlayer = () => {
   const { courseId, contentId } = useParams<{ courseId: string; contentId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
+  const { primaryRole } = useUserRole();
   const isEn = i18n.language?.startsWith("en");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Determine layout role from URL context
+  const searchParams = new URLSearchParams(location.search);
+  const forceLearnView = searchParams.get("view") === "learn";
+  const layoutRole: "student" | "teacher" | "admin" = forceLearnView
+    ? "student"
+    : location.pathname.startsWith("/admin/")
+    ? "admin"
+    : primaryRole === "teacher"
+    ? "teacher"
+    : "student";
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
   const [mangoElapsed, setMangoElapsed] = useState(0);
