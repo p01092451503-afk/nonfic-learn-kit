@@ -66,7 +66,7 @@ const CourseCard = ({ course, categorySlug, categoryName, studentCount, contentC
             {instructorName && <span className="text-[10px] text-muted-foreground">{instructorName}</span>}
           </div>
           {progress != null && !isCompleted && (
-            <div className="flex items-center gap-2.5"><Progress value={progress} className="flex-1 h-1.5" /><span className="text-[10px] font-medium text-muted-foreground">{Math.round(progress)}%</span></div>
+            <div className="flex items-center gap-2.5"><Progress value={progress} className="flex-1 h-1.5" aria-label={`${t("dashboard.progressRate", "진행률")}: ${Math.round(progress)}%`} /><span className="text-[10px] font-medium text-muted-foreground">{Math.round(progress)}%</span></div>
           )}
           {isCompleted && (
             <div className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /><span className="text-xs font-medium text-green-600 dark:text-green-400">{t("course.completionLabel")}</span></div>
