@@ -84,14 +84,14 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
         role="navigation"
         aria-label={t("nav.mainNavigation", "메인 내비게이션")}
       >
-        <div className="p-6 flex flex-col items-start">
+        <div className="p-6 flex flex-col items-start relative">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden absolute top-4 right-4 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" aria-label={t("common.closeSidebar", "사이드바 닫기")}>
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
           <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
           <span className="mt-1.5 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full" aria-label={`${t("common.role", "역할")}: ${roleLabel}`}>
             {roleLabel}
           </span>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground" aria-label={t("common.closeSidebar", "사이드바 닫기")}>
-            <X className="h-5 w-5" aria-hidden="true" />
-          </button>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
