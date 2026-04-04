@@ -50,6 +50,9 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
     { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard },
     { label: t("nav.userManagement"), href: "/admin/users", icon: Users },
     { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen },
+    { label: t("nav.learningManagement"), href: "/admin/learning", icon: GraduationCap },
+    { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
+    { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy },
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings },
   ];
 
