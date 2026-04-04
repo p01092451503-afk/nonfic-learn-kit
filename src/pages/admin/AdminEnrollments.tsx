@@ -54,11 +54,11 @@ const AdminEnrollments = () => {
 
   // Approve/reject mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ enrollmentId, status }: { enrollmentId: string; status: string }) => {
+    mutationFn: async ({ enrollmentId, newStatus }: { enrollmentId: string; newStatus: "approved" | "rejected" }) => {
       const { error } = await supabase
         .from("enrollments")
         .update({
-          status,
+          status: newStatus,
           reviewed_by: user!.id,
           reviewed_at: new Date().toISOString(),
         })
@@ -67,7 +67,7 @@ const AdminEnrollments = () => {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-enrollments"] });
-      const msg = variables.status === "approved" ? t("enrollment.approved") : t("enrollment.rejected");
+      const msg = variables.newStatus === "approved" ? t("enrollment.approved") : t("enrollment.rejected");
       toast({ title: msg });
     },
     onError: (e: any) => {
