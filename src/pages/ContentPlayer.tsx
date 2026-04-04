@@ -123,6 +123,57 @@ const ContentPlayer = () => {
   const completedCount = progressData.filter((p) => p.completed).length;
   const overallProgress = contents.length > 0 ? Math.round((completedCount / contents.length) * 100) : 0;
 
+  // Determine if current content is a YouTube/Vimeo video
+  const localVideoUrlForHook = currentContent ? getVideoUrl(currentContent) : null;
+  const localProviderForHook = currentContent ? getVideoProvider(currentContent) : null;
+  const isYouTube = (url: string | null, provider: string | null) =>
+    provider === "youtube" || url?.includes("youtube.com") || url?.includes("youtu.be");
+  const isVimeo = (url: string | null, provider: string | null) =>
+    provider === "vimeo" || url?.includes("vimeo.com");
+  const isTrackableVideo = !!(currentContent && localVideoUrlForHook && !isMangoboard(localVideoUrlForHook) &&
+    (isYouTube(localVideoUrlForHook, localProviderForHook) || isVimeo(localVideoUrlForHook, localProviderForHook)));
+
+  const videoProgress = useVideoProgress({
+    userId: user?.id,
+    contentId,
+    courseId,
+    durationMinutes: currentContent?.duration_minutes ?? undefined,
+    existingProgress: currentProgress,
+    enabled: isTrackableVideo,
+  });
+
+  const videoIframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  // Auto-complete toast for video
+  useEffect(() => {
+    if (videoProgress.autoCompleted) {
+      toast({ title: t("contentPlayer.autoCompleted"), description: t("contentPlayer.autoCompletedDesc") });
+      queryClient.invalidateQueries({ queryKey: ["content-progress", courseId] });
+    }
+  }, [videoProgress.autoCompleted]);
+
+  // Initialize YouTube/Vimeo player when iframe mounts
+  const videoIframeCallback = useCallback(
+    (el: HTMLIFrameElement | null) => {
+      if (!el || !currentContent || !isTrackableVideo) return;
+      videoIframeRef.current = el;
+      const url = localVideoUrlForHook!;
+      if (isYouTube(url, localProviderForHook)) {
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
+        if (match) videoProgress.initYouTube(el, match[1]);
+      } else if (isVimeo(url, localProviderForHook)) {
+        videoProgress.initVimeo(el);
+      }
+    },
+    [currentContent?.id, isTrackableVideo]
+  );
+
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
+
   useEffect(() => {
     if (activeItemRef.current) {
       activeItemRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
