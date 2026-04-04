@@ -121,8 +121,12 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
           <RoleSwitcher />
           <NotificationBell />
           <div className="flex items-center gap-3 pl-3 border-l border-border">
-            <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-accent-foreground">
-              {initials}
+            <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-accent-foreground overflow-hidden">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                initials
+              )}
             </div>
             <div className="hidden sm:block">
               <p className="text-sm font-medium text-foreground leading-none">{profile?.full_name || t("common.user")}</p>
