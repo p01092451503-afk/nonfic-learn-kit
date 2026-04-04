@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import LanguageToggle from "@/components/LanguageToggle";
 import loginBg from "@/assets/login-bg.jpg";
 
 const SAVED_EMAIL_KEY = "nonfiction_saved_email";
@@ -12,6 +14,7 @@ const SAVED_EMAIL_KEY = "nonfiction_saved_email";
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -40,20 +43,12 @@ const Auth = () => {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: { name: fullName },
-          },
+          options: { data: { name: fullName } },
         });
         if (error) throw error;
-        toast({
-          title: "가입 완료",
-          description: "이메일 인증 링크를 확인해 주세요.",
-        });
+        toast({ title: t("auth.signUpComplete"), description: t("auth.checkEmail") });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         if (rememberMe) {
           localStorage.setItem(SAVED_EMAIL_KEY, email);
@@ -63,11 +58,7 @@ const Auth = () => {
         navigate("/dashboard");
       }
     } catch (error: any) {
-      toast({
-        title: "오류",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -75,39 +66,28 @@ const Auth = () => {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left - Visual Panel (white/light background) */}
+      {/* Left - Visual Panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-white">
-        <img
-          src={loginBg}
-          alt="NONFICTION LMS"
-          className="absolute inset-0 w-full h-full object-cover opacity-60"
-          width={1920}
-          height={1080}
-        />
+        <img src={loginBg} alt="NONFICTION LMS" className="absolute inset-0 w-full h-full object-cover opacity-60" width={1920} height={1080} />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div>
-            <h1 className="font-display text-4xl tracking-wider text-foreground">
-              NONFICTION
-            </h1>
-            <p className="mt-1 text-sm tracking-[0.3em] text-foreground/50 uppercase">
-              Learning Management System
-            </p>
+            <h1 className="font-display text-4xl tracking-wider text-foreground">NONFICTION</h1>
+            <p className="mt-1 text-sm tracking-[0.3em] text-foreground/50 uppercase">Learning Management System</p>
           </div>
           <div className="space-y-4">
-            <h2 className="font-display text-3xl leading-snug text-foreground">
-              배움은<br />
-              가장 아름다운<br />
-              성장입니다
-            </h2>
-            <p className="text-sm text-foreground/50 max-w-xs leading-relaxed">
-              NONFICTION 사내교육 플랫폼에서 당신의 전문성을 키워보세요.
-            </p>
+            <h2 className="font-display text-3xl leading-snug text-foreground whitespace-pre-line">{t("auth.heroTitle")}</h2>
+            <p className="text-sm text-foreground/50 max-w-xs leading-relaxed">{t("auth.heroSubtitle")}</p>
           </div>
         </div>
       </div>
 
-      {/* Right - Form (warm/beige background) */}
-      <div className="flex-1 flex items-center justify-center px-6 lg:px-16 bg-white">
+      {/* Right - Form */}
+      <div className="flex-1 flex items-center justify-center px-6 lg:px-16 bg-white relative">
+        {/* Language toggle */}
+        <div className="absolute top-4 right-4">
+          <LanguageToggle />
+        </div>
+
         <div className="w-full max-w-md space-y-10">
           <div className="lg:hidden text-center">
             <h1 className="font-display text-2xl tracking-wider text-foreground">NONFICTION</h1>
@@ -118,10 +98,10 @@ const Auth = () => {
 
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold text-foreground">
-              {isSignUp ? "계정 만들기" : "로그인"}
+              {isSignUp ? t("auth.createAccount") : t("auth.login")}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {isSignUp ? "사내교육 시스템에 가입합니다" : "사내교육 시스템에 접속합니다"}
+              {isSignUp ? t("auth.signUpSubtitle") : t("auth.loginSubtitle")}
             </p>
           </div>
 
@@ -129,51 +109,23 @@ const Auth = () => {
             <div className="space-y-4">
               {isSignUp && (
                 <div className="space-y-2">
-                  <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">이름</label>
-                  <Input
-                    type="text"
-                    placeholder="홍길동"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="h-12 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
-                    required
-                  />
+                  <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("auth.name")}</label>
+                  <Input type="text" placeholder={t("auth.namePlaceholder")} value={fullName} onChange={(e) => setFullName(e.target.value)} className="h-12 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20" required />
                 </div>
               )}
-
               <div className="space-y-2">
-                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">이메일</label>
+                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("auth.email")}</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="email"
-                    placeholder="name@nonfiction.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 pl-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
-                    required
-                  />
+                  <Input type="email" placeholder="name@nonfiction.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 pl-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20" required />
                 </div>
               </div>
-
               <div className="space-y-2">
-                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">비밀번호</label>
+                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("auth.password")}</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="비밀번호를 입력하세요"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 pl-11 pr-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
-                    required
-                    minLength={6}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  <Input type={showPassword ? "text" : "password"} placeholder={t("auth.passwordPlaceholder")} value={password} onChange={(e) => setPassword(e.target.value)} className="h-12 pl-11 pr-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20" required minLength={6} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
@@ -183,20 +135,11 @@ const Auth = () => {
             {!isSignUp && (
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-foreground focus:ring-foreground/20"
-                  />
-                  <span className="text-sm text-muted-foreground">아이디 저장</span>
+                  <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 rounded border-border text-foreground focus:ring-foreground/20" />
+                  <span className="text-sm text-muted-foreground">{t("auth.rememberMe")}</span>
                 </label>
-                <button
-                  type="button"
-                  onClick={() => { setShowForgotPassword(true); setResetEmail(email); }}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  비밀번호 찾기
+                <button type="button" onClick={() => { setShowForgotPassword(true); setResetEmail(email); }} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  {t("auth.forgotPassword")}
                 </button>
               </div>
             )}
@@ -205,11 +148,11 @@ const Auth = () => {
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  처리 중...
+                  {t("common.processing")}
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  {isSignUp ? "가입하기" : "로그인"}
+                  {isSignUp ? t("auth.signUp") : t("auth.login")}
                   <ArrowRight className="h-4 w-4" />
                 </span>
               )}
@@ -217,16 +160,14 @@ const Auth = () => {
           </form>
 
           <div className="text-center space-y-3">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {isSignUp ? "이미 계정이 있으신가요? 로그인" : "계정이 없으신가요? 가입하기"}
+            <button onClick={() => setIsSignUp(!isSignUp)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              {isSignUp ? t("auth.haveAccount") : t("auth.noAccount")}
             </button>
-            <p className="text-xs text-muted-foreground/60">NONFICTION Internal Education Platform</p>
+            <p className="text-xs text-muted-foreground/60">{t("auth.platformFooter")}</p>
           </div>
         </div>
       </div>
+
       {showForgotPassword && (
         <ForgotPasswordModal
           resetEmail={resetEmail}
@@ -240,17 +181,10 @@ const Auth = () => {
                 redirectTo: `${window.location.origin}/reset-password`,
               });
               if (error) throw error;
-              toast({
-                title: "이메일 발송 완료",
-                description: "비밀번호 재설정 링크가 이메일로 전송되었습니다.",
-              });
+              toast({ title: t("auth.emailSent"), description: t("auth.resetLinkSent") });
               setShowForgotPassword(false);
             } catch (error: any) {
-              toast({
-                title: "오류",
-                description: error.message,
-                variant: "destructive",
-              });
+              toast({ title: t("common.error"), description: error.message, variant: "destructive" });
             } finally {
               setIsResetting(false);
             }
@@ -261,58 +195,30 @@ const Auth = () => {
   );
 };
 
-const ForgotPasswordModal = ({
-  resetEmail,
-  setResetEmail,
-  isResetting,
-  onClose,
-  onSubmit,
-}: {
-  resetEmail: string;
-  setResetEmail: (v: string) => void;
-  isResetting: boolean;
-  onClose: () => void;
-  onSubmit: () => void;
-}) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-    <div
-      className="bg-background rounded-2xl p-8 w-full max-w-sm space-y-6 shadow-xl"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="space-y-2">
-        <h3 className="text-xl font-semibold text-foreground">비밀번호 찾기</h3>
-        <p className="text-sm text-muted-foreground">
-          가입 시 사용한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.
-        </p>
-      </div>
-      <div className="relative">
-        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="email"
-          placeholder="name@nonfiction.com"
-          value={resetEmail}
-          onChange={(e) => setResetEmail(e.target.value)}
-          className="h-12 pl-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20"
-          required
-        />
-      </div>
-      <div className="flex gap-3">
-        <Button type="button" variant="outline" className="flex-1 rounded-full" onClick={onClose}>
-          취소
-        </Button>
-        <Button
-          type="button"
-          variant="login"
-          size="xl"
-          className="flex-1"
-          disabled={isResetting || !resetEmail}
-          onClick={onSubmit}
-        >
-          {isResetting ? "발송 중..." : "재설정 링크 발송"}
-        </Button>
+const ForgotPasswordModal = ({ resetEmail, setResetEmail, isResetting, onClose, onSubmit }: {
+  resetEmail: string; setResetEmail: (v: string) => void; isResetting: boolean; onClose: () => void; onSubmit: () => void;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="bg-background rounded-2xl p-8 w-full max-w-sm space-y-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="space-y-2">
+          <h3 className="text-xl font-semibold text-foreground">{t("auth.forgotPassword")}</h3>
+          <p className="text-sm text-muted-foreground">{t("auth.forgotPasswordDesc")}</p>
+        </div>
+        <div className="relative">
+          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input type="email" placeholder="name@nonfiction.com" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} className="h-12 pl-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20" required />
+        </div>
+        <div className="flex gap-3">
+          <Button type="button" variant="outline" className="flex-1 rounded-full" onClick={onClose}>{t("common.cancel")}</Button>
+          <Button type="button" variant="login" size="xl" className="flex-1" disabled={isResetting || !resetEmail} onClick={onSubmit}>
+            {isResetting ? t("auth.sending") : t("auth.sendResetLink")}
+          </Button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Auth;
