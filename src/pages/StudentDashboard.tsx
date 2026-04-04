@@ -497,7 +497,7 @@ const StudentDashboard = () => {
                       <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
                       <p className="text-xs text-muted-foreground">{recInstructorMap.get(course.instructor_id) || t("dashboard.instructor")}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" aria-hidden="true" />
                         <span>{(recEnrollCountMap.get(course.id) || 0).toLocaleString()} {t("dashboard.students")}</span>
                       </div>
                     </div>

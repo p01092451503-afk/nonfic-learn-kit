@@ -64,7 +64,7 @@ const StudentCourses = () => {
 
   const renderEmpty = (isCompleted = false) => (
     <div className="flex flex-col items-center justify-center py-12 space-y-3">
-      <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center">
+      <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center" aria-hidden="true">
         <BookOpen className="h-6 w-6 text-muted-foreground" />
       </div>
       <p className="text-sm text-muted-foreground">
