@@ -214,7 +214,17 @@
     "noStudents": "No students enrolled.",
     "viewStatus": "View Status",
     "sendMessage": "Send Message",
-    "courses": "{{count}} courses"
+    "courses": "{{count}} courses",
+    "messageDialogTitle": "Send Message",
+    "messageDialogDesc": "Send a notification to {{name}}.",
+    "messageSubject": "Subject",
+    "messageSubjectPlaceholder": "Message subject",
+    "messageBody": "Content",
+    "messageBodyPlaceholder": "Enter your message",
+    "sending": "Sending...",
+    "sendButton": "Send Message",
+    "messageSent": "Message sent.",
+    "defaultMessageTitle": "Teacher Message"
   },
   "studentDetail": {
     "enrolledCourses": "Enrolled Courses",

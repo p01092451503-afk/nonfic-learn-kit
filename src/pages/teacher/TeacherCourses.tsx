@@ -109,12 +109,12 @@ const TeacherCourses = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">강좌 관리</h1>
-            <p className="text-sm text-muted-foreground mt-1">담당 강좌를 등록하고 관리하세요.</p>
+            <h1 className="text-2xl font-semibold text-foreground">{t("teacher.courseManagement")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("teacher.manageCourses")}</p>
           </div>
           <Link to="/teacher/courses/new">
             <Button className="rounded-xl gap-2">
-              <Plus className="h-4 w-4" /> 새 강좌
+              <Plus className="h-4 w-4" /> {t("teacher.newCourse")}
             </Button>
           </Link>
         </div>
@@ -122,19 +122,19 @@ const TeacherCourses = () => {
         {/* Summary Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">전체 강좌</p>
+            <p className="text-xs text-muted-foreground">{t("teacher.totalCoursesCount")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
           </div>
           <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">공개 중</p>
+            <p className="text-xs text-muted-foreground">{t("teacher.publishedCourses")}</p>
             <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.published}</p>
           </div>
           <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">초안</p>
+            <p className="text-xs text-muted-foreground">{t("teacher.drafts")}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.draft}</p>
           </div>
           <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">총 수강생</p>
+            <p className="text-xs text-muted-foreground">{t("teacher.totalStudentsLabel")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">{stats.totalStudents}</p>
           </div>
         </div>
@@ -144,7 +144,7 @@ const TeacherCourses = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="강좌명 검색"
+              placeholder={t("teacher.searchCourse")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 h-10 rounded-xl border-border"
@@ -152,12 +152,12 @@ const TeacherCourses = () => {
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-28 rounded-xl h-10">
-              <SelectValue placeholder="상태" />
+              <SelectValue placeholder={t("teacher.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
-              <SelectItem value="published">공개</SelectItem>
-              <SelectItem value="draft">초안</SelectItem>
+              <SelectItem value="all">{t("teacher.all")}</SelectItem>
+              <SelectItem value="published">{t("teacher.open")}</SelectItem>
+              <SelectItem value="draft">{t("teacher.draft")}</SelectItem>
             </SelectContent>
           </Select>
           <div className="flex items-center border border-border rounded-xl overflow-hidden">
@@ -181,10 +181,10 @@ const TeacherCourses = () => {
           <div className="stat-card text-center py-16">
             <div className="space-y-3">
               <BookOpen className="h-10 w-10 text-muted-foreground mx-auto" />
-              <p className="text-sm text-muted-foreground">등록된 강좌가 없습니다.</p>
+              <p className="text-sm text-muted-foreground">{t("teacher.noCourseFound")}</p>
               <Link to="/teacher/courses/new">
                 <Button size="sm" className="rounded-xl gap-2 mt-2">
-                  <Plus className="h-3.5 w-3.5" /> 첫 강좌 만들기
+                  <Plus className="h-3.5 w-3.5" /> {t("teacher.createFirst")}
                 </Button>
               </Link>
             </div>
@@ -195,13 +195,13 @@ const TeacherCourses = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-secondary/30">
-                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">강좌</th>
-                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">카테고리</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">상태</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">난이도</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">수강생</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">콘텐츠</th>
-                  <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">관리</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.courseName")}</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("teacher.category")}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.status")}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("teacher.difficulty")}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.studentCount")}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.contentCount")}</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -218,7 +218,6 @@ const TeacherCourses = () => {
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          {/* Thumbnail */}
                           <div className="h-12 w-16 rounded-lg overflow-hidden shrink-0 bg-secondary">
                             {course.thumbnail_url ? (
                               <img src={course.thumbnail_url} alt="" className="h-full w-full object-cover" />
@@ -274,10 +273,10 @@ const TeacherCourses = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40">
                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
-                              <Eye className="h-3.5 w-3.5 mr-2" /> 미리보기
+                              <Eye className="h-3.5 w-3.5 mr-2" /> {t("teacher.preview")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
-                              <Edit className="h-3.5 w-3.5 mr-2" /> 수정
+                              <Edit className="h-3.5 w-3.5 mr-2" /> {t("teacher.editCourse")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -311,7 +310,6 @@ const TeacherCourses = () => {
                         <BookOpen className="h-8 w-8 text-muted-foreground" />
                       </div>
                     )}
-                    {/* Status badge */}
                     <div className="absolute top-2.5 left-2.5">
                       <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-lg ${statusColor[course.status || "draft"]}`}>
                         {statusLabel[course.status || "draft"]}
@@ -319,7 +317,7 @@ const TeacherCourses = () => {
                     </div>
                     {course.is_mandatory && (
                       <span className="absolute top-2.5 right-2.5 text-[10px] font-semibold bg-destructive text-destructive-foreground px-2 py-1 rounded-lg">
-                        필수
+                        {t("common.required")}
                       </span>
                     )}
                   </div>
@@ -341,10 +339,10 @@ const TeacherCourses = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
-                            <Eye className="h-3.5 w-3.5 mr-2" /> 미리보기
+                            <Eye className="h-3.5 w-3.5 mr-2" /> {t("teacher.preview")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
-                            <Edit className="h-3.5 w-3.5 mr-2" /> 수정
+                            <Edit className="h-3.5 w-3.5 mr-2" /> {t("teacher.editCourse")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -356,10 +354,10 @@ const TeacherCourses = () => {
 
                     <div className="flex items-center gap-3 pt-1 border-t border-border">
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <Users className="h-3 w-3" /> {students}명
+                        <Users className="h-3 w-3" /> {students}
                       </span>
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <BookOpen className="h-3 w-3" /> {contents}강
+                        <BookOpen className="h-3 w-3" /> {contents}
                       </span>
                       {course.difficulty_level && (
                         <span className="text-[10px] text-muted-foreground ml-auto">
