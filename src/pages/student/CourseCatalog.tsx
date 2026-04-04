@@ -251,36 +251,40 @@ const CourseCatalog = () => {
   return (
     <DashboardLayout role="student">
       <div className="space-y-0 -m-6 lg:-m-8">
-        {/* Hero banner — Toss-style minimal */}
-        <div className="px-6 lg:px-10 pt-8 pb-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+        {/* Hero banner */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-secondary via-background to-accent/30">
+          {/* Subtle decorative shapes */}
+          <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-accent/20 blur-3xl -translate-y-1/2 translate-x-1/3" />
+          <div className="absolute bottom-0 left-1/3 w-64 h-64 rounded-full bg-secondary/40 blur-2xl translate-y-1/2" />
+
+          <div className="relative z-10 px-6 lg:px-10 py-8 flex items-center justify-between flex-wrap gap-6">
+            {/* Left: user + title */}
             <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12 border-2 border-border">
+              <Avatar className="h-14 w-14 border-2 border-border shadow-sm">
                 <AvatarImage src={profile?.avatar_url || ""} />
-                <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-medium">
+                <AvatarFallback className="bg-card text-foreground text-base font-semibold">
                   {profile?.full_name?.charAt(0) || "?"}
                 </AvatarFallback>
               </Avatar>
               <div>
+                <p className="text-xs text-muted-foreground tracking-wide uppercase mb-0.5">NONFICTION Education</p>
                 <h1 className="text-xl font-semibold text-foreground">{t("catalog.title")}</h1>
                 <p className="text-sm text-muted-foreground mt-0.5">{t("catalog.subtitle")}</p>
               </div>
             </div>
-            <div className="flex items-center gap-6">
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground">{courses.length}</p>
-                <p className="text-[11px] text-muted-foreground">{t("catalog.totalCourses")}</p>
-              </div>
-              <div className="h-8 w-px bg-border" />
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground">{categories.length}</p>
-                <p className="text-[11px] text-muted-foreground">{t("catalog.totalCategories")}</p>
-              </div>
-              <div className="h-8 w-px bg-border" />
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground">{enrollments.filter((e: any) => e.status === "approved").length}</p>
-                <p className="text-[11px] text-muted-foreground">{t("catalog.myEnrolled")}</p>
-              </div>
+
+            {/* Right: stats pills */}
+            <div className="flex items-center gap-3">
+              {[
+                { value: courses.length, label: t("catalog.totalCourses") },
+                { value: categories.length, label: t("catalog.totalCategories") },
+                { value: enrollments.filter((e: any) => e.status === "approved").length, label: t("catalog.myEnrolled") },
+              ].map((stat, i) => (
+                <div key={i} className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl px-5 py-3 text-center min-w-[80px] shadow-sm">
+                  <p className="text-xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
