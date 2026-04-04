@@ -353,11 +353,11 @@ const ContentPlayer = () => {
             {/* Content info - Toss-style clean sections */}
             <div className="space-y-6 mt-2">
 
-              {/* 과정 · 차시 한줄 통합 */}
-              <div className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <span className="truncate">{getCourseTitle()}</span>
+              {/* 과정 · 차시 · 학습상태 한줄 통합 */}
+              <div className="flex items-center gap-2 text-sm text-foreground flex-wrap">
+                <span className="font-bold truncate">{getCourseTitle()}</span>
                 <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="truncate">{localTitle}</span>
+                <span className="font-bold truncate">{localTitle}</span>
                 <div className="flex items-center gap-2 shrink-0 ml-auto">
                   <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider">
                     {contentTypeLabel[currentContent.content_type || "video"]}
@@ -368,46 +368,24 @@ const ContentPlayer = () => {
                       <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
                     </div>
                   )}
+                  <div className="w-px h-4 bg-border" />
+                  {currentProgress?.completed ? (
+                    <Badge variant="outline" className="text-[10px] font-semibold px-2.5 py-1 rounded-lg border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {t("course.alreadyCompleted")}
+                    </Badge>
+                  ) : user ? (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px] font-semibold px-2.5 py-1 rounded-lg gap-1">
+                        <Clock className="h-3 w-3" />
+                        {t("course.inProgress") || "학습 중"}
+                      </Badge>
+                      <Button variant="login" size="sm" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="text-xs rounded-lg h-7 px-3">
+                        {markCompleteMutation.isPending ? t("common.processing") : t("course.markComplete")}
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
-              </div>
-
-              {/* Section: 설명 */}
-              {localDesc && (
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("course.description") || "설명"}</p>
-                  <div className="bg-secondary/40 rounded-2xl p-5">
-                    <p className="text-sm text-foreground/80 leading-7 whitespace-pre-line break-keep">{localDesc}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Section: 학습 상태 */}
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("course.learningStatus") || "학습 상태"}</p>
-                {currentProgress?.completed ? (
-                  <div className="flex items-center gap-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl px-5 py-4">
-                    <div className="h-10 w-10 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
-                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-green-700 dark:text-green-300">{t("course.alreadyCompleted")}</p>
-                      <p className="text-xs text-green-600/70 dark:text-green-400/70">{t("course.completedSuccess")}</p>
-                    </div>
-                  </div>
-                ) : user ? (
-                  <div className="flex items-center gap-4 bg-secondary/40 rounded-2xl px-5 py-4">
-                    <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-foreground">{t("course.inProgress") || "학습 중"}</p>
-                      <p className="text-xs text-muted-foreground">{t("course.completeToProgress") || "학습을 완료해주세요"}</p>
-                    </div>
-                    <Button variant="login" size="default" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="shrink-0 text-sm rounded-xl">
-                      {markCompleteMutation.isPending ? t("common.processing") : t("course.markComplete")}
-                    </Button>
-                  </div>
-                ) : null}
               </div>
 
               {/* Navigation */}
