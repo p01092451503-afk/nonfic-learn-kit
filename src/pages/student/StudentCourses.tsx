@@ -122,7 +122,7 @@ const StudentCourses = () => {
           </span>
         )}
 
-        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" aria-hidden="true" />
       </Link>
     );
   };
