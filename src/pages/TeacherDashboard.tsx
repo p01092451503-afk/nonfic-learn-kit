@@ -118,8 +118,8 @@ const TeacherDashboard = () => {
               <p className="text-xs text-muted-foreground">{t("teacher.manageCourseDesc")}</p>
             </div>
             <Link to="/teacher/courses">
-              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1">
-                {t("common.viewAll")} <ArrowRight className="h-3 w-3" />
+              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1" aria-label={t("common.viewAll")}>
+                {t("common.viewAll")} <ArrowRight className="h-3 w-3" aria-hidden="true" />
               </Button>
             </Link>
           </div>
