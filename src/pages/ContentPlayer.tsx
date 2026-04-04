@@ -496,6 +496,37 @@ const ContentPlayer = () => {
           </div>
         </div>
       )}
+      {/* Mobile curriculum drawer */}
+      <Drawer open={mobileCurriculumOpen} onOpenChange={setMobileCurriculumOpen}>
+        <DrawerContent className="max-h-[80vh]">
+          <DrawerHeader className="pb-2">
+            <DrawerTitle className="text-base">{t("course.learningProgress")}</DrawerTitle>
+            <p className="text-xs text-muted-foreground">{completedCount} / {contents.length} {t("course.completed")} · {overallProgress}%</p>
+            <Progress value={overallProgress} className="h-2 mt-2" />
+          </DrawerHeader>
+          <ScrollArea className="flex-1 px-4 pb-4 max-h-[55vh]">
+            <div className="space-y-0.5">
+              {contents.map((c, idx) => {
+                const isActive = c.id === contentId;
+                const isCompleted = progressMap.get(c.id)?.completed;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => { setMobileCurriculumOpen(false); navigate(`/courses/${courseId}/content/${c.id}`); }}
+                    className={`w-full text-left px-3 py-3 rounded-xl flex items-center gap-3 text-sm transition-all ${isActive ? "bg-primary/10 text-primary font-semibold ring-1 ring-primary/20" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}
+                  >
+                    <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-xs font-medium ${isCompleted ? "bg-green-500 text-white" : isActive ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
+                      {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : idx + 1}
+                    </div>
+                    <span className="truncate flex-1">{getTitle(c)}</span>
+                    {c.duration_minutes && <span className="text-[11px] text-muted-foreground shrink-0">{c.duration_minutes}{t("common.minutes")}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };
