@@ -37,6 +37,8 @@ const ContentPlayer = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
+  const [mangoElapsed, setMangoElapsed] = useState(0);
+  const mangoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activeItemRef = useRef<HTMLButtonElement>(null);
 
   const { data: course } = useQuery({
@@ -102,7 +104,36 @@ const ContentPlayer = () => {
   // 모바일에서 콘텐츠 변경 시 사이드바 닫기
   useEffect(() => {
     setMobileSidebarOpen(false);
+    setMangoElapsed(0);
   }, [contentId]);
+
+  // Mangoboard 학습 시간 트래킹 & 자동 완료
+  useEffect(() => {
+    if (mangoPopupOpen && currentContent && isMangoboard(currentContent.video_url)) {
+      setMangoElapsed(0);
+      mangoTimerRef.current = setInterval(() => {
+        setMangoElapsed((prev) => prev + 1);
+      }, 1000);
+    } else {
+      if (mangoTimerRef.current) {
+        clearInterval(mangoTimerRef.current);
+        mangoTimerRef.current = null;
+      }
+    }
+    return () => {
+      if (mangoTimerRef.current) clearInterval(mangoTimerRef.current);
+    };
+  }, [mangoPopupOpen, currentContent?.id]);
+
+  // 80% 시간 도달 시 자동 완료
+  const requiredSeconds = (currentContent?.duration_minutes || 5) * 60 * 0.8;
+  const mangoAutoCompleted = mangoElapsed >= requiredSeconds;
+
+  useEffect(() => {
+    if (mangoAutoCompleted && !currentProgress?.completed && mangoPopupOpen) {
+      markCompleteMutation.mutate();
+    }
+  }, [mangoAutoCompleted]);
 
   const markCompleteMutation = useMutation({
     mutationFn: async () => {
@@ -458,13 +489,40 @@ const ContentPlayer = () => {
 
       {/* Mangoboard Popup Modal */}
       {mangoPopupOpen && currentContent && isMangoboard(currentContent.video_url) && embedUrl && (
-        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center">
           <button
             onClick={() => setMangoPopupOpen(false)}
             className="absolute top-4 right-4 z-[110] p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
+
+          {/* 학습 시간 진행 바 */}
+          <div className="absolute top-4 left-4 right-16 z-[110]">
+            <div className="flex items-center gap-3 bg-black/60 backdrop-blur-sm rounded-xl px-4 py-2.5">
+              <Clock className="h-4 w-4 text-white/70 shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between text-[11px] text-white/80 mb-1">
+                  <span>학습 시간</span>
+                  <span>
+                    {Math.floor(mangoElapsed / 60)}:{String(mangoElapsed % 60).padStart(2, "0")}
+                    {" / "}
+                    {Math.floor(requiredSeconds / 60)}:{String(Math.round(requiredSeconds % 60)).padStart(2, "0")}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ${mangoAutoCompleted ? "bg-green-400" : "bg-white/70"}`}
+                    style={{ width: `${Math.min((mangoElapsed / requiredSeconds) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+              {mangoAutoCompleted && (
+                <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />
+              )}
+            </div>
+          </div>
+
           <div className="h-[95vh]" style={{ aspectRatio: "9/16", maxWidth: "95vw" }}>
             <iframe
               src={embedUrl}
