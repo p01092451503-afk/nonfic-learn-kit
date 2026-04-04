@@ -491,7 +491,7 @@ const CourseDetail = () => {
                         <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => togglePublishMutation.mutate({ id: content.id, published: !content.is_published })}>
                           {content.is_published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                         </button>
-                        <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => navigate(`/courses/${courseId}/content/${content.id}`)}>
+                        <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => navigate(`/courses/${courseId}/content/${content.id}${viewParam}`)}>
                           <ExternalLink className="h-3.5 w-3.5" />
                         </button>
                         <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => openEditContent(content)}>
