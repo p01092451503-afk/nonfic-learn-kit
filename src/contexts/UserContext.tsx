@@ -103,8 +103,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setRoles([]);
   };
 
+  const refreshProfile = async () => {
+    if (user) {
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+      if (data) setProfile(data as UserProfile);
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ user, session, profile, roles, isLoading, signOut }}>
+    <UserContext.Provider value={{ user, session, profile, roles, isLoading, signOut, refreshProfile }}>
       {children}
     </UserContext.Provider>
   );
