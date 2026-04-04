@@ -301,15 +301,23 @@ const ContentPlayer = () => {
               ) : currentContent.content_type === "video" && embedUrl ? (
                 <div className="relative">
                   <div className="aspect-video w-full">
-                    <iframe
-                      ref={isTrackableVideo ? videoIframeCallback : undefined}
-                      id={`video-player-${contentId}`}
-                      src={embedUrl}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={localTitle}
-                    />
+                    {isTrackableVideo && isYouTube(localVideoUrlForHook, localProviderForHook) ? (
+                      <div
+                        ref={videoIframeCallback}
+                        id={`video-player-${contentId}`}
+                        className="w-full h-full"
+                      />
+                    ) : (
+                      <iframe
+                        ref={isTrackableVideo ? videoIframeCallback : undefined}
+                        id={`video-player-${contentId}`}
+                        src={embedUrl}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title={localTitle}
+                      />
+                    )}
                   </div>
                   {isTrackableVideo && (
                     <div className="px-4 py-2.5 bg-secondary/60 flex items-center gap-3 text-xs">
