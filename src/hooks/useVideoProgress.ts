@@ -33,6 +33,7 @@ export function useVideoProgress({
   const ytPlayerRef = useRef<any>(null);
   const vimeoPlayerRef = useRef<any>(null);
   const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const uiIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const hasResumedRef = useRef(false);
 
@@ -147,10 +148,41 @@ export function useVideoProgress({
     [resumePosition, isCompleted]
   );
 
-  // ─── Polling loop ───
+  // ─── UI update loop (every 1s) ───
+  const startUIPolling = useCallback(
+    (type: "youtube" | "vimeo") => {
+      if (uiIntervalRef.current) clearInterval(uiIntervalRef.current);
+      uiIntervalRef.current = setInterval(async () => {
+        let cur = 0;
+        let dur = 0;
+        if (type === "youtube" && ytPlayerRef.current) {
+          cur = ytPlayerRef.current.getCurrentTime?.() || 0;
+          dur = ytPlayerRef.current.getDuration?.() || 0;
+        } else if (type === "vimeo" && vimeoPlayerRef.current) {
+          cur = (await vimeoPlayerRef.current.getCurrentTime()) || 0;
+          dur = (await vimeoPlayerRef.current.getDuration()) || 0;
+        }
+        setCurrentTime(cur);
+        setDuration(dur);
+
+        // Auto-complete check
+        if (dur > 0) {
+          const pct = (cur / dur) * 100;
+          if (pct >= 80 && !isCompleted && !autoCompleted) {
+            setAutoCompleted(true);
+            await saveProgress(cur, pct, true);
+          }
+        }
+      }, 1000);
+    },
+    [isCompleted, autoCompleted, saveProgress]
+  );
+
+  // ─── DB save loop (every 10s) ───
   const startPolling = useCallback(
     (type: "youtube" | "vimeo") => {
       stopPolling();
+      startUIPolling(type);
       saveIntervalRef.current = setInterval(async () => {
         let cur = 0;
         let dur = 0;
@@ -163,28 +195,22 @@ export function useVideoProgress({
           dur = (await vimeoPlayerRef.current.getDuration()) || 0;
         }
 
-        setCurrentTime(cur);
-        setDuration(dur);
-
         if (dur <= 0) return;
         const pct = (cur / dur) * 100;
-        const shouldComplete = pct >= 80 && !isCompleted && !autoCompleted;
-
-        if (shouldComplete) {
-          setAutoCompleted(true);
-          await saveProgress(cur, pct, true);
-        } else {
-          await saveProgress(cur, pct, isCompleted || autoCompleted);
-        }
+        await saveProgress(cur, pct, isCompleted || autoCompleted);
       }, 10000);
     },
-    [isCompleted, autoCompleted, saveProgress]
+    [isCompleted, autoCompleted, saveProgress, startUIPolling]
   );
 
   const stopPolling = useCallback(() => {
     if (saveIntervalRef.current) {
       clearInterval(saveIntervalRef.current);
       saveIntervalRef.current = null;
+    }
+    if (uiIntervalRef.current) {
+      clearInterval(uiIntervalRef.current);
+      uiIntervalRef.current = null;
     }
   }, []);
 
