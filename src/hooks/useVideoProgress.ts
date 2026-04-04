@@ -33,6 +33,7 @@ export function useVideoProgress({
   const ytPlayerRef = useRef<any>(null);
   const vimeoPlayerRef = useRef<any>(null);
   const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const uiIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const hasResumedRef = useRef(false);
 
