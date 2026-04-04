@@ -109,7 +109,7 @@ const StudentCourses = () => {
           )}
           {isCompleted && (
             <div className="flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" aria-hidden="true" />
               <span className="text-xs font-medium text-green-600 dark:text-green-400">{t("course.completionLabel")}</span>
             </div>
           )}
