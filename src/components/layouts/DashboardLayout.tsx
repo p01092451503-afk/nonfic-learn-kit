@@ -125,7 +125,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
             </div>
           </div>
         </header>
-        <main className="flex-1 p-6 lg:p-8">{children}</main>
+        <main className={contentClassName || "flex-1 p-6 lg:p-8"}>{children}</main>
       </div>
     </div>
   );
