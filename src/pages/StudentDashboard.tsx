@@ -293,7 +293,7 @@ const StudentDashboard = () => {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary" />
+            <BarChart3 className="h-6 w-6 text-primary" aria-hidden="true" />
             {t("dashboard.learningDashboard")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">{t("dashboard.hello")}</p>
