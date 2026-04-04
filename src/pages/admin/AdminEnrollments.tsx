@@ -251,7 +251,7 @@ const AdminEnrollments = () => {
                               size="sm"
                               variant="outline"
                               className="h-7 rounded-lg text-xs gap-1 text-destructive border-destructive/30 hover:bg-destructive/5"
-                              onClick={() => updateStatusMutation.mutate({ enrollmentId: enrollment.id, status: "rejected" })}
+                              onClick={() => updateStatusMutation.mutate({ enrollmentId: enrollment.id, newStatus: "rejected" })}
                               disabled={updateStatusMutation.isPending}
                             >
                               <XCircle className="h-3 w-3" /> {t("enrollment.reject")}
