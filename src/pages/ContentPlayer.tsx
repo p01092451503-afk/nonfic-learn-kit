@@ -358,17 +358,16 @@ const ContentPlayer = () => {
                 <span className="font-bold truncate">{getCourseTitle()}</span>
                 <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                 <span className="font-bold truncate">{localTitle}</span>
+                <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider shrink-0">
+                  {contentTypeLabel[currentContent.content_type || "video"]}
+                </Badge>
+                {currentContent.duration_minutes && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                    <Clock className="h-3 w-3" />
+                    <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 shrink-0 ml-auto">
-                  <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider">
-                    {contentTypeLabel[currentContent.content_type || "video"]}
-                  </Badge>
-                  {currentContent.duration_minutes && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
-                    </div>
-                  )}
-                  <div className="w-px h-4 bg-border" />
                   {currentProgress?.completed ? (
                     <Badge variant="outline" className="text-[10px] font-semibold px-2.5 py-1 rounded-lg border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400 gap-1">
                       <CheckCircle2 className="h-3 w-3" />
