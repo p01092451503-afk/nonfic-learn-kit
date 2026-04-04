@@ -474,7 +474,7 @@ const StudentDashboard = () => {
                   <span className="text-muted-foreground">{t("dashboard.averageScore")}</span>
                   <span className="font-semibold text-foreground">{enrollmentStats?.avgProgress || 0}{t("common.points")}</span>
                 </div>
-                <Progress value={enrollmentStats?.avgProgress || 0} className="h-3" />
+                <Progress value={enrollmentStats?.avgProgress || 0} className="h-3" aria-label={`${t("dashboard.averageScore")}: ${enrollmentStats?.avgProgress || 0}${t("common.points")}`} />
               </div>
             </div>
           </div>
