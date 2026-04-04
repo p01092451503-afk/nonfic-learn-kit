@@ -355,13 +355,19 @@ const ContentPlayer = () => {
 
               {/* 과정 · 차시 · 학습상태 한줄 통합 */}
               <div className="flex items-center gap-3 flex-wrap">
-                <Badge variant="secondary" className="text-sm font-bold px-4 py-1.5 rounded-xl">
-                  {getCourseTitle()}
-                </Badge>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">과정</span>
+                  <Badge variant="secondary" className="text-sm font-bold px-4 py-1.5 rounded-xl">
+                    {getCourseTitle()}
+                  </Badge>
+                </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                <Badge className="text-sm font-bold px-4 py-1.5 bg-foreground text-background rounded-xl">
-                  {localTitle}
-                </Badge>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">차시</span>
+                  <Badge className="text-sm font-bold px-4 py-1.5 bg-foreground text-background rounded-xl">
+                    {localTitle}
+                  </Badge>
+                </div>
                 <Badge variant="outline" className="text-xs font-semibold px-2.5 py-1 rounded-lg uppercase tracking-wider shrink-0">
                   {contentTypeLabel[currentContent.content_type || "video"]}
                 </Badge>
