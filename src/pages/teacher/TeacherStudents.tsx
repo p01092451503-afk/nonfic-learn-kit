@@ -244,7 +244,7 @@ const TeacherStudents = () => {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filtered.map((student) => (
-                    <tr key={student.userId} className="hover:bg-accent/20 transition-colors">
+                    <tr key={student.userId} className="hover:bg-accent/20 transition-colors cursor-pointer" onClick={() => navigate(`/teacher/students/${student.userId}`)}>
                       {/* Student info */}
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
