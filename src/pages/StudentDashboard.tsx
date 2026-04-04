@@ -359,7 +359,7 @@ const StudentDashboard = () => {
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Progress value={mc.progress} className="h-2 flex-1" />
+                        <Progress value={mc.progress} className="h-2 flex-1" aria-label={`${t("dashboard.progressRate")}: ${Math.round(mc.progress)}%`} />
                         <span className="text-xs font-semibold text-foreground shrink-0">{Math.round(mc.progress)}%</span>
                       </div>
                       {mc.deadline && (
