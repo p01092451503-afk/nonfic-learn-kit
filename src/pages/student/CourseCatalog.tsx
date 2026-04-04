@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-import loginBg from "@/assets/login-bg.jpg";
 
 const categoryGradients: Record<string, string> = {
   marketing: "from-orange-500 to-pink-500", sales: "from-blue-500 to-cyan-500",
