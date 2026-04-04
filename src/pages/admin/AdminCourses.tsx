@@ -1,58 +1,339 @@
-import { Plus, Users, Search, Filter } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Plus, Search, MoreHorizontal, Eye, Edit, Users, BookOpen, Clock, LayoutGrid, List, AlertTriangle, CalendarClock } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import CourseCard from "@/components/CourseCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 
+const statusLabel: Record<string, string> = {
+  draft: "초안",
+  published: "공개",
+  archived: "보관",
+};
+
+const statusColor: Record<string, string> = {
+  draft: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  published: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  archived: "bg-secondary text-muted-foreground",
+};
+
+const difficultyLabel: Record<string, string> = {
+  beginner: "초급",
+  intermediate: "중급",
+  advanced: "고급",
+};
+
 const AdminCourses = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const { t } = useTranslation();
 
-  const { data: courses = [] } = useQuery({ queryKey: ["admin-courses"], queryFn: async () => { const { data, error } = await supabase.from("courses").select("*").order("created_at", { ascending: false }); if (error) throw error; return data; } });
-  const { data: categories = [] } = useQuery({ queryKey: ["categories"], queryFn: async () => { const { data, error } = await supabase.from("categories").select("id, name, slug"); if (error) throw error; return data; } });
-  const { data: enrollments = [] } = useQuery({ queryKey: ["admin-all-enrollments"], queryFn: async () => { const { data, error } = await supabase.from("enrollments").select("course_id, progress"); if (error) throw error; return data; } });
-  const { data: instructorProfiles = [] } = useQuery({ queryKey: ["instructor-profiles", courses.map((c: any) => c.instructor_id).filter(Boolean)], queryFn: async () => { const ids = [...new Set(courses.map((c: any) => c.instructor_id).filter(Boolean))]; if (ids.length === 0) return []; const { data, error } = await supabase.from("profiles").select("user_id, full_name").in("user_id", ids); if (error) throw error; return data; }, enabled: courses.length > 0 });
+  const { data: courses = [] } = useQuery({
+    queryKey: ["admin-courses"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("courses").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("id, name, slug");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: enrollmentCounts = {} } = useQuery({
+    queryKey: ["admin-enrollment-counts", courses.map((c: any) => c.id)],
+    queryFn: async () => {
+      const ids = courses.map((c: any) => c.id);
+      if (ids.length === 0) return {};
+      const { data, error } = await supabase.from("enrollments").select("course_id").in("course_id", ids);
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data.forEach((e: any) => { counts[e.course_id] = (counts[e.course_id] || 0) + 1; });
+      return counts;
+    },
+    enabled: courses.length > 0,
+  });
+
+  const { data: contentCounts = {} } = useQuery({
+    queryKey: ["admin-content-counts", courses.map((c: any) => c.id)],
+    queryFn: async () => {
+      const ids = courses.map((c: any) => c.id);
+      if (ids.length === 0) return {};
+      const { data, error } = await supabase.from("course_contents").select("course_id").in("course_id", ids);
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data.forEach((e: any) => { counts[e.course_id] = (counts[e.course_id] || 0) + 1; });
+      return counts;
+    },
+    enabled: courses.length > 0,
+  });
+
+  const { data: instructorProfiles = [] } = useQuery({
+    queryKey: ["instructor-profiles", courses.map((c: any) => c.instructor_id).filter(Boolean)],
+    queryFn: async () => {
+      const ids = [...new Set(courses.map((c: any) => c.instructor_id).filter(Boolean))];
+      if (ids.length === 0) return [];
+      const { data, error } = await supabase.from("profiles").select("user_id, full_name").in("user_id", ids);
+      if (error) throw error;
+      return data;
+    },
+    enabled: courses.length > 0,
+  });
 
   const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
   const instructorMap = new Map(instructorProfiles.map((p: any) => [p.user_id, p.full_name]));
-  const enrollmentMap = new Map<string, { count: number; avgProgress: number }>();
-  const grouped: Record<string, { total: number; progress: number }> = {};
-  enrollments.forEach((e: any) => { if (!grouped[e.course_id]) grouped[e.course_id] = { total: 0, progress: 0 }; grouped[e.course_id].total++; grouped[e.course_id].progress += Number(e.progress) || 0; });
-  Object.entries(grouped).forEach(([id, v]) => { enrollmentMap.set(id, { count: v.total, avgProgress: Math.round(v.progress / v.total) }); });
 
-  const filtered = courses.filter((c: any) => c.title.toLowerCase().includes(search.toLowerCase()));
-  const publishedCount = courses.filter((c: any) => c.status === "published").length;
-  const totalStudents = Object.values(grouped).reduce((s, v) => s + v.total, 0);
+  const filtered = courses.filter((c: any) => {
+    const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === "all" || c.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const stats = {
+    total: courses.length,
+    published: courses.filter((c: any) => c.status === "published").length,
+    draft: courses.filter((c: any) => c.status === "draft").length,
+    totalStudents: Object.values(enrollmentCounts as Record<string, number>).reduce((a, b) => a + b, 0),
+  };
+
+  const goToCourse = (courseId: string) => navigate(`/admin/courses/${courseId}`);
 
   return (
     <DashboardLayout role="admin">
-      <div className="space-y-8">
+      <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">{t("admin.courseManagement")}</h1>
             <p className="text-sm text-muted-foreground mt-1">{t("admin.courseManagementDesc")}</p>
           </div>
-          <Link to="/admin/courses/new"><Button className="rounded-xl gap-2"><Plus className="h-4 w-4" /> {t("admin.newCourse")}</Button></Link>
+          <Link to="/admin/courses/new">
+            <Button className="rounded-xl gap-2">
+              <Plus className="h-4 w-4" /> {t("admin.newCourse")}
+            </Button>
+          </Link>
         </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="stat-card text-center"><p className="text-2xl font-bold text-foreground">{courses.length}</p><p className="text-xs text-muted-foreground mt-1">{t("admin.totalCoursesLabel")}</p></div>
-          <div className="stat-card text-center"><p className="text-2xl font-bold text-foreground">{publishedCount}</p><p className="text-xs text-muted-foreground mt-1">{t("admin.publishedCourses")}</p></div>
-          <div className="stat-card text-center"><p className="text-2xl font-bold text-foreground">{totalStudents}</p><p className="text-xs text-muted-foreground mt-1">{t("admin.totalStudents")}</p></div>
+
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="stat-card p-4">
+            <p className="text-xs text-muted-foreground">{t("admin.totalCoursesLabel")}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
+          </div>
+          <div className="stat-card p-4">
+            <p className="text-xs text-muted-foreground">{t("admin.publishedCourses")}</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.published}</p>
+          </div>
+          <div className="stat-card p-4">
+            <p className="text-xs text-muted-foreground">{t("teacher.draft")}</p>
+            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.draft}</p>
+          </div>
+          <div className="stat-card p-4">
+            <p className="text-xs text-muted-foreground">{t("admin.totalStudents")}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{stats.totalStudents}</p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder={t("course.searchCourse")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl border-border" /></div>
-          <Button variant="outline" size="sm" className="rounded-xl gap-2"><Filter className="h-3.5 w-3.5" /> {t("common.filter")}</Button>
+
+        {/* Toolbar */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t("course.searchCourse")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 rounded-xl border-border"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-28 rounded-xl h-10">
+              <SelectValue placeholder={t("common.filter")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.all") || "전체"}</SelectItem>
+              <SelectItem value="published">{t("teacher.published")}</SelectItem>
+              <SelectItem value="draft">{t("teacher.draft")}</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex items-center border border-border rounded-xl overflow-hidden">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2.5 transition-colors ${viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"}`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"}`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+          </div>
         </div>
+
+        {/* Content */}
         {filtered.length === 0 ? (
-          <div className="stat-card text-center py-10"><p className="text-sm text-muted-foreground">{t("admin.noCoursesFound")}</p></div>
+          <div className="stat-card text-center py-16">
+            <div className="space-y-3">
+              <BookOpen className="h-10 w-10 text-muted-foreground mx-auto" />
+              <p className="text-sm text-muted-foreground">{t("admin.noCoursesFound")}</p>
+              <Link to="/admin/courses/new">
+                <Button size="sm" className="rounded-xl gap-2 mt-2">
+                  <Plus className="h-3.5 w-3.5" /> {t("admin.newCourse")}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : viewMode === "list" ? (
+          <div className="stat-card !p-0 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-secondary/30">
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("course.course") || "강좌"}</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("course.category") || "카테고리"}</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("course.instructor") || "강사"}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.status") || "상태"}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("common.required") || "필수"}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("admin.totalStudents") || "수강생"}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("course.content") || "콘텐츠"}</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("common.manage") || "관리"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((course: any) => {
+                  const cat = categoryMap.get(course.category_id);
+                  const students = (enrollmentCounts as any)[course.id] || 0;
+                  const contents = (contentCounts as any)[course.id] || 0;
+                  const instructor = instructorMap.get(course.instructor_id);
+                  const daysLeft = course.deadline ? Math.ceil((new Date(course.deadline).getTime() - Date.now()) / 86400000) : null;
+
+                  return (
+                    <tr
+                      key={course.id}
+                      className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors cursor-pointer"
+                      onClick={() => goToCourse(course.id)}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-12 w-16 rounded-lg overflow-hidden shrink-0 bg-secondary">
+                            {course.thumbnail_url ? (
+                              <img src={course.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center">
+                                <BookOpen className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate max-w-[180px] lg:max-w-[280px]">
+                              {course.title}
+                            </p>
+                            {course.description && (
+                              <p className="text-[11px] text-muted-foreground truncate max-w-[180px] lg:max-w-[280px] mt-0.5">
+                                {course.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        {cat?.name && <span className="text-xs text-muted-foreground">{cat.name}</span>}
+                      </td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <span className="text-xs text-muted-foreground">{instructor || "-"}</span>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-center">
+                        <span className={`inline-flex text-[10px] font-semibold px-2.5 py-1 rounded-lg ${statusColor[course.status || "draft"]}`}>
+                          {statusLabel[course.status || "draft"] || course.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 hidden lg:table-cell text-center">
+                        {course.is_mandatory ? (
+                          <div className="flex flex-col items-center gap-0.5">
+                            <Badge variant="destructive" className="text-[10px] h-5 gap-0.5">
+                              <AlertTriangle className="h-2.5 w-2.5" /> {t("common.required")}
+                            </Badge>
+                            {daysLeft !== null && (
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                <CalendarClock className="h-2.5 w-2.5" />
+                                {daysLeft > 0 ? `D-${daysLeft}` : daysLeft === 0 ? "D-Day" : t("student.overdue")}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-center">
+                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                          <Users className="h-3 w-3" /> {students}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-center">
+                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                          <BookOpen className="h-3 w-3" /> {contents}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); goToCourse(course.id); }}>
+                              <Eye className="h-3.5 w-3.5 mr-2" /> {t("common.preview") || "미리보기"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); goToCourse(course.id); }}>
+                              <Edit className="h-3.5 w-3.5 mr-2" /> {t("common.edit") || "수정"}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((course: any) => { const cat = categoryMap.get(course.category_id); const enrollment = enrollmentMap.get(course.id); return (<CourseCard key={course.id} course={course} categorySlug={cat?.slug} categoryName={cat?.name} studentCount={enrollment?.count || 0} instructorName={instructorMap.get(course.instructor_id)} variant="admin" />); })}
+            {filtered.map((course: any) => {
+              const cat = categoryMap.get(course.category_id);
+              const enrollment = (enrollmentCounts as any)[course.id] || 0;
+              return (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  categorySlug={cat?.slug}
+                  categoryName={cat?.name}
+                  studentCount={enrollment}
+                  instructorName={instructorMap.get(course.instructor_id)}
+                  variant="admin"
+                  href={`/admin/courses/${course.id}`}
+                />
+              );
+            })}
           </div>
         )}
       </div>
