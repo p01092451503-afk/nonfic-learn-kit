@@ -136,8 +136,8 @@ const StudentCourses = () => {
 
         <div className="bg-secondary/30 rounded-xl p-4 space-y-1.5">
           <div className="flex items-start gap-2">
-            <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-            <div className="space-y-1 text-sm text-muted-foreground">
+            <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
+            <div className="space-y-1 text-sm text-muted-foreground" role="note">
               <p>{t("course.courseInfoGuide")}</p>
               <p>{t("course.courseInfoGuide2")}</p>
               <p>{t("course.courseInfoGuide3")}</p>
