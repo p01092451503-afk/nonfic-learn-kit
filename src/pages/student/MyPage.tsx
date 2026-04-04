@@ -144,43 +144,98 @@ const MyPage = () => {
     enabled: !!user?.id,
   });
 
+  const streakDays = gamification?.streak_days || 0;
+  const totalPoints = gamification?.total_points || 0;
+  const level = gamification?.level || 1;
+  const xp = gamification?.experience_points || 0;
+  const xpToNext = (level) * 100;
+  const xpProgress = Math.min(100, (xp / xpToNext) * 100);
+
   return (
     <DashboardLayout role="student">
       <div className="space-y-0 -m-6 lg:-m-8">
-        {/* Hero — catalog-style */}
+        {/* Hero */}
         <div className="border-y border-foreground/15">
-          <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-            {/* Left: avatar + info */}
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16 border-2 border-border shadow-sm">
-                <AvatarImage src={currentAvatar || ""} />
-                <AvatarFallback className="bg-card text-foreground text-lg font-semibold">
-                  {profile?.full_name?.charAt(0) || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <h1 className="text-xl font-semibold text-foreground">{profile?.full_name || t("common.user")}</h1>
-                <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
-                {(profile?.department || profile?.position) && (
-                  <p className="text-xs text-muted-foreground mt-0.5">{profile?.department} {profile?.position}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Right: stats */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {[
-                { value: enrollmentStats?.inProgress || 0, label: t("dashboard.inProgress"), icon: BookOpen },
-                { value: enrollmentStats?.completed || 0, label: t("dashboard.coursesCompleted"), icon: Trophy },
-                { value: `Lv.${gamification?.level || 1}`, label: `${gamification?.experience_points || 0} XP`, icon: Star },
-                { value: badgeCount, label: t("dashboard.earnedBadges"), icon: TrendingUp },
-              ].map((stat, i) => (
-                <div key={i} className="border border-border rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-center flex-1 sm:flex-none sm:min-w-[76px]">
-                  <stat.icon className="h-3.5 w-3.5 text-muted-foreground mx-auto mb-1" />
-                  <p className="text-base sm:text-lg font-bold text-foreground leading-none">{stat.value}</p>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1 leading-tight">{stat.label}</p>
+          <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6 sm:py-8">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
+              {/* Left: avatar + info (expanded) */}
+              <div className="flex items-center gap-5 lg:min-w-[320px]">
+                <Avatar className="h-20 w-20 border-2 border-border shadow-sm">
+                  <AvatarImage src={currentAvatar || ""} alt={profile?.full_name || ""} />
+                  <AvatarFallback className="bg-card text-foreground text-xl font-semibold">
+                    {profile?.full_name?.charAt(0) || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 space-y-1">
+                  <h1 className="text-xl font-bold text-foreground">{profile?.full_name || t("common.user")}</h1>
+                  <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {profile?.department && (
+                      <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{profile.department}</span>
+                    )}
+                    {profile?.position && (
+                      <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{profile.position}</span>
+                    )}
+                    {profile?.team_name && (
+                      <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{profile.team_name}</span>
+                    )}
+                  </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Right: mini dashboard */}
+              <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {/* 수강 현황 */}
+                <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">{t("dashboard.inProgress")}</span>
+                    <BookOpen className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground leading-none">{enrollmentStats?.inProgress || 0}</p>
+                  <p className="text-[10px] text-muted-foreground">{t("dashboard.totalCourses", { count: enrollmentStats?.total || 0 })}</p>
+                </div>
+
+                {/* 수강 완료 */}
+                <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">{t("dashboard.coursesCompleted")}</span>
+                    <Trophy className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground leading-none">{enrollmentStats?.completed || 0}</p>
+                  <div className="h-1 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${enrollmentStats?.total ? ((enrollmentStats.completed || 0) / enrollmentStats.total) * 100 : 0}%` }} />
+                  </div>
+                </div>
+
+                {/* 레벨 & XP */}
+                <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">{t("dashboard.level")}</span>
+                    <Star className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground leading-none">Lv.{level}</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-1 flex-1 bg-secondary rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${xpProgress}%` }} />
+                    </div>
+                    <span className="text-[9px] text-muted-foreground shrink-0">{xp}/{xpToNext} XP</span>
+                  </div>
+                </div>
+
+                {/* 연속학습 & 포인트 & 뱃지 */}
+                <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">{t("dashboard.earnedBadges")}</span>
+                    <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground leading-none">{badgeCount}</p>
+                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                    <span>🔥 {streakDays}{t("common.days")}</span>
+                    <span className="text-foreground/20">·</span>
+                    <span>{totalPoints} P</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
