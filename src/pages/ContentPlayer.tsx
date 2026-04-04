@@ -419,7 +419,7 @@ const ContentPlayer = () => {
         </div>
 
         {/* Right sidebar - curriculum panel */}
-        <aside className={`hidden lg:flex flex-col border-l border-border bg-card transition-all duration-300 ${sidebarOpen ? "w-80" : "w-0 overflow-hidden"}`}>
+        <aside className={`hidden lg:flex flex-col border-l border-border bg-card transition-all duration-300 ${sidebarOpen ? "w-96 mr-4" : "w-0 overflow-hidden"}`}>
           {sidebarOpen && (
             <>
               <div className="p-4 border-b border-border flex items-center justify-between">
