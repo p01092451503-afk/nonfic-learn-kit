@@ -13,6 +13,7 @@ import StudentCourses from "./pages/student/StudentCourses";
 import StudentAssignments from "./pages/student/StudentAssignments";
 import StudentAchievements from "./pages/student/StudentAchievements";
 import CourseCatalog from "./pages/student/CourseCatalog";
+import MyPage from "./pages/student/MyPage";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import TeacherCourses from "./pages/teacher/TeacherCourses";
 import TeacherAssignments from "./pages/teacher/TeacherAssignments";
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/dashboard/assignments" element={<ProtectedRoute><StudentAssignments /></ProtectedRoute>} />
             <Route path="/dashboard/achievements" element={<ProtectedRoute><StudentAchievements /></ProtectedRoute>} />
             <Route path="/catalog" element={<ProtectedRoute><CourseCatalog /></ProtectedRoute>} />
+            <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
 
             {/* Teacher */}
             <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />

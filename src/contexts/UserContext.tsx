@@ -11,6 +11,8 @@ interface UserProfile {
   department: string | null;
   position: string | null;
   employee_id: string | null;
+  phone_number: string | null;
+  team_name: string | null;
 }
 
 interface UserContextType {
@@ -20,6 +22,7 @@ interface UserContextType {
   roles: AppRole[];
   isLoading: boolean;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType>({
@@ -29,6 +32,7 @@ const UserContext = createContext<UserContextType>({
   roles: [],
   isLoading: true,
   signOut: async () => {},
+  refreshProfile: async () => {},
 });
 
 export const useUser = () => useContext(UserContext);
@@ -99,8 +103,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setRoles([]);
   };
 
+  const refreshProfile = async () => {
+    if (user) {
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+      if (data) setProfile(data as UserProfile);
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ user, session, profile, roles, isLoading, signOut }}>
+    <UserContext.Provider value={{ user, session, profile, roles, isLoading, signOut, refreshProfile }}>
       {children}
     </UserContext.Provider>
   );

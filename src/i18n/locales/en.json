@@ -89,7 +89,8 @@
     "learningManagement": "Learning Mgmt",
     "attendanceManagement": "Attendance Mgmt",
     "completionManagement": "Completion Mgmt",
-    "courseCatalog": "Browse Courses"
+    "courseCatalog": "Browse Courses",
+    "myPage": "My Page"
   },
   "roles": {
     "student": "Student",
@@ -795,5 +796,33 @@
     "enrollSuccess": "Successfully enrolled!",
     "continueLearning": "Continue Learning",
     "enrolled": "Enrolled"
+  },
+  "mypage": {
+    "profileTab": "Profile",
+    "avatarTab": "Avatar",
+    "passwordTab": "Password",
+    "profileInfo": "Profile Information",
+    "profileInfoDesc": "Edit your basic profile information.",
+    "email": "Email",
+    "name": "Name",
+    "phone": "Phone Number",
+    "position": "Position",
+    "team": "Team",
+    "profileSaved": "Profile saved successfully.",
+    "selectAvatar": "Select Avatar",
+    "selectAvatarDesc": "Choose an avatar that represents you.",
+    "preview": "Preview",
+    "previewDesc": "This avatar will be shown on your profile.",
+    "applyAvatar": "Apply",
+    "avatarSaved": "Avatar applied successfully.",
+    "changePassword": "Change Password",
+    "changePasswordDesc": "Enter a new password below.",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "At least 6 characters",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "passwordChanged": "Password changed successfully.",
+    "passwordMinLength": "Password must be at least 6 characters.",
+    "passwordMismatch": "Passwords do not match."
   }
 }
