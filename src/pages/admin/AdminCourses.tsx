@@ -1,4 +1,4 @@
-import { Plus, Search, MoreHorizontal, Eye, Edit, Users, BookOpen, Clock, LayoutGrid, List, AlertTriangle, CalendarClock } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Eye, Edit, Users, BookOpen, Clock, LayoutGrid, List, AlertTriangle, CalendarClock, ArrowUpDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -38,6 +38,8 @@ const AdminCourses = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title" | "students">("newest");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const { t } = useTranslation();
 
@@ -102,11 +104,21 @@ const AdminCourses = () => {
   const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
   const instructorMap = new Map(instructorProfiles.map((p: any) => [p.user_id, p.full_name]));
 
-  const filtered = courses.filter((c: any) => {
-    const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || c.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filtered = courses
+    .filter((c: any) => {
+      const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = statusFilter === "all" || c.status === statusFilter;
+      const matchCategory = categoryFilter === "all" || c.category_id === categoryFilter;
+      return matchSearch && matchStatus && matchCategory;
+    })
+    .sort((a: any, b: any) => {
+      switch (sortBy) {
+        case "oldest": return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case "title": return a.title.localeCompare(b.title);
+        case "students": return ((enrollmentCounts as any)[b.id] || 0) - ((enrollmentCounts as any)[a.id] || 0);
+        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
 
   const stats = {
     total: courses.length,
@@ -172,6 +184,31 @@ const AdminCourses = () => {
               <SelectItem value="all">{t("common.all") || "전체"}</SelectItem>
               <SelectItem value="published">{t("teacher.published")}</SelectItem>
               <SelectItem value="draft">{t("teacher.draft")}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-36 rounded-xl h-10">
+              <SelectValue placeholder={t("course.category") || "카테고리"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.all") || "전체"}</SelectItem>
+              {categories.map((cat: any) => (
+                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+            <SelectTrigger className="w-32 rounded-xl h-10">
+              <div className="flex items-center gap-1.5">
+                <ArrowUpDown className="h-3.5 w-3.5" />
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">{t("common.newest") || "최신순"}</SelectItem>
+              <SelectItem value="oldest">{t("common.oldest") || "오래된순"}</SelectItem>
+              <SelectItem value="title">{t("common.nameOrder") || "이름순"}</SelectItem>
+              <SelectItem value="students">{t("common.popularOrder") || "수강생순"}</SelectItem>
             </SelectContent>
           </Select>
           <div className="flex items-center border border-border rounded-xl overflow-hidden">
