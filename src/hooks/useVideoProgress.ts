@@ -71,9 +71,7 @@ export function useVideoProgress({
 
   // ─── YouTube API ───
   const initYouTube = useCallback(
-    (iframeEl: HTMLIFrameElement, videoId: string) => {
-      iframeRef.current = iframeEl;
-
+    (el: HTMLElement, videoId: string) => {
       // Load API script once
       if (!(window as any).YT) {
         const tag = document.createElement("script");
@@ -85,8 +83,10 @@ export function useVideoProgress({
         if (ytPlayerRef.current) {
           try { ytPlayerRef.current.destroy(); } catch {}
         }
-        ytPlayerRef.current = new (window as any).YT.Player(iframeEl, {
+        ytPlayerRef.current = new (window as any).YT.Player(el, {
           videoId,
+          width: "100%",
+          height: "100%",
           playerVars: {
             autoplay: 0,
             start: resumePosition > 0 && !isCompleted ? resumePosition : 0,
