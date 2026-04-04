@@ -243,8 +243,10 @@ const TeacherStudents = () => {
                 <p className="text-xs text-muted-foreground">{t("students.detailedStatus")}</p>
               </div>
               <div className="relative w-56">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                <label htmlFor="student-search" className="sr-only">{t("students.searchStudent")}</label>
                 <Input
+                  id="student-search"
                   placeholder={t("students.searchStudent")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
