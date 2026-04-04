@@ -225,8 +225,8 @@ const TeacherCourses = () => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="h-12 w-16 rounded-lg overflow-hidden shrink-0 bg-secondary">
-                            {course.thumbnail_url ? (
-                              <img src={course.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                          {course.thumbnail_url ? (
+                              <img src={course.thumbnail_url} alt={course.title} className="h-full w-full object-cover" />
                             ) : (
                               <div className="h-full w-full flex items-center justify-center">
                                 <BookOpen className="h-4 w-4 text-muted-foreground" />
