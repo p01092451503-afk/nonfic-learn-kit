@@ -300,29 +300,29 @@ const StudentDashboard = () => {
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {stats.map((stat) => (
-            <div key={stat.label} className="stat-card">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-5 w-5 text-muted-foreground" />
+            <div key={stat.label} className="stat-card !p-4 sm:!p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <span className="text-xs sm:text-sm text-muted-foreground leading-tight">{stat.label}</span>
+                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" />
               </div>
-              <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
             </div>
           ))}
         </div>
 
         {/* Detail Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {detailStats.map((stat) => (
-            <div key={stat.label} className="stat-card">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-5 w-5 text-muted-foreground" />
+            <div key={stat.label} className="stat-card !p-4 sm:!p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <span className="text-xs sm:text-sm text-muted-foreground leading-tight">{stat.label}</span>
+                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" />
               </div>
-              <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
             </div>
           ))}
         </div>
