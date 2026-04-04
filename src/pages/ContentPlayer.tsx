@@ -596,6 +596,7 @@ const ContentPlayer = () => {
         </div>
       )}
     </div>
+    </DashboardLayout>
   );
 };
 
