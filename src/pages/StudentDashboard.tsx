@@ -343,16 +343,16 @@ const StudentDashboard = () => {
                 const isToday = mc.daysLeft === 0;
                 const isUrgent = mc.daysLeft !== null && mc.daysLeft <= 3;
                 return (
-                  <div key={mc.id} className={`stat-card !p-4 flex items-center gap-4 ${isOverdue ? "border-destructive/40 bg-destructive/5" : isUrgent ? "border-orange-300 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/10" : ""}`}>
+                  <div key={mc.id} className={`stat-card !p-3 sm:!p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 ${isOverdue ? "border-destructive/40 bg-destructive/5" : isUrgent ? "border-orange-300 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/10" : ""}`} role="article" aria-label={mc.title}>
                     <div className="flex-1 min-w-0 space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-sm font-semibold text-foreground truncate">{mc.title}</h3>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
                           isOverdue ? "bg-destructive/10 text-destructive" :
                           isToday ? "bg-destructive/10 text-destructive" :
                           isUrgent ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
                           "bg-muted text-muted-foreground"
-                        }`}>
+                        }`} role="status">
                           {isOverdue ? t("mandatory.overdue") :
                            isToday ? t("mandatory.today") :
                            mc.daysLeft !== null ? t("mandatory.daysLeft", { days: mc.daysLeft }) : ""}
@@ -365,11 +365,11 @@ const StudentDashboard = () => {
                       {mc.deadline && (
                         <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                           <Calendar className="h-3 w-3" aria-hidden="true" />
-                          <span>{t("mandatory.deadline")}: {mc.deadline}</span>
+                          <time dateTime={mc.deadline}>{t("mandatory.deadline")}: {mc.deadline}</time>
                         </div>
                       )}
                     </div>
-                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5" onClick={() => navigate(`/courses/${mc.id}?view=learn`)} aria-label={`${mc.title} - ${t("common.continue")}`}>
+                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5 w-full sm:w-auto" onClick={() => navigate(`/courses/${mc.id}?view=learn`)} aria-label={`${mc.title} - ${t("common.continue")}`}>
                       <Play className="h-3.5 w-3.5" aria-hidden="true" /> {t("common.continue")}
                     </Button>
                   </div>
