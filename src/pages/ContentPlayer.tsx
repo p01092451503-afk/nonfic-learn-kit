@@ -382,17 +382,19 @@ const ContentPlayer = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{t("course.lessonInfo") || "차시 정보"}</p>
-                    <h2 className="text-base font-bold text-foreground leading-snug mb-1.5">{localTitle}</h2>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider">
-                        {contentTypeLabel[currentContent.content_type || "video"]}
-                      </Badge>
-                      {currentContent.duration_minutes && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between gap-3">
+                      <h2 className="text-base font-bold text-foreground leading-snug truncate">{localTitle}</h2>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider">
+                          {contentTypeLabel[currentContent.content_type || "video"]}
+                        </Badge>
+                        {currentContent.duration_minutes && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
