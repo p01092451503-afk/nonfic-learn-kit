@@ -349,48 +349,62 @@ const ContentPlayer = () => {
 
         <div className="flex-1 overflow-y-auto">
           <div className="w-full max-w-6xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
-            {/* Video embed for non-mangoboard - full width on desktop */}
-            {!(isMangoboard(currentContent.video_url) && embedUrl) && (
-              <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6 lg:mb-8">
-                {currentContent.content_type === "video" && embedUrl ? (
-                  <div className="aspect-video w-full">
-                    <iframe
-                      src={embedUrl}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={currentContent.title}
-                    />
-                  </div>
-                ) : currentContent.content_type === "video" && currentContent.video_url ? (
-                  <div className="aspect-video w-full flex items-center justify-center">
-                    <a
-                      href={currentContent.video_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-base text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <ExternalLink className="h-5 w-5" /> 외부 플레이어에서 열기
-                    </a>
-                  </div>
-                ) : (
-                  <div className="py-16 flex items-center justify-center">
-                    <div className="text-center space-y-3">
-                      <div className="h-16 w-16 rounded-2xl bg-accent mx-auto flex items-center justify-center">
-                        {currentContent.content_type === "document" ? (
-                          <FileText className="h-7 w-7 text-accent-foreground" />
-                        ) : (
-                          <Play className="h-7 w-7 text-accent-foreground" />
-                        )}
-                      </div>
-                      <p className="text-base text-muted-foreground">
-                        {contentTypeLabel[currentContent.content_type || "video"] || "콘텐츠"}
-                      </p>
+            {/* 통합 미디어 영역 - 플립/영상 동일 레이아웃 */}
+            <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6 lg:mb-8">
+              {isMangoboard(currentContent.video_url) && embedUrl ? (
+                /* 플립러닝: 클릭하면 팝업으로 학습 */
+                <button
+                  onClick={() => setMangoPopupOpen(true)}
+                  className="relative aspect-video w-full flex items-center justify-center group cursor-pointer bg-gradient-to-br from-blue-500/10 to-indigo-500/10"
+                >
+                  <div className="text-center space-y-4">
+                    <div className="h-20 w-20 rounded-full bg-primary/90 group-hover:bg-primary mx-auto flex items-center justify-center transition-all group-hover:scale-110 shadow-lg">
+                      <Play className="h-8 w-8 text-primary-foreground ml-1" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-foreground">학습하기</p>
+                      <p className="text-sm text-muted-foreground mt-1">클릭하면 학습 화면이 열립니다</p>
                     </div>
                   </div>
-                )}
-              </div>
-            )}
+                </button>
+              ) : currentContent.content_type === "video" && embedUrl ? (
+                <div className="aspect-video w-full">
+                  <iframe
+                    src={embedUrl}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={currentContent.title}
+                  />
+                </div>
+              ) : currentContent.content_type === "video" && currentContent.video_url ? (
+                <div className="aspect-video w-full flex items-center justify-center">
+                  <a
+                    href={currentContent.video_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-base text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ExternalLink className="h-5 w-5" /> 외부 플레이어에서 열기
+                  </a>
+                </div>
+              ) : (
+                <div className="aspect-video w-full flex items-center justify-center">
+                  <div className="text-center space-y-3">
+                    <div className="h-16 w-16 rounded-2xl bg-accent mx-auto flex items-center justify-center">
+                      {currentContent.content_type === "document" ? (
+                        <FileText className="h-7 w-7 text-accent-foreground" />
+                      ) : (
+                        <Play className="h-7 w-7 text-accent-foreground" />
+                      )}
+                    </div>
+                    <p className="text-base text-muted-foreground">
+                      {contentTypeLabel[currentContent.content_type || "video"] || "콘텐츠"}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Two column layout on desktop */}
             <div className="lg:grid lg:grid-cols-3 lg:gap-8">
