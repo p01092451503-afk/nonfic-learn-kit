@@ -145,7 +145,7 @@ const StudentCourses = () => {
           </div>
           <div className="flex justify-end">
             <Button variant="outline" size="sm" className="gap-1.5 rounded-lg text-xs" onClick={() => syncProgressMutation.mutate()} disabled={syncProgressMutation.isPending}>
-              <RefreshCw className={`h-3.5 w-3.5 ${syncProgressMutation.isPending ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-3.5 w-3.5 ${syncProgressMutation.isPending ? "animate-spin" : ""}`} aria-hidden="true" />
               {syncProgressMutation.isPending ? t("course.syncing") : t("course.syncProgress")}
             </Button>
           </div>
