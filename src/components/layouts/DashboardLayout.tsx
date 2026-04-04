@@ -20,9 +20,10 @@ interface NavItem {
 interface DashboardLayoutProps {
   children: React.ReactNode;
   role?: "student" | "teacher" | "admin";
+  contentClassName?: string;
 }
 
-const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, role = "student", contentClassName }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -124,7 +125,7 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
             </div>
           </div>
         </header>
-        <main className="flex-1 p-6 lg:p-8">{children}</main>
+        <main className={contentClassName || "flex-1 p-6 lg:p-8"}>{children}</main>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, FileText,
@@ -13,6 +13,8 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
+import { useUserRole } from "@/hooks/useUserRole";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
@@ -21,13 +23,26 @@ const contentTypeIcon: Record<string, React.ElementType> = {
 const ContentPlayer = () => {
   const { courseId, contentId } = useParams<{ courseId: string; contentId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
+  const { primaryRole } = useUserRole();
   const isEn = i18n.language?.startsWith("en");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Determine layout role from URL context
+  const searchParams = new URLSearchParams(location.search);
+  const forceLearnView = searchParams.get("view") === "learn";
+  const layoutRole: "student" | "teacher" | "admin" = forceLearnView
+    ? "student"
+    : location.pathname.startsWith("/admin/")
+    ? "admin"
+    : primaryRole === "teacher"
+    ? "teacher"
+    : "student";
   const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
   const [mangoElapsed, setMangoElapsed] = useState(0);
   const mangoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -254,12 +269,14 @@ const ContentPlayer = () => {
 
   if (!currentContent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <p className="text-muted-foreground">{t("course.contentNotFound")}</p>
-          <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>{t("course.backToCourse")}</Button>
+      <DashboardLayout role={layoutRole}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center space-y-4">
+            <p className="text-muted-foreground">{t("course.contentNotFound")}</p>
+            <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>{t("course.backToCourse")}</Button>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -319,7 +336,8 @@ const ContentPlayer = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-background overflow-x-hidden">
+    <DashboardLayout role={layoutRole} contentClassName="flex-1 flex flex-col min-h-0 p-0">
+    <div className="flex flex-1 min-h-0 overflow-x-hidden">
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileSidebarOpen(false)} />
@@ -329,17 +347,17 @@ const ContentPlayer = () => {
         </div>
       )}
 
-      <aside className={`hidden lg:flex sticky top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border flex-col transition-all duration-300 ${sidebarOpen ? "w-72" : "w-0 overflow-hidden"}`}>
+      <aside className={`hidden lg:flex sticky top-16 h-[calc(100vh-4rem)] bg-sidebar border-r border-sidebar-border flex-col transition-all duration-300 ${sidebarOpen ? "w-72" : "w-0 overflow-hidden"}`}>
         {sidebarOpen && <SidebarContent />}
       </aside>
 
       {!sidebarOpen && (
-        <button onClick={() => setSidebarOpen(true)} className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-sidebar border border-sidebar-border rounded-r-lg hover:bg-accent text-muted-foreground transition-colors">
+        <button onClick={() => setSidebarOpen(true)} className="hidden lg:flex sticky top-1/2 z-30 p-2 bg-sidebar border border-sidebar-border rounded-r-lg hover:bg-accent text-muted-foreground transition-colors h-fit">
           <ChevronRight className="h-4 w-4" />
         </button>
       )}
 
-      <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30">
           <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg hover:bg-accent text-muted-foreground">
             <Menu className="h-5 w-5" />
@@ -545,7 +563,7 @@ const ContentPlayer = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Mangoboard Popup */}
       {mangoPopupOpen && currentContent && isMangoboard(localVideoUrl) && embedUrl && (
@@ -578,6 +596,7 @@ const ContentPlayer = () => {
         </div>
       )}
     </div>
+    </DashboardLayout>
   );
 };
 
