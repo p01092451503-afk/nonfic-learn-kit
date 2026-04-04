@@ -141,15 +141,15 @@ const ContentPlayer = () => {
   }, [videoProgress.autoCompleted]);
 
   const videoIframeCallback = useCallback(
-    (el: HTMLIFrameElement | null) => {
+    (el: HTMLElement | null) => {
       if (!el || !currentContent || !isTrackableVideo) return;
-      videoIframeRef.current = el;
+      videoIframeRef.current = el as HTMLIFrameElement;
       const url = localVideoUrlForHook!;
       if (isYouTube(url, localProviderForHook)) {
         const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
         if (match) videoProgress.initYouTube(el, match[1]);
       } else if (isVimeo(url, localProviderForHook)) {
-        videoProgress.initVimeo(el);
+        videoProgress.initVimeo(el as HTMLIFrameElement);
       }
     },
     [currentContent?.id, isTrackableVideo]
