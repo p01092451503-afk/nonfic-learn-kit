@@ -37,6 +37,8 @@ const ContentPlayer = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
+  const [mangoElapsed, setMangoElapsed] = useState(0);
+  const mangoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activeItemRef = useRef<HTMLButtonElement>(null);
 
   const { data: course } = useQuery({
