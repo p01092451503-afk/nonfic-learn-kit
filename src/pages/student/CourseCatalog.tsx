@@ -199,16 +199,17 @@ const CourseCatalog = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-enrollment-ids"] });
+      queryClient.invalidateQueries({ queryKey: ["my-enrollment-status"] });
       queryClient.invalidateQueries({ queryKey: ["catalog-enrollment-counts"] });
-      toast({ title: t("catalog.enrollSuccess") });
+      toast({ title: t("catalog.enrollRequested") });
     },
     onError: (e: any) => {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     },
   });
 
-  const enrolledSet = new Set(enrollments);
+  // Map course_id -> enrollment status
+  const enrollmentStatusMap = new Map(enrollments.map((e: any) => [e.course_id, e.status]));
   const countMap = new Map<string, number>();
   enrollmentCounts.forEach((e: any) => countMap.set(e.course_id, (countMap.get(e.course_id) || 0) + 1));
   const contentCountMap = new Map<string, number>();
