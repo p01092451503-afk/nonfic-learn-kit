@@ -23,6 +23,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
+import CategorySelect from "@/components/CategorySelect";
 import type { Database } from "@/integrations/supabase/types";
 
 type ContentType = Database["public"]["Enums"]["content_type"];
