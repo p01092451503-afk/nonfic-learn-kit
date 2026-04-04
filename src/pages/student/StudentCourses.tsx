@@ -1,15 +1,16 @@
-import { Search, BookOpen, Info, RefreshCw } from "lucide-react";
+import { Search, BookOpen, Info, RefreshCw, Clock, Star, ChevronRight } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import CourseCard from "@/components/CourseCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 const StudentCourses = () => {
   const { user } = useUser();
@@ -61,28 +62,68 @@ const StudentCourses = () => {
   const inProgress = filtered.filter((e: any) => !e.completed_at);
   const completed = filtered.filter((e: any) => !!e.completed_at);
 
-  const renderCourseGrid = (items: any[], isCompleted = false) => {
-    if (items.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center py-16 space-y-3">
-          <div className="h-16 w-16 rounded-full bg-accent flex items-center justify-center">
-            <BookOpen className="h-7 w-7 text-muted-foreground" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {isCompleted ? t("course.noCompletedCourses") : t("course.noInProgressCourses")}
-          </p>
-        </div>
-      );
-    }
-    return (
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map((enrollment: any) => {
-          const cat = categoryMap.get(enrollment.courses?.category_id);
-          return (
-            <CourseCard key={enrollment.id} course={enrollment.courses} categorySlug={cat?.slug} categoryName={cat?.name} progress={isCompleted ? 100 : Number(enrollment.progress) || 0} isCompleted={isCompleted} variant="student" href={`/courses/${enrollment.courses?.id}?view=learn`} />
-          );
-        })}
+  const renderEmpty = (isCompleted = false) => (
+    <div className="flex flex-col items-center justify-center py-12 space-y-3">
+      <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center">
+        <BookOpen className="h-6 w-6 text-muted-foreground" />
       </div>
+      <p className="text-sm text-muted-foreground">
+        {isCompleted ? t("course.noCompletedCourses") : t("course.noInProgressCourses")}
+      </p>
+    </div>
+  );
+
+  const renderListItem = (enrollment: any, isCompleted = false) => {
+    const course = enrollment.courses;
+    if (!course) return null;
+    const cat = categoryMap.get(course.category_id);
+    const progress = isCompleted ? 100 : Number(enrollment.progress) || 0;
+
+    return (
+      <Link
+        key={enrollment.id}
+        to={`/courses/${course.id}?view=learn`}
+        className="group flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:shadow-md transition-all"
+      >
+        {/* Thumbnail - small */}
+        {course.thumbnail_url ? (
+          <img src={course.thumbnail_url} alt={course.title} className="h-14 w-14 rounded-lg object-cover shrink-0" />
+        ) : (
+          <div className="h-14 w-14 rounded-lg bg-accent flex items-center justify-center shrink-0">
+            <BookOpen className="h-6 w-6 text-muted-foreground" />
+          </div>
+        )}
+
+        {/* Info */}
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
+            {course.is_mandatory && <Badge variant="destructive" className="text-[10px] h-5">{t("common.required")}</Badge>}
+            {cat && <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-md">{cat.name}</span>}
+          </div>
+          {!isCompleted && (
+            <div className="flex items-center gap-3">
+              <Progress value={progress} className="flex-1 h-1.5 max-w-xs" />
+              <span className="text-xs font-medium text-muted-foreground">{Math.round(progress)}%</span>
+            </div>
+          )}
+          {isCompleted && (
+            <div className="flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+              <span className="text-xs font-medium text-green-600 dark:text-green-400">{t("course.completionLabel")}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Duration */}
+        {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && (
+          <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
+            <Clock className="h-3.5 w-3.5" /> {course.estimated_duration_hours}h
+          </span>
+        )}
+
+        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
+      </Link>
     );
   };
 
@@ -93,50 +134,57 @@ const StudentCourses = () => {
           <h1 className="text-2xl font-semibold text-foreground">{t("course.myCourseRoom")}</h1>
         </div>
 
-        <Tabs defaultValue="in-progress" className="space-y-6">
-          <TabsList className="w-full grid grid-cols-2 h-12 rounded-xl bg-secondary/50">
-            <TabsTrigger value="in-progress" className="rounded-lg text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              {t("course.inProgressCourses")} ({inProgress.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="rounded-lg text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              {t("course.completedCourses")} ({completed.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="bg-secondary/30 rounded-xl p-4 space-y-1.5">
-            <div className="flex items-start gap-2">
-              <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p>{t("course.courseInfoGuide")}</p>
-                <p>{t("course.courseInfoGuide2")}</p>
-                <p>{t("course.courseInfoGuide3")}</p>
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <Button variant="outline" size="sm" className="gap-1.5 rounded-lg text-xs" onClick={() => syncProgressMutation.mutate()} disabled={syncProgressMutation.isPending}>
-                <RefreshCw className={`h-3.5 w-3.5 ${syncProgressMutation.isPending ? "animate-spin" : ""}`} />
-                {syncProgressMutation.isPending ? t("course.syncing") : t("course.syncProgress")}
-              </Button>
+        <div className="bg-secondary/30 rounded-xl p-4 space-y-1.5">
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+            <div className="space-y-1 text-sm text-muted-foreground">
+              <p>{t("course.courseInfoGuide")}</p>
+              <p>{t("course.courseInfoGuide2")}</p>
+              <p>{t("course.courseInfoGuide3")}</p>
             </div>
           </div>
-
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder={t("course.searchCourse")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl border-border" />
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-lg text-xs" onClick={() => syncProgressMutation.mutate()} disabled={syncProgressMutation.isPending}>
+              <RefreshCw className={`h-3.5 w-3.5 ${syncProgressMutation.isPending ? "animate-spin" : ""}`} />
+              {syncProgressMutation.isPending ? t("course.syncing") : t("course.syncProgress")}
+            </Button>
           </div>
+        </div>
 
-          <TabsContent value="in-progress" className="mt-0">
-            {isLoading ? (
-              <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" /></div>
-            ) : renderCourseGrid(inProgress)}
-          </TabsContent>
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder={t("course.searchCourse")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl border-border" />
+        </div>
 
-          <TabsContent value="completed" className="mt-0">
-            {isLoading ? (
-              <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" /></div>
-            ) : renderCourseGrid(completed, true)}
-          </TabsContent>
-        </Tabs>
+        {isLoading ? (
+          <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" /></div>
+        ) : (
+          <div className="space-y-8">
+            {/* 수강중인 강의 */}
+            <section className="space-y-3">
+              <h2 className="text-base font-semibold text-foreground">
+                {t("course.inProgressCourses")} ({inProgress.length})
+              </h2>
+              {inProgress.length === 0 ? renderEmpty() : (
+                <div className="space-y-2">
+                  {inProgress.map((e: any) => renderListItem(e))}
+                </div>
+              )}
+            </section>
+
+            {/* 수강종료 강의 */}
+            <section className="space-y-3">
+              <h2 className="text-base font-semibold text-foreground">
+                {t("course.completedCourses")} ({completed.length})
+              </h2>
+              {completed.length === 0 ? renderEmpty(true) : (
+                <div className="space-y-2">
+                  {completed.map((e: any) => renderListItem(e, true))}
+                </div>
+              )}
+            </section>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
