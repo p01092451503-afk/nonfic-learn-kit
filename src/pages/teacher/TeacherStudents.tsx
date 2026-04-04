@@ -374,4 +374,31 @@ const TeacherStudents = () => {
   );
 };
 
+      {/* Send Message Dialog */}
+      <Dialog open={msgOpen} onOpenChange={setMsgOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Send className="h-4 w-4" /> 메시지 보내기</DialogTitle>
+            <DialogDescription>{msgTarget?.name}님에게 알림 메시지를 보냅니다.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>제목</Label>
+              <Input value={msgTitle} onChange={(e) => setMsgTitle(e.target.value)} placeholder="메시지 제목" className="mt-1" />
+            </div>
+            <div>
+              <Label>내용</Label>
+              <Textarea value={msgBody} onChange={(e) => setMsgBody(e.target.value)} placeholder="메시지 내용을 입력하세요" className="mt-1" rows={4} />
+            </div>
+            <Button className="w-full rounded-xl gap-2" onClick={() => sendMessageMutation.mutate()} disabled={!msgBody.trim() || sendMessageMutation.isPending}>
+              <Send className="h-4 w-4" />
+              {sendMessageMutation.isPending ? "전송 중..." : "메시지 전송"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
 export default TeacherStudents;
