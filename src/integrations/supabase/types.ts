@@ -579,6 +579,9 @@ export type Database = {
           enrolled_at: string | null
           id: string
           progress: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["enrollment_status"]
           user_id: string
         }
         Insert: {
@@ -587,6 +590,9 @@ export type Database = {
           enrolled_at?: string | null
           id?: string
           progress?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
           user_id: string
         }
         Update: {
@@ -595,6 +601,9 @@ export type Database = {
           enrolled_at?: string | null
           id?: string
           progress?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
           user_id?: string
         }
         Relationships: [
@@ -867,6 +876,7 @@ export type Database = {
       assignment_status: "draft" | "published" | "closed"
       attendance_status: "present" | "absent" | "late" | "excused"
       content_type: "video" | "document" | "quiz" | "assignment" | "live"
+      enrollment_status: "pending" | "approved" | "rejected"
       submission_status: "submitted" | "graded" | "returned"
       video_provider: "youtube" | "vimeo" | "custom" | "upload"
     }
@@ -1000,6 +1010,7 @@ export const Constants = {
       assignment_status: ["draft", "published", "closed"],
       attendance_status: ["present", "absent", "late", "excused"],
       content_type: ["video", "document", "quiz", "assignment", "live"],
+      enrollment_status: ["pending", "approved", "rejected"],
       submission_status: ["submitted", "graded", "returned"],
       video_provider: ["youtube", "vimeo", "custom", "upload"],
     },
