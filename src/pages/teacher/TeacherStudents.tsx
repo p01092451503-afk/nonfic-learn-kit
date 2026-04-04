@@ -258,7 +258,7 @@ const TeacherStudents = () => {
 
           {filtered.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+              <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">
                 {search ? t("students.noSearchResult") : t("students.noStudents")}
               </p>
