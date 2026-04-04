@@ -459,6 +459,7 @@ const StudentDashboard = () => {
                 <Progress
                   value={Math.min(100, ((gamification?.experience_points ? gamification.experience_points / 60 : 0) / 20) * 100)}
                   className="h-3"
+                  aria-label={`${t("dashboard.weeklyGoal")}: ${gamification?.experience_points ? Math.round(gamification.experience_points / 60) : 0}h / 20h`}
                 />
               </div>
               <div className="space-y-2">
