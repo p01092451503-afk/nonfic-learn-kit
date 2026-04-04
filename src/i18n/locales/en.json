@@ -79,7 +79,10 @@
     "assignmentManagement": "Assignment Mgmt",
     "studentManagement": "Student Mgmt",
     "userManagement": "User Mgmt",
-    "settings": "Settings"
+    "settings": "Settings",
+    "learningManagement": "Learning Mgmt",
+    "attendanceManagement": "Attendance Mgmt",
+    "completionManagement": "Completion Mgmt"
   },
   "roles": {
     "student": "Student",
