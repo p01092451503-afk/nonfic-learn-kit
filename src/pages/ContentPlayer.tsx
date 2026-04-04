@@ -489,13 +489,40 @@ const ContentPlayer = () => {
 
       {/* Mangoboard Popup Modal */}
       {mangoPopupOpen && currentContent && isMangoboard(currentContent.video_url) && embedUrl && (
-        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center">
           <button
             onClick={() => setMangoPopupOpen(false)}
             className="absolute top-4 right-4 z-[110] p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
+
+          {/* 학습 시간 진행 바 */}
+          <div className="absolute top-4 left-4 right-16 z-[110]">
+            <div className="flex items-center gap-3 bg-black/60 backdrop-blur-sm rounded-xl px-4 py-2.5">
+              <Clock className="h-4 w-4 text-white/70 shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between text-[11px] text-white/80 mb-1">
+                  <span>학습 시간</span>
+                  <span>
+                    {Math.floor(mangoElapsed / 60)}:{String(mangoElapsed % 60).padStart(2, "0")}
+                    {" / "}
+                    {Math.floor(requiredSeconds / 60)}:{String(Math.round(requiredSeconds % 60)).padStart(2, "0")}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ${mangoAutoCompleted ? "bg-green-400" : "bg-white/70"}`}
+                    style={{ width: `${Math.min((mangoElapsed / requiredSeconds) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+              {mangoAutoCompleted && (
+                <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />
+              )}
+            </div>
+          </div>
+
           <div className="h-[95vh]" style={{ aspectRatio: "9/16", maxWidth: "95vw" }}>
             <iframe
               src={embedUrl}
