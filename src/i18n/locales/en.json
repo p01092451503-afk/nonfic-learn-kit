@@ -742,7 +742,13 @@
     "documentLabel": "Document",
     "quizLabel": "Quiz",
     "assignmentLabel": "Assignment",
-    "liveLabel": "Live"
+    "liveLabel": "Live",
+    "contentSectionTitle": "Course Content",
+    "contentSectionHint": "Add video or Mangoboard content",
+    "emptyContentHint": "No content added yet",
+    "contentSourceLabel": "Content Source",
+    "sourceVideo": "Video",
+    "sourceMangoboard": "Mangoboard"
   },
   "language": {
     "ko": "한국어",
