@@ -752,8 +752,8 @@ const CourseEditDialog = ({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  form: { title: string; description: string; status: string };
-  setForm: React.Dispatch<React.SetStateAction<{ title: string; description: string; status: string }>>;
+  form: { title: string; description: string; status: string; is_mandatory: boolean; deadline: string };
+  setForm: React.Dispatch<React.SetStateAction<{ title: string; description: string; status: string; is_mandatory: boolean; deadline: string }>>;
   enForm: { title: string; description: string };
   setEnForm: React.Dispatch<React.SetStateAction<{ title: string; description: string }>>;
   onSubmit: () => void;
@@ -789,6 +789,33 @@ const CourseEditDialog = ({
                 <SelectItem value="published">{t("course.publishedStatus")}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* 필수교육 설정 */}
+          <Separator />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-xs font-semibold">{t("course.mandatoryToggle")}</Label>
+                <p className="text-[11px] text-muted-foreground">{t("course.mandatoryToggleDesc")}</p>
+              </div>
+              <Switch
+                checked={form.is_mandatory}
+                onCheckedChange={(v) => setForm(f => ({ ...f, is_mandatory: v }))}
+              />
+            </div>
+            {form.is_mandatory && (
+              <div className="space-y-1">
+                <Label className="text-xs">{t("course.deadlineLabel")}</Label>
+                <Input
+                  type="date"
+                  className="h-9 text-sm"
+                  value={form.deadline}
+                  onChange={(e) => setForm(f => ({ ...f, deadline: e.target.value }))}
+                />
+                <p className="text-[10px] text-muted-foreground">{t("course.deadlineHelp")}</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 
