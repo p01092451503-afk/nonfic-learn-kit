@@ -29,6 +29,7 @@ import AdminAttendance from "./pages/admin/AdminAttendance";
 import AdminCompletion from "./pages/admin/AdminCompletion";
 import DeptAdminDashboard from "./pages/DeptAdminDashboard";
 import CourseDetail from "./pages/CourseDetail";
+import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import ContentPlayer from "./pages/ContentPlayer";
 import NotFound from "./pages/NotFound";
 
