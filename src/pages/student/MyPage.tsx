@@ -13,6 +13,16 @@ import { useToast } from "@/hooks/use-toast";
 
 const PRESET_AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`);
 
+// Preload all avatar images on mount
+const usePreloadAvatars = () => {
+  useEffect(() => {
+    PRESET_AVATARS.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+};
+
 const MyPage = () => {
   const { user, profile, refreshProfile } = useUser();
   const { toast } = useToast();
