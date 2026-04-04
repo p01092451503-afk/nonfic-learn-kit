@@ -214,7 +214,17 @@
     "noStudents": "수강생이 없습니다.",
     "viewStatus": "학습 현황 보기",
     "sendMessage": "메시지 보내기",
-    "courses": "{{count}}개 강좌"
+    "courses": "{{count}}개 강좌",
+    "messageDialogTitle": "메시지 보내기",
+    "messageDialogDesc": "{{name}}님에게 알림 메시지를 보냅니다.",
+    "messageSubject": "제목",
+    "messageSubjectPlaceholder": "메시지 제목",
+    "messageBody": "내용",
+    "messageBodyPlaceholder": "메시지 내용을 입력하세요",
+    "sending": "전송 중...",
+    "sendButton": "메시지 전송",
+    "messageSent": "메시지를 전송했습니다.",
+    "defaultMessageTitle": "강사 메시지"
   },
   "studentDetail": {
     "enrolledCourses": "수강 강좌",

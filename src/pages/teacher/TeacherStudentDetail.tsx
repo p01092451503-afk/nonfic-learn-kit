@@ -8,12 +8,24 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { formatDistanceToNow, format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { ko, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 const TeacherStudentDetail = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const { user } = useUser();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const dateFnsLocale = i18n.language === "ko" ? ko : enUS;
+  const dateFormat = i18n.language === "ko" ? "yyyy.MM.dd" : "MMM dd, yyyy";
+
+  const contentTypeLabel: Record<string, string> = {
+    video: t("course.video"),
+    document: t("course.document"),
+    quiz: t("course.quiz"),
+    assignment: t("course.assignment"),
+    live: t("course.live"),
+  };
 
   // Fetch student profile
   const { data: profile } = useQuery({
@@ -46,7 +58,6 @@ const TeacherStudentDetail = () => {
 
   const courseIds = myCourses.map((c) => c.id);
 
-  // Fetch student's enrollments in teacher's courses
   const { data: enrollments = [] } = useQuery({
     queryKey: ["student-enrollments", studentId, courseIds],
     queryFn: async () => {
@@ -62,7 +73,6 @@ const TeacherStudentDetail = () => {
     enabled: !!studentId && courseIds.length > 0,
   });
 
-  // Fetch course contents for teacher's courses
   const { data: courseContents = [] } = useQuery({
     queryKey: ["course-contents-for-student", courseIds],
     queryFn: async () => {
@@ -79,7 +89,6 @@ const TeacherStudentDetail = () => {
     enabled: courseIds.length > 0,
   });
 
-  // Fetch content progress for this student
   const contentIds = courseContents.map((c) => c.id);
   const { data: progressData = [] } = useQuery({
     queryKey: ["student-content-progress", studentId, contentIds],
@@ -96,7 +105,6 @@ const TeacherStudentDetail = () => {
     enabled: !!studentId && contentIds.length > 0,
   });
 
-  // Fetch assignment submissions
   const { data: assignments = [] } = useQuery({
     queryKey: ["student-assignments", courseIds],
     queryFn: async () => {
@@ -127,7 +135,6 @@ const TeacherStudentDetail = () => {
     enabled: !!studentId && assignmentIds.length > 0,
   });
 
-  // Build per-course data
   const progressMap = new Map(progressData.map((p) => [p.content_id, p]));
   const courseMap = new Map(myCourses.map((c) => [c.id, c]));
   const submissionMap = new Map(submissions.map((s) => [s.assignment_id, s]));
@@ -150,7 +157,6 @@ const TeacherStudentDetail = () => {
       0
     );
 
-    // Last activity
     const contentProgresses = contents
       .map((c) => progressMap.get(c.id))
       .filter(Boolean);
@@ -167,7 +173,7 @@ const TeacherStudentDetail = () => {
 
     return {
       courseId,
-      title: course?.title || "강좌",
+      title: course?.title || t("course.course"),
       enrollment,
       totalContents: contents.length,
       completedContents: completedContents.length,
@@ -191,7 +197,6 @@ const TeacherStudentDetail = () => {
     };
   });
 
-  // Overall stats
   const totalCourses = courseDetails.length;
   const completedCourses = courseDetails.filter((c) => c.isCompleted).length;
   const overallProgress = totalCourses > 0
@@ -200,15 +205,7 @@ const TeacherStudentDetail = () => {
   const totalCompletedContents = courseDetails.reduce((s, c) => s + c.completedContents, 0);
   const totalContents = courseDetails.reduce((s, c) => s + c.totalContents, 0);
 
-  const contentTypeLabel: Record<string, string> = {
-    video: "영상",
-    document: "문서",
-    quiz: "퀴즈",
-    assignment: "과제",
-    live: "라이브",
-  };
-
-  const name = profile?.full_name || "사용자";
+  const name = profile?.full_name || t("common.user");
 
   return (
     <DashboardLayout role="teacher">
@@ -235,10 +232,10 @@ const TeacherStudentDetail = () => {
         {/* Summary cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: "수강 강좌", value: totalCourses, sub: `${completedCourses}개 완료`, icon: BookOpen },
-            { label: "전체 진행률", value: `${overallProgress}%`, sub: `${totalCompletedContents}/${totalContents} 콘텐츠`, icon: TrendingUp },
-            { label: "완료 강좌", value: completedCourses, sub: totalCourses > 0 ? `${Math.round((completedCourses / totalCourses) * 100)}% 완료율` : "0%", icon: CheckCircle2 },
-            { label: "학습 콘텐츠", value: totalCompletedContents, sub: `총 ${totalContents}개 중`, icon: Clock },
+            { label: t("studentDetail.enrolledCourses"), value: totalCourses, sub: `${completedCourses} ${t("studentDetail.completed")}`, icon: BookOpen },
+            { label: t("studentDetail.overallProgress"), value: `${overallProgress}%`, sub: t("studentDetail.contentsProgress", { completed: totalCompletedContents, total: totalContents }), icon: TrendingUp },
+            { label: t("studentDetail.completedCourses"), value: completedCourses, sub: totalCourses > 0 ? t("studentDetail.completionRate", { percent: Math.round((completedCourses / totalCourses) * 100) }) : "0%", icon: CheckCircle2 },
+            { label: t("studentDetail.learningContents"), value: totalCompletedContents, sub: t("studentDetail.totalContents", { count: totalContents }), icon: Clock },
           ].map((stat) => (
             <div key={stat.label} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between mb-2">
@@ -255,7 +252,7 @@ const TeacherStudentDetail = () => {
         {courseDetails.length === 0 ? (
           <div className="rounded-xl border border-border bg-card p-12 text-center">
             <BookOpen className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">이 학생이 수강 중인 강좌가 없습니다.</p>
+            <p className="text-sm text-muted-foreground">{t("studentDetail.noEnrolledCourses")}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -271,18 +268,18 @@ const TeacherStudentDetail = () => {
                           ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                           : "bg-primary/10 text-primary"
                       }`}>
-                        {course.isCompleted ? "완료" : "수강중"}
+                        {course.isCompleted ? t("common.complete") : t("studentDetail.inProgress")}
                       </Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
-                      수강일: {course.enrollment?.enrolled_at ? format(new Date(course.enrollment.enrolled_at), "yyyy.MM.dd", { locale: ko }) : "-"}
-                      {course.lastActivity && ` · 최근 활동: ${formatDistanceToNow(new Date(course.lastActivity), { addSuffix: true, locale: ko })}`}
+                      {t("studentDetail.enrollDate")}: {course.enrollment?.enrolled_at ? format(new Date(course.enrollment.enrolled_at), dateFormat, { locale: dateFnsLocale }) : "-"}
+                      {course.lastActivity && ` · ${t("studentDetail.recentActivityLabel")}: ${formatDistanceToNow(new Date(course.lastActivity), { addSuffix: true, locale: dateFnsLocale })}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
                       <p className="text-lg font-bold text-foreground">{course.progressPct}%</p>
-                      <p className="text-[10px] text-muted-foreground">{course.completedContents}/{course.totalContents} 완료</p>
+                      <p className="text-[10px] text-muted-foreground">{course.completedContents}/{course.totalContents} {t("common.complete")}</p>
                     </div>
                     <div className="w-20">
                       <Progress value={course.progressPct} className="h-2" />
@@ -308,11 +305,11 @@ const TeacherStudentDetail = () => {
                         </div>
                         <Badge variant="outline" className="text-[9px] shrink-0">{contentTypeLabel[content.content_type || "video"] || content.content_type}</Badge>
                         {content.duration_minutes && (
-                          <span className="text-[10px] text-muted-foreground shrink-0">{content.duration_minutes}분</span>
+                          <span className="text-[10px] text-muted-foreground shrink-0">{content.duration_minutes}{t("common.minutes")}</span>
                         )}
                         {content.progress?.last_accessed_at && (
                           <span className="text-[10px] text-muted-foreground shrink-0 hidden lg:inline">
-                            {formatDistanceToNow(new Date(content.progress.last_accessed_at), { addSuffix: true, locale: ko })}
+                            {formatDistanceToNow(new Date(content.progress.last_accessed_at), { addSuffix: true, locale: dateFnsLocale })}
                           </span>
                         )}
                       </div>
@@ -323,8 +320,8 @@ const TeacherStudentDetail = () => {
                 {/* Assignment summary */}
                 {course.assignmentCount > 0 && (
                   <div className="px-5 py-3 border-t border-border bg-secondary/20 flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>과제 {course.submittedCount}/{course.assignmentCount} 제출</span>
-                    {course.avgScore !== null && <span>평균 점수: {course.avgScore}점</span>}
+                    <span>{t("studentDetail.assignmentsSub", { submitted: course.submittedCount, total: course.assignmentCount })}</span>
+                    {course.avgScore !== null && <span>{t("studentDetail.avgScore", { score: course.avgScore })}</span>}
                   </div>
                 )}
               </div>
