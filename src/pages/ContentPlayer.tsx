@@ -272,12 +272,7 @@ const ContentPlayer = () => {
 
   const SidebarContent = () => (
     <>
-      <div className="p-4 pb-2">
-        <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors">
-          <ArrowLeft className="h-4 w-4" /> {t("course.backToCourse")}
-        </Link>
-      </div>
-      <div className="p-4 pt-2 border-b border-sidebar-border">
+      <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-semibold text-foreground truncate">{getCourseTitle()}</h2>
@@ -349,9 +344,18 @@ const ContentPlayer = () => {
           <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg hover:bg-accent text-muted-foreground">
             <Menu className="h-5 w-5" />
           </button>
+          <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">{getCourseTitle()}</p>
-            <p className="text-[11px] text-muted-foreground">{t("contentPlayer.lessonCount", { current: currentIndex + 1, total: contents.length })}</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{currentIndex + 1}</span> / {contents.length} {t("course.lesson")}
+            </span>
+            <Progress value={overallProgress} className="w-16 h-1.5" />
+            <span className="text-[11px] text-muted-foreground font-medium">{overallProgress}%</span>
           </div>
         </header>
 
