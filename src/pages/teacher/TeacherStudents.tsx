@@ -342,8 +342,8 @@ const TeacherStudents = () => {
                       <td className="px-3 py-3 text-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-                              <MoreVertical className="h-4 w-4" />
+                            <button className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" aria-label={t("students.manageLabel")} onClick={(e) => e.stopPropagation()}>
+                              <MoreVertical className="h-4 w-4" aria-hidden="true" />
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36">
