@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft, ChevronRight, CheckCircle2, Play, FileText,
-  Video, BarChart3, ExternalLink, Clock, X, RotateCcw, List,
+  Video, BarChart3, ExternalLink, Clock, X, RotateCcw, List, FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -353,31 +353,49 @@ const ContentPlayer = () => {
             {/* Content info - Toss-style clean sections */}
             <div className="space-y-6 mt-2">
 
-              {/* Section: 과정 정보 */}
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("course.courseInfo") || "과정 정보"}</p>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="secondary" className="text-xs font-bold px-3 py-1 rounded-lg">
-                    {getCourseTitle()}
-                  </Badge>
+              {/* Folder hierarchy: 과정 → 차시 */}
+              <div className="border border-border rounded-2xl overflow-hidden">
+                {/* 과정 정보 (Parent folder) */}
+                <div className="flex items-center gap-3 px-5 py-3.5 bg-secondary/30">
+                  <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                    <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{t("course.courseInfo") || "과정 정보"}</p>
+                    <p className="text-sm font-bold text-foreground truncate">{getCourseTitle()}</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Section: 차시 정보 */}
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("course.lessonInfo") || "차시 정보"}</p>
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <Badge className="text-[11px] font-semibold px-2.5 py-1 bg-foreground text-background rounded-lg uppercase tracking-wider">
-                    {contentTypeLabel[currentContent.content_type || "video"]}
-                  </Badge>
-                  {currentContent.duration_minutes && (
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
+                <div className="h-px bg-border" />
+
+                {/* 차시 정보 (Child item) */}
+                <div className="flex items-start gap-3 px-5 py-3.5 bg-background">
+                  <div className="flex flex-col items-center gap-0.5 pt-0.5 shrink-0">
+                    <div className="w-px h-2 bg-border" />
+                    <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
+                      {currentContent.content_type === "document" ? (
+                        <FileText className="h-4 w-4 text-background" />
+                      ) : (
+                        <Play className="h-4 w-4 text-background" />
+                      )}
                     </div>
-                  )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{t("course.lessonInfo") || "차시 정보"}</p>
+                    <h2 className="text-base font-bold text-foreground leading-snug mb-1.5">{localTitle}</h2>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider">
+                        {contentTypeLabel[currentContent.content_type || "video"]}
+                      </Badge>
+                      {currentContent.duration_minutes && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <h2 className="text-lg font-bold text-foreground leading-snug">{localTitle}</h2>
               </div>
 
               {/* Section: 설명 */}
