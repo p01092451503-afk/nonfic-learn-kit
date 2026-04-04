@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, FileText,
-  Video, BarChart3, ExternalLink, Clock, X, Menu,
+  Video, BarChart3, ExternalLink, Clock, X, Menu, RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { useVideoProgress } from "@/hooks/useVideoProgress";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
