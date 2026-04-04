@@ -75,7 +75,7 @@ const CourseDetail = () => {
   const [contentForm, setContentForm] = useState<ContentFormData>(emptyContent);
   const [contentEnForm, setContentEnForm] = useState<ContentI18nData>(emptyI18n);
   const [courseEditOpen, setCourseEditOpen] = useState(false);
-  const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft" });
+  const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft", is_mandatory: false, deadline: "" });
   const [courseEnForm, setCourseEnForm] = useState({ title: "", description: "" });
 
   const forceLearnView = searchParams.get("view") === "learn";
@@ -204,8 +204,14 @@ const CourseDetail = () => {
   });
 
   const updateCourseMutation = useMutation({
-    mutationFn: async (vals: { title: string; description: string; status: string }) => {
-      const { error } = await supabase.from("courses").update(vals).eq("id", courseId!);
+    mutationFn: async (vals: { title: string; description: string; status: string; is_mandatory: boolean; deadline: string }) => {
+      const { error } = await supabase.from("courses").update({
+        title: vals.title,
+        description: vals.description,
+        status: vals.status,
+        is_mandatory: vals.is_mandatory,
+        deadline: vals.deadline || null,
+      }).eq("id", courseId!);
       if (error) throw error;
       // Upsert English i18n
       if (courseEnForm.title.trim()) {
@@ -332,7 +338,13 @@ const CourseDetail = () => {
   };
   const openCourseEdit = () => {
     if (!course) return;
-    setCourseForm({ title: course.title, description: course.description || "", status: course.status || "draft" });
+    setCourseForm({
+      title: course.title,
+      description: course.description || "",
+      status: course.status || "draft",
+      is_mandatory: course.is_mandatory || false,
+      deadline: course.deadline || "",
+    });
     const enCourse = courseI18n?.find((i: any) => i.language_code === "en");
     setCourseEnForm({ title: enCourse?.title || "", description: enCourse?.description || "" });
     setCourseEditOpen(true);
@@ -740,8 +752,8 @@ const CourseEditDialog = ({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  form: { title: string; description: string; status: string };
-  setForm: React.Dispatch<React.SetStateAction<{ title: string; description: string; status: string }>>;
+  form: { title: string; description: string; status: string; is_mandatory: boolean; deadline: string };
+  setForm: React.Dispatch<React.SetStateAction<{ title: string; description: string; status: string; is_mandatory: boolean; deadline: string }>>;
   enForm: { title: string; description: string };
   setEnForm: React.Dispatch<React.SetStateAction<{ title: string; description: string }>>;
   onSubmit: () => void;
@@ -777,6 +789,33 @@ const CourseEditDialog = ({
                 <SelectItem value="published">{t("course.publishedStatus")}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* 필수교육 설정 */}
+          <Separator />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-xs font-semibold">{t("course.mandatoryToggle")}</Label>
+                <p className="text-[11px] text-muted-foreground">{t("course.mandatoryToggleDesc")}</p>
+              </div>
+              <Switch
+                checked={form.is_mandatory}
+                onCheckedChange={(v) => setForm(f => ({ ...f, is_mandatory: v }))}
+              />
+            </div>
+            {form.is_mandatory && (
+              <div className="space-y-1">
+                <Label className="text-xs">{t("course.deadlineLabel")}</Label>
+                <Input
+                  type="date"
+                  className="h-9 text-sm"
+                  value={form.deadline}
+                  onChange={(e) => setForm(f => ({ ...f, deadline: e.target.value }))}
+                />
+                <p className="text-[10px] text-muted-foreground">{t("course.deadlineHelp")}</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 
