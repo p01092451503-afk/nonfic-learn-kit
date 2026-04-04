@@ -286,41 +286,6 @@ const ContentPlayer = () => {
           <div className="max-w-5xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
             {/* Media area */}
             <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6 relative">
-              {/* Content source badge */}
-              {currentContent && (() => {
-                const url = localVideoUrl;
-                const provider = currentContent.video_provider;
-                let sourceLabel = "";
-                let sourceColor = "";
-                let SourceIcon: React.ElementType = Video;
-                if (isMangoboard(url)) {
-                  sourceLabel = "Mangoboard";
-                  sourceColor = "bg-blue-500/90 text-white";
-                  SourceIcon = FolderOpen;
-                } else if (provider === "youtube" || url?.includes("youtube.com") || url?.includes("youtu.be")) {
-                  sourceLabel = "YouTube";
-                  sourceColor = "bg-rose-500/90 text-white";
-                  SourceIcon = Play;
-                } else if (provider === "vimeo" || url?.includes("vimeo.com")) {
-                  sourceLabel = "Vimeo";
-                  sourceColor = "bg-sky-500/90 text-white";
-                  SourceIcon = Play;
-                } else if (provider === "upload") {
-                  sourceLabel = "CDN";
-                  sourceColor = "bg-emerald-500/90 text-white";
-                  SourceIcon = Video;
-                } else if (provider === "custom" && !isMangoboard(url)) {
-                  sourceLabel = t("createCourse.customInput");
-                  sourceColor = "bg-amber-500/90 text-white";
-                  SourceIcon = ExternalLink;
-                }
-                return sourceLabel ? (
-                  <div className={`absolute top-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-md backdrop-blur-sm ${sourceColor}`}>
-                    <SourceIcon className="h-3.5 w-3.5" />
-                    {sourceLabel}
-                  </div>
-                ) : null;
-              })()}
               {isMangoboard(localVideoUrl) && embedUrl ? (
                 <button onClick={() => setMangoPopupOpen(true)} className="relative aspect-video w-full flex items-center justify-center group cursor-pointer bg-gradient-to-br from-blue-500/10 to-indigo-500/10">
                   <div className="text-center space-y-4">
