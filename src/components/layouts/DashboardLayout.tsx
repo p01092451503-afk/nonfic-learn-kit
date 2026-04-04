@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings, Compass, UserCircle, ClipboardCheck,
@@ -33,6 +33,14 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const { t } = useTranslation();
 
   const activeRole = role || primaryRole;
+
+  // Preload user avatar for instant rendering
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      const img = new Image();
+      img.src = profile.avatar_url;
+    }
+  }, [profile?.avatar_url]);
 
   const studentNav: NavItem[] = [
     { label: t("nav.dashboard"), href: "/student", icon: LayoutDashboard },
@@ -129,7 +137,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
           <div className="flex items-center gap-3 pl-3 border-l border-border">
             <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-accent-foreground overflow-hidden" role="img" aria-label={profile?.full_name || t("common.user")}>
               {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt={profile?.full_name || t("common.user")} className="h-full w-full object-cover" />
+                <img src={profile.avatar_url} alt={profile?.full_name || t("common.user")} className="h-full w-full object-cover" fetchPriority="high" decoding="async" />
               ) : (
                 <span aria-hidden="true">{initials}</span>
               )}

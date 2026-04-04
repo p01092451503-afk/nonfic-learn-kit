@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Lock, Camera, Check, ArrowRight, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -13,10 +13,21 @@ import { useToast } from "@/hooks/use-toast";
 
 const PRESET_AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`);
 
+// Preload all avatar images on mount
+const usePreloadAvatars = () => {
+  useEffect(() => {
+    PRESET_AVATARS.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+};
+
 const MyPage = () => {
   const { user, profile, refreshProfile } = useUser();
   const { toast } = useToast();
   const { t } = useTranslation();
+  usePreloadAvatars();
 
   // Profile fields
   const [fullName, setFullName] = useState(profile?.full_name || "");
