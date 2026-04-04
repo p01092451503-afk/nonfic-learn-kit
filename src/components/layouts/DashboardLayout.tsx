@@ -23,7 +23,7 @@ interface DashboardLayoutProps {
   contentClassName?: string;
 }
 
-const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, role = "student", contentClassName }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
