@@ -431,7 +431,7 @@ const CreateCourse = () => {
         </div>
 
         {/* Contents */}
-        <div className="space-y-4">
+        <div className="bg-secondary/60 border border-border rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-semibold text-foreground">{t("createCourse.contentSectionTitle")}</h2>
