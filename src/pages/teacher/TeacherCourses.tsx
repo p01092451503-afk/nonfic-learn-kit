@@ -310,7 +310,7 @@ const TeacherCourses = () => {
                   {/* Thumbnail */}
                   <div className="relative h-36 bg-secondary overflow-hidden">
                     {course.thumbnail_url ? (
-                      <img src={course.thumbnail_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center">
                         <BookOpen className="h-8 w-8 text-muted-foreground" />
