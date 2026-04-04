@@ -224,7 +224,6 @@ const ContentPlayer = () => {
     },
   });
 
-  const isMangoboard = (url: string | null) => url?.includes("mangoboard.net") ?? false;
 
   const normalizeMangoboardUrl = (url: string) => {
     let normalized = url.trim();
