@@ -167,6 +167,38 @@ const StudentDashboard = () => {
     enabled: !!user?.id,
   });
 
+  // 필수교육 (마감 임박 우선)
+  const { data: mandatoryCourses = [] } = useQuery({
+    queryKey: ["dash-mandatory", user?.id],
+    queryFn: async () => {
+      // Get enrolled mandatory courses that are not completed
+      const { data: myEnrollments } = await supabase
+        .from("enrollments")
+        .select("course_id, progress")
+        .eq("user_id", user!.id)
+        .is("completed_at", null);
+
+      if (!myEnrollments || myEnrollments.length === 0) return [];
+      const enrolledMap = new Map(myEnrollments.map(e => [e.course_id, Number(e.progress) || 0]));
+
+      const { data: courses, error } = await supabase
+        .from("courses")
+        .select("id, title, deadline, is_mandatory")
+        .eq("is_mandatory", true)
+        .eq("status", "published")
+        .in("id", [...enrolledMap.keys()])
+        .order("deadline", { ascending: true });
+
+      if (error) throw error;
+      return (courses || []).map(c => ({
+        ...c,
+        progress: enrolledMap.get(c.id) || 0,
+        daysLeft: c.deadline ? Math.ceil((new Date(c.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null,
+      }));
+    },
+    enabled: !!user?.id,
+  });
+
   // 추천 강의 (수강하지 않은 published 강좌)
   const { data: recommendedCourses = [] } = useQuery({
     queryKey: ["dash-recommended", user?.id],
