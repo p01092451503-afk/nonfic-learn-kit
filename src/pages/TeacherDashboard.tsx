@@ -166,7 +166,7 @@ const TeacherDashboard = () => {
                         <span className="text-[11px] text-muted-foreground">{t("teacher.progressPercent", { percent: avgProgress })}</span>
                       </div>
                     </div>
-                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" aria-hidden="true" />
                   </Link>
                 );
               })}
