@@ -60,10 +60,10 @@ const NotificationBell = () => {
 
   return (
     <div className="relative">
-      <Button variant="ghost" size="icon" className="relative" onClick={() => setOpen(!open)}>
-        <Bell className="h-[18px] w-[18px]" />
+      <Button variant="ghost" size="icon" className="relative" onClick={() => setOpen(!open)} aria-label={t("notification.title")} aria-expanded={open} aria-haspopup="true">
+        <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center" aria-label={t("notification.unreadCount", { count: unreadCount })}>
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -71,8 +71,8 @@ const NotificationBell = () => {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-popover border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+          <div className="fixed inset-0 z-40" aria-hidden="true" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-popover border border-border rounded-xl shadow-lg z-50 overflow-hidden" role="dialog" aria-label={t("notification.title")}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <h3 className="text-sm font-semibold text-foreground">{t("notification.title")}</h3>
               <div className="flex items-center gap-2">
@@ -84,54 +84,55 @@ const NotificationBell = () => {
                     {t("notification.markAllRead")}
                   </button>
                 )}
-                <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-accent">
-                  <X className="h-3.5 w-3.5 text-muted-foreground" />
+                <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-accent" aria-label={t("common.close", "닫기")}>
+                  <X className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 </button>
               </div>
             </div>
 
-            <div className="max-h-80 overflow-y-auto divide-y divide-border">
+            <ul className="max-h-80 overflow-y-auto divide-y divide-border" role="list">
               {notifications.length === 0 ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">
+                <li className="py-8 text-center text-sm text-muted-foreground">
                   {t("notification.empty")}
-                </div>
+                </li>
               ) : (
                 notifications.map((n) => {
                   const Icon = typeIcon[n.type || "info"] || Bell;
                   return (
-                    <button
-                      key={n.id}
-                      className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-accent/50 transition-colors ${!n.is_read ? "bg-primary/5" : ""}`}
-                      onClick={() => {
-                        if (!n.is_read) markReadMutation.mutate(n.id);
-                        if (n.action_url) {
-                          setOpen(false);
-                          window.location.href = n.action_url;
-                        }
-                      }}
-                    >
-                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
-                        n.type === "deadline" ? "bg-destructive/10 text-destructive" :
-                        n.type === "mandatory" ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" :
-                        "bg-accent text-muted-foreground"
-                      }`}>
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-xs leading-relaxed ${!n.is_read ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
-                          {n.title}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
-                        <p className="text-[10px] text-muted-foreground/60 mt-1">
-                          {formatDistanceToNow(new Date(n.created_at!), { addSuffix: true, locale })}
-                        </p>
-                      </div>
-                      {!n.is_read && <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />}
-                    </button>
+                    <li key={n.id}>
+                      <button
+                        className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-accent/50 transition-colors ${!n.is_read ? "bg-primary/5" : ""}`}
+                        onClick={() => {
+                          if (!n.is_read) markReadMutation.mutate(n.id);
+                          if (n.action_url) {
+                            setOpen(false);
+                            window.location.href = n.action_url;
+                          }
+                        }}
+                      >
+                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+                          n.type === "deadline" ? "bg-destructive/10 text-destructive" :
+                          n.type === "mandatory" ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" :
+                          "bg-accent text-muted-foreground"
+                        }`} aria-hidden="true">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs leading-relaxed ${!n.is_read ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                            {n.title}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
+                          <p className="text-[10px] text-muted-foreground/60 mt-1">
+                            {formatDistanceToNow(new Date(n.created_at!), { addSuffix: true, locale })}
+                          </p>
+                        </div>
+                        {!n.is_read && <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" aria-label={t("notification.unread", "읽지 않음")} />}
+                      </button>
+                    </li>
                   );
                 })
               )}
-            </div>
+            </ul>
           </div>
         </>
       )}

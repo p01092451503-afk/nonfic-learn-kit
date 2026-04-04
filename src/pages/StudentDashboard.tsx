@@ -293,45 +293,45 @@ const StudentDashboard = () => {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary" />
+            <BarChart3 className="h-6 w-6 text-primary" aria-hidden="true" />
             {t("dashboard.learningDashboard")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">{t("dashboard.hello")}</p>
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label={t("dashboard.stats", "학습 통계")}>
           {stats.map((stat) => (
-            <div key={stat.label} className="stat-card !p-4 sm:!p-6">
+            <div key={stat.label} className="stat-card !p-4 sm:!p-6" role="group" aria-label={stat.label}>
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <span className="text-xs sm:text-sm text-muted-foreground leading-tight">{stat.label}</span>
-                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" />
+                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" aria-hidden="true" />
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
             </div>
           ))}
-        </div>
+        </section>
 
         {/* Detail Stats */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label={t("dashboard.detailStats", "상세 통계")}>
           {detailStats.map((stat) => (
-            <div key={stat.label} className="stat-card !p-4 sm:!p-6">
+            <div key={stat.label} className="stat-card !p-4 sm:!p-6" role="group" aria-label={stat.label}>
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <span className="text-xs sm:text-sm text-muted-foreground leading-tight">{stat.label}</span>
-                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" />
+                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" aria-hidden="true" />
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
             </div>
           ))}
-        </div>
+        </section>
 
         {/* 필수교육 안내 */}
         {mandatoryCourses.length > 0 && (
-          <div className="stat-card !p-6 space-y-4 border-destructive/30">
+          <section className="stat-card !p-6 space-y-4 border-destructive/30" aria-label={t("mandatory.title")} role="alert">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
               <div>
                 <h2 className="text-lg font-bold text-foreground">{t("mandatory.title")}</h2>
                 <p className="text-xs text-muted-foreground">{t("mandatory.subtitle")}</p>
@@ -359,24 +359,24 @@ const StudentDashboard = () => {
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Progress value={mc.progress} className="h-2 flex-1" />
+                        <Progress value={mc.progress} className="h-2 flex-1" aria-label={`${t("dashboard.progressRate")}: ${Math.round(mc.progress)}%`} />
                         <span className="text-xs font-semibold text-foreground shrink-0">{Math.round(mc.progress)}%</span>
                       </div>
                       {mc.deadline && (
                         <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
+                          <Calendar className="h-3 w-3" aria-hidden="true" />
                           <span>{t("mandatory.deadline")}: {mc.deadline}</span>
                         </div>
                       )}
                     </div>
-                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5" onClick={() => navigate(`/courses/${mc.id}?view=learn`)}>
-                      <Play className="h-3.5 w-3.5" /> {t("common.continue")}
+                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5" onClick={() => navigate(`/courses/${mc.id}?view=learn`)} aria-label={`${mc.title} - ${t("common.continue")}`}>
+                      <Play className="h-3.5 w-3.5" aria-hidden="true" /> {t("common.continue")}
                     </Button>
                   </div>
                 );
               })}
             </div>
-          </div>
+          </section>
         )}
 
         <div className="stat-card !p-6 space-y-5">
@@ -417,7 +417,7 @@ const StudentDashboard = () => {
                           }
                         }}
                       >
-                        <Play className="h-3.5 w-3.5" /> {t("common.continue")}
+                        <Play className="h-3.5 w-3.5" aria-hidden="true" /> {t("common.continue")}
                       </Button>
                     </div>
 
@@ -426,7 +426,7 @@ const StudentDashboard = () => {
                         <span className="text-muted-foreground">{t("dashboard.progressRate")}</span>
                         <span className="font-semibold text-foreground">{progress}%</span>
                       </div>
-                      <Progress value={progress} className="h-2.5" />
+                      <Progress value={progress} className="h-2.5" aria-label={`${t("dashboard.progressRate")}: ${progress}%`} />
                     </div>
 
                     {nextContent && (
@@ -446,7 +446,7 @@ const StudentDashboard = () => {
           {/* 학습 통계 */}
           <div className="stat-card !p-6 space-y-5">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" /> {t("dashboard.learningStats")}
+              <TrendingUp className="h-5 w-5" aria-hidden="true" /> {t("dashboard.learningStats")}
             </h2>
             <div className="space-y-5">
               <div className="space-y-2">
@@ -459,6 +459,7 @@ const StudentDashboard = () => {
                 <Progress
                   value={Math.min(100, ((gamification?.experience_points ? gamification.experience_points / 60 : 0) / 20) * 100)}
                   className="h-3"
+                  aria-label={`${t("dashboard.weeklyGoal")}: ${gamification?.experience_points ? Math.round(gamification.experience_points / 60) : 0}h / 20h`}
                 />
               </div>
               <div className="space-y-2">
@@ -466,14 +467,14 @@ const StudentDashboard = () => {
                   <span className="text-muted-foreground">{t("dashboard.assignmentCompletionRate")}</span>
                   <span className="font-semibold text-foreground">{assignmentCompletionRate}%</span>
                 </div>
-                <Progress value={assignmentCompletionRate} className="h-3" />
+                <Progress value={assignmentCompletionRate} className="h-3" aria-label={`${t("dashboard.assignmentCompletionRate")}: ${assignmentCompletionRate}%`} />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{t("dashboard.averageScore")}</span>
                   <span className="font-semibold text-foreground">{enrollmentStats?.avgProgress || 0}{t("common.points")}</span>
                 </div>
-                <Progress value={enrollmentStats?.avgProgress || 0} className="h-3" />
+                <Progress value={enrollmentStats?.avgProgress || 0} className="h-3" aria-label={`${t("dashboard.averageScore")}: ${enrollmentStats?.avgProgress || 0}${t("common.points")}`} />
               </div>
             </div>
           </div>
@@ -496,7 +497,7 @@ const StudentDashboard = () => {
                       <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
                       <p className="text-xs text-muted-foreground">{recInstructorMap.get(course.instructor_id) || t("dashboard.instructor")}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" aria-hidden="true" />
                         <span>{(recEnrollCountMap.get(course.id) || 0).toLocaleString()} {t("dashboard.students")}</span>
                       </div>
                     </div>

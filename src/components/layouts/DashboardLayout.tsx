@@ -76,57 +76,62 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   return (
     <div className="flex min-h-screen bg-background">
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <aside className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+      <aside
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+        role="navigation"
+        aria-label={t("nav.mainNavigation", "메인 내비게이션")}
+      >
         <div className="p-6 flex flex-col items-start">
           <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
-          <span className="mt-1.5 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full">
+          <span className="mt-1.5 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full" aria-label={`${t("common.role", "역할")}: ${roleLabel}`}>
             {roleLabel}
           </span>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
-            <X className="h-5 w-5" />
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground" aria-label={t("common.closeSidebar", "사이드바 닫기")}>
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
               <Link key={item.href} to={item.href} onClick={() => setSidebarOpen(false)}
-                className={`nav-item ${isActive ? "nav-item-active" : ""}`}>
-                <item.icon className="h-[18px] w-[18px]" />
+                className={`nav-item ${isActive ? "nav-item-active" : ""}`}
+                aria-current={isActive ? "page" : undefined}>
+                <item.icon className="h-[18px] w-[18px]" aria-hidden="true" />
                 <span>{item.label}</span>
-                {isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
+                {isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" aria-hidden="true" />}
               </Link>
             );
           })}
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
-          <button onClick={handleSignOut} className="nav-item w-full text-muted-foreground hover:text-destructive">
-            <LogOut className="h-[18px] w-[18px]" />
+          <button onClick={handleSignOut} className="nav-item w-full text-muted-foreground hover:text-destructive" aria-label={t("auth.logout")}>
+            <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
             <span>{t("auth.logout")}</span>
           </button>
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border h-16 flex items-center px-6 gap-4">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground">
-            <Menu className="h-5 w-5" />
+        <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border h-16 flex items-center px-6 gap-4" role="banner">
+          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground" aria-label={t("common.openSidebar", "메뉴 열기")}>
+            <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
           <div className="flex-1" />
           <LanguageToggle />
           <RoleSwitcher />
           <NotificationBell />
           <div className="flex items-center gap-3 pl-3 border-l border-border">
-            <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-accent-foreground overflow-hidden">
+            <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-accent-foreground overflow-hidden" role="img" aria-label={profile?.full_name || t("common.user")}>
               {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                <img src={profile.avatar_url} alt={profile?.full_name || t("common.user")} className="h-full w-full object-cover" />
               ) : (
-                initials
+                <span aria-hidden="true">{initials}</span>
               )}
             </div>
             <div className="hidden sm:block">
@@ -134,7 +139,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
             </div>
           </div>
         </header>
-        <main className={contentClassName || "flex-1 p-6 lg:p-8"}>{children}</main>
+        <main className={contentClassName || "flex-1 p-6 lg:p-8"} role="main">{children}</main>
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ const CourseCard = ({ course, categorySlug, categoryName, studentCount, contentC
   };
 
   return (
-    <Link to={linkTo} className="group block">
+    <Link to={linkTo} className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl" aria-label={course.title}>
       <div className="stat-card !p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
         <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
           {course.thumbnail_url && <img src={course.thumbnail_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover" />}
@@ -60,26 +60,26 @@ const CourseCard = ({ course, categorySlug, categoryName, studentCount, contentC
         <div className="p-3.5 space-y-2.5">
           {course.description && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{course.description}</p>}
           <div className="flex items-center gap-3 flex-wrap">
-            {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {t("course.duration", { hours: course.estimated_duration_hours })}</span>}
-            {studentCount != null && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> {studentCount}{t("common.people")}</span>}
-            {contentCount != null && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><BookOpen className="h-3 w-3" /> {t("course.lessonsCount", { count: contentCount })}</span>}
+            {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" aria-hidden="true" /> {t("course.duration", { hours: course.estimated_duration_hours })}</span>}
+            {studentCount != null && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" aria-hidden="true" /> {studentCount}{t("common.people")}</span>}
+            {contentCount != null && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><BookOpen className="h-3 w-3" aria-hidden="true" /> {t("course.lessonsCount", { count: contentCount })}</span>}
             {instructorName && <span className="text-[10px] text-muted-foreground">{instructorName}</span>}
           </div>
           {progress != null && !isCompleted && (
-            <div className="flex items-center gap-2.5"><Progress value={progress} className="flex-1 h-1.5" /><span className="text-[10px] font-medium text-muted-foreground">{Math.round(progress)}%</span></div>
+            <div className="flex items-center gap-2.5"><Progress value={progress} className="flex-1 h-1.5" aria-label={`${t("dashboard.progressRate", "진행률")}: ${Math.round(progress)}%`} /><span className="text-[10px] font-medium text-muted-foreground">{Math.round(progress)}%</span></div>
           )}
           {isCompleted && (
-            <div className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /><span className="text-xs font-medium text-green-600 dark:text-green-400">{t("course.completionLabel")}</span></div>
+            <div className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" aria-hidden="true" /><span className="text-xs font-medium text-green-600 dark:text-green-400">{t("course.completionLabel")}</span></div>
           )}
           {(variant === "teacher" || variant === "admin") && (
             <div className="flex items-center gap-1.5 flex-wrap">
               <Badge variant={isPublished ? "default" : "secondary"} className="text-[10px] h-5">{isPublished ? t("teacher.published") : t("teacher.draft")}</Badge>
-              {course.is_mandatory && <Badge variant="destructive" className="text-[10px] h-5 gap-0.5"><AlertTriangle className="h-2.5 w-2.5" />{t("common.required")}</Badge>}
+              {course.is_mandatory && <Badge variant="destructive" className="text-[10px] h-5 gap-0.5"><AlertTriangle className="h-2.5 w-2.5" aria-hidden="true" />{t("common.required")}</Badge>}
               {course.deadline && (() => {
                 const daysLeft = Math.ceil((new Date(course.deadline).getTime() - Date.now()) / 86400000);
                 return (
                   <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                    <CalendarClock className="h-3 w-3" />
+                    <CalendarClock className="h-3 w-3" aria-hidden="true" />
                     {daysLeft > 0 ? `D-${daysLeft}` : daysLeft === 0 ? "D-Day" : t("student.overdue")}
                   </span>
                 );

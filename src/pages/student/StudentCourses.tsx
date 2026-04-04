@@ -64,7 +64,7 @@ const StudentCourses = () => {
 
   const renderEmpty = (isCompleted = false) => (
     <div className="flex flex-col items-center justify-center py-12 space-y-3">
-      <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center">
+      <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center" aria-hidden="true">
         <BookOpen className="h-6 w-6 text-muted-foreground" />
       </div>
       <p className="text-sm text-muted-foreground">
@@ -89,7 +89,7 @@ const StudentCourses = () => {
         {course.thumbnail_url ? (
           <img src={course.thumbnail_url} alt={course.title} className="h-14 w-14 rounded-lg object-cover shrink-0" />
         ) : (
-          <div className="h-14 w-14 rounded-lg bg-accent flex items-center justify-center shrink-0">
+          <div className="h-14 w-14 rounded-lg bg-accent flex items-center justify-center shrink-0" aria-hidden="true">
             <BookOpen className="h-6 w-6 text-muted-foreground" />
           </div>
         )}
@@ -103,13 +103,13 @@ const StudentCourses = () => {
           </div>
           {!isCompleted && (
             <div className="flex items-center gap-3">
-              <Progress value={progress} className="flex-1 h-1.5 max-w-xs" />
+              <Progress value={progress} className="flex-1 h-1.5 max-w-xs" aria-label={`${t("dashboard.progressRate")}: ${Math.round(progress)}%`} />
               <span className="text-xs font-medium text-muted-foreground">{Math.round(progress)}%</span>
             </div>
           )}
           {isCompleted && (
             <div className="flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" aria-hidden="true" />
               <span className="text-xs font-medium text-green-600 dark:text-green-400">{t("course.completionLabel")}</span>
             </div>
           )}
@@ -117,12 +117,12 @@ const StudentCourses = () => {
 
         {/* Duration */}
         {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && (
-          <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
-            <Clock className="h-3.5 w-3.5" /> {course.estimated_duration_hours}h
+          <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0" aria-label={`${t("course.duration", { hours: course.estimated_duration_hours })}`}>
+            <Clock className="h-3.5 w-3.5" aria-hidden="true" /> {course.estimated_duration_hours}h
           </span>
         )}
 
-        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" aria-hidden="true" />
       </Link>
     );
   };
@@ -136,8 +136,8 @@ const StudentCourses = () => {
 
         <div className="bg-secondary/30 rounded-xl p-4 space-y-1.5">
           <div className="flex items-start gap-2">
-            <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-            <div className="space-y-1 text-sm text-muted-foreground">
+            <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
+            <div className="space-y-1 text-sm text-muted-foreground" role="note">
               <p>{t("course.courseInfoGuide")}</p>
               <p>{t("course.courseInfoGuide2")}</p>
               <p>{t("course.courseInfoGuide3")}</p>
@@ -145,19 +145,20 @@ const StudentCourses = () => {
           </div>
           <div className="flex justify-end">
             <Button variant="outline" size="sm" className="gap-1.5 rounded-lg text-xs" onClick={() => syncProgressMutation.mutate()} disabled={syncProgressMutation.isPending}>
-              <RefreshCw className={`h-3.5 w-3.5 ${syncProgressMutation.isPending ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-3.5 w-3.5 ${syncProgressMutation.isPending ? "animate-spin" : ""}`} aria-hidden="true" />
               {syncProgressMutation.isPending ? t("course.syncing") : t("course.syncProgress")}
             </Button>
           </div>
         </div>
 
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t("course.searchCourse")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl border-border" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          <label htmlFor="course-search" className="sr-only">{t("course.searchCourse")}</label>
+          <Input id="course-search" placeholder={t("course.searchCourse")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl border-border" />
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" /></div>
+          <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" role="status" aria-label={t("common.loading", "로딩 중")} /></div>
         ) : (
           <div className="space-y-8">
             {/* 수강중인 강의 */}
