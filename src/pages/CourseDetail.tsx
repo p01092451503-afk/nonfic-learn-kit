@@ -79,15 +79,13 @@ const CourseDetail = () => {
   const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft", is_mandatory: false, deadline: "" });
   const [courseEnForm, setCourseEnForm] = useState({ title: "", description: "" });
 
-  // Determine view context: /admin/courses/:id → admin, ?view=learn → student, /courses/:id (non-admin) → student, else use primaryRole
+  // Determine view context
   const isAdminRoute = location.pathname.startsWith("/admin/courses/");
+  const isTeacherRoute = location.pathname.startsWith("/teacher/courses/");
   const forceLearnView = searchParams.get("view") === "learn";
-  const isGenericCourseRoute = location.pathname.startsWith("/courses/") && !isAdminRoute;
-  const role: "admin" | "teacher" | "student" = forceLearnView || isGenericCourseRoute
-    ? "student"
-    : isAdminRoute && primaryRole === "admin"
+  const role: "admin" | "teacher" | "student" = isAdminRoute
     ? "admin"
-    : primaryRole === "teacher"
+    : isTeacherRoute
     ? "teacher"
     : "student";
   const isTeacherOrAdmin = role === "admin" || role === "teacher";
