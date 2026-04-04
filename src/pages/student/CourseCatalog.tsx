@@ -251,47 +251,17 @@ const CourseCatalog = () => {
 
   return (
     <DashboardLayout role="student">
-      <div className="space-y-0 -m-6 lg:-m-8">
-        {/* Hero banner */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-secondary via-background to-accent/30">
-          {/* Subtle decorative shapes */}
-          <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-accent/20 blur-3xl -translate-y-1/2 translate-x-1/3" />
-          <div className="absolute bottom-0 left-1/3 w-64 h-64 rounded-full bg-secondary/40 blur-2xl translate-y-1/2" />
-
-          <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
-            {/* Left: user + title */}
-            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <Avatar className="h-11 w-11 sm:h-14 sm:w-14 border-2 border-border shadow-sm shrink-0">
-                <AvatarImage src={profile?.avatar_url || ""} />
-                <AvatarFallback className="bg-card text-foreground text-sm sm:text-base font-semibold">
-                  {profile?.full_name?.charAt(0) || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="text-[10px] sm:text-xs text-muted-foreground tracking-wide uppercase mb-0.5">NONFICTION Education</p>
-                <h1 className="text-lg sm:text-xl font-semibold text-foreground truncate">{t("catalog.title")}</h1>
-                
-              </div>
-            </div>
-
-            {/* Right: stats pills */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {[
-                { value: courses.length, label: t("catalog.totalCourses") },
-                { value: categories.length, label: t("catalog.totalCategories") },
-                { value: enrollments.filter((e: any) => e.status === "approved").length, label: t("catalog.myEnrolled") },
-              ].map((stat, i) => (
-                <div key={i} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl sm:rounded-2xl px-3 sm:px-5 py-2 sm:py-3 text-center flex-1 sm:flex-none sm:min-w-[80px] shadow-sm">
-                  <p className="text-base sm:text-xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+            <Compass className="h-5 w-5 sm:h-6 sm:w-6 text-primary" aria-hidden="true" />
+            {t("catalog.title")}
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            {t("catalog.totalCourses")}: {courses.length} · {t("catalog.totalCategories")}: {categories.length} · {t("catalog.myEnrolled")}: {enrollments.filter((e: any) => e.status === "approved").length}
+          </p>
         </div>
-
-        {/* Content */}
-        <div className="px-4 sm:px-6 lg:px-10 py-6 sm:py-8 space-y-5 sm:space-y-6">
           {/* Category tabs */}
           <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-hide border-b border-border">
             <button
