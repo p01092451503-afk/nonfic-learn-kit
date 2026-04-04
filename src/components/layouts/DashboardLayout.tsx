@@ -33,7 +33,7 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
   const activeRole = role || primaryRole;
 
   const studentNav: NavItem[] = [
-    { label: t("nav.dashboard"), href: "/dashboard", icon: LayoutDashboard },
+    { label: t("nav.dashboard"), href: "/student", icon: LayoutDashboard },
     { label: t("nav.myCourses"), href: "/dashboard/courses", icon: BookOpen },
     { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList },
     { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy },
