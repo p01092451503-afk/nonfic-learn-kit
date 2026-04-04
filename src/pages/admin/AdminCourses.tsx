@@ -104,11 +104,21 @@ const AdminCourses = () => {
   const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
   const instructorMap = new Map(instructorProfiles.map((p: any) => [p.user_id, p.full_name]));
 
-  const filtered = courses.filter((c: any) => {
-    const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || c.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filtered = courses
+    .filter((c: any) => {
+      const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = statusFilter === "all" || c.status === statusFilter;
+      const matchCategory = categoryFilter === "all" || c.category_id === categoryFilter;
+      return matchSearch && matchStatus && matchCategory;
+    })
+    .sort((a: any, b: any) => {
+      switch (sortBy) {
+        case "oldest": return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case "title": return a.title.localeCompare(b.title);
+        case "students": return ((enrollmentCounts as any)[b.id] || 0) - ((enrollmentCounts as any)[a.id] || 0);
+        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
 
   const stats = {
     total: courses.length,
