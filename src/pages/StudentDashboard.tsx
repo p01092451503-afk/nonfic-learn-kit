@@ -376,7 +376,7 @@ const StudentDashboard = () => {
                 );
               })}
             </div>
-          </div>
+          </section>
         )}
 
         <div className="stat-card !p-6 space-y-5">
