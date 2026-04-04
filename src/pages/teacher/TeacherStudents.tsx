@@ -298,7 +298,7 @@ const TeacherStudents = () => {
 
                       <td className="px-3 py-3 hidden sm:table-cell">
                         <div className="flex items-center gap-2 justify-center">
-                          <Progress value={student.avgProgress} className="w-16 h-1.5" />
+                          <Progress value={student.avgProgress} className="w-16 h-1.5" aria-label={`${t("students.avgProgress")}: ${student.avgProgress}%`} />
                           <span className="text-xs text-muted-foreground w-8">{student.avgProgress}%</span>
                         </div>
                       </td>
