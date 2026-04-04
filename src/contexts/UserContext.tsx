@@ -11,6 +11,8 @@ interface UserProfile {
   department: string | null;
   position: string | null;
   employee_id: string | null;
+  phone_number: string | null;
+  team_name: string | null;
 }
 
 interface UserContextType {
@@ -20,6 +22,7 @@ interface UserContextType {
   roles: AppRole[];
   isLoading: boolean;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType>({
