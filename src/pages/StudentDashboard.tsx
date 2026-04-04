@@ -397,18 +397,18 @@ const StudentDashboard = () => {
                 const instructorName = instructorMap.get(enrollment.courses?.instructor_id) || t("dashboard.instructor");
 
                 return (
-                  <div key={enrollment.id} className="stat-card !p-5 space-y-3">
-                    <div className="flex items-start justify-between gap-4">
+                  <div key={enrollment.id} className="stat-card !p-4 sm:!p-5 space-y-3" role="article" aria-label={enrollment.courses?.title}>
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
                       <div className="space-y-1 min-w-0 flex-1">
-                        <h3 className="text-base font-semibold text-foreground truncate">
+                        <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">
                           {enrollment.courses?.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground">{instructorName}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{instructorName}</p>
                       </div>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="gap-1.5 shrink-0 rounded-full"
+                        className="gap-1.5 shrink-0 rounded-full w-full sm:w-auto"
                         onClick={() => {
                           if (nextContent) {
                             navigate(`/courses/${enrollment.course_id}/content/${nextContent.id}?view=learn`);
@@ -416,6 +416,7 @@ const StudentDashboard = () => {
                             navigate(`/courses/${enrollment.course_id}?view=learn`);
                           }
                         }}
+                        aria-label={`${enrollment.courses?.title} - ${t("common.continue")}`}
                       >
                         <Play className="h-3.5 w-3.5" aria-hidden="true" /> {t("common.continue")}
                       </Button>
