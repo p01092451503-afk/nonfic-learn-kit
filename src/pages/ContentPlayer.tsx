@@ -388,8 +388,39 @@ const ContentPlayer = () => {
                   </div>
                 </button>
               ) : currentContent.content_type === "video" && embedUrl ? (
-                <div className="aspect-video w-full">
-                  <iframe src={embedUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={localTitle} />
+                <div className="relative">
+                  <div className="aspect-video w-full">
+                    <iframe
+                      ref={isTrackableVideo ? videoIframeCallback : undefined}
+                      id={`video-player-${contentId}`}
+                      src={embedUrl}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={localTitle}
+                    />
+                  </div>
+                  {/* Video progress bar & resume indicator */}
+                  {isTrackableVideo && (
+                    <div className="px-4 py-2.5 bg-secondary/60 flex items-center gap-3 text-xs">
+                      <span className="text-muted-foreground shrink-0">{t("contentPlayer.watchProgress")}</span>
+                      <Progress value={videoProgress.duration > 0 ? (videoProgress.currentTime / videoProgress.duration) * 100 : (currentProgress?.progress_percentage || 0)} className="h-1.5 flex-1" />
+                      <span className="text-muted-foreground font-medium shrink-0">
+                        {videoProgress.duration > 0
+                          ? `${formatTime(videoProgress.currentTime)} / ${formatTime(videoProgress.duration)}`
+                          : `${Math.round(currentProgress?.progress_percentage || 0)}%`}
+                      </span>
+                      {videoProgress.resumePosition > 0 && !currentProgress?.completed && (
+                        <Badge variant="outline" className="text-[10px] gap-1 shrink-0">
+                          <RotateCcw className="h-3 w-3" />
+                          {t("contentPlayer.resumeFrom", { time: formatTime(videoProgress.resumePosition) })}
+                        </Badge>
+                      )}
+                      {!currentProgress?.completed && (
+                        <span className="text-[10px] text-muted-foreground/70 shrink-0">{t("contentPlayer.autoCompleteAt80")}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : currentContent.content_type === "video" && localVideoUrl ? (
                 <div className="aspect-video w-full flex items-center justify-center">
