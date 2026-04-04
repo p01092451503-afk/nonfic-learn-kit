@@ -1,13 +1,26 @@
-import { ClipboardList, Clock, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { ClipboardList, Clock, CheckCircle2, AlertCircle, ArrowRight, Send } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
 const StudentAssignments = () => {
   const { user } = useUser();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
+  const [submitTarget, setSubmitTarget] = useState<any>(null);
+  const [submissionText, setSubmissionText] = useState("");
+  const [viewTarget, setViewTarget] = useState<any>(null);
 
   const statusConfig = {
     submitted: { label: t("assignments.submitted"), icon: Clock, color: "text-info" },
@@ -20,7 +33,7 @@ const StudentAssignments = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assignment_submissions")
-        .select("*, assignments(title, due_date, max_score, courses(title))")
+        .select("*, assignments(title, due_date, max_score, instructions, courses(title))")
         .eq("student_id", user!.id)
         .order("submitted_at", { ascending: false });
       if (error) throw error;
@@ -41,6 +54,27 @@ const StudentAssignments = () => {
       return data;
     },
     enabled: !!user?.id,
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("assignment_submissions").insert({
+        assignment_id: submitTarget.id,
+        student_id: user!.id,
+        submission_text: submissionText,
+        status: "submitted" as any,
+        submitted_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-submissions"] });
+      queryClient.invalidateQueries({ queryKey: ["my-assignments"] });
+      toast({ title: t("assignments.submitSuccess") });
+      setSubmitTarget(null);
+      setSubmissionText("");
+    },
+    onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
 
   const submittedIds = new Set(submissions.map((s: any) => s.assignment_id));
@@ -78,11 +112,16 @@ const StudentAssignments = () => {
           </div>
         </div>
 
+        {/* Pending assignments */}
         {pending.length > 0 && (
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-foreground">{t("assignments.unsubmittedAssignments")}</h2>
             {pending.map((assignment: any) => (
-              <div key={assignment.id} className="stat-card flex items-center gap-4 cursor-pointer group !p-4">
+              <div
+                key={assignment.id}
+                className="stat-card flex items-center gap-4 cursor-pointer group !p-4 hover:shadow-md transition-all"
+                onClick={() => { setSubmitTarget(assignment); setSubmissionText(""); }}
+              >
                 <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
                   <ClipboardList className="h-4 w-4 text-accent-foreground" />
                 </div>
@@ -100,12 +139,15 @@ const StudentAssignments = () => {
                     </p>
                   )}
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                <Button size="sm" variant="outline" className="rounded-xl text-xs shrink-0 gap-1.5">
+                  <Send className="h-3 w-3" /> {t("common.submit")}
+                </Button>
               </div>
             ))}
           </div>
         )}
 
+        {/* Submitted assignments */}
         {submissions.length > 0 && (
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-foreground">{t("assignments.submittedAssignments")}</h2>
@@ -113,7 +155,11 @@ const StudentAssignments = () => {
               const config = statusConfig[sub.status as keyof typeof statusConfig] || statusConfig.submitted;
               const StatusIcon = config.icon;
               return (
-                <div key={sub.id} className="stat-card flex items-center gap-4 cursor-pointer group !p-4">
+                <div
+                  key={sub.id}
+                  className="stat-card flex items-center gap-4 cursor-pointer group !p-4 hover:shadow-md transition-all"
+                  onClick={() => setViewTarget(sub)}
+                >
                   <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
                     <ClipboardList className="h-4 w-4 text-accent-foreground" />
                   </div>
@@ -130,11 +176,10 @@ const StudentAssignments = () => {
                       )}
                     </div>
                     {sub.submitted_at && (
-                      <p className="text-[10px] text-muted-foreground">
-                        {formatDate(sub.submitted_at)}
-                      </p>
+                      <p className="text-[10px] text-muted-foreground">{formatDate(sub.submitted_at)}</p>
                     )}
                   </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </div>
               );
             })}
@@ -147,6 +192,93 @@ const StudentAssignments = () => {
           </div>
         )}
       </div>
+
+      {/* Submit Dialog */}
+      <Dialog open={!!submitTarget} onOpenChange={(v) => !v && setSubmitTarget(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("assignments.submitDialogTitle")}</DialogTitle>
+            <DialogDescription>{t("assignments.submitDialogDesc")}</DialogDescription>
+          </DialogHeader>
+          {submitTarget && (
+            <div className="space-y-4 py-2">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">{submitTarget.title}</h3>
+                <p className="text-xs text-muted-foreground">{submitTarget.courses?.title}</p>
+                {submitTarget.due_date && (
+                  <p className="text-xs text-muted-foreground mt-1">{t("assignments.dueDate", { date: formatDate(submitTarget.due_date) })}</p>
+                )}
+              </div>
+              {submitTarget.instructions && (
+                <div className="p-3 bg-secondary/30 rounded-xl text-xs text-muted-foreground whitespace-pre-wrap">
+                  {submitTarget.instructions}
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{t("assignments.submissionText")} *</Label>
+                <Textarea
+                  value={submissionText}
+                  onChange={(e) => setSubmissionText(e.target.value)}
+                  placeholder={t("assignments.submissionPlaceholder")}
+                  className="rounded-xl resize-none min-h-[120px]"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSubmitTarget(null)} className="rounded-xl">{t("common.cancel")}</Button>
+            <Button
+              onClick={() => submitMutation.mutate()}
+              disabled={submitMutation.isPending || !submissionText.trim()}
+              className="rounded-xl gap-1.5"
+            >
+              <Send className="h-3.5 w-3.5" />
+              {submitMutation.isPending ? t("assignments.submitting") : t("common.submit")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Submission Detail Dialog */}
+      <Dialog open={!!viewTarget} onOpenChange={(v) => !v && setViewTarget(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("assignments.submissionDetail")}</DialogTitle>
+            <DialogDescription>{viewTarget?.assignments?.title} · {viewTarget?.assignments?.courses?.title}</DialogDescription>
+          </DialogHeader>
+          {viewTarget && (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{t("assignments.submissionContent")}</Label>
+                <div className="p-3 bg-secondary/30 rounded-xl text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">
+                  {viewTarget.submission_text || t("assignments.noSubmissionText")}
+                </div>
+              </div>
+              {viewTarget.submitted_at && (
+                <p className="text-xs text-muted-foreground">{t("assignments.submitted")}: {formatDate(viewTarget.submitted_at)}</p>
+              )}
+              {viewTarget.score != null && (
+                <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-xl space-y-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("assignments.scoreLabel")}: {viewTarget.score}/{viewTarget.assignments?.max_score || 100}{t("common.points")}
+                  </p>
+                </div>
+              )}
+              {viewTarget.feedback && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">{t("assignments.feedbackLabel")}</Label>
+                  <div className="p-3 bg-secondary/30 rounded-xl text-sm text-foreground whitespace-pre-wrap">
+                    {viewTarget.feedback}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewTarget(null)} className="rounded-xl">{t("common.close")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
