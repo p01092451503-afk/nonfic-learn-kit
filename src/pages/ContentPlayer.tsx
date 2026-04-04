@@ -353,47 +353,21 @@ const ContentPlayer = () => {
             {/* Content info - Toss-style clean sections */}
             <div className="space-y-6 mt-2">
 
-              {/* 과정 · 차시 통합 카드 */}
-              <div className="border border-border rounded-2xl overflow-hidden bg-secondary/20">
-                {/* 과정 정보 */}
-                <div className="flex items-center gap-3 px-5 py-3.5">
-                  <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                    <FolderOpen className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{t("course.courseInfo") || "과정 정보"}</p>
-                    <p className="text-sm font-bold text-foreground truncate">{getCourseTitle()}</p>
-                  </div>
-                </div>
-
-                <div className="mx-5 h-px bg-border" />
-
-                {/* 차시 정보 */}
-                <div className="flex items-center gap-3 px-5 py-3.5">
-                  <div className="h-10 w-10 rounded-xl bg-foreground flex items-center justify-center shrink-0">
-                    {currentContent.content_type === "document" ? (
-                      <FileText className="h-5 w-5 text-background" />
-                    ) : (
-                      <Play className="h-5 w-5 text-background" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{t("course.lessonInfo") || "차시 정보"}</p>
-                    <div className="flex items-center justify-between gap-3">
-                      <h2 className="text-sm font-bold text-foreground leading-snug truncate">{localTitle}</h2>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider">
-                          {contentTypeLabel[currentContent.content_type || "video"]}
-                        </Badge>
-                        {currentContent.duration_minutes && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
-                          </div>
-                        )}
-                      </div>
+              {/* 과정 · 차시 한줄 통합 */}
+              <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <span className="truncate">{getCourseTitle()}</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="truncate">{localTitle}</span>
+                <div className="flex items-center gap-2 shrink-0 ml-auto">
+                  <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider">
+                    {contentTypeLabel[currentContent.content_type || "video"]}
+                  </Badge>
+                  {currentContent.duration_minutes && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
