@@ -221,18 +221,18 @@ const TeacherStudents = () => {
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3" aria-label={t("students.studentManagement")}>
           {stats.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-border bg-card p-4">
+            <div key={stat.label} className="rounded-xl border border-border bg-card p-4" role="group" aria-label={stat.label}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-4 w-4 text-muted-foreground/50" />
+                <stat.icon className="h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
               </div>
               <p className="text-2xl font-bold text-foreground">{stat.value}</p>
               <p className="text-[11px] text-muted-foreground mt-0.5">{stat.sub}</p>
             </div>
           ))}
-        </div>
+        </section>
 
         {/* Student list */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
