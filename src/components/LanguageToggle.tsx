@@ -23,18 +23,18 @@ const LanguageToggle = () => {
           <Globe className="h-[18px] w-[18px]" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-32">
+      <DropdownMenuContent align="end" className="min-w-[100px]">
         <DropdownMenuItem
           onClick={() => changeLang("ko")}
-          className={`text-xs gap-2 ${currentLang === "ko" ? "font-bold bg-accent" : ""}`}
+          className={`text-xs ${currentLang === "ko" ? "font-bold bg-accent" : ""}`}
         >
-          🇰🇷 한국어
+          한국어
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => changeLang("en")}
-          className={`text-xs gap-2 ${currentLang === "en" ? "font-bold bg-accent" : ""}`}
+          className={`text-xs ${currentLang === "en" ? "font-bold bg-accent" : ""}`}
         >
-          🇺🇸 English
+          English
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
