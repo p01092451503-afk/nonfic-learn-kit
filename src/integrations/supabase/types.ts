@@ -268,6 +268,53 @@ export type Database = {
           },
         ]
       }
+      course_content_i18n: {
+        Row: {
+          content_id: string
+          created_at: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          language_code: string
+          title: string
+          updated_at: string | null
+          video_provider: string | null
+          video_url: string | null
+        }
+        Insert: {
+          content_id: string
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          language_code: string
+          title: string
+          updated_at?: string | null
+          video_provider?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          content_id?: string
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          language_code?: string
+          title?: string
+          updated_at?: string | null
+          video_provider?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_content_i18n_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "course_contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_contents: {
         Row: {
           content_type: Database["public"]["Enums"]["content_type"] | null
@@ -347,6 +394,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      course_i18n: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          language_code: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          language_code: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          language_code?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_i18n_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       course_target_departments: {
         Row: {

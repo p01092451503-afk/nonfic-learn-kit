@@ -308,7 +308,13 @@
     "learningProgress": "Learning Progress",
     "completedLessons": "Completed Lessons",
     "learningTime": "Study Time",
-    "select": "Select"
+    "select": "Select",
+    "koTab": "🇰🇷 Korean",
+    "enTab": "🇺🇸 English",
+    "enTitle": "English Title",
+    "enDescription": "English Description",
+    "enVideoUrl": "English Video URL",
+    "enOptional": "(Falls back to Korean if empty)"
   },
   "assignments": {
     "title": "Assignments",

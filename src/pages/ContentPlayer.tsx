@@ -11,21 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
-  video: Video,
-  document: FileText,
-  quiz: BarChart3,
-  assignment: FileText,
-  live: Video,
-};
-
-const contentTypeLabel: Record<string, string> = {
-  video: "영상",
-  document: "문서",
-  quiz: "퀴즈",
-  assignment: "과제",
-  live: "라이브",
+  video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
 };
 
 const ContentPlayer = () => {
@@ -34,6 +23,8 @@ const ContentPlayer = () => {
   const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
@@ -41,16 +32,26 @@ const ContentPlayer = () => {
   const mangoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activeItemRef = useRef<HTMLButtonElement>(null);
 
+  const contentTypeLabel: Record<string, string> = {
+    video: t("course.video"), document: t("course.document"),
+    quiz: t("course.quiz"), assignment: t("course.assignment"), live: t("course.live"),
+  };
+
   const { data: course } = useQuery({
     queryKey: ["course", courseId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("courses")
-        .select("*")
-        .eq("id", courseId!)
-        .single();
+      const { data, error } = await supabase.from("courses").select("*").eq("id", courseId!).single();
       if (error) throw error;
       return data;
+    },
+    enabled: !!courseId,
+  });
+
+  const { data: courseI18n } = useQuery({
+    queryKey: ["course-i18n", courseId],
+    queryFn: async () => {
+      const { data } = await supabase.from("course_i18n").select("*").eq("course_id", courseId!);
+      return data || [];
     },
     enabled: !!courseId,
   });
@@ -58,15 +59,22 @@ const ContentPlayer = () => {
   const { data: contents = [] } = useQuery({
     queryKey: ["course-contents", courseId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("course_contents")
-        .select("*")
-        .eq("course_id", courseId!)
-        .order("order_index", { ascending: true });
+      const { data, error } = await supabase.from("course_contents").select("*").eq("course_id", courseId!).order("order_index", { ascending: true });
       if (error) throw error;
       return data;
     },
     enabled: !!courseId,
+  });
+
+  const { data: contentI18nData = [] } = useQuery({
+    queryKey: ["content-i18n", courseId],
+    queryFn: async () => {
+      const contentIds = contents.map(c => c.id);
+      if (contentIds.length === 0) return [];
+      const { data } = await supabase.from("course_content_i18n").select("*").in("content_id", contentIds);
+      return data || [];
+    },
+    enabled: contents.length > 0,
   });
 
   const { data: progressData = [] } = useQuery({
@@ -74,16 +82,36 @@ const ContentPlayer = () => {
     queryFn: async () => {
       const contentIds = contents.map((c) => c.id);
       if (contentIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from("content_progress")
-        .select("*")
-        .eq("user_id", user!.id)
-        .in("content_id", contentIds);
+      const { data, error } = await supabase.from("content_progress").select("*").eq("user_id", user!.id).in("content_id", contentIds);
       if (error) throw error;
       return data;
     },
     enabled: !!user?.id && contents.length > 0,
   });
+
+  // i18n helpers
+  const getI18n = (cId: string) => contentI18nData.find((i: any) => i.content_id === cId && i.language_code === "en");
+
+  const getTitle = (c: any) => {
+    if (isEn) { const en = getI18n(c.id); return en?.title || c.title; }
+    return c.title;
+  };
+  const getDescription = (c: any) => {
+    if (isEn) { const en = getI18n(c.id); return en?.description || c.description; }
+    return c.description;
+  };
+  const getVideoUrl = (c: any) => {
+    if (isEn) { const en = getI18n(c.id); return en?.video_url || c.video_url; }
+    return c.video_url;
+  };
+  const getVideoProvider = (c: any) => {
+    if (isEn) { const en = getI18n(c.id); return en?.video_provider || c.video_provider; }
+    return c.video_provider;
+  };
+  const getCourseTitle = () => {
+    if (isEn) { const en = courseI18n?.find((i: any) => i.language_code === "en"); return en?.title || course?.title || ""; }
+    return course?.title || "";
+  };
 
   const currentContent = contents.find((c) => c.id === contentId);
   const currentIndex = contents.findIndex((c) => c.id === contentId);
@@ -94,38 +122,28 @@ const ContentPlayer = () => {
   const completedCount = progressData.filter((p) => p.completed).length;
   const overallProgress = contents.length > 0 ? Math.round((completedCount / contents.length) * 100) : 0;
 
-  // 개선5: 활성 차시로 자동 스크롤
   useEffect(() => {
     if (activeItemRef.current) {
       activeItemRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [contentId]);
 
-  // 모바일에서 콘텐츠 변경 시 사이드바 닫기
   useEffect(() => {
     setMobileSidebarOpen(false);
     setMangoElapsed(0);
   }, [contentId]);
 
-  // Mangoboard 학습 시간 트래킹 & 자동 완료
+  // Mangoboard timer
   useEffect(() => {
-    if (mangoPopupOpen && currentContent && isMangoboard(currentContent.video_url)) {
+    if (mangoPopupOpen && currentContent && isMangoboard(getVideoUrl(currentContent))) {
       setMangoElapsed(0);
-      mangoTimerRef.current = setInterval(() => {
-        setMangoElapsed((prev) => prev + 1);
-      }, 1000);
+      mangoTimerRef.current = setInterval(() => setMangoElapsed((prev) => prev + 1), 1000);
     } else {
-      if (mangoTimerRef.current) {
-        clearInterval(mangoTimerRef.current);
-        mangoTimerRef.current = null;
-      }
+      if (mangoTimerRef.current) { clearInterval(mangoTimerRef.current); mangoTimerRef.current = null; }
     }
-    return () => {
-      if (mangoTimerRef.current) clearInterval(mangoTimerRef.current);
-    };
+    return () => { if (mangoTimerRef.current) clearInterval(mangoTimerRef.current); };
   }, [mangoPopupOpen, currentContent?.id]);
 
-  // 80% 시간 도달 시 자동 완료
   const requiredSeconds = (currentContent?.duration_minutes || 5) * 60 * 0.8;
   const mangoAutoCompleted = mangoElapsed >= requiredSeconds;
 
@@ -139,25 +157,16 @@ const ContentPlayer = () => {
     mutationFn: async () => {
       const existing = currentProgress;
       if (existing) {
-        const { error } = await supabase
-          .from("content_progress")
-          .update({ completed: true, completed_at: new Date().toISOString(), progress_percentage: 100 })
-          .eq("id", existing.id);
+        const { error } = await supabase.from("content_progress").update({ completed: true, completed_at: new Date().toISOString(), progress_percentage: 100 }).eq("id", existing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("content_progress").insert({
-          user_id: user!.id,
-          content_id: contentId!,
-          completed: true,
-          completed_at: new Date().toISOString(),
-          progress_percentage: 100,
-        });
+        const { error } = await supabase.from("content_progress").insert({ user_id: user!.id, content_id: contentId!, completed: true, completed_at: new Date().toISOString(), progress_percentage: 100 });
         if (error) throw error;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["content-progress", courseId] });
-      toast({ title: "완료", description: "학습 완료로 표시되었습니다." });
+      toast({ title: t("course.completed"), description: t("course.learningComplete") });
     },
   });
 
@@ -187,96 +196,65 @@ const ContentPlayer = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <p className="text-muted-foreground">콘텐츠를 찾을 수 없습니다.</p>
-          <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>강좌로 돌아가기</Button>
+          <p className="text-muted-foreground">{t("course.contentNotFound")}</p>
+          <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>{t("course.backToCourse")}</Button>
         </div>
       </div>
     );
   }
 
-  const embedUrl = getVideoEmbed(currentContent.video_url, currentContent.video_provider);
+  // Use localized values for current content
+  const localTitle = getTitle(currentContent);
+  const localDesc = getDescription(currentContent);
+  const localVideoUrl = getVideoUrl(currentContent);
+  const localProvider = getVideoProvider(currentContent);
+  const embedUrl = getVideoEmbed(localVideoUrl, localProvider);
 
   const SidebarContent = () => (
     <>
-      {/* 강좌로 돌아가기 */}
       <div className="p-4 pb-2">
         <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors">
-          <ArrowLeft className="h-4 w-4" /> 강좌로 돌아가기
+          <ArrowLeft className="h-4 w-4" /> {t("course.backToCourse")}
         </Link>
       </div>
-
-      {/* 과정명 + 진행률 */}
       <div className="p-4 pt-2 border-b border-sidebar-border">
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold text-foreground truncate">{course?.title}</h2>
+            <h2 className="text-sm font-semibold text-foreground truncate">{getCourseTitle()}</h2>
             <div className="mt-2">
               <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                <span>진행률</span>
+                <span>{t("course.progress")}</span>
                 <span>{overallProgress}%</span>
               </div>
               <Progress value={overallProgress} className="h-1.5" />
             </div>
           </div>
-          {/* 데스크톱에서만 토글 버튼 */}
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="hidden lg:block p-1.5 rounded-lg hover:bg-accent text-muted-foreground shrink-0 ml-2"
-          >
+          <button onClick={() => setSidebarOpen(false)} className="hidden lg:block p-1.5 rounded-lg hover:bg-accent text-muted-foreground shrink-0 ml-2">
             <ChevronLeft className="h-4 w-4" />
           </button>
-          {/* 모바일에서 닫기 */}
-          <button
-            onClick={() => setMobileSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-accent text-muted-foreground shrink-0 ml-2"
-          >
+          <button onClick={() => setMobileSidebarOpen(false)} className="lg:hidden p-1.5 rounded-lg hover:bg-accent text-muted-foreground shrink-0 ml-2">
             <X className="h-4 w-4" />
           </button>
         </div>
       </div>
-
-      {/* 차시 목록 */}
       <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
         {contents.map((c, idx) => {
           const isActive = c.id === contentId;
           const isCompleted = progressMap.get(c.id)?.completed;
           const Icon = contentTypeIcon[c.content_type || "video"] || Video;
-
           return (
-            <button
-              key={c.id}
-              ref={isActive ? activeItemRef : undefined}
-              onClick={() => {
-                navigate(`/courses/${courseId}/content/${c.id}`);
-                setMobileSidebarOpen(false);
-              }}
-              className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition-all ${
-                isActive
-                  ? "bg-primary/10 text-primary font-semibold ring-1 ring-primary/20"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-              }`}
-            >
-              <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-medium ${
-                isCompleted
-                  ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                  : isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-muted-foreground"
-              }`}>
+            <button key={c.id} ref={isActive ? activeItemRef : undefined}
+              onClick={() => { navigate(`/courses/${courseId}/content/${c.id}`); setMobileSidebarOpen(false); }}
+              className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition-all ${isActive ? "bg-primary/10 text-primary font-semibold ring-1 ring-primary/20" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}>
+              <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-medium ${isCompleted ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : isActive ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
                 {isCompleted ? <CheckCircle2 className="h-3.5 w-3.5" /> : String(idx + 1).padStart(2, "0")}
               </div>
-              <span className="truncate flex-1">{c.title}</span>
+              <span className="truncate flex-1">{getTitle(c)}</span>
               <div className="flex items-center gap-1.5 shrink-0">
-                <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
-                  c.video_provider === "custom"
-                    ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
-                }`}>
-                  {c.video_provider === "custom" ? "플립" : "영상"}
+                <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${c.video_provider === "custom" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`}>
+                  {c.video_provider === "custom" ? t("course.flip") : t("course.video")}
                 </span>
-                {c.duration_minutes && (
-                  <span className="text-[10px] text-muted-foreground">{c.duration_minutes}분</span>
-                )}
+                {c.duration_minutes && <span className="text-[10px] text-muted-foreground">{c.duration_minutes}{t("common.minutes")}</span>}
               </div>
             </button>
           );
@@ -287,7 +265,6 @@ const ContentPlayer = () => {
 
   return (
     <div className="flex min-h-screen bg-background overflow-x-hidden">
-      {/* 개선6: 모바일 오버레이 사이드바 */}
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileSidebarOpen(false)} />
@@ -297,49 +274,36 @@ const ContentPlayer = () => {
         </div>
       )}
 
-      {/* 데스크톱 사이드바 */}
-      <aside className={`hidden lg:flex sticky top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border flex-col transition-all duration-300 ${
-        sidebarOpen ? "w-72" : "w-0 overflow-hidden"
-      }`}>
+      <aside className={`hidden lg:flex sticky top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border flex-col transition-all duration-300 ${sidebarOpen ? "w-72" : "w-0 overflow-hidden"}`}>
         {sidebarOpen && <SidebarContent />}
       </aside>
 
-      {/* 사이드바 닫혔을 때 열기 버튼 (데스크톱) */}
       {!sidebarOpen && (
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-sidebar border border-sidebar-border rounded-r-lg hover:bg-accent text-muted-foreground transition-colors"
-        >
+        <button onClick={() => setSidebarOpen(true)} className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-sidebar border border-sidebar-border rounded-r-lg hover:bg-accent text-muted-foreground transition-colors">
           <ChevronRight className="h-4 w-4" />
         </button>
       )}
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden">
-        {/* 모바일 헤더 */}
         <header className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="p-2 rounded-lg hover:bg-accent text-muted-foreground"
-          >
+          <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg hover:bg-accent text-muted-foreground">
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{course?.title}</p>
-            <p className="text-[11px] text-muted-foreground">{currentIndex + 1} / {contents.length} 차시</p>
+            <p className="text-sm font-medium text-foreground truncate">{getCourseTitle()}</p>
+            <p className="text-[11px] text-muted-foreground">{t("contentPlayer.lessonCount", { current: currentIndex + 1, total: contents.length })}</p>
           </div>
         </header>
 
-        {/* 데스크톱 상단 바 */}
         <header className="hidden lg:flex items-center gap-4 px-8 py-3 border-b border-border bg-background/60 backdrop-blur-sm sticky top-0 z-30">
           <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors shrink-0">
-            <ArrowLeft className="h-4 w-4" /> {course?.title}
+            <ArrowLeft className="h-4 w-4" /> {getCourseTitle()}
           </Link>
           <div className="flex-1" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{currentIndex + 1}</span>
             <span>/</span>
-            <span>{contents.length} 차시</span>
+            <span>{contents.length} {t("course.lesson")}</span>
           </div>
           <div className="flex items-center gap-2 ml-4">
             <Progress value={overallProgress} className="w-24 h-1.5" />
@@ -349,228 +313,142 @@ const ContentPlayer = () => {
 
         <div className="flex-1 overflow-y-auto">
           <div className="w-full max-w-6xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
-            {/* 통합 미디어 영역 - 플립/영상 동일 레이아웃 */}
+            {/* Media area */}
             <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6 lg:mb-8">
-              {isMangoboard(currentContent.video_url) && embedUrl ? (
-                /* 플립러닝: 클릭하면 팝업으로 학습 */
-                <button
-                  onClick={() => setMangoPopupOpen(true)}
-                  className="relative aspect-video w-full flex items-center justify-center group cursor-pointer bg-gradient-to-br from-blue-500/10 to-indigo-500/10"
-                >
+              {isMangoboard(localVideoUrl) && embedUrl ? (
+                <button onClick={() => setMangoPopupOpen(true)} className="relative aspect-video w-full flex items-center justify-center group cursor-pointer bg-gradient-to-br from-blue-500/10 to-indigo-500/10">
                   <div className="text-center space-y-4">
                     <div className="h-20 w-20 rounded-full bg-primary/90 group-hover:bg-primary mx-auto flex items-center justify-center transition-all group-hover:scale-110 shadow-lg">
                       <Play className="h-8 w-8 text-primary-foreground ml-1" />
                     </div>
                     <div>
-                      <p className="text-lg font-semibold text-foreground">학습하기</p>
-                      <p className="text-sm text-muted-foreground mt-1">클릭하면 학습 화면이 열립니다</p>
+                      <p className="text-lg font-semibold text-foreground">{t("course.startLearning")}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{t("course.clickToLearn")}</p>
                     </div>
                   </div>
                 </button>
               ) : currentContent.content_type === "video" && embedUrl ? (
                 <div className="aspect-video w-full">
-                  <iframe
-                    src={embedUrl}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={currentContent.title}
-                  />
+                  <iframe src={embedUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={localTitle} />
                 </div>
-              ) : currentContent.content_type === "video" && currentContent.video_url ? (
+              ) : currentContent.content_type === "video" && localVideoUrl ? (
                 <div className="aspect-video w-full flex items-center justify-center">
-                  <a
-                    href={currentContent.video_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-base text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <ExternalLink className="h-5 w-5" /> 외부 플레이어에서 열기
+                  <a href={localVideoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-base text-muted-foreground hover:text-foreground transition-colors">
+                    <ExternalLink className="h-5 w-5" /> {t("course.openExternal")}
                   </a>
                 </div>
               ) : (
                 <div className="aspect-video w-full flex items-center justify-center">
                   <div className="text-center space-y-3">
                     <div className="h-16 w-16 rounded-2xl bg-accent mx-auto flex items-center justify-center">
-                      {currentContent.content_type === "document" ? (
-                        <FileText className="h-7 w-7 text-accent-foreground" />
-                      ) : (
-                        <Play className="h-7 w-7 text-accent-foreground" />
-                      )}
+                      {currentContent.content_type === "document" ? <FileText className="h-7 w-7 text-accent-foreground" /> : <Play className="h-7 w-7 text-accent-foreground" />}
                     </div>
-                    <p className="text-base text-muted-foreground">
-                      {contentTypeLabel[currentContent.content_type || "video"] || "콘텐츠"}
-                    </p>
+                    <p className="text-base text-muted-foreground">{contentTypeLabel[currentContent.content_type || "video"]}</p>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Two column layout on desktop */}
             <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-              {/* Left: Main content info */}
               <div className="lg:col-span-2 space-y-6">
-                {/* 메타 뱃지 */}
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <Badge className="text-xs font-semibold px-3 py-1.5 bg-foreground text-background rounded-lg uppercase tracking-wider">
-                    {contentTypeLabel[currentContent.content_type || "video"] || currentContent.content_type || "video"}
+                    {contentTypeLabel[currentContent.content_type || "video"]}
                   </Badge>
                   {currentContent.duration_minutes && (
                     <div className="flex items-center gap-1.5 text-sm text-foreground bg-secondary px-3 py-1.5 rounded-lg">
                       <Clock className="h-3.5 w-3.5" />
-                      <span className="font-medium">{currentContent.duration_minutes}분</span>
+                      <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
                     </div>
                   )}
                 </div>
 
-                {/* 제목 */}
-                <h1 className="text-2xl lg:text-3xl font-bold text-foreground leading-tight">{currentContent.title}</h1>
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground leading-tight">{localTitle}</h1>
 
-                {/* 설명 */}
-                {currentContent.description && (
+                {localDesc && (
                   <div className="bg-secondary/40 rounded-2xl p-5 lg:p-7">
-                    <p className="text-sm lg:text-base text-foreground/80 leading-7 lg:leading-8 whitespace-pre-line break-keep">
-                      {currentContent.description}
-                    </p>
+                    <p className="text-sm lg:text-base text-foreground/80 leading-7 lg:leading-8 whitespace-pre-line break-keep">{localDesc}</p>
                   </div>
                 )}
 
-                {/* 학습 완료 / 버튼 */}
                 {currentProgress?.completed ? (
                   <div className="flex items-center gap-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl px-6 py-5">
                     <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
                       <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <p className="text-base font-semibold text-green-700 dark:text-green-300">학습 완료</p>
-                      <p className="text-sm text-green-600/70 dark:text-green-400/70">이 차시를 성공적으로 완료했습니다.</p>
+                      <p className="text-base font-semibold text-green-700 dark:text-green-300">{t("course.alreadyCompleted")}</p>
+                      <p className="text-sm text-green-600/70 dark:text-green-400/70">{t("course.completedSuccess")}</p>
                     </div>
                   </div>
                 ) : user && (
-                  <Button
-                    variant="login"
-                    size="xl"
-                    onClick={() => markCompleteMutation.mutate()}
-                    disabled={markCompleteMutation.isPending}
-                    className="w-full lg:w-auto text-base"
-                  >
-                    {markCompleteMutation.isPending ? "처리 중..." : "학습 완료 표시"}
+                  <Button variant="login" size="xl" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="w-full lg:w-auto text-base">
+                    {markCompleteMutation.isPending ? t("common.processing") : t("course.markComplete")}
                   </Button>
                 )}
 
-                {/* 하단 네비게이션 */}
+                {/* Navigation */}
                 <div className="flex items-center justify-between pt-6 border-t border-border">
                   <div className="flex-1">
                     {prevContent ? (
-                      <Button
-                        variant="outline"
-                        className="rounded-xl gap-2"
-                        onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}
-                      >
+                      <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}>
                         <ChevronLeft className="h-4 w-4" />
                         <div className="text-left hidden sm:block">
-                          <span className="text-[10px] text-muted-foreground block">이전 차시</span>
-                          <span className="text-xs truncate max-w-[140px] block">{prevContent.title}</span>
+                          <span className="text-[10px] text-muted-foreground block">{t("common.previous")}</span>
+                          <span className="text-xs truncate max-w-[140px] block">{getTitle(prevContent)}</span>
                         </div>
-                        <span className="sm:hidden text-sm">이전</span>
+                        <span className="sm:hidden text-sm">{t("common.previous")}</span>
                       </Button>
-                    ) : (
-                      <div />
-                    )}
+                    ) : <div />}
                   </div>
-
-                  <Button
-                    variant="ghost"
-                    className="rounded-xl gap-2 text-muted-foreground hover:text-foreground hidden lg:hidden"
-                    onClick={() => navigate(`/courses/${courseId}`)}
-                  >
-                    <ArrowLeft className="h-4 w-4" /> 강좌 목록
+                  <Button variant="ghost" className="rounded-xl gap-2 text-muted-foreground hover:text-foreground lg:hidden" onClick={() => navigate(`/courses/${courseId}`)}>
+                    <ArrowLeft className="h-4 w-4" /> {t("course.backToCourseList")}
                   </Button>
-
-                  {/* 모바일 강좌 목록 버튼 */}
-                  <Button
-                    variant="ghost"
-                    className="rounded-xl gap-2 text-muted-foreground hover:text-foreground lg:hidden"
-                    onClick={() => navigate(`/courses/${courseId}`)}
-                  >
-                    <ArrowLeft className="h-4 w-4" /> 강좌 목록
-                  </Button>
-
                   <div className="flex-1 flex justify-end">
                     {nextContent ? (
-                      <Button
-                        variant="outline"
-                        className="rounded-xl gap-2"
-                        onClick={() => navigate(`/courses/${courseId}/content/${nextContent.id}`)}
-                      >
+                      <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${nextContent.id}`)}>
                         <div className="text-right hidden sm:block">
-                          <span className="text-[10px] text-muted-foreground block">다음 차시</span>
-                          <span className="text-xs truncate max-w-[140px] block">{nextContent.title}</span>
+                          <span className="text-[10px] text-muted-foreground block">{t("common.next")}</span>
+                          <span className="text-xs truncate max-w-[140px] block">{getTitle(nextContent)}</span>
                         </div>
-                        <span className="sm:hidden text-sm">다음</span>
+                        <span className="sm:hidden text-sm">{t("common.next")}</span>
                         <ChevronRight className="h-4 w-4" />
                       </Button>
-                    ) : (
-                      <div />
-                    )}
+                    ) : <div />}
                   </div>
                 </div>
               </div>
 
-              {/* Right: Course progress sidebar (desktop only) */}
+              {/* Right sidebar */}
               <div className="hidden lg:block space-y-4">
                 <div className="rounded-2xl border border-border bg-card p-5 sticky top-20">
-                  <h3 className="text-sm font-semibold text-foreground mb-4">학습 진행 현황</h3>
-                  
-                  {/* Progress circle */}
+                  <h3 className="text-sm font-semibold text-foreground mb-4">{t("course.learningProgress")}</h3>
                   <div className="flex items-center justify-center mb-5">
                     <div className="relative h-28 w-28">
                       <svg className="h-28 w-28 -rotate-90" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--border))" strokeWidth="8" />
-                        <circle
-                          cx="50" cy="50" r="42" fill="none"
-                          stroke="hsl(var(--primary))" strokeWidth="8"
-                          strokeLinecap="round"
-                          strokeDasharray={`${overallProgress * 2.64} 264`}
-                          className="transition-all duration-500"
-                        />
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--primary))" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${overallProgress * 2.64} 264`} className="transition-all duration-500" />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className="text-2xl font-bold text-foreground">{overallProgress}%</span>
-                        <span className="text-[10px] text-muted-foreground">완료</span>
+                        <span className="text-[10px] text-muted-foreground">{t("course.completed")}</span>
                       </div>
                     </div>
                   </div>
-
                   <div className="flex items-center justify-between text-sm mb-4 px-2">
-                    <span className="text-muted-foreground">완료한 차시</span>
+                    <span className="text-muted-foreground">{t("course.completedLessons")}</span>
                     <span className="font-semibold text-foreground">{completedCount} / {contents.length}</span>
                   </div>
-
                   <div className="space-y-1.5">
                     {contents.map((c, idx) => {
                       const isActive = c.id === contentId;
                       const isCompleted = progressMap.get(c.id)?.completed;
                       return (
-                        <button
-                          key={c.id}
-                          onClick={() => navigate(`/courses/${courseId}/content/${c.id}`)}
-                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 text-sm transition-all ${
-                            isActive
-                              ? "bg-primary/10 text-primary font-medium"
-                              : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                          }`}
-                        >
-                          <div className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-medium ${
-                            isCompleted
-                              ? "bg-green-500 text-white"
-                              : isActive
-                              ? "bg-primary text-primary-foreground"
-                              : "border border-border text-muted-foreground"
-                          }`}>
+                        <button key={c.id} onClick={() => navigate(`/courses/${courseId}/content/${c.id}`)} className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 text-sm transition-all ${isActive ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}>
+                          <div className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-medium ${isCompleted ? "bg-green-500 text-white" : isActive ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
                             {isCompleted ? <CheckCircle2 className="h-3 w-3" /> : idx + 1}
                           </div>
-                          <span className="truncate flex-1 text-xs">{c.title}</span>
+                          <span className="truncate flex-1 text-xs">{getTitle(c)}</span>
                         </button>
                       );
                     })}
@@ -582,23 +460,18 @@ const ContentPlayer = () => {
         </div>
       </main>
 
-      {/* Mangoboard Popup Modal */}
-      {mangoPopupOpen && currentContent && isMangoboard(currentContent.video_url) && embedUrl && (
+      {/* Mangoboard Popup */}
+      {mangoPopupOpen && currentContent && isMangoboard(localVideoUrl) && embedUrl && (
         <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center">
-          <button
-            onClick={() => setMangoPopupOpen(false)}
-            className="absolute top-4 right-4 z-[110] p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-          >
+          <button onClick={() => setMangoPopupOpen(false)} className="absolute top-4 right-4 z-[110] p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
             <X className="h-6 w-6" />
           </button>
-
-          {/* 학습 시간 진행 바 */}
           <div className="absolute top-4 left-4 right-16 z-[110]">
             <div className="flex items-center gap-3 bg-black/60 backdrop-blur-sm rounded-xl px-4 py-2.5">
               <Clock className="h-4 w-4 text-white/70 shrink-0" />
               <div className="flex-1">
                 <div className="flex items-center justify-between text-[11px] text-white/80 mb-1">
-                  <span>학습 시간</span>
+                  <span>{t("contentPlayer.learningTime")}</span>
                   <span>
                     {Math.floor(mangoElapsed / 60)}:{String(mangoElapsed % 60).padStart(2, "0")}
                     {" / "}
@@ -606,25 +479,14 @@ const ContentPlayer = () => {
                   </span>
                 </div>
                 <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-1000 ${mangoAutoCompleted ? "bg-green-400" : "bg-white/70"}`}
-                    style={{ width: `${Math.min((mangoElapsed / requiredSeconds) * 100, 100)}%` }}
-                  />
+                  <div className={`h-full rounded-full transition-all duration-1000 ${mangoAutoCompleted ? "bg-green-400" : "bg-white/70"}`} style={{ width: `${Math.min((mangoElapsed / requiredSeconds) * 100, 100)}%` }} />
                 </div>
               </div>
-              {mangoAutoCompleted && (
-                <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />
-              )}
+              {mangoAutoCompleted && <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />}
             </div>
           </div>
-
           <div className="h-[95vh]" style={{ aspectRatio: "9/16", maxWidth: "95vw" }}>
-            <iframe
-              src={embedUrl}
-              className="w-full h-full border-0 rounded-lg"
-              allowFullScreen
-              title={currentContent.title}
-            />
+            <iframe src={embedUrl} className="w-full h-full border-0 rounded-lg" allowFullScreen title={localTitle} />
           </div>
         </div>
       )}

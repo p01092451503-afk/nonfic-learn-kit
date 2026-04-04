@@ -308,7 +308,13 @@
     "learningProgress": "학습 진행 현황",
     "completedLessons": "완료한 차시",
     "learningTime": "학습 시간",
-    "select": "선택"
+    "select": "선택",
+    "koTab": "🇰🇷 한국어",
+    "enTab": "🇺🇸 English",
+    "enTitle": "영어 제목",
+    "enDescription": "영어 설명",
+    "enVideoUrl": "영어 영상 URL",
+    "enOptional": "(미입력 시 한국어 폴백)"
   },
   "assignments": {
     "title": "과제",
