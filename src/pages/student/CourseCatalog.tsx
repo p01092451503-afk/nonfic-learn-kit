@@ -35,7 +35,7 @@ const ScrollArrow = ({ direction, onClick }: { direction: "left" | "right"; onCl
 
 /* ── Course Card (shared between grid & carousel) ── */
 const CatalogCourseCard = ({
-  course, cat, gradient, isEnrolled, studentCount, lessons, onEnroll, isPending, t,
+  course, cat, gradient, enrollmentStatus, studentCount, lessons, onEnroll, isPending, t,
 }: any) => (
   <div className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 shrink-0 w-[280px] sm:w-auto">
     <Link to={`/courses/${course.id}`} className="block">
@@ -76,10 +76,18 @@ const CatalogCourseCard = ({
         <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> {studentCount}{t("common.people")}</span>
         {lessons > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><BookOpen className="h-3 w-3" /> {t("course.lessonsCount", { count: lessons })}</span>}
       </div>
-      {isEnrolled ? (
+      {enrollmentStatus === "approved" ? (
         <Link to={`/courses/${course.id}?view=learn`}>
           <Button variant="outline" size="sm" className="w-full rounded-xl text-xs gap-1.5">{t("catalog.continueLearning")}<ChevronRight className="h-3.5 w-3.5" /></Button>
         </Link>
+      ) : enrollmentStatus === "pending" ? (
+        <Button variant="secondary" size="sm" className="w-full rounded-xl text-xs gap-1.5 cursor-default" disabled>
+          <Hourglass className="h-3.5 w-3.5" /> {t("catalog.pendingApproval")}
+        </Button>
+      ) : enrollmentStatus === "rejected" ? (
+        <Button variant="outline" size="sm" className="w-full rounded-xl text-xs text-destructive border-destructive/30 cursor-default" disabled>
+          {t("catalog.rejected")}
+        </Button>
       ) : (
         <Button size="sm" className="w-full rounded-xl text-xs" onClick={(e) => { e.preventDefault(); onEnroll(course.id); }} disabled={isPending}>{t("catalog.enroll")}</Button>
       )}
