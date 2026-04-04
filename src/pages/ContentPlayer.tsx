@@ -488,11 +488,7 @@ const ContentPlayer = () => {
                     {prevContent ? (
                       <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}>
                         <ChevronLeft className="h-4 w-4" />
-                        <div className="text-left hidden sm:block">
-                          <span className="text-[10px] text-muted-foreground block">{t("common.previous")}</span>
-                          <span className="text-xs truncate max-w-[140px] block">{getTitle(prevContent)}</span>
-                        </div>
-                        <span className="sm:hidden text-sm">{t("common.previous")}</span>
+                        <span className="text-sm">{t("common.previous")}</span>
                       </Button>
                     ) : <div />}
                   </div>
@@ -502,11 +498,7 @@ const ContentPlayer = () => {
                   <div className="flex-1 flex justify-end">
                     {nextContent ? (
                       <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${nextContent.id}`)}>
-                        <div className="text-right hidden sm:block">
-                          <span className="text-[10px] text-muted-foreground block">{t("common.next")}</span>
-                          <span className="text-xs truncate max-w-[140px] block">{getTitle(nextContent)}</span>
-                        </div>
-                        <span className="sm:hidden text-sm">{t("common.next")}</span>
+                        <span className="text-sm">{t("common.next")}</span>
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     ) : <div />}
