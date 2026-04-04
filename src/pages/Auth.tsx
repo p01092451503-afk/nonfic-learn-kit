@@ -76,7 +76,7 @@ const Auth = () => {
           </div>
           <div className="space-y-4">
             <h2 className="font-display text-3xl leading-snug text-foreground whitespace-pre-line">{t("auth.heroTitle")}</h2>
-            <p className="text-sm text-foreground/50 max-w-xs leading-relaxed">{t("auth.heroSubtitle")}</p>
+            <p className="text-sm text-foreground/50 whitespace-nowrap leading-relaxed">{t("auth.heroSubtitle")}</p>
           </div>
         </div>
       </div>
