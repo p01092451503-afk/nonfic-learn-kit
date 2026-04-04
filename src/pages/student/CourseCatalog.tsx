@@ -290,7 +290,7 @@ const CourseCatalog = () => {
         </div>
 
         {/* Content */}
-        <div className="px-6 lg:px-10 py-8 space-y-6">
+        <div className="px-4 sm:px-6 lg:px-10 py-6 sm:py-8 space-y-5 sm:space-y-6">
           {/* Category tabs */}
           <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-hide border-b border-border">
             <button
