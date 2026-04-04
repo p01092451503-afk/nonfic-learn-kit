@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Play, FileText,
-  Video, BarChart3, ExternalLink, Clock, X, Menu, RotateCcw,
+  ChevronLeft, ChevronRight, CheckCircle2, Play, FileText,
+  Video, BarChart3, ExternalLink, Clock, X, RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -13,8 +13,6 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
-import { useUserRole } from "@/hooks/useUserRole";
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
@@ -28,13 +26,8 @@ const ContentPlayer = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
-  const { primaryRole } = useUserRole();
   const isEn = i18n.language?.startsWith("en");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
-  // Content player is always a learning view → default to student
-  const layoutRole: "student" | "teacher" | "admin" = "student";
   const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
   const [mangoElapsed, setMangoElapsed] = useState(0);
   const mangoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -97,29 +90,12 @@ const ContentPlayer = () => {
     enabled: !!user?.id && contents.length > 0,
   });
 
-  // i18n helpers
   const getI18n = (cId: string) => contentI18nData.find((i: any) => i.content_id === cId && i.language_code === "en");
-
-  const getTitle = (c: any) => {
-    if (isEn) { const en = getI18n(c.id); return en?.title || c.title; }
-    return c.title;
-  };
-  const getDescription = (c: any) => {
-    if (isEn) { const en = getI18n(c.id); return en?.description || c.description; }
-    return c.description;
-  };
-  const getVideoUrl = (c: any) => {
-    if (isEn) { const en = getI18n(c.id); return en?.video_url || c.video_url; }
-    return c.video_url;
-  };
-  const getVideoProvider = (c: any) => {
-    if (isEn) { const en = getI18n(c.id); return en?.video_provider || c.video_provider; }
-    return c.video_provider;
-  };
-  const getCourseTitle = () => {
-    if (isEn) { const en = courseI18n?.find((i: any) => i.language_code === "en"); return en?.title || course?.title || ""; }
-    return course?.title || "";
-  };
+  const getTitle = (c: any) => { if (isEn) { const en = getI18n(c.id); return en?.title || c.title; } return c.title; };
+  const getDescription = (c: any) => { if (isEn) { const en = getI18n(c.id); return en?.description || c.description; } return c.description; };
+  const getVideoUrl = (c: any) => { if (isEn) { const en = getI18n(c.id); return en?.video_url || c.video_url; } return c.video_url; };
+  const getVideoProvider = (c: any) => { if (isEn) { const en = getI18n(c.id); return en?.video_provider || c.video_provider; } return c.video_provider; };
+  const getCourseTitle = () => { if (isEn) { const en = courseI18n?.find((i: any) => i.language_code === "en"); return en?.title || course?.title || ""; } return course?.title || ""; };
 
   const isMangoboard = (url: string | null) => url?.includes("mangoboard.net") ?? false;
 
@@ -132,7 +108,6 @@ const ContentPlayer = () => {
   const completedCount = progressData.filter((p) => p.completed).length;
   const overallProgress = contents.length > 0 ? Math.round((completedCount / contents.length) * 100) : 0;
 
-  // Determine if current content is a YouTube/Vimeo video
   const localVideoUrlForHook = currentContent ? getVideoUrl(currentContent) : null;
   const localProviderForHook = currentContent ? getVideoProvider(currentContent) : null;
   const isYouTube = (url: string | null, provider: string | null) =>
@@ -153,7 +128,6 @@ const ContentPlayer = () => {
 
   const videoIframeRef = useRef<HTMLIFrameElement | null>(null);
 
-  // Auto-complete toast for video
   useEffect(() => {
     if (videoProgress.autoCompleted) {
       toast({ title: t("contentPlayer.autoCompleted"), description: t("contentPlayer.autoCompletedDesc") });
@@ -161,7 +135,6 @@ const ContentPlayer = () => {
     }
   }, [videoProgress.autoCompleted]);
 
-  // Initialize YouTube/Vimeo player when iframe mounts
   const videoIframeCallback = useCallback(
     (el: HTMLIFrameElement | null) => {
       if (!el || !currentContent || !isTrackableVideo) return;
@@ -190,7 +163,6 @@ const ContentPlayer = () => {
   }, [contentId]);
 
   useEffect(() => {
-    setMobileSidebarOpen(false);
     setMangoElapsed(0);
   }, [contentId]);
 
@@ -231,7 +203,6 @@ const ContentPlayer = () => {
     },
   });
 
-
   const normalizeMangoboardUrl = (url: string) => {
     let normalized = url.trim();
     if (!normalized.startsWith("http")) normalized = "https://" + normalized;
@@ -259,136 +230,52 @@ const ContentPlayer = () => {
     return url;
   };
 
+  const handleClose = () => {
+    navigate(`/courses/${courseId}?view=learn`);
+  };
+
   if (!currentContent) {
     return (
-      <DashboardLayout role={layoutRole}>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center space-y-4">
-            <p className="text-muted-foreground">{t("course.contentNotFound")}</p>
-            <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>{t("course.backToCourse")}</Button>
-          </div>
+      <div className="fixed inset-0 z-[60] bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">{t("course.contentNotFound")}</p>
+          <Button variant="outline" onClick={handleClose}>{t("course.backToCourse")}</Button>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
-  // Use localized values for current content
   const localTitle = getTitle(currentContent);
   const localDesc = getDescription(currentContent);
   const localVideoUrl = getVideoUrl(currentContent);
   const localProvider = getVideoProvider(currentContent);
   const embedUrl = getVideoEmbed(localVideoUrl, localProvider);
 
-  const SidebarContent = () => (
-    <>
-      <div className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center justify-between">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold text-foreground truncate">{getCourseTitle()}</h2>
-            <div className="mt-2">
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                <span>{t("course.progress")}</span>
-                <span>{overallProgress}%</span>
-              </div>
-              <Progress value={overallProgress} className="h-1.5" />
-            </div>
-          </div>
-          <button onClick={() => setSidebarOpen(false)} className="hidden lg:block p-1.5 rounded-lg hover:bg-accent text-muted-foreground shrink-0 ml-2">
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button onClick={() => setMobileSidebarOpen(false)} className="lg:hidden p-1.5 rounded-lg hover:bg-accent text-muted-foreground shrink-0 ml-2">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-      <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
-        {contents.map((c, idx) => {
-          const isActive = c.id === contentId;
-          const isCompleted = progressMap.get(c.id)?.completed;
-          const Icon = contentTypeIcon[c.content_type || "video"] || Video;
-          return (
-            <button key={c.id} ref={isActive ? activeItemRef : undefined}
-              onClick={() => { navigate(`/courses/${courseId}/content/${c.id}`); setMobileSidebarOpen(false); }}
-              className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition-all ${isActive ? "bg-primary/10 text-primary font-semibold ring-1 ring-primary/20" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}>
-              <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-medium ${isCompleted ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : isActive ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
-                {isCompleted ? <CheckCircle2 className="h-3.5 w-3.5" /> : String(idx + 1).padStart(2, "0")}
-              </div>
-              <span className="truncate flex-1">{getTitle(c)}</span>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${c.video_provider === "custom" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`}>
-                  {c.video_provider === "custom" ? t("course.flip") : t("course.video")}
-                </span>
-                {c.duration_minutes && <span className="text-[10px] text-muted-foreground">{c.duration_minutes}{t("common.minutes")}</span>}
-              </div>
-            </button>
-          );
-        })}
-      </nav>
-    </>
-  );
-
   return (
-    <DashboardLayout role={layoutRole} contentClassName="flex-1 flex flex-col min-h-0 p-0">
-    <div className="flex flex-1 min-h-0 overflow-x-hidden">
-      {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileSidebarOpen(false)} />
-          <aside className="absolute left-0 top-0 h-full w-72 bg-sidebar border-r border-sidebar-border flex flex-col z-10 animate-in slide-in-from-left duration-200">
-            <SidebarContent />
-          </aside>
-        </div>
-      )}
-
-      <aside className={`hidden lg:flex sticky top-16 h-[calc(100vh-4rem)] bg-sidebar border-r border-sidebar-border flex-col transition-all duration-300 ${sidebarOpen ? "w-72" : "w-0 overflow-hidden"}`}>
-        {sidebarOpen && <SidebarContent />}
-      </aside>
-
-      {!sidebarOpen && (
-        <button onClick={() => setSidebarOpen(true)} className="hidden lg:flex sticky top-1/2 z-30 p-2 bg-sidebar border border-sidebar-border rounded-r-lg hover:bg-accent text-muted-foreground transition-colors h-fit">
-          <ChevronRight className="h-4 w-4" />
+    <div className="fixed inset-0 z-[60] bg-background flex flex-col">
+      {/* Top header */}
+      <header className="flex items-center gap-4 px-4 lg:px-6 h-14 border-b border-border bg-background shrink-0">
+        <button onClick={handleClose} className="p-2 rounded-lg hover:bg-accent text-muted-foreground transition-colors" title={t("common.close")}>
+          <X className="h-5 w-5" />
         </button>
-      )}
+        <div className="h-5 w-px bg-border" />
+        <h1 className="text-sm font-semibold text-foreground truncate flex-1">{getCourseTitle()}</h1>
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">{currentIndex + 1}</span> / {contents.length} {t("course.lesson")}
+          </span>
+          <Progress value={overallProgress} className="w-24 h-1.5 hidden sm:block" />
+          <span className="text-xs font-medium text-muted-foreground">{overallProgress}%</span>
+        </div>
+      </header>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-          <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg hover:bg-accent text-muted-foreground">
-            <Menu className="h-5 w-5" />
-          </button>
-          <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors shrink-0">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{getCourseTitle()}</p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">{currentIndex + 1}</span> / {contents.length} {t("course.lesson")}
-            </span>
-            <Progress value={overallProgress} className="w-16 h-1.5" />
-            <span className="text-[11px] text-muted-foreground font-medium">{overallProgress}%</span>
-          </div>
-        </header>
-
-        <header className="hidden lg:flex items-center gap-4 px-8 py-3 border-b border-border bg-background/60 backdrop-blur-sm sticky top-0 z-30">
-          <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors shrink-0">
-            <ArrowLeft className="h-4 w-4" /> {getCourseTitle()}
-          </Link>
-          <div className="flex-1" />
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{currentIndex + 1}</span>
-            <span>/</span>
-            <span>{contents.length} {t("course.lesson")}</span>
-          </div>
-          <div className="flex items-center gap-2 ml-4">
-            <Progress value={overallProgress} className="w-24 h-1.5" />
-            <span className="text-xs text-muted-foreground font-medium">{overallProgress}%</span>
-          </div>
-        </header>
-
+      {/* Main content area */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="w-full max-w-6xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
+          <div className="max-w-5xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
             {/* Media area */}
-            <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6 lg:mb-8">
+            <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6">
               {isMangoboard(localVideoUrl) && embedUrl ? (
                 <button onClick={() => setMangoPopupOpen(true)} className="relative aspect-video w-full flex items-center justify-center group cursor-pointer bg-gradient-to-br from-blue-500/10 to-indigo-500/10">
                   <div className="text-center space-y-4">
@@ -414,7 +301,6 @@ const ContentPlayer = () => {
                       title={localTitle}
                     />
                   </div>
-                  {/* Video progress bar & resume indicator */}
                   {isTrackableVideo && (
                     <div className="px-4 py-2.5 bg-secondary/60 flex items-center gap-3 text-xs">
                       <span className="text-muted-foreground shrink-0">{t("contentPlayer.watchProgress")}</span>
@@ -454,107 +340,122 @@ const ContentPlayer = () => {
               )}
             </div>
 
-            <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <Badge className="text-xs font-semibold px-3 py-1.5 bg-foreground text-background rounded-lg uppercase tracking-wider">
-                    {contentTypeLabel[currentContent.content_type || "video"]}
-                  </Badge>
-                  {currentContent.duration_minutes && (
-                    <div className="flex items-center gap-1.5 text-sm text-foreground bg-secondary px-3 py-1.5 rounded-lg">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
-                    </div>
-                  )}
-                </div>
-
-                <h1 className="text-2xl lg:text-3xl font-bold text-foreground leading-tight">{localTitle}</h1>
-
-                {localDesc && (
-                  <div className="bg-secondary/40 rounded-2xl p-5 lg:p-7">
-                    <p className="text-sm lg:text-base text-foreground/80 leading-7 lg:leading-8 whitespace-pre-line break-keep">{localDesc}</p>
+            {/* Content info */}
+            <div className="space-y-5">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <Badge className="text-xs font-semibold px-3 py-1.5 bg-foreground text-background rounded-lg uppercase tracking-wider">
+                  {contentTypeLabel[currentContent.content_type || "video"]}
+                </Badge>
+                {currentContent.duration_minutes && (
+                  <div className="flex items-center gap-1.5 text-sm text-foreground bg-secondary px-3 py-1.5 rounded-lg">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
                   </div>
                 )}
-
-                {currentProgress?.completed ? (
-                  <div className="flex items-center gap-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl px-6 py-5">
-                    <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
-                      <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-base font-semibold text-green-700 dark:text-green-300">{t("course.alreadyCompleted")}</p>
-                      <p className="text-sm text-green-600/70 dark:text-green-400/70">{t("course.completedSuccess")}</p>
-                    </div>
-                  </div>
-                ) : user && (
-                  <Button variant="login" size="xl" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="w-full lg:w-auto text-base">
-                    {markCompleteMutation.isPending ? t("common.processing") : t("course.markComplete")}
-                  </Button>
-                )}
-
-                {/* Navigation */}
-                <div className="flex items-center justify-between pt-6 border-t border-border">
-                  <div className="flex-1">
-                    {prevContent ? (
-                      <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}>
-                        <ChevronLeft className="h-4 w-4" />
-                        <span className="text-sm">{t("common.previous")}</span>
-                      </Button>
-                    ) : <div />}
-                  </div>
-                  <Button variant="ghost" className="rounded-xl gap-2 text-muted-foreground hover:text-foreground lg:hidden" onClick={() => navigate(`/courses/${courseId}`)}>
-                    <ArrowLeft className="h-4 w-4" /> {t("course.backToCourseList")}
-                  </Button>
-                  <div className="flex-1 flex justify-end">
-                    {nextContent ? (
-                      <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${nextContent.id}`)}>
-                        <span className="text-sm">{t("common.next")}</span>
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    ) : <div />}
-                  </div>
-                </div>
               </div>
 
-              {/* Right sidebar */}
-              <div className="hidden lg:block space-y-4">
-                <div className="rounded-2xl border border-border bg-card p-5 sticky top-20">
-                  <h3 className="text-sm font-semibold text-foreground mb-4">{t("course.learningProgress")}</h3>
-                  <div className="flex items-center justify-center mb-5">
-                    <div className="relative h-28 w-28">
-                      <svg className="h-28 w-28 -rotate-90" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--border))" strokeWidth="8" />
-                        <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--primary))" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${overallProgress * 2.64} 264`} className="transition-all duration-500" />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-foreground">{overallProgress}%</span>
-                        <span className="text-[10px] text-muted-foreground">{t("course.completed")}</span>
-                      </div>
-                    </div>
+              <h2 className="text-xl lg:text-2xl font-bold text-foreground leading-tight">{localTitle}</h2>
+
+              {localDesc && (
+                <div className="bg-secondary/40 rounded-2xl p-5">
+                  <p className="text-sm text-foreground/80 leading-7 whitespace-pre-line break-keep">{localDesc}</p>
+                </div>
+              )}
+
+              {currentProgress?.completed ? (
+                <div className="flex items-center gap-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl px-6 py-5">
+                  <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
-                  <div className="flex items-center justify-between text-sm mb-4 px-2">
-                    <span className="text-muted-foreground">{t("course.completedLessons")}</span>
-                    <span className="font-semibold text-foreground">{completedCount} / {contents.length}</span>
+                  <div>
+                    <p className="text-base font-semibold text-green-700 dark:text-green-300">{t("course.alreadyCompleted")}</p>
+                    <p className="text-sm text-green-600/70 dark:text-green-400/70">{t("course.completedSuccess")}</p>
                   </div>
-                  <div className="space-y-1.5">
-                    {contents.map((c, idx) => {
-                      const isActive = c.id === contentId;
-                      const isCompleted = progressMap.get(c.id)?.completed;
-                      return (
-                        <button key={c.id} onClick={() => navigate(`/courses/${courseId}/content/${c.id}`)} className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 text-sm transition-all ${isActive ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}>
-                          <div className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-medium ${isCompleted ? "bg-green-500 text-white" : isActive ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
-                            {isCompleted ? <CheckCircle2 className="h-3 w-3" /> : idx + 1}
-                          </div>
-                          <span className="truncate flex-1 text-xs">{getTitle(c)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                </div>
+              ) : user && (
+                <Button variant="login" size="xl" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="w-full lg:w-auto text-base">
+                  {markCompleteMutation.isPending ? t("common.processing") : t("course.markComplete")}
+                </Button>
+              )}
+
+              {/* Navigation */}
+              <div className="flex items-center justify-between pt-5 border-t border-border">
+                <div>
+                  {prevContent ? (
+                    <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}>
+                      <ChevronLeft className="h-4 w-4" />
+                      <span className="text-sm">{t("common.previous")}</span>
+                    </Button>
+                  ) : <div />}
+                </div>
+                <div>
+                  {nextContent ? (
+                    <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${nextContent.id}`)}>
+                      <span className="text-sm">{t("common.next")}</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  ) : <div />}
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Right sidebar - curriculum panel */}
+        <aside className={`hidden lg:flex flex-col border-l border-border bg-card transition-all duration-300 ${sidebarOpen ? "w-80" : "w-0 overflow-hidden"}`}>
+          {sidebarOpen && (
+            <>
+              <div className="p-4 border-b border-border flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">{t("course.learningProgress")}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{completedCount} / {contents.length} {t("course.completed")}</p>
+                </div>
+                <button onClick={() => setSidebarOpen(false)} className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="px-4 py-3 border-b border-border">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                  <span>{t("course.progress")}</span>
+                  <span className="font-semibold text-foreground">{overallProgress}%</span>
+                </div>
+                <Progress value={overallProgress} className="h-2" />
+              </div>
+              <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
+                {contents.map((c, idx) => {
+                  const isActive = c.id === contentId;
+                  const isCompleted = progressMap.get(c.id)?.completed;
+                  return (
+                    <button
+                      key={c.id}
+                      ref={isActive ? activeItemRef : undefined}
+                      onClick={() => navigate(`/courses/${courseId}/content/${c.id}`)}
+                      className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition-all ${isActive ? "bg-primary/10 text-primary font-semibold ring-1 ring-primary/20" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}
+                    >
+                      <div className={`h-6 w-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-medium ${isCompleted ? "bg-green-500 text-white" : isActive ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
+                        {isCompleted ? <CheckCircle2 className="h-3.5 w-3.5" /> : idx + 1}
+                      </div>
+                      <span className="truncate flex-1">{getTitle(c)}</span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${c.video_provider === "custom" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`}>
+                          {c.video_provider === "custom" ? t("course.flip") : t("course.video")}
+                        </span>
+                        {c.duration_minutes && <span className="text-[10px] text-muted-foreground">{c.duration_minutes}{t("common.minutes")}</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </nav>
+            </>
+          )}
+        </aside>
+
+        {/* Sidebar toggle when closed */}
+        {!sidebarOpen && (
+          <button onClick={() => setSidebarOpen(true)} className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-card border border-border rounded-l-lg hover:bg-accent text-muted-foreground transition-colors">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {/* Mangoboard Popup */}
@@ -588,7 +489,6 @@ const ContentPlayer = () => {
         </div>
       )}
     </div>
-    </DashboardLayout>
   );
 };
 
