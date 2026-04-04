@@ -203,7 +203,7 @@ const TeacherStudents = () => {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <Users className="h-6 w-6 text-primary" /> {t("students.studentManagement")}
+              <Users className="h-6 w-6 text-primary" aria-hidden="true" /> {t("students.studentManagement")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{t("students.monitorStudents")}</p>
           </div>
@@ -221,18 +221,18 @@ const TeacherStudents = () => {
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3" aria-label={t("students.studentManagement")}>
           {stats.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-border bg-card p-4">
+            <div key={stat.label} className="rounded-xl border border-border bg-card p-4" role="group" aria-label={stat.label}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-4 w-4 text-muted-foreground/50" />
+                <stat.icon className="h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
               </div>
               <p className="text-2xl font-bold text-foreground">{stat.value}</p>
               <p className="text-[11px] text-muted-foreground mt-0.5">{stat.sub}</p>
             </div>
           ))}
-        </div>
+        </section>
 
         {/* Student list */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -243,8 +243,10 @@ const TeacherStudents = () => {
                 <p className="text-xs text-muted-foreground">{t("students.detailedStatus")}</p>
               </div>
               <div className="relative w-56">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                <label htmlFor="student-search" className="sr-only">{t("students.searchStudent")}</label>
                 <Input
+                  id="student-search"
                   placeholder={t("students.searchStudent")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -256,7 +258,7 @@ const TeacherStudents = () => {
 
           {filtered.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+              <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">
                 {search ? t("students.noSearchResult") : t("students.noStudents")}
               </p>
@@ -266,13 +268,13 @@ const TeacherStudents = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-secondary/20">
-                    <th className="text-left text-[11px] font-medium text-muted-foreground px-5 py-2.5">{t("teacher.student")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.enrolledCourses")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 hidden sm:table-cell">{t("students.avgProgress")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.completionRate")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 hidden md:table-cell">{t("students.recentActivity")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.statusLabel")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 w-10">{t("students.manageLabel")}</th>
+                    <th scope="col" className="text-left text-[11px] font-medium text-muted-foreground px-5 py-2.5">{t("teacher.student")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.enrolledCourses")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 hidden sm:table-cell">{t("students.avgProgress")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.completionRate")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 hidden md:table-cell">{t("students.recentActivity")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.statusLabel")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 w-10">{t("students.manageLabel")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -296,7 +298,7 @@ const TeacherStudents = () => {
 
                       <td className="px-3 py-3 hidden sm:table-cell">
                         <div className="flex items-center gap-2 justify-center">
-                          <Progress value={student.avgProgress} className="w-16 h-1.5" />
+                          <Progress value={student.avgProgress} className="w-16 h-1.5" aria-label={`${t("students.avgProgress")}: ${student.avgProgress}%`} />
                           <span className="text-xs text-muted-foreground w-8">{student.avgProgress}%</span>
                         </div>
                       </td>
@@ -340,8 +342,8 @@ const TeacherStudents = () => {
                       <td className="px-3 py-3 text-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-                              <MoreVertical className="h-4 w-4" />
+                            <button className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" aria-label={t("students.manageLabel")} onClick={(e) => e.stopPropagation()}>
+                              <MoreVertical className="h-4 w-4" aria-hidden="true" />
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36">
@@ -364,7 +366,7 @@ const TeacherStudents = () => {
       <Dialog open={msgOpen} onOpenChange={setMsgOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Send className="h-4 w-4" /> {t("students.messageDialogTitle")}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Send className="h-4 w-4" aria-hidden="true" /> {t("students.messageDialogTitle")}</DialogTitle>
             <DialogDescription>{t("students.messageDialogDesc", { name: msgTarget?.name })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

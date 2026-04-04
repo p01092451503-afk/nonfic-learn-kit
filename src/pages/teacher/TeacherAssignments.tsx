@@ -258,27 +258,27 @@ const TeacherAssignments = () => {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <ClipboardList className="h-6 w-6 text-primary" /> {t("assignments.assignmentManagement")}
+              <ClipboardList className="h-6 w-6 text-primary" aria-hidden="true" /> {t("assignments.assignmentManagement")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{t("assignments.createAndGrade")}</p>
           </div>
-          <Button className="gap-2" onClick={() => { resetForm(); setEditingAssignment(null); setDialogOpen(true); }}>
-            <Plus className="h-4 w-4" /> {t("assignments.createAssignment")}
+          <Button className="gap-2" onClick={() => { resetForm(); setEditingAssignment(null); setDialogOpen(true); }} aria-label={t("assignments.createAssignment")}>
+            <Plus className="h-4 w-4" aria-hidden="true" /> {t("assignments.createAssignment")}
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-label={t("assignments.assignmentManagement")}>
           {stats.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-border bg-card p-5">
+            <div key={stat.label} className="rounded-xl border border-border bg-card p-5" role="group" aria-label={stat.label}>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-4 w-4 text-muted-foreground/50" />
+                <stat.icon className="h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
               </div>
               <p className="text-3xl font-bold text-foreground">{stat.value}</p>
               <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
             </div>
           ))}
-        </div>
+        </section>
 
         {/* Assignment List */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -289,7 +289,7 @@ const TeacherAssignments = () => {
 
           {assignments.length === 0 ? (
             <div className="text-center py-16">
-              <ClipboardList className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+              <ClipboardList className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">{t("assignments.noCreatedAssignments")}</p>
               <p className="text-xs text-muted-foreground mt-1">{t("assignments.createFirstAssignment")}</p>
             </div>
@@ -298,12 +298,12 @@ const TeacherAssignments = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-secondary/20">
-                    <th className="text-left text-xs font-medium text-muted-foreground px-6 py-3">{t("assignments.assignmentName")}</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("assignments.lecture")}</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("assignments.dueDateLabel")}</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("assignments.score")}</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3">{t("admin.statusLabel")}</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 w-16">{t("common.manage")}</th>
+                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-6 py-3">{t("assignments.assignmentName")}</th>
+                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("assignments.lecture")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("assignments.dueDateLabel")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("assignments.score")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3">{t("admin.statusLabel")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 w-16">{t("common.manage")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -338,8 +338,8 @@ const TeacherAssignments = () => {
                         <td className="px-4 py-4 text-center">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" aria-label={t("common.manage")}>
+                                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-36">

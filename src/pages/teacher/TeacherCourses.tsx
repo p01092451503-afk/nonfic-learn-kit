@@ -113,8 +113,8 @@ const TeacherCourses = () => {
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("teacher.manageCourses")}</p>
           </div>
           <Link to="/teacher/courses/new">
-            <Button className="rounded-xl gap-2 w-full sm:w-auto">
-              <Plus className="h-4 w-4" /> {t("teacher.newCourse")}
+            <Button className="rounded-xl gap-2 w-full sm:w-auto" aria-label={t("teacher.newCourse")}>
+              <Plus className="h-4 w-4" aria-hidden="true" /> {t("teacher.newCourse")}
             </Button>
           </Link>
         </div>
@@ -142,8 +142,10 @@ const TeacherCourses = () => {
         {/* Toolbar */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[140px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <label htmlFor="teacher-course-search" className="sr-only">{t("teacher.searchCourse")}</label>
             <Input
+              id="teacher-course-search"
               placeholder={t("teacher.searchCourse")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -160,18 +162,22 @@ const TeacherCourses = () => {
               <SelectItem value="draft">{t("teacher.draft")}</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex items-center border border-border rounded-xl overflow-hidden">
+          <div className="flex items-center border border-border rounded-xl overflow-hidden" role="group" aria-label={t("teacher.viewMode", "보기 모드")}>
             <button
               onClick={() => setViewMode("list")}
               className={`p-2.5 transition-colors ${viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"}`}
+              aria-label={t("teacher.listView", "목록 보기")}
+              aria-pressed={viewMode === "list"}
             >
-              <List className="h-4 w-4" />
+              <List className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               onClick={() => setViewMode("grid")}
               className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"}`}
+              aria-label={t("teacher.gridView", "그리드 보기")}
+              aria-pressed={viewMode === "grid"}
             >
-              <LayoutGrid className="h-4 w-4" />
+              <LayoutGrid className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -180,11 +186,11 @@ const TeacherCourses = () => {
         {filtered.length === 0 ? (
           <div className="stat-card text-center py-16">
             <div className="space-y-3">
-              <BookOpen className="h-10 w-10 text-muted-foreground mx-auto" />
+              <BookOpen className="h-10 w-10 text-muted-foreground mx-auto" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">{t("teacher.noCourseFound")}</p>
               <Link to="/teacher/courses/new">
                 <Button size="sm" className="rounded-xl gap-2 mt-2">
-                  <Plus className="h-3.5 w-3.5" /> {t("teacher.createFirst")}
+                  <Plus className="h-3.5 w-3.5" aria-hidden="true" /> {t("teacher.createFirst")}
                 </Button>
               </Link>
             </div>
@@ -195,13 +201,13 @@ const TeacherCourses = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-secondary/30">
-                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.courseName")}</th>
-                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("teacher.category")}</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.status")}</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("teacher.difficulty")}</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.studentCount")}</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.contentCount")}</th>
-                  <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.actions")}</th>
+                   <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.courseName")}</th>
+                   <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("teacher.category")}</th>
+                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.status")}</th>
+                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("teacher.difficulty")}</th>
+                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.studentCount")}</th>
+                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.contentCount")}</th>
+                   <th scope="col" className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -219,10 +225,10 @@ const TeacherCourses = () => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="h-12 w-16 rounded-lg overflow-hidden shrink-0 bg-secondary">
-                            {course.thumbnail_url ? (
-                              <img src={course.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                          {course.thumbnail_url ? (
+                              <img src={course.thumbnail_url} alt={course.title} className="h-full w-full object-cover" />
                             ) : (
-                              <div className="h-full w-full flex items-center justify-center">
+                              <div className="h-full w-full flex items-center justify-center" aria-hidden="true">
                                 <BookOpen className="h-4 w-4 text-muted-foreground" />
                               </div>
                             )}
@@ -256,19 +262,19 @@ const TeacherCourses = () => {
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-center">
                         <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                          <Users className="h-3 w-3" /> {students}
+                          <Users className="h-3 w-3" aria-hidden="true" /> {students}
                         </div>
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-center">
                         <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                          <BookOpen className="h-3 w-3" /> {contents}
+                          <BookOpen className="h-3 w-3" aria-hidden="true" /> {contents}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg">
-                              <MoreHorizontal className="h-4 w-4" />
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" aria-label={t("teacher.actions")}>
+                              <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40">
@@ -304,9 +310,9 @@ const TeacherCourses = () => {
                   {/* Thumbnail */}
                   <div className="relative h-36 bg-secondary overflow-hidden">
                     {course.thumbnail_url ? (
-                      <img src={course.thumbnail_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center">
+                      <div className="h-full w-full flex items-center justify-center" aria-hidden="true">
                         <BookOpen className="h-8 w-8 text-muted-foreground" />
                       </div>
                     )}
@@ -333,8 +339,8 @@ const TeacherCourses = () => {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg shrink-0">
-                            <MoreHorizontal className="h-3.5 w-3.5" />
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg shrink-0" aria-label={t("teacher.actions")}>
+                            <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">

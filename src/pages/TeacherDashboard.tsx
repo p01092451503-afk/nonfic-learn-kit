@@ -92,24 +92,24 @@ const TeacherDashboard = () => {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <LayoutDashboard className="h-6 w-6 text-primary" /> {t("teacher.teacherDashboard")}
+              <LayoutDashboard className="h-6 w-6 text-primary" aria-hidden="true" /> {t("teacher.teacherDashboard")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{t("teacher.manageStudents")}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3" aria-label={t("teacher.teacherDashboard")}>
           {stats.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-border bg-card p-4">
+            <div key={stat.label} className="rounded-xl border border-border bg-card p-4" role="group" aria-label={stat.label}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-4 w-4 text-muted-foreground/50" />
+                <stat.icon className="h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
               </div>
               <p className="text-2xl font-bold text-foreground">{stat.value}</p>
               <p className="text-[11px] text-primary mt-0.5">{stat.sub}</p>
             </div>
           ))}
-        </div>
+        </section>
 
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
@@ -118,15 +118,15 @@ const TeacherDashboard = () => {
               <p className="text-xs text-muted-foreground">{t("teacher.manageCourseDesc")}</p>
             </div>
             <Link to="/teacher/courses">
-              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1">
-                {t("common.viewAll")} <ArrowRight className="h-3 w-3" />
+              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1" aria-label={t("common.viewAll")}>
+                {t("common.viewAll")} <ArrowRight className="h-3 w-3" aria-hidden="true" />
               </Button>
             </Link>
           </div>
 
           {courses.length === 0 ? (
             <div className="text-center py-12">
-              <BookOpen className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+              <BookOpen className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">{t("teacher.noCourses")}</p>
             </div>
           ) : (
@@ -139,11 +139,11 @@ const TeacherDashboard = () => {
                   : 0;
 
                 return (
-                  <Link key={course.id} to={`/teacher/courses/${course.id}`} className="flex items-center gap-4 px-5 py-3 hover:bg-accent/20 transition-colors group">
+                  <Link key={course.id} to={`/teacher/courses/${course.id}`} className="flex items-center gap-4 px-5 py-3 hover:bg-accent/20 transition-colors group" aria-label={course.title}>
                     {course.thumbnail_url ? (
-                      <img src={course.thumbnail_url} alt="" className="h-10 w-14 rounded-lg object-cover shrink-0" />
+                      <img src={course.thumbnail_url} alt={course.title} className="h-10 w-14 rounded-lg object-cover shrink-0" />
                     ) : (
-                      <div className="h-10 w-14 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                      <div className="h-10 w-14 rounded-lg bg-accent flex items-center justify-center shrink-0" aria-hidden="true">
                         <BookOpen className="h-4 w-4 text-muted-foreground" />
                       </div>
                     )}
@@ -162,11 +162,11 @@ const TeacherDashboard = () => {
                         </Badge>
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-[11px] text-muted-foreground"><Users className="h-3 w-3 inline mr-0.5" />{studentCount}{t("common.people")}</span>
+                        <span className="text-[11px] text-muted-foreground"><Users className="h-3 w-3 inline mr-0.5" aria-hidden="true" />{studentCount}{t("common.people")}</span>
                         <span className="text-[11px] text-muted-foreground">{t("teacher.progressPercent", { percent: avgProgress })}</span>
                       </div>
                     </div>
-                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" aria-hidden="true" />
                   </Link>
                 );
               })}
@@ -181,7 +181,7 @@ const TeacherDashboard = () => {
             </div>
             {recentSubmissions.length === 0 ? (
               <div className="text-center py-10">
-                <ClipboardCheck className="h-7 w-7 text-muted-foreground/30 mx-auto mb-2" />
+                <ClipboardCheck className="h-7 w-7 text-muted-foreground/30 mx-auto mb-2" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">{t("teacher.noSubmissions")}</p>
               </div>
             ) : (
