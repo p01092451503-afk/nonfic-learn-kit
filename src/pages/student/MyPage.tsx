@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { User, Lock, Camera, Check, ArrowRight } from "lucide-react";
+import { User, Lock, Camera, Check, ArrowRight, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-import loginBg from "@/assets/login-bg.jpg";
 
 const PRESET_AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`);
 
