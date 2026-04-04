@@ -269,12 +269,14 @@ const ContentPlayer = () => {
 
   if (!currentContent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <p className="text-muted-foreground">{t("course.contentNotFound")}</p>
-          <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>{t("course.backToCourse")}</Button>
+      <DashboardLayout role={layoutRole}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center space-y-4">
+            <p className="text-muted-foreground">{t("course.contentNotFound")}</p>
+            <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>{t("course.backToCourse")}</Button>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
