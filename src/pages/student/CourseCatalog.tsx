@@ -148,7 +148,7 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
 
 /* ── Main Page ── */
 const CourseCatalog = () => {
-  const { user } = useUser();
+  const { user, profile } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
