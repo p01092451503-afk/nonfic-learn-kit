@@ -89,7 +89,7 @@ const StudentCourses = () => {
         {course.thumbnail_url ? (
           <img src={course.thumbnail_url} alt={course.title} className="h-14 w-14 rounded-lg object-cover shrink-0" />
         ) : (
-          <div className="h-14 w-14 rounded-lg bg-accent flex items-center justify-center shrink-0">
+          <div className="h-14 w-14 rounded-lg bg-accent flex items-center justify-center shrink-0" aria-hidden="true">
             <BookOpen className="h-6 w-6 text-muted-foreground" />
           </div>
         )}
