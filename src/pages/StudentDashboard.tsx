@@ -493,7 +493,7 @@ const StudentDashboard = () => {
             ) : (
               <div className="space-y-3">
                 {recommendedCourses.map((course: any) => (
-                  <div key={course.id} className="stat-card !p-4 flex items-center justify-between gap-4">
+                  <div key={course.id} className="stat-card !p-3 sm:!p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4" role="article" aria-label={course.title}>
                     <div className="min-w-0 flex-1 space-y-1">
                       <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
                       <p className="text-xs text-muted-foreground">{recInstructorMap.get(course.instructor_id) || t("dashboard.instructor")}</p>
@@ -504,8 +504,9 @@ const StudentDashboard = () => {
                     </div>
                     <Button
                       size="sm"
-                      className="shrink-0 rounded-full"
+                      className="shrink-0 rounded-full w-full sm:w-auto"
                       onClick={() => navigate(`/courses/${course.id}?view=learn`)}
+                      aria-label={`${course.title} - ${t("common.details")}`}
                     >
                       {t("common.details")}
                     </Button>

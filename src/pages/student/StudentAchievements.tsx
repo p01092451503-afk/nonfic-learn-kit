@@ -113,7 +113,7 @@ const StudentAchievements = () => {
           <Progress value={xpProgress} className="h-2" aria-label={`XP ${t("achievements.nextLevel")}: ${xp}/${nextLevelXp}`} />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-lg font-semibold text-foreground">{t("achievements.badgeCollection")}</h2>
             {allBadges.length === 0 ? (

@@ -38,7 +38,7 @@ const ScrollArrow = ({ direction, onClick }: { direction: "left" | "right"; onCl
 const CatalogCourseCard = ({
   course, cat, gradient, enrollmentStatus, studentCount, lessons, onEnroll, isPending, t,
 }: any) => (
-  <div className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 shrink-0 w-[280px] sm:w-auto">
+  <div className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 shrink-0 w-[240px] sm:w-[280px]" role="article" aria-label={course.title}>
     <Link to={`/courses/${course.id}`} className="block">
       <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
         {course.thumbnail_url && <img src={course.thumbnail_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover" />}
