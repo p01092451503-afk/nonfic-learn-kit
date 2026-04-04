@@ -90,7 +90,8 @@
     "attendanceManagement": "Attendance Mgmt",
     "completionManagement": "Completion Mgmt",
     "courseCatalog": "Browse Courses",
-    "myPage": "My Page"
+    "myPage": "My Page",
+    "enrollmentManagement": "Enrollments"
   },
   "roles": {
     "student": "Student",
@@ -793,9 +794,34 @@
     "resultCount": "{{count}} courses",
     "noCourses": "No courses found.",
     "enroll": "Enroll",
-    "enrollSuccess": "Successfully enrolled!",
+    "enrollRequested": "Enrollment requested. Please wait for admin approval.",
     "continueLearning": "Continue Learning",
-    "enrolled": "Enrolled"
+    "enrolled": "Enrolled",
+    "pendingApproval": "Pending Approval",
+    "rejected": "Rejected"
+  },
+  "enrollment": {
+    "management": "Enrollment Approvals",
+    "managementDesc": "Review and approve or reject student enrollment requests.",
+    "pending": "Pending",
+    "approvedStatus": "Approved",
+    "rejectedStatus": "Rejected",
+    "pendingCount": "Pending",
+    "approvedCount": "Approved",
+    "rejectedCount": "Rejected",
+    "searchPlaceholder": "Search student or course",
+    "student": "Student",
+    "course": "Course",
+    "status": "Status",
+    "requestDate": "Requested",
+    "actions": "Actions",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approved": "Enrollment approved.",
+    "rejected": "Enrollment rejected.",
+    "approveAll": "Approve All",
+    "batchApproved": "All enrollments approved.",
+    "noEnrollments": "No enrollment requests found."
   },
   "mypage": {
     "profileTab": "Profile",

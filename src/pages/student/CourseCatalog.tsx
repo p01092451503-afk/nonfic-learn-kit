@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Search, BookOpen, Users, Clock, Sparkles, ChevronRight, ChevronLeft } from "lucide-react";
+import { Search, BookOpen, Users, Clock, Sparkles, ChevronRight, ChevronLeft, Hourglass } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -35,7 +35,7 @@ const ScrollArrow = ({ direction, onClick }: { direction: "left" | "right"; onCl
 
 /* ── Course Card (shared between grid & carousel) ── */
 const CatalogCourseCard = ({
-  course, cat, gradient, isEnrolled, studentCount, lessons, onEnroll, isPending, t,
+  course, cat, gradient, enrollmentStatus, studentCount, lessons, onEnroll, isPending, t,
 }: any) => (
   <div className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 shrink-0 w-[280px] sm:w-auto">
     <Link to={`/courses/${course.id}`} className="block">
@@ -76,10 +76,18 @@ const CatalogCourseCard = ({
         <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> {studentCount}{t("common.people")}</span>
         {lessons > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><BookOpen className="h-3 w-3" /> {t("course.lessonsCount", { count: lessons })}</span>}
       </div>
-      {isEnrolled ? (
+      {enrollmentStatus === "approved" ? (
         <Link to={`/courses/${course.id}?view=learn`}>
           <Button variant="outline" size="sm" className="w-full rounded-xl text-xs gap-1.5">{t("catalog.continueLearning")}<ChevronRight className="h-3.5 w-3.5" /></Button>
         </Link>
+      ) : enrollmentStatus === "pending" ? (
+        <Button variant="secondary" size="sm" className="w-full rounded-xl text-xs gap-1.5 cursor-default" disabled>
+          <Hourglass className="h-3.5 w-3.5" /> {t("catalog.pendingApproval")}
+        </Button>
+      ) : enrollmentStatus === "rejected" ? (
+        <Button variant="outline" size="sm" className="w-full rounded-xl text-xs text-destructive border-destructive/30 cursor-default" disabled>
+          {t("catalog.rejected")}
+        </Button>
       ) : (
         <Button size="sm" className="w-full rounded-xl text-xs" onClick={(e) => { e.preventDefault(); onEnroll(course.id); }} disabled={isPending}>{t("catalog.enroll")}</Button>
       )}
@@ -121,7 +129,7 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
                   course={course}
                   cat={cat}
                   gradient={gradient}
-                  isEnrolled={helpers.enrolledSet.has(course.id)}
+                  enrollmentStatus={helpers.enrollmentStatusMap.get(course.id)}
                   studentCount={helpers.countMap.get(course.id) || 0}
                   lessons={helpers.contentCountMap.get(course.id) || 0}
                   onEnroll={helpers.onEnroll}
@@ -166,11 +174,11 @@ const CourseCatalog = () => {
   });
 
   const { data: enrollments = [] } = useQuery({
-    queryKey: ["my-enrollment-ids", user?.id],
+    queryKey: ["my-enrollment-status", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("enrollments").select("course_id").eq("user_id", user!.id);
+      const { data, error } = await supabase.from("enrollments").select("course_id, status").eq("user_id", user!.id);
       if (error) throw error;
-      return data.map((e) => e.course_id);
+      return data;
     },
     enabled: !!user?.id,
   });
@@ -199,16 +207,17 @@ const CourseCatalog = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-enrollment-ids"] });
+      queryClient.invalidateQueries({ queryKey: ["my-enrollment-status"] });
       queryClient.invalidateQueries({ queryKey: ["catalog-enrollment-counts"] });
-      toast({ title: t("catalog.enrollSuccess") });
+      toast({ title: t("catalog.enrollRequested") });
     },
     onError: (e: any) => {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     },
   });
 
-  const enrolledSet = new Set(enrollments);
+  // Map course_id -> enrollment status
+  const enrollmentStatusMap = new Map(enrollments.map((e: any) => [e.course_id, e.status]));
   const countMap = new Map<string, number>();
   enrollmentCounts.forEach((e: any) => countMap.set(e.course_id, (countMap.get(e.course_id) || 0) + 1));
   const contentCountMap = new Map<string, number>();
@@ -233,7 +242,7 @@ const CourseCatalog = () => {
   const isCarouselView = activeCategory === "all" && !search;
 
   const carouselHelpers = {
-    categoryMap, enrolledSet, countMap, contentCountMap, t,
+    categoryMap, enrollmentStatusMap, countMap, contentCountMap, t,
     onEnroll: (id: string) => enrollMutation.mutate(id),
     isPending: enrollMutation.isPending,
     setActiveCategory,
@@ -327,7 +336,7 @@ const CourseCatalog = () => {
                         course={course}
                         cat={cat}
                         gradient={gradient}
-                        isEnrolled={enrolledSet.has(course.id)}
+                        enrollmentStatus={enrollmentStatusMap.get(course.id)}
                         studentCount={countMap.get(course.id) || 0}
                         lessons={contentCountMap.get(course.id) || 0}
                         onEnroll={(id: string) => enrollMutation.mutate(id)}
