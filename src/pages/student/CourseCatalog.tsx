@@ -269,7 +269,7 @@ const CourseCatalog = () => {
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs text-muted-foreground tracking-wide uppercase mb-0.5">NONFICTION Education</p>
                 <h1 className="text-lg sm:text-xl font-semibold text-foreground truncate">{t("catalog.title")}</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">{t("catalog.subtitle")}</p>
+                
               </div>
             </div>
 
