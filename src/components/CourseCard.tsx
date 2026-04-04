@@ -16,7 +16,7 @@ const categoryGradients: Record<string, string> = {
 };
 
 interface CourseCardProps {
-  course: { id: string; title: string; description?: string | null; status?: string | null; difficulty_level?: string | null; estimated_duration_hours?: number | null; is_mandatory?: boolean | null; thumbnail_url?: string | null; category_id?: string | null; };
+  course: { id: string; title: string; description?: string | null; status?: string | null; difficulty_level?: string | null; estimated_duration_hours?: number | null; is_mandatory?: boolean | null; thumbnail_url?: string | null; category_id?: string | null; deadline?: string | null; };
   categorySlug?: string | null; categoryName?: string | null; studentCount?: number; contentCount?: number; instructorName?: string | null; progress?: number | null; isCompleted?: boolean; variant?: "student" | "teacher" | "admin"; href?: string;
 }
 
