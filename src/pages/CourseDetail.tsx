@@ -75,7 +75,7 @@ const CourseDetail = () => {
   const [contentForm, setContentForm] = useState<ContentFormData>(emptyContent);
   const [contentEnForm, setContentEnForm] = useState<ContentI18nData>(emptyI18n);
   const [courseEditOpen, setCourseEditOpen] = useState(false);
-  const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft" });
+  const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft", is_mandatory: false, deadline: "" });
   const [courseEnForm, setCourseEnForm] = useState({ title: "", description: "" });
 
   const forceLearnView = searchParams.get("view") === "learn";
