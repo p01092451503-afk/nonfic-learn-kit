@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Search, BookOpen, Users, Clock, Sparkles, ChevronRight, ChevronLeft, Hourglass } from "lucide-react";
+import { Search, BookOpen, Users, Clock, Sparkles, ChevronRight, ChevronLeft, Hourglass, Compass } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
