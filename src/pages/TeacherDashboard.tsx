@@ -139,11 +139,11 @@ const TeacherDashboard = () => {
                   : 0;
 
                 return (
-                  <Link key={course.id} to={`/teacher/courses/${course.id}`} className="flex items-center gap-4 px-5 py-3 hover:bg-accent/20 transition-colors group">
+                  <Link key={course.id} to={`/teacher/courses/${course.id}`} className="flex items-center gap-4 px-5 py-3 hover:bg-accent/20 transition-colors group" aria-label={course.title}>
                     {course.thumbnail_url ? (
-                      <img src={course.thumbnail_url} alt="" className="h-10 w-14 rounded-lg object-cover shrink-0" />
+                      <img src={course.thumbnail_url} alt={course.title} className="h-10 w-14 rounded-lg object-cover shrink-0" />
                     ) : (
-                      <div className="h-10 w-14 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                      <div className="h-10 w-14 rounded-lg bg-accent flex items-center justify-center shrink-0" aria-hidden="true">
                         <BookOpen className="h-4 w-4 text-muted-foreground" />
                       </div>
                     )}
