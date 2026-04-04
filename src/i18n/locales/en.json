@@ -545,5 +545,20 @@
     "autoCompletedDesc": "Automatically completed after watching 80% or more",
     "watchProgress": "Watch Progress",
     "resumePlayback": "Resume"
+  },
+  "notification": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications"
+  },
+  "mandatory": {
+    "title": "Required Training",
+    "subtitle": "Must be completed by the deadline",
+    "daysLeft": "{{days}} days left",
+    "today": "Due today",
+    "overdue": "Overdue",
+    "progress": "Progress",
+    "noMandatory": "No pending required training",
+    "deadline": "Deadline"
   }
 }

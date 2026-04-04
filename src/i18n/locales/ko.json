@@ -545,5 +545,20 @@
     "autoCompletedDesc": "80% 이상 시청하여 학습이 자동 완료되었습니다",
     "watchProgress": "시청 진행률",
     "resumePlayback": "이어보기"
+  },
+  "notification": {
+    "title": "알림",
+    "markAllRead": "모두 읽음",
+    "empty": "알림이 없습니다"
+  },
+  "mandatory": {
+    "title": "필수교육 안내",
+    "subtitle": "마감일까지 반드시 완료해 주세요",
+    "daysLeft": "{{days}}일 남음",
+    "today": "오늘 마감",
+    "overdue": "마감 초과",
+    "progress": "진행률",
+    "noMandatory": "현재 미완료 필수교육이 없습니다",
+    "deadline": "마감일"
   }
 }
