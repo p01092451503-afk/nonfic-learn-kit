@@ -158,7 +158,7 @@ const StudentCourses = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" /></div>
+          <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" role="status" aria-label={t("common.loading", "로딩 중")} /></div>
         ) : (
           <div className="space-y-8">
             {/* 수강중인 강의 */}
