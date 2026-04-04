@@ -354,32 +354,36 @@ const ContentPlayer = () => {
             <div className="space-y-6 mt-2">
 
               {/* 과정 · 차시 · 학습상태 한줄 통합 */}
-              <div className="flex items-center gap-2 text-sm text-foreground flex-wrap">
-                <span className="font-bold truncate">{getCourseTitle()}</span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="font-bold truncate">{localTitle}</span>
-                <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider shrink-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <Badge variant="secondary" className="text-sm font-bold px-4 py-1.5 rounded-xl">
+                  {getCourseTitle()}
+                </Badge>
+                <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                <Badge className="text-sm font-bold px-4 py-1.5 bg-foreground text-background rounded-xl">
+                  {localTitle}
+                </Badge>
+                <Badge variant="outline" className="text-xs font-semibold px-2.5 py-1 rounded-lg uppercase tracking-wider shrink-0">
                   {contentTypeLabel[currentContent.content_type || "video"]}
                 </Badge>
                 {currentContent.duration_minutes && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                    <Clock className="h-3 w-3" />
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground shrink-0">
+                    <Clock className="h-3.5 w-3.5" />
                     <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 shrink-0 ml-auto">
                   {currentProgress?.completed ? (
-                    <Badge variant="outline" className="text-[10px] font-semibold px-2.5 py-1 rounded-lg border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400 gap-1">
-                      <CheckCircle2 className="h-3 w-3" />
+                    <Badge variant="outline" className="text-xs font-semibold px-3 py-1.5 rounded-xl border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400 gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
                       {t("course.alreadyCompleted")}
                     </Badge>
                   ) : user ? (
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] font-semibold px-2.5 py-1 rounded-lg gap-1">
-                        <Clock className="h-3 w-3" />
+                      <Badge variant="outline" className="text-xs font-semibold px-3 py-1.5 rounded-xl gap-1.5">
+                        <Clock className="h-3.5 w-3.5" />
                         {t("course.inProgress") || "학습 중"}
                       </Badge>
-                      <Button variant="login" size="sm" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="text-xs rounded-lg h-7 px-3">
+                      <Button variant="login" size="sm" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="text-xs rounded-xl h-8 px-4">
                         {markCompleteMutation.isPending ? t("common.processing") : t("course.markComplete")}
                       </Button>
                     </div>
