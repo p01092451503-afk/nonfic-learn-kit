@@ -17,6 +17,7 @@ import TeacherCourses from "./pages/teacher/TeacherCourses";
 import TeacherAssignments from "./pages/teacher/TeacherAssignments";
 import CreateCourse from "./pages/teacher/CreateCourse";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
+import TeacherStudentDetail from "./pages/teacher/TeacherStudentDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCourses from "./pages/admin/AdminCourses";
