@@ -789,6 +789,9 @@
   "catalog": {
     "title": "교육과정",
     "subtitle": "NONFICTION의 다양한 교육과정을 탐색하고 수강신청하세요.",
+    "totalCourses": "전체 강좌",
+    "totalCategories": "카테고리",
+    "myEnrolled": "수강 중",
     "allCourses": "전체 강의",
     "searchPlaceholder": "검색어를 입력하세요",
     "resultCount": "{{count}}개의 강좌",
