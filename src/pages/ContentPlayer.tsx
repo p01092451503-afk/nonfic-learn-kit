@@ -350,49 +350,80 @@ const ContentPlayer = () => {
               )}
             </div>
 
-            {/* Content info */}
-            <div className="space-y-5">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <Badge className="text-xs font-semibold px-3 py-1.5 bg-foreground text-background rounded-lg uppercase tracking-wider">
-                  {contentTypeLabel[currentContent.content_type || "video"]}
-                </Badge>
-                {currentContent.duration_minutes && (
-                  <div className="flex items-center gap-1.5 text-sm text-foreground bg-secondary px-3 py-1.5 rounded-lg">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
-                  </div>
-                )}
+            {/* Content info - Toss-style clean sections */}
+            <div className="space-y-6 mt-2">
+
+              {/* Section: 과정 정보 */}
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("course.courseInfo") || "과정 정보"}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="secondary" className="text-xs font-bold px-3 py-1 rounded-lg">
+                    {getCourseTitle()}
+                  </Badge>
+                </div>
               </div>
 
-              <h2 className="text-xl lg:text-2xl font-bold text-foreground leading-tight">{localTitle}</h2>
+              {/* Section: 차시 정보 */}
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("course.lessonInfo") || "차시 정보"}</p>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <Badge className="text-[11px] font-semibold px-2.5 py-1 bg-foreground text-background rounded-lg uppercase tracking-wider">
+                    {contentTypeLabel[currentContent.content_type || "video"]}
+                  </Badge>
+                  {currentContent.duration_minutes && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span className="font-medium">{currentContent.duration_minutes}{t("common.minutes")}</span>
+                    </div>
+                  )}
+                </div>
+                <h2 className="text-lg font-bold text-foreground leading-snug">{localTitle}</h2>
+              </div>
 
+              {/* Section: 설명 */}
               {localDesc && (
-                <div className="bg-secondary/40 rounded-2xl p-5">
-                  <p className="text-sm text-foreground/80 leading-7 whitespace-pre-line break-keep">{localDesc}</p>
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("course.description") || "설명"}</p>
+                  <div className="bg-secondary/40 rounded-2xl p-5">
+                    <p className="text-sm text-foreground/80 leading-7 whitespace-pre-line break-keep">{localDesc}</p>
+                  </div>
                 </div>
               )}
 
-              {currentProgress?.completed ? (
-                <div className="flex items-center gap-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl px-6 py-5">
-                  <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+              {/* Section: 학습 상태 */}
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("course.learningStatus") || "학습 상태"}</p>
+                {currentProgress?.completed ? (
+                  <div className="flex items-center gap-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl px-5 py-4">
+                    <div className="h-10 w-10 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-green-700 dark:text-green-300">{t("course.alreadyCompleted")}</p>
+                      <p className="text-xs text-green-600/70 dark:text-green-400/70">{t("course.completedSuccess")}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-base font-semibold text-green-700 dark:text-green-300">{t("course.alreadyCompleted")}</p>
-                    <p className="text-sm text-green-600/70 dark:text-green-400/70">{t("course.completedSuccess")}</p>
+                ) : user ? (
+                  <div className="flex items-center gap-4 bg-secondary/40 rounded-2xl px-5 py-4">
+                    <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-foreground">{t("course.inProgress") || "학습 중"}</p>
+                      <p className="text-xs text-muted-foreground">{t("course.completeToProgress") || "학습을 완료해주세요"}</p>
+                    </div>
+                    <Button variant="login" size="default" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="shrink-0 text-sm rounded-xl">
+                      {markCompleteMutation.isPending ? t("common.processing") : t("course.markComplete")}
+                    </Button>
                   </div>
-                </div>
-              ) : user && (
-                <Button variant="login" size="xl" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="w-full lg:w-auto text-base">
-                  {markCompleteMutation.isPending ? t("common.processing") : t("course.markComplete")}
-                </Button>
-              )}
+                ) : null}
+              </div>
 
               {/* Navigation */}
-              <div className="flex items-center justify-between pt-5 border-t border-border">
+              <div className="flex items-center justify-between pt-4 border-t border-border">
                 <div>
                   {prevContent ? (
-                    <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}>
+                    <Button variant="ghost" className="rounded-xl gap-2 text-muted-foreground hover:text-foreground" onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}>
                       <ChevronLeft className="h-4 w-4" />
                       <span className="text-sm">{t("common.previous")}</span>
                     </Button>
