@@ -329,9 +329,9 @@ const StudentDashboard = () => {
 
         {/* 필수교육 안내 */}
         {mandatoryCourses.length > 0 && (
-          <div className="stat-card !p-6 space-y-4 border-destructive/30">
+          <section className="stat-card !p-6 space-y-4 border-destructive/30" aria-label={t("mandatory.title")} role="alert">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
               <div>
                 <h2 className="text-lg font-bold text-foreground">{t("mandatory.title")}</h2>
                 <p className="text-xs text-muted-foreground">{t("mandatory.subtitle")}</p>
