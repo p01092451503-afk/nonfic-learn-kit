@@ -289,7 +289,7 @@ const TeacherAssignments = () => {
 
           {assignments.length === 0 ? (
             <div className="text-center py-16">
-              <ClipboardList className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+              <ClipboardList className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">{t("assignments.noCreatedAssignments")}</p>
               <p className="text-xs text-muted-foreground mt-1">{t("assignments.createFirstAssignment")}</p>
             </div>
