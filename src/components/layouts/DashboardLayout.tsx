@@ -111,10 +111,7 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
           </button>
           <div className="flex-1" />
           <LanguageToggle />
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-[18px] w-[18px]" />
-            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
-          </Button>
+          <NotificationBell />
           <div className="flex items-center gap-3 pl-3 border-l border-border">
             <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-accent-foreground">
               {initials}
