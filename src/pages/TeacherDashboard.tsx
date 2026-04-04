@@ -126,7 +126,7 @@ const TeacherDashboard = () => {
 
           {courses.length === 0 ? (
             <div className="text-center py-12">
-              <BookOpen className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+              <BookOpen className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">{t("teacher.noCourses")}</p>
             </div>
           ) : (
