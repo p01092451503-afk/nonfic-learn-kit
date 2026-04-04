@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import LanguageToggle from "@/components/LanguageToggle";
+import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationBell from "@/components/NotificationBell";
 
 interface NavItem {
@@ -115,6 +116,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
           </button>
           <div className="flex-1" />
           <LanguageToggle />
+          <RoleSwitcher />
           <NotificationBell />
           <div className="flex items-center gap-3 pl-3 border-l border-border">
             <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-accent-foreground">
