@@ -27,6 +27,7 @@ const MyPage = () => {
   const { user, profile, refreshProfile } = useUser();
   const { toast } = useToast();
   const { t } = useTranslation();
+  usePreloadAvatars();
 
   // Profile fields
   const [fullName, setFullName] = useState(profile?.full_name || "");
