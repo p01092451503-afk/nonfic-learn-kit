@@ -105,12 +105,12 @@ const StudentAchievements = () => {
           </div>
         </section>
 
-        <div className="stat-card">
+        <div className="stat-card !p-4 sm:!p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">{t("achievements.nextLevel")}</span>
-            <span className="text-xs text-muted-foreground">{xp} / {nextLevelXp} XP</span>
+            <span className="text-xs sm:text-sm font-medium text-foreground">{t("achievements.nextLevel")}</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground">{xp} / {nextLevelXp} XP</span>
           </div>
-          <Progress value={xpProgress} className="h-2" />
+          <Progress value={xpProgress} className="h-2" aria-label={`XP ${t("achievements.nextLevel")}: ${xp}/${nextLevelXp}`} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
