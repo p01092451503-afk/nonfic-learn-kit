@@ -35,6 +35,7 @@ const ContentPlayer = () => {
   const [mangoPopupOpen, setMangoPopupOpen] = useState(false);
   const [mangoElapsed, setMangoElapsed] = useState(0);
   const mangoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [mobileCurriculumOpen, setMobileCurriculumOpen] = useState(false);
   const activeItemRef = useRef<HTMLButtonElement>(null);
 
   const contentTypeLabel: Record<string, string> = {
