@@ -34,6 +34,14 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
 
   const activeRole = role || primaryRole;
 
+  // Preload user avatar for instant rendering
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      const img = new Image();
+      img.src = profile.avatar_url;
+    }
+  }, [profile?.avatar_url]);
+
   const studentNav: NavItem[] = [
     { label: t("nav.dashboard"), href: "/student", icon: LayoutDashboard },
     { label: t("nav.courseCatalog"), href: "/catalog", icon: Compass },
