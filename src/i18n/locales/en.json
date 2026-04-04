@@ -90,7 +90,8 @@
     "attendanceManagement": "Attendance Mgmt",
     "completionManagement": "Completion Mgmt",
     "courseCatalog": "Browse Courses",
-    "myPage": "My Page"
+    "myPage": "My Page",
+    "enrollmentManagement": "Enrollments"
   },
   "roles": {
     "student": "Student",
