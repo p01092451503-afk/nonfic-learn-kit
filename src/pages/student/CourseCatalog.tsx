@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-import loginBg from "@/assets/login-bg.jpg";
 
 const categoryGradients: Record<string, string> = {
   marketing: "from-orange-500 to-pink-500", sales: "from-blue-500 to-cyan-500",
@@ -148,7 +148,7 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
 
 /* ── Main Page ── */
 const CourseCatalog = () => {
-  const { user } = useUser();
+  const { user, profile } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
@@ -251,14 +251,19 @@ const CourseCatalog = () => {
   return (
     <DashboardLayout role="student">
       <div className="space-y-0 -m-6 lg:-m-8">
-        {/* Hero banner */}
-        <div className="relative h-48 lg:h-56 overflow-hidden">
-          <img src={loginBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/10 to-transparent" />
-          <div className="relative z-10 flex flex-col justify-center h-full px-6 lg:px-10">
-            <p className="text-xs tracking-[0.2em] text-foreground/60 uppercase mb-2">NONFICTION Education</p>
-            <h1 className="font-display text-3xl lg:text-4xl tracking-wide text-foreground">{t("catalog.title")}</h1>
-            <p className="mt-2 text-sm text-foreground/60 max-w-lg">{t("catalog.subtitle")}</p>
+        {/* Hero banner — Toss-style minimal */}
+        <div className="px-6 lg:px-10 pt-8 pb-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-12 w-12 border-2 border-border">
+              <AvatarImage src={profile?.avatar_url || ""} />
+              <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-medium">
+                {profile?.full_name?.charAt(0) || "?"}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-xl font-semibold text-foreground">{t("catalog.title")}</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("catalog.subtitle")}</p>
+            </div>
           </div>
         </div>
 
