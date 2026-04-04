@@ -4,36 +4,17 @@ import {
   LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings,
   LogOut, Menu, X, Bell, ChevronRight,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import LanguageToggle from "@/components/LanguageToggle";
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
 }
-
-const studentNav: NavItem[] = [
-  { label: "대시보드", href: "/dashboard", icon: LayoutDashboard },
-  { label: "내 강좌", href: "/dashboard/courses", icon: BookOpen },
-  { label: "과제", href: "/dashboard/assignments", icon: ClipboardList },
-  { label: "성취", href: "/dashboard/achievements", icon: Trophy },
-];
-
-const teacherNav: NavItem[] = [
-  { label: "대시보드", href: "/teacher", icon: LayoutDashboard },
-  { label: "강좌 관리", href: "/teacher/courses", icon: BookOpen },
-  { label: "과제 관리", href: "/teacher/assignments", icon: ClipboardList },
-  { label: "수강생 관리", href: "/teacher/students", icon: Users },
-];
-
-const adminNav: NavItem[] = [
-  { label: "대시보드", href: "/admin", icon: LayoutDashboard },
-  { label: "사용자 관리", href: "/admin/users", icon: Users },
-  { label: "강좌 관리", href: "/admin/courses", icon: BookOpen },
-  { label: "설정", href: "/admin/settings", icon: Settings },
-];
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -46,10 +27,33 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { profile, signOut } = useUser();
   const { primaryRole } = useUserRole();
+  const { t } = useTranslation();
 
   const activeRole = role || primaryRole;
+
+  const studentNav: NavItem[] = [
+    { label: t("nav.dashboard"), href: "/dashboard", icon: LayoutDashboard },
+    { label: t("nav.myCourses"), href: "/dashboard/courses", icon: BookOpen },
+    { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList },
+    { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy },
+  ];
+
+  const teacherNav: NavItem[] = [
+    { label: t("nav.dashboard"), href: "/teacher", icon: LayoutDashboard },
+    { label: t("nav.courseManagement"), href: "/teacher/courses", icon: BookOpen },
+    { label: t("nav.assignmentManagement"), href: "/teacher/assignments", icon: ClipboardList },
+    { label: t("nav.studentManagement"), href: "/teacher/students", icon: Users },
+  ];
+
+  const adminNav: NavItem[] = [
+    { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard },
+    { label: t("nav.userManagement"), href: "/admin/users", icon: Users },
+    { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen },
+    { label: t("nav.settings"), href: "/admin/settings", icon: Settings },
+  ];
+
   const navItems = activeRole === "admin" ? adminNav : activeRole === "teacher" ? teacherNav : studentNav;
-  const roleLabel = activeRole === "admin" ? "Admin" : activeRole === "teacher" ? "Teacher" : "Student";
+  const roleLabel = t(`roles.${activeRole}`);
 
   const handleSignOut = async () => {
     await signOut();
@@ -94,7 +98,7 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
         <div className="p-4 border-t border-sidebar-border">
           <button onClick={handleSignOut} className="nav-item w-full text-muted-foreground hover:text-destructive">
             <LogOut className="h-[18px] w-[18px]" />
-            <span>로그아웃</span>
+            <span>{t("auth.logout")}</span>
           </button>
         </div>
       </aside>
@@ -105,6 +109,7 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+          <LanguageToggle />
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-[18px] w-[18px]" />
             <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
@@ -114,7 +119,7 @@ const DashboardLayout = ({ children, role = "student" }: DashboardLayoutProps) =
               {initials}
             </div>
             <div className="hidden sm:block">
-              <p className="text-sm font-medium text-foreground leading-none">{profile?.full_name || "사용자"}</p>
+              <p className="text-sm font-medium text-foreground leading-none">{profile?.full_name || t("common.user")}</p>
             </div>
           </div>
         </header>
