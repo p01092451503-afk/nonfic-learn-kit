@@ -3,15 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
-
-const statusConfig = {
-  submitted: { label: "제출 완료", icon: Clock, color: "text-info" },
-  graded: { label: "채점 완료", icon: CheckCircle2, color: "text-success" },
-  returned: { label: "반환됨", icon: AlertCircle, color: "text-warning" },
-};
+import { useTranslation } from "react-i18next";
 
 const StudentAssignments = () => {
   const { user } = useUser();
+  const { t, i18n } = useTranslation();
+
+  const statusConfig = {
+    submitted: { label: t("assignments.submitted"), icon: Clock, color: "text-info" },
+    graded: { label: t("assignments.gradedComplete"), icon: CheckCircle2, color: "text-success" },
+    returned: { label: t("assignments.returnedLabel"), icon: AlertCircle, color: "text-warning" },
+  };
 
   const { data: submissions = [] } = useQuery({
     queryKey: ["my-submissions", user?.id],
@@ -46,32 +48,39 @@ const StudentAssignments = () => {
   const submitted = submissions.filter((s: any) => s.status === "submitted");
   const graded = submissions.filter((s: any) => s.status === "graded" || s.status === "returned");
 
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return i18n.language?.startsWith("en")
+      ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+      : d.toLocaleDateString("ko-KR");
+  };
+
   return (
     <DashboardLayout role="student">
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">과제</h1>
-          <p className="text-sm text-muted-foreground mt-1">과제 현황을 확인하고 제출하세요.</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("assignments.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("assignments.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div className="stat-card text-center">
             <p className="text-2xl font-bold text-warning">{pending.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">미제출</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("assignments.unsubmitted")}</p>
           </div>
           <div className="stat-card text-center">
             <p className="text-2xl font-bold text-info">{submitted.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">채점 대기</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("assignments.waitingGrade")}</p>
           </div>
           <div className="stat-card text-center">
             <p className="text-2xl font-bold text-success">{graded.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">채점 완료</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("assignments.graded")}</p>
           </div>
         </div>
 
         {pending.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">미제출 과제</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t("assignments.unsubmittedAssignments")}</h2>
             {pending.map((assignment: any) => (
               <div key={assignment.id} className="stat-card flex items-center gap-4 cursor-pointer group !p-4">
                 <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
@@ -83,11 +92,11 @@ const StudentAssignments = () => {
                 </div>
                 <div className="text-right shrink-0 space-y-1">
                   <div className="flex items-center gap-1 text-xs font-medium text-warning">
-                    <AlertCircle className="h-3 w-3" /> 미제출
+                    <AlertCircle className="h-3 w-3" /> {t("assignments.unsubmitted")}
                   </div>
                   {assignment.due_date && (
                     <p className="text-[10px] text-muted-foreground">
-                      마감: {new Date(assignment.due_date).toLocaleDateString("ko-KR")}
+                      {t("assignments.dueDate", { date: formatDate(assignment.due_date) })}
                     </p>
                   )}
                 </div>
@@ -99,7 +108,7 @@ const StudentAssignments = () => {
 
         {submissions.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">제출한 과제</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t("assignments.submittedAssignments")}</h2>
             {submissions.map((sub: any) => {
               const config = statusConfig[sub.status as keyof typeof statusConfig] || statusConfig.submitted;
               const StatusIcon = config.icon;
@@ -117,12 +126,12 @@ const StudentAssignments = () => {
                       <StatusIcon className="h-3 w-3" />
                       {config.label}
                       {sub.status === "graded" && sub.score != null && (
-                        <span className="ml-1">{sub.score}/{sub.assignments?.max_score || 100}점</span>
+                        <span className="ml-1">{sub.score}/{sub.assignments?.max_score || 100}{t("common.points")}</span>
                       )}
                     </div>
                     {sub.submitted_at && (
                       <p className="text-[10px] text-muted-foreground">
-                        {new Date(sub.submitted_at).toLocaleDateString("ko-KR")}
+                        {formatDate(sub.submitted_at)}
                       </p>
                     )}
                   </div>
@@ -134,7 +143,7 @@ const StudentAssignments = () => {
 
         {pending.length === 0 && submissions.length === 0 && (
           <div className="stat-card text-center py-10">
-            <p className="text-sm text-muted-foreground">등록된 과제가 없습니다.</p>
+            <p className="text-sm text-muted-foreground">{t("assignments.noAssignments")}</p>
           </div>
         )}
       </div>

@@ -38,7 +38,9 @@
     "manage": "Manage",
     "complete": "Complete",
     "incomplete": "Incomplete",
-    "overdue": "Overdue"
+    "overdue": "Overdue",
+    "saving": "Saving...",
+    "registering": "Registering..."
   },
   "auth": {
     "login": "Log In",
@@ -172,7 +174,10 @@
     "open": "Published",
     "beginner": "Beginner",
     "intermediate": "Intermediate",
-    "advanced": "Advanced"
+    "advanced": "Advanced",
+    "archived": "Archived",
+    "openingSoon": "Coming Soon",
+    "student": "Student"
   },
   "students": {
     "studentManagement": "Student Management",
@@ -199,7 +204,8 @@
     "noSearchResult": "No results found.",
     "noStudents": "No students enrolled.",
     "viewStatus": "View Status",
-    "sendMessage": "Send Message"
+    "sendMessage": "Send Message",
+    "courses": "{{count}} courses"
   },
   "studentDetail": {
     "enrolledCourses": "Enrolled Courses",
@@ -240,6 +246,7 @@
     "openExternal": "Open in External Player",
     "markComplete": "Mark as Complete",
     "alreadyCompleted": "Completed",
+    "completedSuccess": "You have successfully completed this lesson.",
     "enrollCourse": "Enroll Now",
     "courseOverview": "Course Overview",
     "contentModified": "Content updated",
@@ -257,6 +264,7 @@
     "youtube": "YouTube",
     "vimeo": "Vimeo",
     "flipLearning": "Flip Learning",
+    "flipLearningMango": "Flip Learning (Mangoboard, etc.)",
     "cdnUpload": "Upload",
     "myCourseRoom": "My Courses",
     "inProgressCourses": "In Progress",
@@ -273,7 +281,34 @@
     "searchCourse": "Search courses",
     "completionLabel": "Completed",
     "duration": "{{hours}}h",
-    "lessonsCount": "{{count}} lessons"
+    "lessonsCount": "{{count}} lessons",
+    "contentType": "Type",
+    "contentUrl": "Content URL",
+    "provider": "Provider",
+    "description": "Description",
+    "contentTitle": "Title",
+    "contentPlaceholder": "Content title",
+    "playbackTime": "Duration (min)",
+    "isPublished": "Published",
+    "allowPreview": "Allow Preview",
+    "editContent": "Edit Content",
+    "deleteContent": "Delete Content",
+    "deleteContentConfirm": "Delete \"{{title}}\"?",
+    "courseTitle": "Course Title",
+    "courseDescription": "Description",
+    "courseEditTitle": "Edit Course Info",
+    "courseStatus": "Status",
+    "publishedStatus": "Published",
+    "draftStatus": "Draft",
+    "courseContentCount": "{{count}} contents",
+    "approxDuration": "~{{hours}}h",
+    "enrollProgress": "Enrollment Progress",
+    "courseContents": "Course Contents",
+    "lessonCount": "{{current}} / {{total}} lessons",
+    "learningProgress": "Learning Progress",
+    "completedLessons": "Completed Lessons",
+    "learningTime": "Study Time",
+    "select": "Select"
   },
   "assignments": {
     "title": "Assignments",
@@ -319,7 +354,7 @@
     "selectCourse": "Select Course",
     "selectCoursePlaceholder": "Choose a course",
     "assignmentTitle": "Assignment Title",
-    "assignmentTitlePlaceholder": "Enter assignment title",
+    "assignmentTitlePlaceholder": "e.g. Week 1 Practice Assignment",
     "description": "Description",
     "descriptionPlaceholder": "Brief description of the assignment",
     "instructions": "Instructions",
@@ -327,7 +362,7 @@
     "maxScore": "Max Score",
     "dueDateLabel": "Due Date",
     "selectDate": "Select date",
-    "publishStatus": "Publish Status",
+    "publishStatus": "Status",
     "lateSub": "Allow Late Submission",
     "lateSubDesc": "Allow submissions after deadline",
     "createButton": "Create Assignment",
@@ -336,7 +371,11 @@
     "assignmentCreatedDesc": "\"{{title}}\" has been created.",
     "selectCourseError": "Please select a course.",
     "titleRequired": "Please enter an assignment title.",
-    "detailView": "View Details"
+    "detailView": "View Details",
+    "draftPrivate": "Draft (Private)",
+    "allowed": "Allowed",
+    "notAllowed": "Not Allowed",
+    "dialogDesc": "Enter assignment details and distribute to students."
   },
   "achievements": {
     "title": "Achievements",
@@ -376,6 +415,12 @@
     "positionColumn": "Position",
     "noUsers": "No users found.",
     "courseManagement": "Course Management",
+    "courseManagementDesc": "Manage and monitor all courses.",
+    "newCourse": "New Course",
+    "totalCoursesLabel": "Total Courses",
+    "publishedCourses": "Published",
+    "totalStudents": "Total Students",
+    "noCoursesFound": "No courses available.",
     "settingsTitle": "Settings",
     "settingsDesc": "Manage platform settings.",
     "generalSettings": "General Settings",
@@ -428,5 +473,10 @@
   "language": {
     "ko": "한국어",
     "en": "English"
+  },
+  "contentPlayer": {
+    "backToCourse": "Back to Course",
+    "lessonCount": "{{current}} / {{total}} lessons",
+    "learningTime": "Study Time"
   }
 }
