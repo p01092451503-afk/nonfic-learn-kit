@@ -348,6 +348,36 @@ export type Database = {
         }
         Relationships: []
       }
+      course_target_departments: {
+        Row: {
+          course_id: string
+          department_id: string
+        }
+        Insert: {
+          course_id: string
+          department_id: string
+        }
+        Update: {
+          course_id?: string
+          department_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_target_departments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_target_departments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           category_id: string | null
@@ -409,6 +439,50 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      departments: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          name_en: string | null
+          parent_department_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          name_en?: string | null
+          parent_department_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          name_en?: string | null
+          parent_department_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_parent_department_id_fkey"
+            columns: ["parent_department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]
@@ -513,10 +587,12 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           department: string | null
+          department_id: string | null
           employee_id: string | null
           full_name: string | null
           phone_number: string | null
           position: string | null
+          team_name: string | null
           updated_at: string | null
           user_id: string
         }
@@ -524,10 +600,12 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           department?: string | null
+          department_id?: string | null
           employee_id?: string | null
           full_name?: string | null
           phone_number?: string | null
           position?: string | null
+          team_name?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -535,14 +613,24 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           department?: string | null
+          department_id?: string | null
           employee_id?: string | null
           full_name?: string | null
           phone_number?: string | null
           position?: string | null
+          team_name?: string | null
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_badges: {
         Row: {
@@ -569,6 +657,38 @@ export type Database = {
             columns: ["badge_id"]
             isOneToOne: false
             referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_department_roles: {
+        Row: {
+          created_at: string | null
+          department_id: string
+          dept_role: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          department_id: string
+          dept_role: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          department_id?: string
+          dept_role?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_department_roles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]
