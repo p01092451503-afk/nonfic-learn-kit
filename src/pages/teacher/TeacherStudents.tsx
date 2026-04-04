@@ -1,6 +1,7 @@
 import { Users, Search, TrendingUp, BookOpen, Award, MoreVertical } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -14,6 +15,7 @@ import { ko } from "date-fns/locale";
 
 const TeacherStudents = () => {
   const { user } = useUser();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
 
@@ -242,7 +244,7 @@ const TeacherStudents = () => {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filtered.map((student) => (
-                    <tr key={student.userId} className="hover:bg-accent/20 transition-colors">
+                    <tr key={student.userId} className="hover:bg-accent/20 transition-colors cursor-pointer" onClick={() => navigate(`/teacher/students/${student.userId}`)}>
                       {/* Student info */}
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
@@ -317,7 +319,7 @@ const TeacherStudents = () => {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36">
-                            <DropdownMenuItem className="text-xs">학습 현황 보기</DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs" onClick={(e) => { e.stopPropagation(); navigate(`/teacher/students/${student.userId}`); }}>학습 현황 보기</DropdownMenuItem>
                             <DropdownMenuItem className="text-xs">메시지 보내기</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

@@ -17,6 +17,7 @@ import TeacherCourses from "./pages/teacher/TeacherCourses";
 import TeacherAssignments from "./pages/teacher/TeacherAssignments";
 import CreateCourse from "./pages/teacher/CreateCourse";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
+import TeacherStudentDetail from "./pages/teacher/TeacherStudentDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCourses from "./pages/admin/AdminCourses";
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/teacher/assignments" element={<ProtectedRoute><TeacherAssignments /></ProtectedRoute>} />
             <Route path="/teacher/courses/new" element={<ProtectedRoute><CreateCourse /></ProtectedRoute>} />
             <Route path="/teacher/students" element={<ProtectedRoute><TeacherStudents /></ProtectedRoute>} />
+            <Route path="/teacher/students/:studentId" element={<ProtectedRoute><TeacherStudentDetail /></ProtectedRoute>} />
 
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
