@@ -411,7 +411,7 @@ const StudentDashboard = () => {
                         className="gap-1.5 shrink-0 rounded-full"
                         onClick={() => {
                           if (nextContent) {
-                            navigate(`/courses/${enrollment.course_id}/content/${nextContent.id}`);
+                            navigate(`/courses/${enrollment.course_id}/content/${nextContent.id}?view=learn`);
                           } else {
                             navigate(`/courses/${enrollment.course_id}?view=learn`);
                           }
