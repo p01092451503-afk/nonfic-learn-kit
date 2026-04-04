@@ -74,7 +74,7 @@ const CourseCard = ({ course, categorySlug, categoryName, studentCount, contentC
           {(variant === "teacher" || variant === "admin") && (
             <div className="flex items-center gap-1.5 flex-wrap">
               <Badge variant={isPublished ? "default" : "secondary"} className="text-[10px] h-5">{isPublished ? t("teacher.published") : t("teacher.draft")}</Badge>
-              {course.is_mandatory && <Badge variant="destructive" className="text-[10px] h-5 gap-0.5"><AlertTriangle className="h-2.5 w-2.5" />{t("common.required")}</Badge>}
+              {course.is_mandatory && <Badge variant="destructive" className="text-[10px] h-5 gap-0.5"><AlertTriangle className="h-2.5 w-2.5" aria-hidden="true" />{t("common.required")}</Badge>}
               {course.deadline && (() => {
                 const daysLeft = Math.ceil((new Date(course.deadline).getTime() - Date.now()) / 86400000);
                 return (
