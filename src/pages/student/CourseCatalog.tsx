@@ -26,10 +26,11 @@ const categoryGradients: Record<string, string> = {
 const ScrollArrow = ({ direction, onClick }: { direction: "left" | "right"; onClick: () => void }) => (
   <button
     onClick={onClick}
-    className="absolute top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-card/90 border border-border shadow-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:shadow-lg transition-all"
+    className="absolute top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-card/90 border border-border shadow-md hidden sm:flex items-center justify-center text-muted-foreground hover:text-foreground hover:shadow-lg transition-all"
     style={{ [direction]: -12 }}
+    aria-label={direction === "left" ? "이전" : "다음"}
   >
-    {direction === "left" ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+    {direction === "left" ? <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" /> : <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />}
   </button>
 );
 
