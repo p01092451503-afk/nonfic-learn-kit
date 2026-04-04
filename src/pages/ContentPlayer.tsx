@@ -363,6 +363,34 @@ const ContentPlayer = () => {
 
               {/* 과정 · 차시 · 학습상태 한줄 통합 */}
               <div className="flex items-center gap-3 flex-wrap">
+                {/* Content source badge */}
+                {(() => {
+                  const url = localVideoUrl;
+                  const provider = currentContent.video_provider;
+                  let sourceLabel = "";
+                  let sourceColor = "";
+                  if (isMangoboard(url)) {
+                    sourceLabel = "Mangoboard";
+                    sourceColor = "bg-blue-500 text-white";
+                  } else if (provider === "youtube" || url?.includes("youtube.com") || url?.includes("youtu.be")) {
+                    sourceLabel = "YouTube";
+                    sourceColor = "bg-rose-500 text-white";
+                  } else if (provider === "vimeo" || url?.includes("vimeo.com")) {
+                    sourceLabel = "Vimeo";
+                    sourceColor = "bg-sky-500 text-white";
+                  } else if (provider === "upload") {
+                    sourceLabel = "CDN";
+                    sourceColor = "bg-emerald-500 text-white";
+                  } else if (provider === "custom" && !isMangoboard(url)) {
+                    sourceLabel = t("createCourse.customInput");
+                    sourceColor = "bg-amber-500 text-white";
+                  }
+                  return sourceLabel ? (
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-md shrink-0 ${sourceColor}`}>
+                      {sourceLabel}
+                    </span>
+                  ) : null;
+                })()}
                 <h2 className="text-lg font-bold text-foreground tracking-tight border-b-2 border-foreground/80 pb-0.5 shrink-0">
                   {localTitle}
                 </h2>
