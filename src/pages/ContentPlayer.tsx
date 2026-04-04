@@ -353,12 +353,12 @@ const ContentPlayer = () => {
             {/* Content info - Toss-style clean sections */}
             <div className="space-y-6 mt-2">
 
-              {/* Folder hierarchy: 과정 → 차시 */}
-              <div className="border border-border rounded-2xl overflow-hidden">
-                {/* 과정 정보 (Parent folder) */}
-                <div className="flex items-center gap-3 px-5 py-3.5 bg-secondary/30">
-                  <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                    <FolderOpen className="h-4 w-4 text-muted-foreground" />
+              {/* 과정 · 차시 통합 카드 */}
+              <div className="border border-border rounded-2xl overflow-hidden bg-secondary/20">
+                {/* 과정 정보 */}
+                <div className="flex items-center gap-3 px-5 py-3.5">
+                  <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                    <FolderOpen className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{t("course.courseInfo") || "과정 정보"}</p>
@@ -366,24 +366,21 @@ const ContentPlayer = () => {
                   </div>
                 </div>
 
-                <div className="h-px bg-border" />
+                <div className="mx-5 h-px bg-border" />
 
-                {/* 차시 정보 (Child item) */}
-                <div className="flex items-start gap-3 px-5 py-3.5 bg-background">
-                  <div className="flex flex-col items-center gap-0.5 pt-0.5 shrink-0">
-                    <div className="w-px h-2 bg-border" />
-                    <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
-                      {currentContent.content_type === "document" ? (
-                        <FileText className="h-4 w-4 text-background" />
-                      ) : (
-                        <Play className="h-4 w-4 text-background" />
-                      )}
-                    </div>
+                {/* 차시 정보 */}
+                <div className="flex items-center gap-3 px-5 py-3.5">
+                  <div className="h-10 w-10 rounded-xl bg-foreground flex items-center justify-center shrink-0">
+                    {currentContent.content_type === "document" ? (
+                      <FileText className="h-5 w-5 text-background" />
+                    ) : (
+                      <Play className="h-5 w-5 text-background" />
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{t("course.lessonInfo") || "차시 정보"}</p>
                     <div className="flex items-center justify-between gap-3">
-                      <h2 className="text-base font-bold text-foreground leading-snug truncate">{localTitle}</h2>
+                      <h2 className="text-sm font-bold text-foreground leading-snug truncate">{localTitle}</h2>
                       <div className="flex items-center gap-2 shrink-0">
                         <Badge className="text-[10px] font-semibold px-2 py-0.5 bg-foreground text-background rounded-md uppercase tracking-wider">
                           {contentTypeLabel[currentContent.content_type || "video"]}
