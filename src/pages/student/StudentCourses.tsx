@@ -117,8 +117,8 @@ const StudentCourses = () => {
 
         {/* Duration */}
         {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && (
-          <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
-            <Clock className="h-3.5 w-3.5" /> {course.estimated_duration_hours}h
+          <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0" aria-label={`${t("course.duration", { hours: course.estimated_duration_hours })}`}>
+            <Clock className="h-3.5 w-3.5" aria-hidden="true" /> {course.estimated_duration_hours}h
           </span>
         )}
 
