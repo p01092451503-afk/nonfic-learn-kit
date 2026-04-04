@@ -114,6 +114,8 @@ const ContentPlayer = () => {
     return course?.title || "";
   };
 
+  const isMangoboard = (url: string | null) => url?.includes("mangoboard.net") ?? false;
+
   const currentContent = contents.find((c) => c.id === contentId);
   const currentIndex = contents.findIndex((c) => c.id === contentId);
   const prevContent = currentIndex > 0 ? contents[currentIndex - 1] : null;
