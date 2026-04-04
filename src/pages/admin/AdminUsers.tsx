@@ -128,41 +128,41 @@ const AdminUsers = () => {
 
   return (
     <DashboardLayout role="admin">
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">{t("admin.userManagement")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("admin.userManagementDesc")}</p>
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t("admin.userManagement")}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.userManagementDesc")}</p>
           </div>
-          <Button className="rounded-xl gap-2" onClick={() => setAddOpen(true)}>
+          <Button className="rounded-xl gap-2 w-full sm:w-auto" onClick={() => setAddOpen(true)}>
             <UserPlus className="h-4 w-4" /> {t("admin.addUser")}
           </Button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="stat-card text-center">
-            <p className="text-2xl font-bold text-foreground">{profiles.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("admin.totalUsersCount")}</p>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="stat-card text-center !p-3 sm:!p-6">
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{profiles.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("admin.totalUsersCount")}</p>
           </div>
-          <div className="stat-card text-center">
-            <p className="text-2xl font-bold text-foreground">{profiles.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("admin.activeUsers")}</p>
+          <div className="stat-card text-center !p-3 sm:!p-6">
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{profiles.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("admin.activeUsers")}</p>
           </div>
-          <div className="stat-card text-center">
-            <p className="text-2xl font-bold text-foreground">{teacherCount}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("admin.teacherCount")}</p>
+          <div className="stat-card text-center !p-3 sm:!p-6">
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{teacherCount}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("admin.teacherCount")}</p>
           </div>
         </div>
 
         {/* Search + Dept Filter */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[140px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder={t("admin.searchUser")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl border-border" />
           </div>
           <Select value={deptFilter} onValueChange={setDeptFilter}>
-            <SelectTrigger className="w-40 rounded-xl">
+            <SelectTrigger className="w-28 sm:w-40 rounded-xl">
               <SelectValue placeholder={t("admin.allDepts")} />
             </SelectTrigger>
             <SelectContent>
@@ -175,7 +175,7 @@ const AdminUsers = () => {
         </div>
 
         {/* User Table */}
-        <div className="stat-card !p-0 overflow-hidden">
+        <div className="stat-card !p-0 overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">

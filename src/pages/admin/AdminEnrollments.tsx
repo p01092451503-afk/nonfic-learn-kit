@@ -129,29 +129,29 @@ const AdminEnrollments = () => {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">{t("enrollment.management")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("enrollment.managementDesc")}</p>
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t("enrollment.management")}</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("enrollment.managementDesc")}</p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">{t("enrollment.pendingCount")}</p>
-            <p className="text-2xl font-bold text-amber-600 mt-1">{pendingCount}</p>
+          <div className="stat-card !p-3 sm:!p-4">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("enrollment.pendingCount")}</p>
+            <p className="text-xl sm:text-2xl font-bold text-amber-600 mt-1">{pendingCount}</p>
           </div>
-          <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">{t("enrollment.approvedCount")}</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{approvedCount}</p>
+          <div className="stat-card !p-3 sm:!p-4">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("enrollment.approvedCount")}</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">{approvedCount}</p>
           </div>
-          <div className="stat-card p-4">
-            <p className="text-xs text-muted-foreground">{t("enrollment.rejectedCount")}</p>
-            <p className="text-2xl font-bold text-destructive mt-1">{rejectedCount}</p>
+          <div className="stat-card !p-3 sm:!p-4">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("enrollment.rejectedCount")}</p>
+            <p className="text-xl sm:text-2xl font-bold text-destructive mt-1">{rejectedCount}</p>
           </div>
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 max-w-sm">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[140px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t("enrollment.searchPlaceholder")}
@@ -161,7 +161,7 @@ const AdminEnrollments = () => {
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32 rounded-xl h-10">
+            <SelectTrigger className="w-24 sm:w-32 rounded-xl h-10">
               <div className="flex items-center gap-1.5"><Filter className="h-3.5 w-3.5" /><SelectValue /></div>
             </SelectTrigger>
             <SelectContent>
@@ -174,12 +174,14 @@ const AdminEnrollments = () => {
           {pendingIds.length > 0 && (
             <Button
               size="sm"
-              className="rounded-xl gap-1.5"
+              className="rounded-xl gap-1.5 text-xs sm:text-sm"
               onClick={() => batchApproveMutation.mutate(pendingIds)}
               disabled={batchApproveMutation.isPending}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
-              {t("enrollment.approveAll")} ({pendingIds.length})
+              <span className="hidden sm:inline">{t("enrollment.approveAll")}</span>
+              <span className="sm:hidden">{t("enrollment.approve")}</span>
+              ({pendingIds.length})
             </Button>
           )}
         </div>
@@ -193,7 +195,7 @@ const AdminEnrollments = () => {
             <p className="text-sm text-muted-foreground mt-3">{t("enrollment.noEnrollments")}</p>
           </div>
         ) : (
-          <div className="stat-card !p-0 overflow-hidden">
+          <div className="stat-card !p-0 overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-secondary/30">

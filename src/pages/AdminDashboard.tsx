@@ -108,13 +108,13 @@ const AdminDashboard = () => {
   return (
     <DashboardLayout role="admin">
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <BarChart3 className="h-6 w-6" />
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6" />
               {t("admin.adminDashboard")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("admin.platformOverview")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.platformOverview")}</p>
           </div>
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-muted-foreground" />
@@ -123,15 +123,15 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {stats.map((stat) => (
-            <div key={stat.label} className="stat-card">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-5 w-5 text-muted-foreground" />
+            <div key={stat.label} className="stat-card !p-4 sm:!p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight">{stat.label}</span>
+                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" />
               </div>
-              <span className="text-3xl font-bold text-foreground">{stat.value}</span>
-              <p className="text-xs text-primary mt-1">{stat.sub}</p>
+              <span className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</span>
+              <p className="text-[10px] sm:text-xs text-primary mt-1">{stat.sub}</p>
             </div>
           ))}
         </div>
