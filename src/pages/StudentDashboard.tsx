@@ -467,7 +467,7 @@ const StudentDashboard = () => {
                   <span className="text-muted-foreground">{t("dashboard.assignmentCompletionRate")}</span>
                   <span className="font-semibold text-foreground">{assignmentCompletionRate}%</span>
                 </div>
-                <Progress value={assignmentCompletionRate} className="h-3" />
+                <Progress value={assignmentCompletionRate} className="h-3" aria-label={`${t("dashboard.assignmentCompletionRate")}: ${assignmentCompletionRate}%`} />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
