@@ -62,6 +62,8 @@ const emptyI18n: ContentI18nData = {
 const CourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useUser();
   const { primaryRole } = useUserRole();
