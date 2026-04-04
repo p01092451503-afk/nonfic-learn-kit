@@ -312,7 +312,7 @@ const TeacherCourses = () => {
                     {course.thumbnail_url ? (
                       <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center">
+                      <div className="h-full w-full flex items-center justify-center" aria-hidden="true">
                         <BookOpen className="h-8 w-8 text-muted-foreground" />
                       </div>
                     )}
