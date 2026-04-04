@@ -23,6 +23,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
+import CategorySelect from "@/components/CategorySelect";
 import type { Database } from "@/integrations/supabase/types";
 
 type ContentType = Database["public"]["Enums"]["content_type"];
@@ -140,18 +141,8 @@ const CreateCourse = () => {
     await (supabase.from("course_drafts" as any) as any).delete().eq("user_id", user.id);
   }, [user]);
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order");
-      if (error) throw error;
-      return data;
-    },
-  });
+
+
 
   const addContent = () => {
     setContents((prev) => [
@@ -444,20 +435,7 @@ const CreateCourse = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">카테고리</label>
-              <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger className="h-11 rounded-xl border-border">
-                  <SelectValue placeholder="선택" />
-                </SelectTrigger>
-                <SelectContent position="popper" className="z-[9999] max-h-60 overflow-y-auto">
-                  {categories.length === 0 ? (
-                    <SelectItem value="__empty" disabled>카테고리 없음</SelectItem>
-                  ) : (
-                    categories.map((cat: any) => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+              <CategorySelect value={categoryId} onValueChange={setCategoryId} />
             </div>
 
             <div className="space-y-2">
