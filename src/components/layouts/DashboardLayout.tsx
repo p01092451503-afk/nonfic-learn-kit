@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import LanguageToggle from "@/components/LanguageToggle";
+import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationBell from "@/components/NotificationBell";
 
 interface NavItem {
