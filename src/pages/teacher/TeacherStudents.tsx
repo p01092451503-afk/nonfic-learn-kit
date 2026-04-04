@@ -23,6 +23,39 @@ const TeacherStudents = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
+  const [msgOpen, setMsgOpen] = useState(false);
+  const [msgTarget, setMsgTarget] = useState<{ userId: string; name: string } | null>(null);
+  const [msgTitle, setMsgTitle] = useState("");
+  const [msgBody, setMsgBody] = useState("");
+  const queryClient = useQueryClient();
+
+  const sendMessageMutation = useMutation({
+    mutationFn: async () => {
+      if (!msgTarget) throw new Error("No target");
+      const { error } = await supabase.from("notifications").insert({
+        user_id: msgTarget.userId,
+        title: msgTitle || "강사 메시지",
+        message: msgBody,
+        type: "message",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("메시지를 전송했습니다.");
+      setMsgOpen(false);
+      setMsgTitle("");
+      setMsgBody("");
+      setMsgTarget(null);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const openMessage = (userId: string, name: string) => {
+    setMsgTarget({ userId, name });
+    setMsgTitle("");
+    setMsgBody("");
+    setMsgOpen(true);
+  };
 
   // Fetch teacher's courses
   const { data: myCourses = [] } = useQuery({
