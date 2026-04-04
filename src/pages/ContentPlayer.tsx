@@ -385,7 +385,7 @@ const ContentPlayer = () => {
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-xs font-semibold px-3 py-1.5 rounded-xl gap-1.5">
                         <Clock className="h-3.5 w-3.5" />
-                        {t("course.inProgress") || "학습 중"}
+                        {t("course.inProgress")}
                       </Badge>
                       <Button variant="login" size="sm" onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending} className="text-xs rounded-xl h-8 px-4">
                         {markCompleteMutation.isPending ? t("common.processing") : t("course.markComplete")}
