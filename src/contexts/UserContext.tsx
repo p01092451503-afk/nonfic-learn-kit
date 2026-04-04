@@ -32,6 +32,7 @@ const UserContext = createContext<UserContextType>({
   roles: [],
   isLoading: true,
   signOut: async () => {},
+  refreshProfile: async () => {},
 });
 
 export const useUser = () => useContext(UserContext);
