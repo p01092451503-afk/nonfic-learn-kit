@@ -413,7 +413,7 @@ const StudentDashboard = () => {
                           if (nextContent) {
                             navigate(`/courses/${enrollment.course_id}/content/${nextContent.id}`);
                           } else {
-                            navigate(`/courses/${enrollment.course_id}`);
+                            navigate(`/courses/${enrollment.course_id}?view=learn`);
                           }
                         }}
                       >
