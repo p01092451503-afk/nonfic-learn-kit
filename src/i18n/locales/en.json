@@ -655,7 +655,7 @@
     "createCourse": "Create Course",
     "creating": "Creating...",
     "backButton": "Back",
-    "subtitle": "Select a course type and enter course details.",
+    "subtitle": "Enter course details and add content.",
     "flipLearningLabel": "Flip Learning",
     "flipLearningSubLabel": "Learn with Mangoboard content",
     "flipLearningDesc2": "A course that uses image and video content links created in Mangoboard.",
@@ -742,7 +742,13 @@
     "documentLabel": "Document",
     "quizLabel": "Quiz",
     "assignmentLabel": "Assignment",
-    "liveLabel": "Live"
+    "liveLabel": "Live",
+    "contentSectionTitle": "Course Content",
+    "contentSectionHint": "Add video or Mangoboard content",
+    "emptyContentHint": "No content added yet",
+    "contentSourceLabel": "Content Source",
+    "sourceVideo": "Video",
+    "sourceMangoboard": "Mangoboard"
   },
   "language": {
     "ko": "한국어",

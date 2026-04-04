@@ -655,7 +655,7 @@
     "createCourse": "강좌 생성",
     "creating": "생성 중...",
     "backButton": "돌아가기",
-    "subtitle": "강좌 유형을 선택하고 정보를 입력하세요.",
+    "subtitle": "강좌 정보를 입력하고 콘텐츠를 추가하세요.",
     "flipLearningLabel": "플립러닝",
     "flipLearningSubLabel": "망고보드 콘텐츠로 학습",
     "flipLearningDesc2": "망고보드에서 제작한 이미지·동영상 콘텐츠 링크를 활용하는 강좌입니다.",
@@ -742,7 +742,13 @@
     "documentLabel": "문서",
     "quizLabel": "퀴즈",
     "assignmentLabel": "과제",
-    "liveLabel": "라이브"
+    "liveLabel": "라이브",
+    "contentSectionTitle": "강의 콘텐츠",
+    "contentSectionHint": "동영상 또는 망고보드 콘텐츠를 추가하세요",
+    "emptyContentHint": "아직 추가된 콘텐츠가 없습니다",
+    "contentSourceLabel": "콘텐츠 소스",
+    "sourceVideo": "동영상",
+    "sourceMangoboard": "망고보드"
   },
   "language": {
     "ko": "한국어",
