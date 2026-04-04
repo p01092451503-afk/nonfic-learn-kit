@@ -538,6 +538,12 @@
   "contentPlayer": {
     "backToCourse": "Back to Course",
     "lessonCount": "{{current}} / {{total}} lessons",
-    "learningTime": "Study Time"
+    "learningTime": "Study Time",
+    "resumeFrom": "Resume from {{time}}",
+    "autoCompleteAt80": "Auto-completes at 80% watched",
+    "autoCompleted": "Auto Completed",
+    "autoCompletedDesc": "Automatically completed after watching 80% or more",
+    "watchProgress": "Watch Progress",
+    "resumePlayback": "Resume"
   }
 }

@@ -538,6 +538,12 @@
   "contentPlayer": {
     "backToCourse": "강좌로 돌아가기",
     "lessonCount": "{{current}} / {{total}} 차시",
-    "learningTime": "학습 시간"
+    "learningTime": "학습 시간",
+    "resumeFrom": "{{time}}부터 이어보기",
+    "autoCompleteAt80": "80% 이상 시청 시 자동 완료됩니다",
+    "autoCompleted": "자동 완료",
+    "autoCompletedDesc": "80% 이상 시청하여 학습이 자동 완료되었습니다",
+    "watchProgress": "시청 진행률",
+    "resumePlayback": "이어보기"
   }
 }
