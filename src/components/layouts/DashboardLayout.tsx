@@ -40,6 +40,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.myCourses"), href: "/dashboard/courses", icon: BookOpen },
     { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList },
     { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy },
+    { label: t("nav.myPage"), href: "/mypage", icon: UserCircle },
   ];
 
   const teacherNav: NavItem[] = [
