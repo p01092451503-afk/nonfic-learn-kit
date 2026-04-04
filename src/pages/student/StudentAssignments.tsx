@@ -165,29 +165,37 @@ const StudentAssignments = () => {
               return (
                 <div
                   key={sub.id}
-                  className="stat-card flex items-center gap-4 cursor-pointer group !p-4 hover:shadow-md transition-all"
+                  className="stat-card flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 cursor-pointer group !p-3 sm:!p-4 hover:shadow-md transition-all"
                   onClick={() => setViewTarget(sub)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${sub.assignments?.title} - ${config.label}`}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setViewTarget(sub); } }}
                 >
-                  <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
-                    <ClipboardList className="h-4 w-4 text-accent-foreground" />
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0" aria-hidden="true">
+                      <ClipboardList className="h-4 w-4 text-accent-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-foreground truncate">{sub.assignments?.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">{sub.assignments?.courses?.title}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-foreground truncate">{sub.assignments?.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{sub.assignments?.courses?.title}</p>
-                  </div>
-                  <div className="text-right shrink-0 space-y-1">
-                    <div className={`flex items-center gap-1 text-xs font-medium ${config.color}`}>
-                      <StatusIcon className="h-3 w-3" />
-                      {config.label}
-                      {sub.status === "graded" && sub.score != null && (
-                        <span className="ml-1">{sub.score}/{sub.assignments?.max_score || 100}{t("common.points")}</span>
+                  <div className="flex items-center justify-between sm:justify-end gap-3">
+                    <div className="text-left sm:text-right shrink-0 space-y-1">
+                      <div className={`flex items-center gap-1 text-xs font-medium ${config.color}`} role="status">
+                        <StatusIcon className="h-3 w-3" aria-hidden="true" />
+                        {config.label}
+                        {sub.status === "graded" && sub.score != null && (
+                          <span className="ml-1">{sub.score}/{sub.assignments?.max_score || 100}{t("common.points")}</span>
+                        )}
+                      </div>
+                      {sub.submitted_at && (
+                        <p className="text-[10px] text-muted-foreground"><time dateTime={sub.submitted_at}>{formatDate(sub.submitted_at)}</time></p>
                       )}
                     </div>
-                    {sub.submitted_at && (
-                      <p className="text-[10px] text-muted-foreground">{formatDate(sub.submitted_at)}</p>
-                    )}
+                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" aria-hidden="true" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </div>
               );
             })}
