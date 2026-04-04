@@ -268,13 +268,13 @@ const TeacherStudents = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-secondary/20">
-                    <th className="text-left text-[11px] font-medium text-muted-foreground px-5 py-2.5">{t("teacher.student")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.enrolledCourses")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 hidden sm:table-cell">{t("students.avgProgress")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.completionRate")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 hidden md:table-cell">{t("students.recentActivity")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.statusLabel")}</th>
-                    <th className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 w-10">{t("students.manageLabel")}</th>
+                    <th scope="col" className="text-left text-[11px] font-medium text-muted-foreground px-5 py-2.5">{t("teacher.student")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.enrolledCourses")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 hidden sm:table-cell">{t("students.avgProgress")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.completionRate")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 hidden md:table-cell">{t("students.recentActivity")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5">{t("students.statusLabel")}</th>
+                    <th scope="col" className="text-center text-[11px] font-medium text-muted-foreground px-3 py-2.5 w-10">{t("students.manageLabel")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
