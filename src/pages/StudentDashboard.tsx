@@ -369,8 +369,8 @@ const StudentDashboard = () => {
                         </div>
                       )}
                     </div>
-                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5" onClick={() => navigate(`/courses/${mc.id}?view=learn`)}>
-                      <Play className="h-3.5 w-3.5" /> {t("common.continue")}
+                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5" onClick={() => navigate(`/courses/${mc.id}?view=learn`)} aria-label={`${mc.title} - ${t("common.continue")}`}>
+                      <Play className="h-3.5 w-3.5" aria-hidden="true" /> {t("common.continue")}
                     </Button>
                   </div>
                 );
