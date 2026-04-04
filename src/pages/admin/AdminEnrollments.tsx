@@ -1,0 +1,278 @@
+import { useState } from "react";
+import { Search, CheckCircle2, XCircle, Clock, Users, BookOpen, Filter } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/hooks/use-toast";
+
+const AdminEnrollments = () => {
+  const { user } = useUser();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("pending");
+
+  // Fetch enrollments with course and profile info
+  const { data: enrollments = [], isLoading } = useQuery({
+    queryKey: ["admin-enrollments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("enrollments")
+        .select("*, courses(id, title, thumbnail_url, category_id)")
+        .order("enrolled_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch student profiles
+  const userIds = [...new Set(enrollments.map((e: any) => e.user_id))];
+  const { data: profiles = [] } = useQuery({
+    queryKey: ["enrollment-profiles", userIds],
+    queryFn: async () => {
+      if (userIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, department, position")
+        .in("user_id", userIds);
+      if (error) throw error;
+      return data;
+    },
+    enabled: userIds.length > 0,
+  });
+
+  const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
+
+  // Approve/reject mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ enrollmentId, status }: { enrollmentId: string; status: string }) => {
+      const { error } = await supabase
+        .from("enrollments")
+        .update({
+          status,
+          reviewed_by: user!.id,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", enrollmentId);
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-enrollments"] });
+      const msg = variables.status === "approved" ? t("enrollment.approved") : t("enrollment.rejected");
+      toast({ title: msg });
+    },
+    onError: (e: any) => {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    },
+  });
+
+  // Batch approve
+  const batchApproveMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from("enrollments")
+        .update({
+          status: "approved",
+          reviewed_by: user!.id,
+          reviewed_at: new Date().toISOString(),
+        })
+        .in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-enrollments"] });
+      toast({ title: t("enrollment.batchApproved") });
+    },
+    onError: (e: any) => {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    },
+  });
+
+  const filtered = enrollments.filter((e: any) => {
+    const profile = profileMap.get(e.user_id);
+    const matchSearch =
+      e.courses?.title?.toLowerCase().includes(search.toLowerCase()) ||
+      profile?.full_name?.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === "all" || e.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const pendingCount = enrollments.filter((e: any) => e.status === "pending").length;
+  const approvedCount = enrollments.filter((e: any) => e.status === "approved").length;
+  const rejectedCount = enrollments.filter((e: any) => e.status === "rejected").length;
+  const pendingIds = filtered.filter((e: any) => e.status === "pending").map((e: any) => e.id);
+
+  const statusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return <Badge variant="outline" className="text-[10px] gap-1 text-amber-600 border-amber-300 bg-amber-50"><Clock className="h-2.5 w-2.5" />{t("enrollment.pending")}</Badge>;
+      case "approved":
+        return <Badge variant="outline" className="text-[10px] gap-1 text-green-600 border-green-300 bg-green-50"><CheckCircle2 className="h-2.5 w-2.5" />{t("enrollment.approvedStatus")}</Badge>;
+      case "rejected":
+        return <Badge variant="outline" className="text-[10px] gap-1 text-destructive border-destructive/30 bg-destructive/5"><XCircle className="h-2.5 w-2.5" />{t("enrollment.rejectedStatus")}</Badge>;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <DashboardLayout role="admin">
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">{t("enrollment.management")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("enrollment.managementDesc")}</p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="stat-card p-4">
+            <p className="text-xs text-muted-foreground">{t("enrollment.pendingCount")}</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{pendingCount}</p>
+          </div>
+          <div className="stat-card p-4">
+            <p className="text-xs text-muted-foreground">{t("enrollment.approvedCount")}</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{approvedCount}</p>
+          </div>
+          <div className="stat-card p-4">
+            <p className="text-xs text-muted-foreground">{t("enrollment.rejectedCount")}</p>
+            <p className="text-2xl font-bold text-destructive mt-1">{rejectedCount}</p>
+          </div>
+        </div>
+
+        {/* Toolbar */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t("enrollment.searchPlaceholder")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 rounded-xl border-border"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-32 rounded-xl h-10">
+              <div className="flex items-center gap-1.5"><Filter className="h-3.5 w-3.5" /><SelectValue /></div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
+              <SelectItem value="pending">{t("enrollment.pending")}</SelectItem>
+              <SelectItem value="approved">{t("enrollment.approvedStatus")}</SelectItem>
+              <SelectItem value="rejected">{t("enrollment.rejectedStatus")}</SelectItem>
+            </SelectContent>
+          </Select>
+          {pendingIds.length > 0 && (
+            <Button
+              size="sm"
+              className="rounded-xl gap-1.5"
+              onClick={() => batchApproveMutation.mutate(pendingIds)}
+              disabled={batchApproveMutation.isPending}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              {t("enrollment.approveAll")} ({pendingIds.length})
+            </Button>
+          )}
+        </div>
+
+        {/* Table */}
+        {isLoading ? (
+          <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" /></div>
+        ) : filtered.length === 0 ? (
+          <div className="stat-card text-center py-16">
+            <Users className="h-10 w-10 text-muted-foreground mx-auto" />
+            <p className="text-sm text-muted-foreground mt-3">{t("enrollment.noEnrollments")}</p>
+          </div>
+        ) : (
+          <div className="stat-card !p-0 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-secondary/30">
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("enrollment.student")}</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("enrollment.course")}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3">{t("enrollment.status")}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("enrollment.requestDate")}</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("enrollment.actions")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((enrollment: any) => {
+                  const profile = profileMap.get(enrollment.user_id);
+                  const course = enrollment.courses;
+
+                  return (
+                    <tr key={enrollment.id} className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{profile?.full_name || "-"}</p>
+                          <p className="text-[11px] text-muted-foreground">{profile?.department || ""} {profile?.position || ""}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <div className="flex items-center gap-2">
+                          {course?.thumbnail_url ? (
+                            <img src={course.thumbnail_url} alt="" className="h-8 w-12 rounded object-cover shrink-0" />
+                          ) : (
+                            <div className="h-8 w-12 rounded bg-secondary flex items-center justify-center shrink-0">
+                              <BookOpen className="h-3 w-3 text-muted-foreground" />
+                            </div>
+                          )}
+                          <span className="text-xs text-foreground truncate max-w-[200px]">{course?.title || "-"}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">{statusBadge(enrollment.status)}</td>
+                      <td className="px-4 py-3 text-center hidden sm:table-cell">
+                        <span className="text-xs text-muted-foreground">
+                          {enrollment.enrolled_at ? new Date(enrollment.enrolled_at).toLocaleDateString() : "-"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {enrollment.status === "pending" ? (
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 rounded-lg text-xs gap-1 text-green-600 border-green-300 hover:bg-green-50"
+                              onClick={() => updateStatusMutation.mutate({ enrollmentId: enrollment.id, status: "approved" })}
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <CheckCircle2 className="h-3 w-3" /> {t("enrollment.approve")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 rounded-lg text-xs gap-1 text-destructive border-destructive/30 hover:bg-destructive/5"
+                              onClick={() => updateStatusMutation.mutate({ enrollmentId: enrollment.id, status: "rejected" })}
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <XCircle className="h-3 w-3" /> {t("enrollment.reject")}
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            {enrollment.reviewed_at ? new Date(enrollment.reviewed_at).toLocaleDateString() : "-"}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default AdminEnrollments;
