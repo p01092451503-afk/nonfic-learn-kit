@@ -204,8 +204,14 @@ const CourseDetail = () => {
   });
 
   const updateCourseMutation = useMutation({
-    mutationFn: async (vals: { title: string; description: string; status: string }) => {
-      const { error } = await supabase.from("courses").update(vals).eq("id", courseId!);
+    mutationFn: async (vals: { title: string; description: string; status: string; is_mandatory: boolean; deadline: string }) => {
+      const { error } = await supabase.from("courses").update({
+        title: vals.title,
+        description: vals.description,
+        status: vals.status,
+        is_mandatory: vals.is_mandatory,
+        deadline: vals.deadline || null,
+      }).eq("id", courseId!);
       if (error) throw error;
       // Upsert English i18n
       if (courseEnForm.title.trim()) {
