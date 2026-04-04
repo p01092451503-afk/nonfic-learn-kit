@@ -30,7 +30,7 @@ import type { Database } from "@/integrations/supabase/types";
 type ContentType = Database["public"]["Enums"]["content_type"];
 type VideoProvider = Database["public"]["Enums"]["video_provider"];
 
-type CourseKind = "video" | "flip";
+type ContentSource = "video" | "mangoboard";
 
 interface ContentItem {
   tempId: string;
@@ -42,6 +42,7 @@ interface ContentItem {
   duration_minutes: number | null;
   is_preview: boolean;
   is_published: boolean;
+  source: ContentSource;
 }
 
 const CreateCourse = () => {
@@ -69,9 +70,6 @@ const CreateCourse = () => {
     { value: "custom", label: t("createCourse.customInput") },
   ];
 
-  // Course kind
-  const [courseKind, setCourseKind] = useState<CourseKind>("video");
-
   // Course fields
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -93,9 +91,9 @@ const CreateCourse = () => {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const buildDraftData = useCallback(() => ({
-    courseKind, title, description, categoryId, difficultyLevel,
+    title, description, categoryId, difficultyLevel,
     estimatedHours, maxStudents, isMandatory, deadline, status, contents,
-  }), [courseKind, title, description, categoryId, difficultyLevel, estimatedHours, maxStudents, isMandatory, deadline, status, contents]);
+  }), [title, description, categoryId, difficultyLevel, estimatedHours, maxStudents, isMandatory, deadline, status, contents]);
 
   const saveDraft = useCallback(async () => {
     if (!user) return;
@@ -121,7 +119,6 @@ const CreateCourse = () => {
       const { data } = await (supabase.from("course_drafts" as any) as any).select("draft_data").eq("user_id", user.id).maybeSingle();
       if (data?.draft_data) {
         const d = data.draft_data as any;
-        if (d.courseKind) setCourseKind(d.courseKind);
         if (d.title) setTitle(d.title);
         if (d.description) setDescription(d.description);
         if (d.categoryId) setCategoryId(d.categoryId);
@@ -131,7 +128,7 @@ const CreateCourse = () => {
         if (d.isMandatory != null) setIsMandatory(d.isMandatory);
         if (d.deadline) setDeadline(d.deadline);
         if (d.status) setStatus(d.status);
-        if (d.contents?.length) setContents(d.contents);
+        if (d.contents?.length) setContents(d.contents.map((c: any) => ({ ...c, source: c.source || (c.video_url?.includes("mangoboard") ? "mangoboard" : "video") })));
         toast({ title: t("createCourse.draftRestored"), description: t("createCourse.draftRestoredDesc") });
       }
       setDraftLoaded(true);
@@ -150,19 +147,36 @@ const CreateCourse = () => {
         tempId: crypto.randomUUID(),
         title: "",
         description: "",
-        content_type: courseKind === "flip" ? "document" : "video",
+        content_type: "video",
         video_url: "",
-        video_provider: courseKind === "flip" ? "custom" : "",
+        video_provider: "",
         duration_minutes: null,
         is_preview: false,
         is_published: true,
+        source: "video",
       },
     ]);
   };
 
   const updateContent = (tempId: string, field: keyof ContentItem, value: any) => {
     setContents((prev) =>
-      prev.map((c) => (c.tempId === tempId ? { ...c, [field]: value } : c))
+      prev.map((c) => {
+        if (c.tempId !== tempId) return c;
+        const updated = { ...c, [field]: value };
+        // When switching source, reset relevant fields
+        if (field === "source") {
+          if (value === "mangoboard") {
+            updated.content_type = "document";
+            updated.video_provider = "custom";
+            updated.video_url = "";
+          } else {
+            updated.content_type = "video";
+            updated.video_provider = "";
+            updated.video_url = "";
+          }
+        }
+        return updated;
+      })
     );
   };
 
@@ -291,12 +305,10 @@ const CreateCourse = () => {
       toast({ title: t("common.error"), description: t("createCourse.contentTitleRequired"), variant: "destructive" });
       return;
     }
-    if (courseKind === "flip") {
-      const noUrl = contents.find((c) => !c.video_url.trim());
-      if (noUrl) {
-        toast({ title: t("common.error"), description: t("createCourse.flipUrlRequired"), variant: "destructive" });
-        return;
-      }
+    const noUrlMango = contents.find((c) => c.source === "mangoboard" && !c.video_url.trim());
+    if (noUrlMango) {
+      toast({ title: t("common.error"), description: t("createCourse.flipUrlRequired"), variant: "destructive" });
+      return;
     }
     createMutation.mutate();
   };
@@ -317,55 +329,6 @@ const CreateCourse = () => {
         <div>
           <h1 className="text-2xl font-semibold text-foreground">{t("createCourse.title")}</h1>
           <p className="text-muted-foreground mt-1">{t("createCourse.subtitle")}</p>
-        </div>
-
-        {/* Course Kind Selection */}
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            type="button"
-            onClick={() => setCourseKind("flip")}
-            className={`stat-card !p-5 !shadow-none hover:!shadow-none hover:!translate-y-0 text-left transition-all ${
-              courseKind === "flip" ? "bg-[hsl(var(--flip-bg)/0.08)]" : ""
-            }`}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                courseKind === "flip" ? "bg-[hsl(var(--flip-bg))] text-[hsl(var(--flip-foreground))]" : "bg-[hsl(var(--flip-bg)/0.15)] text-[hsl(var(--flip-bg))]"
-              }`}>
-                <BookOpen className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{t("createCourse.flipLearningLabel")}</p>
-                <p className="text-[10px] text-muted-foreground">{t("createCourse.flipLearningSubLabel")}</p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t("createCourse.flipLearningDesc2")}
-            </p>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCourseKind("video")}
-            className={`stat-card !p-5 !shadow-none hover:!shadow-none hover:!translate-y-0 text-left transition-all ${
-              courseKind === "video" ? "bg-[hsl(var(--video-bg)/0.08)]" : ""
-            }`}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                courseKind === "video" ? "bg-[hsl(var(--video-bg))] text-[hsl(var(--video-foreground))]" : "bg-[hsl(var(--video-bg)/0.15)] text-[hsl(var(--video-bg))]"
-              }`}>
-                <MonitorPlay className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{t("createCourse.videoLectureLabel")}</p>
-                <p className="text-[10px] text-muted-foreground">{t("createCourse.videoLectureSubLabel")}</p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t("createCourse.videoLectureDesc2")}
-            </p>
-          </button>
         </div>
 
         {/* Course Info */}
@@ -471,12 +434,8 @@ const CreateCourse = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-foreground">
-                {courseKind === "flip" ? t("createCourse.flipContentTitle") : t("createCourse.videoContentTitle")}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {courseKind === "flip" ? t("createCourse.flipContentHint") : t("createCourse.videoContentHint")}
-              </p>
+              <h2 className="text-base font-semibold text-foreground">{t("createCourse.contentSectionTitle")}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("createCourse.contentSectionHint")}</p>
             </div>
             <Button type="button" variant="outline" size="sm" className="rounded-xl gap-2" onClick={addContent}>
               <Plus className="h-3.5 w-3.5" /> {t("createCourse.addContentBtn")}
@@ -486,11 +445,9 @@ const CreateCourse = () => {
           {contents.length === 0 ? (
             <div className="stat-card text-center py-10 border-dashed">
               <div className="h-12 w-12 rounded-xl bg-accent mx-auto flex items-center justify-center mb-3">
-                {courseKind === "flip" ? <BookOpen className="h-5 w-5 text-accent-foreground" /> : <MonitorPlay className="h-5 w-5 text-accent-foreground" />}
+                <MonitorPlay className="h-5 w-5 text-accent-foreground" />
               </div>
-              <p className="text-sm text-muted-foreground mb-3">
-                {courseKind === "flip" ? t("createCourse.flipEmptyHint") : t("createCourse.videoEmptyHint")}
-              </p>
+              <p className="text-sm text-muted-foreground mb-3">{t("createCourse.emptyContentHint")}</p>
               <Button type="button" variant="outline" size="sm" className="rounded-xl gap-2" onClick={addContent}>
                 <Plus className="h-3.5 w-3.5" /> {t("createCourse.addFirstContent")}
               </Button>
@@ -498,11 +455,16 @@ const CreateCourse = () => {
           ) : (
             <div className="space-y-3">
               {contents.map((content, idx) => (
-                courseKind === "flip" ? (
-                  <FlipContentEditor key={content.tempId} content={content} index={idx} onChange={(field, value) => updateContent(content.tempId, field, value)} onRemove={() => removeContent(content.tempId)} t={t} />
-                ) : (
-                  <VideoContentEditor key={content.tempId} content={content} index={idx} onChange={(field, value) => updateContent(content.tempId, field, value)} onRemove={() => removeContent(content.tempId)} contentTypeOptions={contentTypeOptions} videoProviderOptions={videoProviderOptions} t={t} />
-                )
+                <UnifiedContentEditor
+                  key={content.tempId}
+                  content={content}
+                  index={idx}
+                  onChange={(field, value) => updateContent(content.tempId, field, value)}
+                  onRemove={() => removeContent(content.tempId)}
+                  contentTypeOptions={contentTypeOptions}
+                  videoProviderOptions={videoProviderOptions}
+                  t={t}
+                />
               ))}
             </div>
           )}
@@ -531,21 +493,25 @@ const CreateCourse = () => {
   );
 };
 
-/* ───── Flip Learning (Mangoboard) Content Editor ───── */
+/* ───── Unified Content Editor ───── */
 
-const FlipContentEditor = ({
-  content, index, onChange, onRemove, t,
+const UnifiedContentEditor = ({
+  content, index, onChange, onRemove, contentTypeOptions, videoProviderOptions, t,
 }: {
   content: ContentItem;
   index: number;
   onChange: (field: keyof ContentItem, value: any) => void;
   onRemove: () => void;
+  contentTypeOptions: { value: ContentType; label: string; icon: React.ElementType }[];
+  videoProviderOptions: { value: VideoProvider; label: string }[];
   t: (key: string) => string;
 }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
-  const isValidMangoboard = content.video_url.includes("mangoboard.net");
+  const isMango = content.source === "mangoboard";
+  const isValidMangoboard = isMango && content.video_url.includes("mangoboard.net");
+  const Icon = isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
 
   const handlePreview = () => {
     if (!isValidMangoboard) return;
@@ -556,108 +522,176 @@ const FlipContentEditor = ({
 
   return (
     <div className="stat-card !p-4 space-y-4">
+      {/* Header row */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 text-muted-foreground">
           <GripVertical className="h-4 w-4" />
           <span className="text-xs font-medium">{String(index + 1).padStart(2, "0")}</span>
         </div>
-        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-          <BookOpen className="h-4 w-4 text-primary" />
+        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isMango ? "bg-primary/10" : "bg-accent"}`}>
+          <Icon className={`h-4 w-4 ${isMango ? "text-primary" : "text-accent-foreground"}`} />
         </div>
-        <Input value={content.title} onChange={(e) => onChange("title", e.target.value)} placeholder={t("createCourse.contentTitlePlaceholder")} className="flex-1 h-9 rounded-lg border-border text-sm" />
-        <Badge variant="secondary" className="text-[10px] shrink-0">{t("createCourse.flipBadge")}</Badge>
+        <Input value={content.title} onChange={(e) => onChange("title", e.target.value)} placeholder={t("createCourse.contentTitlePlaceholder")} className="flex-1 h-9 rounded-lg border-border text-sm" required />
         <button type="button" onClick={onRemove} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
 
       <div className="pl-14 space-y-3">
+        {/* Source selector: 동영상 vs 망고보드 */}
         <div className="space-y-1.5">
-          <label className="text-[10px] font-medium text-muted-foreground uppercase flex items-center gap-1">
-            <Link2 className="h-3 w-3" /> {t("createCourse.mangoLinkLabel")}
-          </label>
+          <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.contentSourceLabel")}</label>
           <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Input value={content.video_url} onChange={(e) => { onChange("video_url", e.target.value); onChange("video_provider", "custom"); setShowPreview(false); setPreviewError(false); }} placeholder="https://www.mangoboard.net/publish/52632315" className="h-9 rounded-lg border-border text-xs pr-8" />
-              {isValidMangoboard && (
-                <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                  <div className="h-4 w-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                  </div>
+            <button
+              type="button"
+              onClick={() => onChange("source", "video")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${
+                !isMango
+                  ? "bg-accent text-foreground border-border"
+                  : "bg-transparent text-muted-foreground border-transparent hover:bg-accent/50"
+              }`}
+            >
+              <Video className="h-3.5 w-3.5" />
+              {t("createCourse.sourceVideo")}
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange("source", "mangoboard")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${
+                isMango
+                  ? "bg-accent text-foreground border-border"
+                  : "bg-transparent text-muted-foreground border-transparent hover:bg-accent/50"
+              }`}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              {t("createCourse.sourceMangoboard")}
+            </button>
+          </div>
+        </div>
+
+        {isMango ? (
+          /* ── Mangoboard fields ── */
+          <>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase flex items-center gap-1">
+                <Link2 className="h-3 w-3" /> {t("createCourse.mangoLinkLabel")}
+              </label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input value={content.video_url} onChange={(e) => { onChange("video_url", e.target.value); setShowPreview(false); setPreviewError(false); }} placeholder="https://www.mangoboard.net/publish/52632315" className="h-9 rounded-lg border-border text-xs pr-8" />
+                  {isValidMangoboard && (
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                      <div className="h-4 w-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+                <Button type="button" variant="outline" size="sm" className="rounded-lg gap-1.5 text-xs shrink-0 h-9" disabled={!isValidMangoboard} onClick={handlePreview}>
+                  <Eye className="h-3.5 w-3.5" /> {t("createCourse.preview")}
+                </Button>
+                {isValidMangoboard && (
+                  <a href={normalizeMangoboardUrl(content.video_url)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0" title={t("createCourse.openNewTab")}>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                )}
+              </div>
+              <p className="text-[10px] text-muted-foreground">{t("createCourse.mangoHint")}</p>
             </div>
-            <Button type="button" variant="outline" size="sm" className="rounded-lg gap-1.5 text-xs shrink-0 h-9" disabled={!isValidMangoboard} onClick={handlePreview}>
-              <Eye className="h-3.5 w-3.5" /> {t("createCourse.preview")}
-            </Button>
-            {isValidMangoboard && (
-              <a href={normalizeMangoboardUrl(content.video_url)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0" title={t("createCourse.openNewTab")}>
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.durationLabel")}</label>
+              <Input type="number" value={content.duration_minutes ?? ""} onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)} placeholder={t("createCourse.durationPlaceholder")} className="h-9 rounded-lg border-border text-xs" min="0" />
+            </div>
+
+            {showPreview && isValidMangoboard && (
+              <div className="rounded-xl border border-border overflow-hidden bg-muted/30">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/50">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Eye className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span className="text-[10px] text-muted-foreground truncate">{content.video_url}</span>
+                  </div>
+                  <button type="button" onClick={() => setShowPreview(false)} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors shrink-0 ml-2">
+                    {t("createCourse.closePreview")}
+                  </button>
+                </div>
+                <div className="relative aspect-video">
+                  {previewLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs text-muted-foreground">{t("createCourse.loadingText")}</span>
+                      </div>
+                    </div>
+                  )}
+                  {previewError && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
+                      <div className="flex flex-col items-center gap-2 text-center px-4">
+                        <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+                          <ExternalLink className="h-5 w-5 text-destructive" />
+                        </div>
+                        <p className="text-xs text-muted-foreground">{t("createCourse.previewFailed")}</p>
+                        <a href={normalizeMangoboardUrl(content.video_url)} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                          {t("createCourse.openDirectly")}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  <iframe src={normalizeMangoboardUrl(content.video_url)} className="w-full h-full" title={t("createCourse.mangoPreviewTitle")} allowFullScreen onLoad={() => setPreviewLoading(false)} onError={() => { setPreviewLoading(false); setPreviewError(true); }} />
+                </div>
+              </div>
             )}
-          </div>
-          <p className="text-[10px] text-muted-foreground">{t("createCourse.mangoHint")}</p>
-        </div>
+          </>
+        ) : (
+          /* ── Video fields ── */
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.typeLabel")}</label>
+                <Select value={content.content_type} onValueChange={(v) => onChange("content_type", v as ContentType)}>
+                  <SelectTrigger className="h-9 rounded-lg border-border text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {contentTypeOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.durationLabel")}</label>
+                <Input type="number" value={content.duration_minutes ?? ""} onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)} placeholder={t("createCourse.durationPlaceholder")} className="h-9 rounded-lg border-border text-xs" min="0" />
+              </div>
+            </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.contentTypeLabel2")}</label>
-            <Select value={content.content_type} onValueChange={(v) => onChange("content_type", v as ContentType)}>
-              <SelectTrigger className="h-9 rounded-lg border-border text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="document">{t("createCourse.imageDoc")}</SelectItem>
-                <SelectItem value="video">{t("createCourse.videoType")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.durationLabel")}</label>
-            <Input type="number" value={content.duration_minutes ?? ""} onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)} placeholder={t("createCourse.durationPlaceholder")} className="h-9 rounded-lg border-border text-xs" min="0" />
-          </div>
-        </div>
+            {(content.content_type === "video" || content.content_type === "live") && (
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2 space-y-1.5">
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.videoUrlLabel")}</label>
+                  <Input value={content.video_url} onChange={(e) => onChange("video_url", e.target.value)} placeholder="https://youtube.com/watch?v=..." className="h-9 rounded-lg border-border text-xs" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.providerLabel")}</label>
+                  <Select value={content.video_provider || ""} onValueChange={(v) => onChange("video_provider", v)}>
+                    <SelectTrigger className="h-9 rounded-lg border-border text-xs">
+                      <SelectValue placeholder={t("createCourse.providerPlaceholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {videoProviderOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+          </>
+        )}
 
+        {/* Common fields */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.descLabel")}</label>
           <Textarea value={content.description} onChange={(e) => onChange("description", e.target.value)} placeholder={t("createCourse.contentDescPlaceholder")} className="min-h-[60px] rounded-lg border-border text-xs resize-none" />
         </div>
-
-        {showPreview && isValidMangoboard && (
-          <div className="rounded-xl border border-border overflow-hidden bg-muted/30">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/50">
-              <div className="flex items-center gap-2 min-w-0">
-                <Eye className="h-3 w-3 text-muted-foreground shrink-0" />
-                <span className="text-[10px] text-muted-foreground truncate">{content.video_url}</span>
-              </div>
-              <button type="button" onClick={() => setShowPreview(false)} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors shrink-0 ml-2">
-                {t("createCourse.closePreview")}
-              </button>
-            </div>
-            <div className="relative aspect-video">
-              {previewLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs text-muted-foreground">{t("createCourse.loadingText")}</span>
-                  </div>
-                </div>
-              )}
-              {previewError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
-                  <div className="flex flex-col items-center gap-2 text-center px-4">
-                    <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-                      <ExternalLink className="h-5 w-5 text-destructive" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">{t("createCourse.previewFailed")}</p>
-                    <a href={normalizeMangoboardUrl(content.video_url)} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
-                      {t("createCourse.openDirectly")}
-                    </a>
-                  </div>
-                </div>
-              )}
-              <iframe src={normalizeMangoboardUrl(content.video_url)} className="w-full h-full" title={t("createCourse.mangoPreviewTitle")} allowFullScreen onLoad={() => setPreviewLoading(false)} onError={() => { setPreviewLoading(false); setPreviewError(true); }} />
-            </div>
-          </div>
-        )}
 
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
@@ -669,96 +703,6 @@ const FlipContentEditor = ({
             {t("createCourse.publishToggle")}
           </label>
         </div>
-      </div>
-    </div>
-  );
-};
-
-/* ───── Video Content Editor ───── */
-
-const VideoContentEditor = ({
-  content, index, onChange, onRemove, contentTypeOptions, videoProviderOptions, t,
-}: {
-  content: ContentItem;
-  index: number;
-  onChange: (field: keyof ContentItem, value: any) => void;
-  onRemove: () => void;
-  contentTypeOptions: { value: ContentType; label: string; icon: React.ElementType }[];
-  videoProviderOptions: { value: VideoProvider; label: string }[];
-  t: (key: string) => string;
-}) => {
-  const Icon = contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video;
-
-  return (
-    <div className="stat-card !p-4 space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <GripVertical className="h-4 w-4" />
-          <span className="text-xs font-medium">{String(index + 1).padStart(2, "0")}</span>
-        </div>
-        <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center shrink-0">
-          <Icon className="h-4 w-4 text-accent-foreground" />
-        </div>
-        <Input value={content.title} onChange={(e) => onChange("title", e.target.value)} placeholder={t("createCourse.contentTitlePlaceholder2")} className="flex-1 h-9 rounded-lg border-border text-sm" required />
-        <button type="button" onClick={onRemove} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 pl-14">
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.typeLabel")}</label>
-          <Select value={content.content_type} onValueChange={(v) => onChange("content_type", v as ContentType)}>
-            <SelectTrigger className="h-9 rounded-lg border-border text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {contentTypeOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.durationLabel")}</label>
-          <Input type="number" value={content.duration_minutes ?? ""} onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)} placeholder={t("createCourse.durationPlaceholder")} className="h-9 rounded-lg border-border text-xs" min="0" />
-        </div>
-      </div>
-
-      {(content.content_type === "video" || content.content_type === "live") && (
-        <div className="grid grid-cols-3 gap-3 pl-14">
-          <div className="col-span-2 space-y-1.5">
-            <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.videoUrlLabel")}</label>
-            <Input value={content.video_url} onChange={(e) => onChange("video_url", e.target.value)} placeholder="https://youtube.com/watch?v=..." className="h-9 rounded-lg border-border text-xs" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.providerLabel")}</label>
-            <Select value={content.video_provider || ""} onValueChange={(v) => onChange("video_provider", v)}>
-              <SelectTrigger className="h-9 rounded-lg border-border text-xs">
-                <SelectValue placeholder={t("createCourse.providerPlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {videoProviderOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )}
-
-      <div className="pl-14 space-y-1.5">
-        <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.descLabel")}</label>
-        <Textarea value={content.description} onChange={(e) => onChange("description", e.target.value)} placeholder={t("createCourse.contentDescPlaceholder")} className="min-h-[60px] rounded-lg border-border text-xs resize-none" />
-      </div>
-
-      <div className="flex items-center gap-6 pl-14">
-        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-          <Switch checked={content.is_preview} onCheckedChange={(v) => onChange("is_preview", v)} className="scale-75" />
-          {t("createCourse.allowPreview")}
-        </label>
-        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-          <Switch checked={content.is_published} onCheckedChange={(v) => onChange("is_published", v)} className="scale-75" />
-          {t("createCourse.publishToggle")}
-        </label>
       </div>
     </div>
   );
