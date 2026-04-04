@@ -141,18 +141,8 @@ const CreateCourse = () => {
     await (supabase.from("course_drafts" as any) as any).delete().eq("user_id", user.id);
   }, [user]);
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order");
-      if (error) throw error;
-      return data;
-    },
-  });
+
+
 
   const addContent = () => {
     setContents((prev) => [
