@@ -104,7 +104,36 @@ const ContentPlayer = () => {
   // 모바일에서 콘텐츠 변경 시 사이드바 닫기
   useEffect(() => {
     setMobileSidebarOpen(false);
+    setMangoElapsed(0);
   }, [contentId]);
+
+  // Mangoboard 학습 시간 트래킹 & 자동 완료
+  useEffect(() => {
+    if (mangoPopupOpen && currentContent && isMangoboard(currentContent.video_url)) {
+      setMangoElapsed(0);
+      mangoTimerRef.current = setInterval(() => {
+        setMangoElapsed((prev) => prev + 1);
+      }, 1000);
+    } else {
+      if (mangoTimerRef.current) {
+        clearInterval(mangoTimerRef.current);
+        mangoTimerRef.current = null;
+      }
+    }
+    return () => {
+      if (mangoTimerRef.current) clearInterval(mangoTimerRef.current);
+    };
+  }, [mangoPopupOpen, currentContent?.id]);
+
+  // 80% 시간 도달 시 자동 완료
+  const requiredSeconds = (currentContent?.duration_minutes || 5) * 60 * 0.8;
+  const mangoAutoCompleted = mangoElapsed >= requiredSeconds;
+
+  useEffect(() => {
+    if (mangoAutoCompleted && !currentProgress?.completed && mangoPopupOpen) {
+      markCompleteMutation.mutate();
+    }
+  }, [mangoAutoCompleted]);
 
   const markCompleteMutation = useMutation({
     mutationFn: async () => {
