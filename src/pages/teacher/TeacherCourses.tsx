@@ -267,7 +267,7 @@ const TeacherCourses = () => {
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-center">
                         <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                          <BookOpen className="h-3 w-3" /> {contents}
+                          <BookOpen className="h-3 w-3" aria-hidden="true" /> {contents}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right">
