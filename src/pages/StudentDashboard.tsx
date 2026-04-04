@@ -364,7 +364,7 @@ const StudentDashboard = () => {
                       </div>
                       {mc.deadline && (
                         <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
+                          <Calendar className="h-3 w-3" aria-hidden="true" />
                           <span>{t("mandatory.deadline")}: {mc.deadline}</span>
                         </div>
                       )}
