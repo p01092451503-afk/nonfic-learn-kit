@@ -202,6 +202,7 @@ const TeacherStudents = () => {
   ];
 
   return (
+    <>
     <DashboardLayout role="teacher">
       <div className="space-y-6">
         {/* Header */}
