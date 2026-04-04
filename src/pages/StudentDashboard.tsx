@@ -1,5 +1,6 @@
 import {
   BookOpen, Clock, ClipboardCheck, Award, Play, ArrowRight, TrendingUp, BarChart3, Star,
+  AlertTriangle, Calendar,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -166,6 +167,38 @@ const StudentDashboard = () => {
     enabled: !!user?.id,
   });
 
+  // 필수교육 (마감 임박 우선)
+  const { data: mandatoryCourses = [] } = useQuery({
+    queryKey: ["dash-mandatory", user?.id],
+    queryFn: async () => {
+      // Get enrolled mandatory courses that are not completed
+      const { data: myEnrollments } = await supabase
+        .from("enrollments")
+        .select("course_id, progress")
+        .eq("user_id", user!.id)
+        .is("completed_at", null);
+
+      if (!myEnrollments || myEnrollments.length === 0) return [];
+      const enrolledMap = new Map(myEnrollments.map(e => [e.course_id, Number(e.progress) || 0]));
+
+      const { data: courses, error } = await supabase
+        .from("courses")
+        .select("id, title, deadline, is_mandatory")
+        .eq("is_mandatory", true)
+        .eq("status", "published")
+        .in("id", [...enrolledMap.keys()])
+        .order("deadline", { ascending: true });
+
+      if (error) throw error;
+      return (courses || []).map(c => ({
+        ...c,
+        progress: enrolledMap.get(c.id) || 0,
+        daysLeft: c.deadline ? Math.ceil((new Date(c.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null,
+      }));
+    },
+    enabled: !!user?.id,
+  });
+
   // 추천 강의 (수강하지 않은 published 강좌)
   const { data: recommendedCourses = [] } = useQuery({
     queryKey: ["dash-recommended", user?.id],
@@ -293,6 +326,59 @@ const StudentDashboard = () => {
             </div>
           ))}
         </div>
+
+        {/* 필수교육 안내 */}
+        {mandatoryCourses.length > 0 && (
+          <div className="stat-card !p-6 space-y-4 border-destructive/30">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <div>
+                <h2 className="text-lg font-bold text-foreground">{t("mandatory.title")}</h2>
+                <p className="text-xs text-muted-foreground">{t("mandatory.subtitle")}</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {mandatoryCourses.map((mc: any) => {
+                const isOverdue = mc.daysLeft !== null && mc.daysLeft < 0;
+                const isToday = mc.daysLeft === 0;
+                const isUrgent = mc.daysLeft !== null && mc.daysLeft <= 3;
+                return (
+                  <div key={mc.id} className={`stat-card !p-4 flex items-center gap-4 ${isOverdue ? "border-destructive/40 bg-destructive/5" : isUrgent ? "border-orange-300 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/10" : ""}`}>
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-foreground truncate">{mc.title}</h3>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                          isOverdue ? "bg-destructive/10 text-destructive" :
+                          isToday ? "bg-destructive/10 text-destructive" :
+                          isUrgent ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
+                          "bg-muted text-muted-foreground"
+                        }`}>
+                          {isOverdue ? t("mandatory.overdue") :
+                           isToday ? t("mandatory.today") :
+                           mc.daysLeft !== null ? t("mandatory.daysLeft", { days: mc.daysLeft }) : ""}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Progress value={mc.progress} className="h-2 flex-1" />
+                        <span className="text-xs font-semibold text-foreground shrink-0">{Math.round(mc.progress)}%</span>
+                      </div>
+                      {mc.deadline && (
+                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          <span>{t("mandatory.deadline")}: {mc.deadline}</span>
+                        </div>
+                      )}
+                    </div>
+                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5" onClick={() => navigate(`/courses/${mc.id}`)}>
+                      <Play className="h-3.5 w-3.5" /> {t("common.continue")}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="stat-card !p-6 space-y-5">
           <div>
             <h2 className="text-lg font-bold text-foreground">{t("dashboard.ongoingCourses")}</h2>
