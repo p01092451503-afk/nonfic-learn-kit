@@ -259,21 +259,23 @@ const ContentPlayer = () => {
   return (
     <div className="fixed inset-0 z-[60] bg-background flex flex-col">
       {/* Top header */}
-      <header className="flex items-center gap-4 px-4 lg:px-6 h-14 border-b border-border bg-background shrink-0">
+      <header className="flex items-center gap-3 sm:gap-4 px-4 lg:px-6 h-14 border-b border-border bg-background shrink-0">
         <button onClick={handleClose} className="p-2 rounded-lg hover:bg-accent text-muted-foreground transition-colors" title={t("common.close")}>
           <X className="h-5 w-5" />
         </button>
-        <div className="h-5 w-px bg-border" />
-        <h1 className="text-sm font-semibold text-foreground truncate flex-1">{getCourseTitle()}</h1>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="h-6 w-px bg-border hidden sm:block" />
+        <Badge variant="secondary" className="text-sm font-bold px-3 py-1 truncate max-w-[40%] sm:max-w-[50%]">
+          {getCourseTitle()}
+        </Badge>
+        <div className="flex items-center gap-3 ml-auto shrink-0">
           <button onClick={() => setMobileCurriculumOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-accent text-muted-foreground transition-colors" title={t("course.learningProgress")}>
             <List className="h-5 w-5" />
           </button>
-          <span className="text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">{currentIndex + 1}</span> / {contents.length} {t("course.lesson")}
+          <span className="text-sm text-muted-foreground">
+            <span className="font-bold text-foreground text-base">{currentIndex + 1}</span> / {contents.length} {t("course.lesson")}
           </span>
-          <Progress value={overallProgress} className="w-24 h-1.5 hidden sm:block" />
-          <span className="text-xs font-medium text-muted-foreground">{overallProgress}%</span>
+          <Progress value={overallProgress} className="w-28 h-2 hidden sm:block" />
+          <span className="text-sm font-bold text-foreground">{overallProgress}%</span>
         </div>
       </header>
 
