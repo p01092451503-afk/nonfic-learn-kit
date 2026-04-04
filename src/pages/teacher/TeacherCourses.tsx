@@ -142,8 +142,10 @@ const TeacherCourses = () => {
         {/* Toolbar */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[140px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <label htmlFor="teacher-course-search" className="sr-only">{t("teacher.searchCourse")}</label>
             <Input
+              id="teacher-course-search"
               placeholder={t("teacher.searchCourse")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
