@@ -272,12 +272,7 @@ const ContentPlayer = () => {
 
   const SidebarContent = () => (
     <>
-      <div className="p-4 pb-2">
-        <Link to={`/courses/${courseId}`} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors">
-          <ArrowLeft className="h-4 w-4" /> {t("course.backToCourse")}
-        </Link>
-      </div>
-      <div className="p-4 pt-2 border-b border-sidebar-border">
+      <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-semibold text-foreground truncate">{getCourseTitle()}</h2>
