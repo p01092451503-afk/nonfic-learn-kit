@@ -16,6 +16,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useTranslation } from "react-i18next";
 
+const statusColor: Record<string, string> = {
+  draft: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  published: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  archived: "bg-secondary text-muted-foreground",
+};
+
 const TeacherCourses = () => {
   const { user } = useUser();
   const navigate = useNavigate();
@@ -30,13 +36,6 @@ const TeacherCourses = () => {
   const difficultyLabel: Record<string, string> = {
     beginner: t("teacher.beginner"), intermediate: t("teacher.intermediate"), advanced: t("teacher.advanced"),
   };
-
-const TeacherCourses = () => {
-  const { user } = useUser();
-  const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const { data: courses = [] } = useQuery({
     queryKey: ["teacher-courses", user?.id],
