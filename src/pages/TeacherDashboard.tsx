@@ -96,9 +96,6 @@ const TeacherDashboard = () => {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{t("teacher.manageStudents")}</p>
           </div>
-          <Button size="sm" className="gap-1.5 h-9" onClick={() => navigate("/teacher/courses/create")}>
-            <Plus className="h-3.5 w-3.5" /> {t("teacher.createNewCourse")}
-          </Button>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
