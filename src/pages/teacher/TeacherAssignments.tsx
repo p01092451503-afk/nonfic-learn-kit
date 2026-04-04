@@ -298,12 +298,12 @@ const TeacherAssignments = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-secondary/20">
-                    <th className="text-left text-xs font-medium text-muted-foreground px-6 py-3">{t("assignments.assignmentName")}</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("assignments.lecture")}</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("assignments.dueDateLabel")}</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("assignments.score")}</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3">{t("admin.statusLabel")}</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 w-16">{t("common.manage")}</th>
+                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-6 py-3">{t("assignments.assignmentName")}</th>
+                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("assignments.lecture")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("assignments.dueDateLabel")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("assignments.score")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3">{t("admin.statusLabel")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 w-16">{t("common.manage")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
