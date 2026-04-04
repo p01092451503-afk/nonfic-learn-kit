@@ -107,13 +107,13 @@ const TeacherCourses = () => {
     <DashboardLayout role="teacher">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">{t("teacher.courseManagement")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("teacher.manageCourses")}</p>
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t("teacher.courseManagement")}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("teacher.manageCourses")}</p>
           </div>
           <Link to="/teacher/courses/new">
-            <Button className="rounded-xl gap-2">
+            <Button className="rounded-xl gap-2 w-full sm:w-auto">
               <Plus className="h-4 w-4" /> {t("teacher.newCourse")}
             </Button>
           </Link>
