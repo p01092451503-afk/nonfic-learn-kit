@@ -79,7 +79,10 @@
     "assignmentManagement": "과제 관리",
     "studentManagement": "수강생 관리",
     "userManagement": "사용자 관리",
-    "settings": "설정"
+    "settings": "설정",
+    "learningManagement": "학습 관리",
+    "attendanceManagement": "출석 관리",
+    "completionManagement": "수료 관리"
   },
   "roles": {
     "student": "Student",
