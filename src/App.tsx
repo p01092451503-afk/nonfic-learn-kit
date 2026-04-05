@@ -60,6 +60,8 @@ const App = () => (
             <Route path="/dashboard/achievements" element={<ProtectedRoute><StudentAchievements /></ProtectedRoute>} />
             <Route path="/catalog" element={<ProtectedRoute><CourseCatalog /></ProtectedRoute>} />
             <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+            <Route path="/student/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+            <Route path="/student/courses/:courseId/content/:contentId" element={<ProtectedRoute><ContentPlayer /></ProtectedRoute>} />
 
             {/* Teacher */}
             <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
