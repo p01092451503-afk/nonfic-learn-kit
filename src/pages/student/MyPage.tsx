@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Lock, Camera, Check, ArrowRight, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
+import { User, Lock, Camera, Check, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -164,87 +164,88 @@ const MyPage = () => {
 
   return (
     <DashboardLayout role="student">
-      <div className="space-y-0 -m-6 lg:-m-8">
-        {/* Hero */}
-        <div className="border-y border-foreground/15">
-          <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6 sm:py-8">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
-              {/* Left: avatar + info (expanded) */}
-              <div className="flex items-center gap-5 lg:min-w-[320px]">
-                <Avatar className="h-20 w-20 border-2 border-border shadow-sm">
-                  <AvatarImage src={currentAvatar || ""} alt={profile?.full_name || ""} />
-                  <AvatarFallback className="bg-card text-foreground text-xl font-semibold">
-                    {profile?.full_name?.charAt(0) || "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 space-y-1">
-                  <h1 className="text-xl font-bold text-foreground">{profile?.full_name || t("common.user")}</h1>
-                  <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {profile?.department && (
-                      <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{profile.department}</span>
-                    )}
-                    {profile?.position && (
-                      <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{profile.position}</span>
-                    )}
-                    {profile?.team_name && (
-                      <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{profile.team_name}</span>
-                    )}
-                  </div>
+      <div className="space-y-6">
+        {/* Page Title */}
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+            <UserCircle className="h-6 w-6" aria-hidden="true" />{t("nav.myPage")}
+          </h1>
+        </div>
+
+        {/* Profile Header */}
+        <div className="border border-border rounded-xl p-4 sm:p-6">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
+            {/* Left: avatar + info */}
+            <div className="flex items-center gap-5 lg:min-w-[320px]">
+              <Avatar className="h-20 w-20 border-2 border-border shadow-sm">
+                <AvatarImage src={currentAvatar || ""} alt={profile?.full_name || ""} />
+                <AvatarFallback className="bg-card text-foreground text-xl font-semibold">
+                  {profile?.full_name?.charAt(0) || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 space-y-1">
+                <h2 className="text-xl font-bold text-foreground">{profile?.full_name || t("common.user")}</h2>
+                <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {profile?.department && (
+                    <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{profile.department}</span>
+                  )}
+                  {profile?.position && (
+                    <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{profile.position}</span>
+                  )}
+                  {profile?.team_name && (
+                    <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{profile.team_name}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: mini dashboard */}
+            <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">{t("dashboard.inProgress")}</span>
+                  <BookOpen className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                </div>
+                <p className="text-2xl font-bold text-foreground leading-none">{enrollmentStats?.inProgress || 0}</p>
+                <p className="text-[10px] text-muted-foreground">{t("dashboard.totalCourses", { count: enrollmentStats?.total || 0 })}</p>
+              </div>
+
+              <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">{t("dashboard.coursesCompleted")}</span>
+                  <Trophy className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                </div>
+                <p className="text-2xl font-bold text-foreground leading-none">{enrollmentStats?.completed || 0}</p>
+                <div className="h-1 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${enrollmentStats?.total ? ((enrollmentStats.completed || 0) / enrollmentStats.total) * 100 : 0}%` }} />
                 </div>
               </div>
 
-              {/* Right: mini dashboard */}
-              <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {/* 수강 현황 */}
-                <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">{t("dashboard.inProgress")}</span>
-                    <BookOpen className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                  </div>
-                  <p className="text-2xl font-bold text-foreground leading-none">{enrollmentStats?.inProgress || 0}</p>
-                  <p className="text-[10px] text-muted-foreground">{t("dashboard.totalCourses", { count: enrollmentStats?.total || 0 })}</p>
+              <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">{t("dashboard.level")}</span>
+                  <Star className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 </div>
-
-                {/* 수강 완료 */}
-                <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">{t("dashboard.coursesCompleted")}</span>
-                    <Trophy className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                <p className="text-2xl font-bold text-foreground leading-none">Lv.{level}</p>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1 flex-1 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${xpProgress}%` }} />
                   </div>
-                  <p className="text-2xl font-bold text-foreground leading-none">{enrollmentStats?.completed || 0}</p>
-                  <div className="h-1 bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${enrollmentStats?.total ? ((enrollmentStats.completed || 0) / enrollmentStats.total) * 100 : 0}%` }} />
-                  </div>
+                  <span className="text-[9px] text-muted-foreground shrink-0">{xp}/{xpToNext} XP</span>
                 </div>
+              </div>
 
-                {/* 레벨 & XP */}
-                <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">{t("dashboard.level")}</span>
-                    <Star className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                  </div>
-                  <p className="text-2xl font-bold text-foreground leading-none">Lv.{level}</p>
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-1 flex-1 bg-secondary rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${xpProgress}%` }} />
-                    </div>
-                    <span className="text-[9px] text-muted-foreground shrink-0">{xp}/{xpToNext} XP</span>
-                  </div>
+              <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">{t("dashboard.earnedBadges")}</span>
+                  <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 </div>
-
-                {/* 연속학습 & 포인트 & 뱃지 */}
-                <div className="border border-border rounded-xl p-3 sm:p-4 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">{t("dashboard.earnedBadges")}</span>
-                    <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                  </div>
-                  <p className="text-2xl font-bold text-foreground leading-none">{badgeCount}</p>
-                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                    <span>🔥 {streakDays}{t("common.days")}</span>
-                    <span className="text-foreground/20">·</span>
-                    <span>{totalPoints} P</span>
-                  </div>
+                <p className="text-2xl font-bold text-foreground leading-none">{badgeCount}</p>
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                  <span>🔥 {streakDays}{t("common.days")}</span>
+                  <span className="text-foreground/20">·</span>
+                  <span>{totalPoints} P</span>
                 </div>
               </div>
             </div>
@@ -252,19 +253,18 @@ const MyPage = () => {
         </div>
 
         {/* Content */}
-        <div className="px-4 sm:px-6 lg:px-10 py-6 sm:py-8">
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="bg-secondary/50 rounded-xl p-1">
-              <TabsTrigger value="profile" className="rounded-lg gap-1.5 text-sm">
-                <User className="h-4 w-4" /> {t("mypage.profileTab")}
-              </TabsTrigger>
-              <TabsTrigger value="avatar" className="rounded-lg gap-1.5 text-sm">
-                <Camera className="h-4 w-4" /> {t("mypage.avatarTab")}
-              </TabsTrigger>
-              <TabsTrigger value="password" className="rounded-lg gap-1.5 text-sm">
-                <Lock className="h-4 w-4" /> {t("mypage.passwordTab")}
-              </TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="bg-secondary/50 rounded-xl p-1">
+            <TabsTrigger value="profile" className="rounded-lg gap-1.5 text-sm">
+              <User className="h-4 w-4" /> {t("mypage.profileTab")}
+            </TabsTrigger>
+            <TabsTrigger value="avatar" className="rounded-lg gap-1.5 text-sm">
+              <Camera className="h-4 w-4" /> {t("mypage.avatarTab")}
+            </TabsTrigger>
+            <TabsTrigger value="password" className="rounded-lg gap-1.5 text-sm">
+              <Lock className="h-4 w-4" /> {t("mypage.passwordTab")}
+            </TabsTrigger>
+          </TabsList>
 
             {/* Profile Tab */}
             <TabsContent value="profile">
@@ -380,7 +380,6 @@ const MyPage = () => {
               </div>
             </TabsContent>
           </Tabs>
-        </div>
       </div>
     </DashboardLayout>
   );
