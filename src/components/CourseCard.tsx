@@ -37,9 +37,8 @@ const CourseCard = ({ course, categorySlug, categoryName, studentCount, contentC
         <div className={`relative aspect-[16/10] bg-gradient-to-br ${gradient} overflow-hidden`}>
           {course.thumbnail_url && <img src={course.thumbnail_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover" />}
           {!course.thumbnail_url && (
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-4 right-4 h-24 w-24 rounded-full bg-white/30 blur-xl" />
-              <div className="absolute bottom-2 left-6 h-16 w-16 rounded-full bg-white/20 blur-lg" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <BookOpen className="h-12 w-12 text-white/30" strokeWidth={1.2} aria-hidden="true" />
             </div>
           )}
           <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
