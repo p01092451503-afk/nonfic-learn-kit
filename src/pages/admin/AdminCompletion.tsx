@@ -136,15 +136,15 @@ const AdminCompletion = () => {
           </Select>
 
           <div className="overflow-x-auto -mx-3 sm:-mx-5">
-            <div className="min-w-[580px] px-3 sm:px-5">
+            <div className="min-w-[420px] px-3 sm:px-5">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("admin.nameColumn")}</TableHead>
                     <TableHead>{t("admin.courseLabel")}</TableHead>
-                    <TableHead>{t("admin.attendanceRate")}</TableHead>
-                    <TableHead>{t("admin.avgScore")}</TableHead>
-                    <TableHead>{t("admin.completionReq")}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t("admin.attendanceRate")}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t("admin.avgScore")}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t("admin.completionReq")}</TableHead>
                     <TableHead>{t("admin.completionStatus")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -163,9 +163,9 @@ const AdminCompletion = () => {
                         <TableRow key={e.id}>
                           <TableCell className="font-medium text-sm">{profileMap.get(e.user_id) || "-"}</TableCell>
                           <TableCell className="text-sm">{courseMap.get(e.course_id)?.title || "-"}</TableCell>
-                          <TableCell className="text-sm">{attRate}%</TableCell>
-                          <TableCell className="text-sm">{avgScore}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{t("admin.progress80")}</TableCell>
+                          <TableCell className="text-sm hidden sm:table-cell">{attRate}%</TableCell>
+                          <TableCell className="text-sm hidden sm:table-cell">{avgScore}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{t("admin.progress80")}</TableCell>
                           <TableCell>
                             <Badge variant={isComplete ? "default" : "destructive"} className="text-[10px]">
                               {isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")}
