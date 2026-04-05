@@ -56,6 +56,7 @@ const AdminAttendance = () => {
     if (statusFilter !== "all" && a.status !== statusFilter) return false;
     return true;
   });
+  const visibleRows = filtered.slice(0, 50);
 
   const formatDate = (d: string | null) => {
     if (!d) return "-";
@@ -70,13 +71,20 @@ const AdminAttendance = () => {
   const exportExcel = () => {
     const header = [t("admin.dateColumn"), t("admin.nameColumn"), t("admin.courseLabel"), t("admin.statusLabel"), t("admin.checkInTime"), t("admin.notes")];
     const rows = filtered.map((a: any) => [
-      formatDate(a.attendance_date), profileMap.get(a.user_id) || "-", courseMap.get(a.course_id) || "-",
-      a.status || "-", formatTime(a.check_in_time), a.notes || "",
+      formatDate(a.attendance_date),
+      profileMap.get(a.user_id) || "-",
+      courseMap.get(a.course_id) || "-",
+      a.status || "-",
+      formatTime(a.check_in_time),
+      a.notes || "",
     ]);
-    const csv = [header, ...rows].map(r => r.join(",")).join("\n");
+    const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "attendance_report.csv"; a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "attendance_report.csv";
+    a.click();
   };
 
   return (
@@ -90,7 +98,7 @@ const AdminAttendance = () => {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.attendanceManagementDesc")}</p>
           </div>
-          <Button onClick={exportExcel} variant="outline" className="rounded-xl gap-2 text-sm self-start sm:self-auto">
+          <Button onClick={exportExcel} variant="outline" className="rounded-xl gap-2 text-sm w-full sm:w-auto justify-center sm:justify-start">
             <Download className="h-4 w-4" aria-hidden="true" /> {t("admin.excelDownload")}
           </Button>
         </div>
@@ -116,8 +124,47 @@ const AdminAttendance = () => {
             </Select>
           </div>
 
-          <div className="overflow-x-auto -mx-3 sm:-mx-5">
-            <div className="min-w-[420px] px-3 sm:px-5">
+          <div className="sm:hidden space-y-3" aria-label={t("admin.attendanceManagement")}>
+            {visibleRows.length === 0 ? (
+              <div className="rounded-xl border border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
+                {t("admin.noAttendanceData")}
+              </div>
+            ) : (
+              visibleRows.map((a: any) => (
+                <article key={a.id} className="rounded-xl border border-border bg-background p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">{formatDate(a.attendance_date)}</p>
+                      <h3 className="mt-1 text-sm font-semibold text-foreground break-words">{profileMap.get(a.user_id) || "-"}</h3>
+                    </div>
+                    <Badge variant={(statusColor[a.status] as any) || "outline"} className="text-[10px] shrink-0">
+                      {t(`admin.${a.status}`)}
+                    </Badge>
+                  </div>
+
+                  <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
+                    <div className="col-span-2">
+                      <dt className="text-muted-foreground">{t("admin.courseLabel")}</dt>
+                      <dd className="mt-1 text-foreground break-words">{courseMap.get(a.course_id) || "-"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">{t("admin.checkInTime")}</dt>
+                      <dd className="mt-1 text-foreground">{formatTime(a.check_in_time)}</dd>
+                    </div>
+                    {a.notes ? (
+                      <div className="col-span-2">
+                        <dt className="text-muted-foreground">{t("admin.notes")}</dt>
+                        <dd className="mt-1 text-foreground break-words">{a.notes}</dd>
+                      </div>
+                    ) : null}
+                  </dl>
+                </article>
+              ))
+            )}
+          </div>
+
+          <div className="hidden sm:block overflow-x-auto -mx-3 sm:-mx-5">
+            <div className="min-w-[720px] px-3 sm:px-5">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -129,16 +176,18 @@ const AdminAttendance = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t("admin.noAttendanceData")}</TableCell></TableRow>
+                  {visibleRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t("admin.noAttendanceData")}</TableCell>
+                    </TableRow>
                   ) : (
-                    filtered.slice(0, 50).map((a: any) => (
+                    visibleRows.map((a: any) => (
                       <TableRow key={a.id}>
                         <TableCell className="text-sm">{formatDate(a.attendance_date)}</TableCell>
                         <TableCell className="font-medium text-sm">{profileMap.get(a.user_id) || "-"}</TableCell>
-                        <TableCell className="text-sm">{courseMap.get(a.course_id) || "-"}</TableCell>
+                        <TableCell className="max-w-[260px] text-sm whitespace-normal break-words">{courseMap.get(a.course_id) || "-"}</TableCell>
                         <TableCell>
-                          <Badge variant={statusColor[a.status] as any || "outline"} className="text-[10px]">
+                          <Badge variant={(statusColor[a.status] as any) || "outline"} className="text-[10px]">
                             {t(`admin.${a.status}`)}
                           </Badge>
                         </TableCell>
