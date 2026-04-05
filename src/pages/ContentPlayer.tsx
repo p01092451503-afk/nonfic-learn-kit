@@ -13,6 +13,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
+import { logContentAccess } from "@/hooks/useTrafficLogger";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from "@/components/ui/drawer";
@@ -105,6 +106,13 @@ const ContentPlayer = () => {
   const isMangoboard = (url: string | null) => url?.includes("mangoboard.net") ?? false;
 
   const currentContent = contents.find((c) => c.id === contentId);
+
+  // Log content access for traffic monitoring
+  useEffect(() => {
+    if (user?.id && contentId && courseId && currentContent) {
+      logContentAccess(user.id, contentId, courseId, currentContent.content_type || "video");
+    }
+  }, [contentId, user?.id, courseId, currentContent]);
   const currentIndex = contents.findIndex((c) => c.id === contentId);
   const prevContent = currentIndex > 0 ? contents[currentIndex - 1] : null;
   const nextContent = currentIndex < contents.length - 1 ? contents[currentIndex + 1] : null;
