@@ -37,11 +37,7 @@ const ScrollArrow = ({ direction, onClick }: { direction: "left" | "right"; onCl
     style={{ [direction]: -12 }}
     aria-label={direction === "left" ? "이전" : "다음"}
   >
-    {direction === "left" ? (
-      <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-    ) : (
-      <ChevronRight className="h-5 w-5" aria-hidden="true" />
-    )}
+    {direction === "left" ? <ChevronLeft className="h-5 w-5" aria-hidden="true" /> : <ChevronRight className="h-5 w-5" aria-hidden="true" />}
   </button>
 );
 
@@ -58,7 +54,7 @@ const CatalogCourseCard = ({
   isGridItem,
 }: any) => (
   <article
-    className={`group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
+    className={`group min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
       isGridItem ? "w-full" : "w-[280px] shrink-0"
     }`}
     aria-label={course.title}
@@ -97,13 +93,13 @@ const CatalogCourseCard = ({
               {cat.name}
             </span>
           )}
-          <h3 className="line-clamp-2 text-sm font-bold leading-snug text-white">{course.title}</h3>
+          <h3 className="line-clamp-2 break-words text-sm font-bold leading-snug text-white">{course.title}</h3>
         </div>
       </div>
     </Link>
 
     <div className="space-y-3 p-4">
-      {course.description && <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">{course.description}</p>}
+      {course.description && <p className="line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground">{course.description}</p>}
 
       <div className="flex flex-wrap items-center gap-3">
         {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && (
@@ -173,9 +169,9 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
   if (courses.length === 0) return null;
 
   return (
-    <section className="space-y-4" aria-label={category.name}>
+    <section className="min-w-0 space-y-4" aria-label={category.name}>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-foreground">{category.name}</h2>
+        <h2 className="min-w-0 text-lg font-semibold text-foreground">{category.name}</h2>
         <button
           type="button"
           onClick={() => helpers.setActiveCategory(category.id)}
@@ -186,13 +182,13 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
         </button>
       </div>
 
-      <div className="space-y-3 sm:hidden" role="list" aria-label={category.name}>
+      <div className="w-full min-w-0 space-y-3 sm:hidden" role="list" aria-label={category.name}>
         {courses.map((course: any) => {
           const cat = helpers.categoryMap.get(course.category_id);
           const gradient = categoryGradients[cat?.slug || ""] || "from-primary to-primary/80";
 
           return (
-            <div key={course.id} role="listitem">
+            <div key={course.id} role="listitem" className="w-full min-w-0">
               <CatalogCourseCard
                 course={course}
                 cat={cat}
@@ -210,9 +206,9 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
         })}
       </div>
 
-      <div className="relative hidden sm:block">
+      <div className="relative hidden min-w-0 sm:block">
         {courses.length > 3 && <ScrollArrow direction="left" onClick={() => scroll("left")} />}
-        <div ref={scrollRef} className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scrollbar-hide">
+        <div ref={scrollRef} className="flex min-w-0 snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scrollbar-hide">
           {courses.map((course: any) => {
             const cat = helpers.categoryMap.get(course.category_id);
             const gradient = categoryGradients[cat?.slug || ""] || "from-primary to-primary/80";
@@ -353,8 +349,8 @@ const CourseCatalog = () => {
   };
 
   return (
-    <DashboardLayout role="student">
-      <div className="space-y-6">
+    <DashboardLayout role="student" contentClassName="flex-1 min-w-0 overflow-x-hidden px-5 py-6 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+      <div className="min-w-0 space-y-6">
         <header>
           <h1 className="flex items-center gap-2 text-xl font-semibold text-foreground sm:text-2xl">
             <Compass className="h-5 w-5 text-primary sm:h-6 sm:w-6" aria-hidden="true" />
@@ -365,44 +361,46 @@ const CourseCatalog = () => {
           </p>
         </header>
 
-        <nav className="-mx-1 flex items-center gap-1 overflow-x-auto border-b border-border px-1 pb-2 scrollbar-hide" role="tablist" aria-label={t("catalog.title")}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeCategory === "all"}
-            tabIndex={activeCategory === "all" ? 0 : -1}
-            onClick={() => {
-              setActiveCategory("all");
-              setSearch("");
-            }}
-            className={`-mb-[2px] shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-              activeCategory === "all" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t("catalog.allCourses")}
-          </button>
-          {categories.map((cat: any) => (
+        <nav className="w-full min-w-0 max-w-full overflow-x-auto border-b border-border scrollbar-hide" role="tablist" aria-label={t("catalog.title")}>
+          <div className="flex w-max min-w-full items-center gap-1 pb-2">
             <button
-              key={cat.id}
               type="button"
               role="tab"
-              aria-selected={activeCategory === cat.id}
-              tabIndex={activeCategory === cat.id ? 0 : -1}
+              aria-selected={activeCategory === "all"}
+              tabIndex={activeCategory === "all" ? 0 : -1}
               onClick={() => {
-                setActiveCategory(cat.id);
+                setActiveCategory("all");
                 setSearch("");
               }}
               className={`-mb-[2px] shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                activeCategory === cat.id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+                activeCategory === "all" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {cat.name}
+              {t("catalog.allCourses")}
             </button>
-          ))}
+            {categories.map((cat: any) => (
+              <button
+                key={cat.id}
+                type="button"
+                role="tab"
+                aria-selected={activeCategory === cat.id}
+                tabIndex={activeCategory === cat.id ? 0 : -1}
+                onClick={() => {
+                  setActiveCategory(cat.id);
+                  setSearch("");
+                }}
+                className={`-mb-[2px] shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                  activeCategory === cat.id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
         </nav>
 
-        <div className="w-full sm:flex sm:justify-center">
-          <div className="relative w-full sm:max-w-lg">
+        <div className="w-full min-w-0 sm:flex sm:justify-center">
+          <div className="relative w-full min-w-0 max-w-full sm:max-w-lg">
             <label htmlFor="catalog-search" className="sr-only">
               {t("catalog.searchPlaceholder")}
             </label>
@@ -412,7 +410,7 @@ const CourseCatalog = () => {
               placeholder={t("catalog.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-11 rounded-xl border-border bg-card pl-11 text-sm"
+              className="h-11 w-full rounded-xl border-border bg-card pl-11 text-sm"
             />
           </div>
         </div>
@@ -422,7 +420,7 @@ const CourseCatalog = () => {
             <span className="h-6 w-6 animate-spin rounded-full border-2 border-foreground/30 border-t-foreground" />
           </div>
         ) : isCarouselView ? (
-          <div className="space-y-8 sm:space-y-10">
+          <div className="min-w-0 space-y-8 sm:space-y-10">
             {categories.map((cat: any) => {
               const catCourses = coursesByCategory.get(cat.id) || [];
               return <CategoryCarousel key={cat.id} category={cat} courses={catCourses} helpers={carouselHelpers} />;
@@ -436,7 +434,7 @@ const CourseCatalog = () => {
             )}
           </div>
         ) : (
-          <section aria-live="polite">
+          <section className="min-w-0" aria-live="polite">
             <p className="mb-4 text-sm text-muted-foreground">{t("catalog.resultCount", { count: filtered.length })}</p>
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center space-y-3 py-20">
@@ -446,7 +444,7 @@ const CourseCatalog = () => {
                 <p className="text-sm text-muted-foreground">{t("catalog.noCourses")}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid min-w-0 grid-cols-1 gap-4 min-[640px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {filtered.map((course: any) => {
                   const cat = categoryMap.get(course.category_id);
                   const gradient = categoryGradients[cat?.slug || ""] || "from-primary to-primary/80";
