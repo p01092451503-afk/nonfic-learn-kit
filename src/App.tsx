@@ -34,7 +34,7 @@ import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import ContentPlayer from "./pages/ContentPlayer";
 import NotFound from "./pages/NotFound";
 import TrafficLogger from "./components/TrafficLogger";
-import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
+
 
 const queryClient = new QueryClient();
 
