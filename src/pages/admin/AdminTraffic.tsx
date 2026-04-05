@@ -114,8 +114,8 @@ const AdminTraffic = () => {
 
   const stats = [
     { label: "웹 트래픽 (전송량)", value: formatBytes(webBytes), icon: Globe, color: "text-blue-600" },
-    { label: "CDN 전송량 (추정)", value: formatBytes(cdnBytes), icon: Play, color: "text-purple-600" },
-    { label: "총 전송량", value: formatBytes(totalEstimatedBytes), icon: TrendingUp, color: "text-green-600" },
+    { label: "자체 CDN 전송량", value: formatBytes(cdnBytes), icon: Play, color: "text-purple-600" },
+    { label: "총 전송량 (자체)", value: formatBytes(webBytes + cdnBytes), icon: TrendingUp, color: "text-green-600" },
     { label: "저장 콘텐츠", value: `${totalContents}개`, icon: HardDrive, color: "text-orange-600" },
   ];
 
