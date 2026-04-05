@@ -66,6 +66,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.learningManagement"), href: "/admin/learning", icon: GraduationCap },
     { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
     { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy },
+    { label: t("nav.trafficMonitoring", "트래픽 모니터링"), href: "/admin/traffic", icon: Activity },
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings },
   ];
 
