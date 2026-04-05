@@ -20,7 +20,7 @@ interface NavItem {
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  role?: "student" | "teacher" | "admin" | "superadmin";
+  role?: "student" | "teacher" | "admin";
   contentClassName?: string;
 }
 
