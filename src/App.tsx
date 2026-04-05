@@ -84,8 +84,6 @@ const App = () => (
             {/* Dept Admin */}
             <Route path="/dept-admin" element={<ProtectedRoute><DeptAdminDashboard /></ProtectedRoute>} />
 
-            {/* Super Admin */}
-            <Route path="/superadmin" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
 
             {/* Course Detail & Player */}
             <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
