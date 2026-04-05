@@ -381,7 +381,7 @@ const CourseDetail = () => {
       <DashboardLayout role={role}>
         <div className="text-center py-16 space-y-4">
           <p className="text-muted-foreground">{t("course.courseNotFound")}</p>
-          <Button variant="outline" onClick={() => navigate(-1)}>{t("common.back")}</Button>
+          <Button variant="outline" onClick={() => navigate(`${routePrefix}/courses`)}>{t("common.back")}</Button>
         </div>
       </DashboardLayout>
     );
