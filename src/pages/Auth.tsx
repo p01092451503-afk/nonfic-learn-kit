@@ -9,6 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import LanguageToggle from "@/components/LanguageToggle";
 import loginBg from "@/assets/login-bg.jpg";
 
+// Preload the image as early as possible
+const preloadLink = document.createElement("link");
+preloadLink.rel = "preload";
+preloadLink.as = "image";
+preloadLink.href = loginBg;
+document.head.appendChild(preloadLink);
+
 const SAVED_EMAIL_KEY = "nonfiction_saved_email";
 
 const Auth = () => {
@@ -67,8 +74,8 @@ const Auth = () => {
   return (
     <div className="flex min-h-screen">
       {/* Left - Visual Panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-white">
-        <img src={loginBg} alt="NONFICTION LMS" className="absolute inset-0 w-full h-full object-cover opacity-60" width={1920} height={1080} />
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden" style={{ backgroundColor: "#e8ddd0" }}>
+        <img src={loginBg} alt="NONFICTION LMS" className="absolute inset-0 w-full h-full object-cover opacity-60" width={1920} height={1080} fetchPriority="high" loading="eager" decoding="async" />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div>
             <h1 className="font-display text-4xl tracking-wider text-foreground">NONFICTION</h1>
