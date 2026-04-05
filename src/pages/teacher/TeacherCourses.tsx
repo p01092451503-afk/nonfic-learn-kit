@@ -197,13 +197,13 @@ const TeacherCourses = () => {
           </div>
         ) : viewMode === "list" ? (
           /* ───── List View ───── */
-          <div className="stat-card !p-0 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[500px]">
+           <div className="stat-card !p-0 overflow-hidden">
+            <div>
+              <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-secondary/30">
                     <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.courseName")}</th>
-                    <th scope="col" className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.actions")}</th>
+                    <th scope="col" className="text-right text-xs font-medium text-muted-foreground px-4 py-3 w-14"></th>
                   </tr>
                 </thead>
                 <tbody>

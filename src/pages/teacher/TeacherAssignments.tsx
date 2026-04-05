@@ -294,14 +294,14 @@ const TeacherAssignments = () => {
               <p className="text-xs text-muted-foreground mt-1">{t("assignments.createFirstAssignment")}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[480px]">
+            <div>
+              <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-secondary/20">
                     <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 sm:px-6 py-3">{t("assignments.assignmentName")}</th>
-                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-3 sm:px-4 py-3">{t("assignments.lecture")}</th>
-                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-3 sm:px-4 py-3">{t("admin.statusLabel")}</th>
-                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-3 sm:px-4 py-3 w-14">{t("common.manage")}</th>
+                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-3 sm:px-4 py-3 hidden sm:table-cell">{t("assignments.lecture")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-3 sm:px-4 py-3 hidden sm:table-cell">{t("admin.statusLabel")}</th>
+                    <th scope="col" className="text-right text-xs font-medium text-muted-foreground px-3 sm:px-4 py-3 w-14"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -316,16 +316,22 @@ const TeacherAssignments = () => {
                               {t("assignments.submissionCount", { total: counts.total, graded: counts.graded })}
                             </p>
                           )}
+                          <div className="flex items-center gap-2 mt-1 sm:hidden">
+                            <span className="text-[10px] text-muted-foreground">{assignment.courses?.title || "-"}</span>
+                            <Badge variant="secondary" className={`text-[9px] font-semibold ${statusStyle[assignment.status || "draft"]}`}>
+                              {statusLabel[assignment.status || "draft"]}
+                            </Badge>
+                          </div>
                         </td>
-                        <td className="px-3 sm:px-4 py-3 sm:py-4">
+                        <td className="px-3 sm:px-4 py-3 sm:py-4 hidden sm:table-cell">
                           <span className="text-xs sm:text-sm text-muted-foreground">{assignment.courses?.title || "-"}</span>
                         </td>
-                        <td className="px-3 sm:px-4 py-3 sm:py-4 text-center">
+                        <td className="px-3 sm:px-4 py-3 sm:py-4 text-center hidden sm:table-cell">
                           <Badge variant="secondary" className={`text-[10px] font-semibold ${statusStyle[assignment.status || "draft"]}`}>
                             {statusLabel[assignment.status || "draft"]}
                           </Badge>
                         </td>
-                        <td className="px-3 sm:px-4 py-3 sm:py-4 text-center">
+                        <td className="px-3 sm:px-4 py-3 sm:py-4 text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" aria-label={t("common.manage")}>
