@@ -89,6 +89,7 @@ const CourseDetail = () => {
     ? "teacher"
     : "student";
   const isTeacherOrAdmin = role === "admin" || role === "teacher";
+  const routePrefix = isAdminRoute ? "/admin" : isTeacherRoute ? "/teacher" : "/student";
   const viewParam = role === "student" ? "?view=learn" : "";
 
   // --- Queries ---
