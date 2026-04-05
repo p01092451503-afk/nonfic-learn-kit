@@ -29,7 +29,7 @@ const ContentPlayer = () => {
   const location = useLocation();
   // Derive route prefix from current path (e.g. /student, /teacher, /admin)
   const routePrefix = location.pathname.startsWith("/admin/") ? "/admin" : location.pathname.startsWith("/teacher/") ? "/teacher" : "/student";
-  const { user } = useUser();
+  const { user, profile } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
