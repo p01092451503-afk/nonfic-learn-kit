@@ -13,6 +13,7 @@ interface UserProfile {
   employee_id: string | null;
   phone_number: string | null;
   team_name: string | null;
+  tenant_id: string | null;
 }
 
 interface UserContextType {
