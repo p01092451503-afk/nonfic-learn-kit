@@ -5,112 +5,169 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 
 const categoryGradients: Record<string, string> = {
-  marketing: "from-orange-500 to-pink-500", sales: "from-blue-500 to-cyan-500",
-  "product-development": "from-purple-500 to-indigo-500", "skin-science": "from-rose-400 to-pink-600",
-  "beauty-trends": "from-fuchsia-500 to-violet-500", "design-creative": "from-amber-400 to-orange-500",
-  "quality-regulation": "from-emerald-500 to-teal-500", "scm-logistics": "from-sky-500 to-blue-600",
-  "management-leadership": "from-slate-500 to-zinc-600", "finance-accounting": "from-green-500 to-emerald-600",
-  "hr-culture": "from-pink-400 to-rose-500", "it-digital": "from-violet-500 to-purple-600",
-  "customer-service": "from-cyan-400 to-blue-500", "legal-compliance": "from-gray-500 to-slate-600",
-  "self-development": "from-yellow-400 to-amber-500", "safety-environment": "from-lime-500 to-green-600",
+  marketing: "from-orange-500 to-pink-500",
+  sales: "from-blue-500 to-cyan-500",
+  "product-development": "from-purple-500 to-indigo-500",
+  "skin-science": "from-rose-400 to-pink-600",
+  "beauty-trends": "from-fuchsia-500 to-violet-500",
+  "design-creative": "from-amber-400 to-orange-500",
+  "quality-regulation": "from-emerald-500 to-teal-500",
+  "scm-logistics": "from-sky-500 to-blue-600",
+  "management-leadership": "from-slate-500 to-zinc-600",
+  "finance-accounting": "from-green-500 to-emerald-600",
+  "hr-culture": "from-pink-400 to-rose-500",
+  "it-digital": "from-violet-500 to-purple-600",
+  "customer-service": "from-cyan-400 to-blue-500",
+  "legal-compliance": "from-gray-500 to-slate-600",
+  "self-development": "from-yellow-400 to-amber-500",
+  "safety-environment": "from-lime-500 to-green-600",
 };
 
-/* ── Carousel Arrow ── */
 const ScrollArrow = ({ direction, onClick }: { direction: "left" | "right"; onClick: () => void }) => (
   <button
+    type="button"
     onClick={onClick}
-    className="absolute top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-card/90 border border-border shadow-md hidden sm:flex items-center justify-center text-muted-foreground hover:text-foreground hover:shadow-lg transition-all"
+    className="absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/90 text-muted-foreground shadow-md transition-all hover:text-foreground hover:shadow-lg sm:flex"
     style={{ [direction]: -12 }}
     aria-label={direction === "left" ? "이전" : "다음"}
   >
-    {direction === "left" ? <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" /> : <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />}
+    {direction === "left" ? (
+      <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+    ) : (
+      <ChevronRight className="h-5 w-5" aria-hidden="true" />
+    )}
   </button>
 );
 
-/* ── Course Card ── */
 const CatalogCourseCard = ({
-  course, cat, gradient, enrollmentStatus, studentCount, lessons, onEnroll, isPending, t, isGridItem,
+  course,
+  cat,
+  gradient,
+  enrollmentStatus,
+  studentCount,
+  lessons,
+  onEnroll,
+  isPending,
+  t,
+  isGridItem,
 }: any) => (
-  <div
-    className={`group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 ${
-      isGridItem ? "w-full" : "shrink-0 w-[260px] sm:w-[280px]"
+  <article
+    className={`group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
+      isGridItem ? "w-full" : "w-[280px] shrink-0"
     }`}
-    role="article"
     aria-label={course.title}
   >
     <Link to={`/student/courses/${course.id}`} className="block">
-      <div className={`relative aspect-[16/10] bg-gradient-to-br ${gradient} overflow-hidden`}>
-        {course.thumbnail_url && <img src={course.thumbnail_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover" />}
-        {!course.thumbnail_url && (
+      <div className={`relative aspect-[16/10] overflow-hidden bg-gradient-to-br ${gradient}`}>
+        {course.thumbnail_url ? (
+          <img src={course.thumbnail_url} alt={course.title} className="absolute inset-0 h-full w-full object-cover" />
+        ) : (
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-4 right-4 h-24 w-24 rounded-full bg-white/30 blur-xl" />
+            <div className="absolute right-4 top-4 h-24 w-24 rounded-full bg-white/30 blur-xl" />
             <div className="absolute bottom-2 left-6 h-16 w-16 rounded-full bg-white/20 blur-lg" />
           </div>
         )}
-        <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
+
+        <div className="absolute left-3 top-3 flex flex-wrap items-center gap-1.5">
           {course.is_mandatory && (
-            <span className="text-[10px] font-semibold bg-destructive text-destructive-foreground px-2.5 py-1 rounded-lg">{t("common.required")}</span>
-          )}
-        </div>
-        {course.difficulty_level && (
-          <div className="absolute top-3 right-3">
-            <span className="text-[10px] font-bold bg-white/90 text-foreground px-2 py-1 rounded-lg backdrop-blur-sm">{t(`teacher.${course.difficulty_level}`)}</span>
-          </div>
-        )}
-        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-          {cat && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-white/90 bg-white/20 px-2 py-0.5 rounded-md backdrop-blur-sm mb-1.5">
-              <Sparkles className="h-2.5 w-2.5" aria-hidden="true" /> {cat.name}
+            <span className="rounded-lg bg-destructive px-2.5 py-1 text-[10px] font-semibold text-destructive-foreground">
+              {t("common.required")}
             </span>
           )}
-          <h3 className="text-sm font-bold text-white leading-snug line-clamp-2">{course.title}</h3>
+        </div>
+
+        {course.difficulty_level && (
+          <div className="absolute right-3 top-3">
+            <span className="rounded-lg bg-white/90 px-2 py-1 text-[10px] font-bold text-foreground backdrop-blur-sm">
+              {t(`teacher.${course.difficulty_level}`)}
+            </span>
+          </div>
+        )}
+
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+          {cat && (
+            <span className="mb-1.5 inline-flex items-center gap-1 rounded-md bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white/90 backdrop-blur-sm">
+              <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
+              {cat.name}
+            </span>
+          )}
+          <h3 className="line-clamp-2 text-sm font-bold leading-snug text-white">{course.title}</h3>
         </div>
       </div>
     </Link>
-    <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
-      {course.description && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{course.description}</p>}
-      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+
+    <div className="space-y-3 p-4">
+      {course.description && <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">{course.description}</p>}
+
+      <div className="flex flex-wrap items-center gap-3">
         {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && (
-          <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" aria-hidden="true" /> {t("course.duration", { hours: course.estimated_duration_hours })}</span>
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Clock className="h-3 w-3" aria-hidden="true" />
+            {t("course.duration", { hours: course.estimated_duration_hours })}
+          </span>
         )}
-        <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" aria-hidden="true" /> {studentCount}{t("common.people")}</span>
-        {lessons > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><BookOpen className="h-3 w-3" aria-hidden="true" /> {t("course.lessonsCount", { count: lessons })}</span>}
+
+        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <Users className="h-3 w-3" aria-hidden="true" />
+          {studentCount}
+          {t("common.people")}
+        </span>
+
+        {lessons > 0 && (
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <BookOpen className="h-3 w-3" aria-hidden="true" />
+            {t("course.lessonsCount", { count: lessons })}
+          </span>
+        )}
       </div>
+
       <div className="pt-1">
         {enrollmentStatus === "approved" ? (
           <Link to={`/student/courses/${course.id}?view=learn`}>
-            <Button variant="outline" size="sm" className="w-full rounded-xl text-xs gap-1.5">{t("catalog.continueLearning")}<ChevronRight className="h-3.5 w-3.5" aria-hidden="true" /></Button>
+            <Button variant="outline" size="sm" className="w-full gap-1.5 rounded-xl text-xs">
+              {t("catalog.continueLearning")}
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Button>
           </Link>
         ) : enrollmentStatus === "pending" ? (
-          <Button variant="secondary" size="sm" className="w-full rounded-xl text-xs gap-1.5 cursor-default" disabled>
-            <Hourglass className="h-3.5 w-3.5" aria-hidden="true" /> {t("catalog.pendingApproval")}
+          <Button variant="secondary" size="sm" className="w-full cursor-default gap-1.5 rounded-xl text-xs" disabled>
+            <Hourglass className="h-3.5 w-3.5" aria-hidden="true" />
+            {t("catalog.pendingApproval")}
           </Button>
         ) : enrollmentStatus === "rejected" ? (
-          <Button variant="outline" size="sm" className="w-full rounded-xl text-xs text-destructive border-destructive/30 cursor-default" disabled>
+          <Button variant="outline" size="sm" className="w-full cursor-default rounded-xl border-destructive/30 text-xs text-destructive" disabled>
             {t("catalog.rejected")}
           </Button>
         ) : (
-          <Button size="sm" className="w-full rounded-xl text-xs" onClick={(e) => { e.preventDefault(); onEnroll(course.id); }} disabled={isPending}>{t("catalog.enroll")}</Button>
+          <Button
+            size="sm"
+            className="w-full rounded-xl text-xs"
+            onClick={(e) => {
+              e.preventDefault();
+              onEnroll(course.id);
+            }}
+            disabled={isPending}
+          >
+            {t("catalog.enroll")}
+          </Button>
         )}
       </div>
     </div>
-  </div>
+  </article>
 );
 
-/* ── Category Carousel Section ── */
 const CategoryCarousel = ({ category, courses, helpers }: { category: any; courses: any[]; helpers: any }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+
   const scroll = (dir: "left" | "right") => {
     if (!scrollRef.current) return;
-    const amount = 300;
-    scrollRef.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
+    scrollRef.current.scrollBy({ left: dir === "left" ? -320 : 320, behavior: "smooth" });
   };
 
   if (courses.length === 0) return null;
@@ -118,23 +175,50 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
   return (
     <section className="space-y-4" aria-label={category.name}>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base sm:text-lg font-semibold text-foreground">{category.name}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{category.name}</h2>
         <button
+          type="button"
           onClick={() => helpers.setActiveCategory(category.id)}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5 shrink-0"
+          className="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={`${category.name} ${helpers.t("common.viewAll")}`}
         >
           + {helpers.t("common.viewAll")}
         </button>
       </div>
-      <div className="relative">
+
+      <div className="space-y-3 sm:hidden" role="list" aria-label={category.name}>
+        {courses.map((course: any) => {
+          const cat = helpers.categoryMap.get(course.category_id);
+          const gradient = categoryGradients[cat?.slug || ""] || "from-primary to-primary/80";
+
+          return (
+            <div key={course.id} role="listitem">
+              <CatalogCourseCard
+                course={course}
+                cat={cat}
+                gradient={gradient}
+                enrollmentStatus={helpers.enrollmentStatusMap.get(course.id)}
+                studentCount={helpers.countMap.get(course.id) || 0}
+                lessons={helpers.contentCountMap.get(course.id) || 0}
+                onEnroll={helpers.onEnroll}
+                isPending={helpers.isPending}
+                t={helpers.t}
+                isGridItem={true}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="relative hidden sm:block">
         {courses.length > 3 && <ScrollArrow direction="left" onClick={() => scroll("left")} />}
-        <div ref={scrollRef} className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory -mx-1 px-1" role="list" aria-label={category.name}>
+        <div ref={scrollRef} className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scrollbar-hide">
           {courses.map((course: any) => {
             const cat = helpers.categoryMap.get(course.category_id);
             const gradient = categoryGradients[cat?.slug || ""] || "from-primary to-primary/80";
+
             return (
-              <div key={course.id} className="snap-start" role="listitem">
+              <div key={course.id} className="snap-start">
                 <CatalogCourseCard
                   course={course}
                   cat={cat}
@@ -157,7 +241,6 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
   );
 };
 
-/* ── Main Page ── */
 const CourseCatalog = () => {
   const { user } = useUser();
   const { toast } = useToast();
@@ -169,7 +252,11 @@ const CourseCatalog = () => {
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ["catalog-courses"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("courses").select("*").eq("status", "published").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("status", "published")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -178,7 +265,11 @@ const CourseCatalog = () => {
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("categories").select("*").eq("is_active", true).order("display_order", { ascending: true });
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
       if (error) throw error;
       return data;
     },
@@ -251,7 +342,11 @@ const CourseCatalog = () => {
   const isCarouselView = activeCategory === "all" && !search;
 
   const carouselHelpers = {
-    categoryMap, enrollmentStatusMap, countMap, contentCountMap, t,
+    categoryMap,
+    enrollmentStatusMap,
+    countMap,
+    contentCountMap,
+    t,
     onEnroll: (id: string) => enrollMutation.mutate(id),
     isPending: enrollMutation.isPending,
     setActiveCategory,
@@ -259,56 +354,74 @@ const CourseCatalog = () => {
 
   return (
     <DashboardLayout role="student">
-      <div className="space-y-5 sm:space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
-            <Compass className="h-5 w-5 sm:h-6 sm:w-6 text-primary" aria-hidden="true" />
+      <div className="space-y-6">
+        <header>
+          <h1 className="flex items-center gap-2 text-xl font-semibold text-foreground sm:text-2xl">
+            <Compass className="h-5 w-5 text-primary sm:h-6 sm:w-6" aria-hidden="true" />
             {t("catalog.title")}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
             {t("catalog.totalCourses")}: {courses.length} · {t("catalog.totalCategories")}: {categories.length} · {t("catalog.myEnrolled")}: {enrollments.filter((e: any) => e.status === "approved").length}
           </p>
-        </div>
+        </header>
 
-        {/* Category tabs */}
-        <nav className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-hide border-b border-border -mx-1 px-1" role="tablist" aria-label={t("catalog.title")}>
+        <nav className="-mx-1 flex items-center gap-1 overflow-x-auto border-b border-border px-1 pb-2 scrollbar-hide" role="tablist" aria-label={t("catalog.title")}>
           <button
+            type="button"
             role="tab"
             aria-selected={activeCategory === "all"}
-            onClick={() => { setActiveCategory("all"); setSearch(""); }}
-            className={`shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all border-b-2 -mb-[2px] ${activeCategory === "all" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            tabIndex={activeCategory === "all" ? 0 : -1}
+            onClick={() => {
+              setActiveCategory("all");
+              setSearch("");
+            }}
+            className={`-mb-[2px] shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+              activeCategory === "all" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
           >
             {t("catalog.allCourses")}
           </button>
           {categories.map((cat: any) => (
             <button
               key={cat.id}
+              type="button"
               role="tab"
               aria-selected={activeCategory === cat.id}
-              onClick={() => { setActiveCategory(cat.id); setSearch(""); }}
-              className={`shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all border-b-2 -mb-[2px] ${activeCategory === cat.id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              tabIndex={activeCategory === cat.id ? 0 : -1}
+              onClick={() => {
+                setActiveCategory(cat.id);
+                setSearch("");
+              }}
+              className={`-mb-[2px] shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                activeCategory === cat.id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
             >
               {cat.name}
             </button>
           ))}
         </nav>
 
-        {/* Search */}
         <div className="w-full sm:flex sm:justify-center">
           <div className="relative w-full sm:max-w-lg">
-            <label htmlFor="catalog-search" className="sr-only">{t("catalog.searchPlaceholder")}</label>
-            <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            <Input id="catalog-search" placeholder={t("catalog.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 sm:pl-11 h-10 sm:h-12 rounded-xl border-border bg-card text-sm" />
+            <label htmlFor="catalog-search" className="sr-only">
+              {t("catalog.searchPlaceholder")}
+            </label>
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input
+              id="catalog-search"
+              placeholder={t("catalog.searchPlaceholder")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-11 rounded-xl border-border bg-card pl-11 text-sm"
+            />
           </div>
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16" role="status" aria-label="Loading">
-            <span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
+          <div className="flex justify-center py-16" role="status" aria-live="polite" aria-label="Loading">
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-foreground/30 border-t-foreground" />
           </div>
         ) : isCarouselView ? (
-          /* ── Carousel view ── */
           <div className="space-y-8 sm:space-y-10">
             {categories.map((cat: any) => {
               const catCourses = coursesByCategory.get(cat.id) || [];
@@ -323,21 +436,21 @@ const CourseCatalog = () => {
             )}
           </div>
         ) : (
-          /* ── Grid view ── */
-          <div role="tabpanel">
-            <p className="text-xs sm:text-sm text-muted-foreground mb-4">{t("catalog.resultCount", { count: filtered.length })}</p>
+          <section aria-live="polite">
+            <p className="mb-4 text-sm text-muted-foreground">{t("catalog.resultCount", { count: filtered.length })}</p>
             {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 space-y-3">
-                <div className="h-16 w-16 rounded-full bg-accent flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center space-y-3 py-20">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent">
                   <BookOpen className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-sm text-muted-foreground">{t("catalog.noCourses")}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+              <div className="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {filtered.map((course: any) => {
                   const cat = categoryMap.get(course.category_id);
                   const gradient = categoryGradients[cat?.slug || ""] || "from-primary to-primary/80";
+
                   return (
                     <CatalogCourseCard
                       key={course.id}
@@ -356,7 +469,7 @@ const CourseCatalog = () => {
                 })}
               </div>
             )}
-          </div>
+          </section>
         )}
       </div>
     </DashboardLayout>
