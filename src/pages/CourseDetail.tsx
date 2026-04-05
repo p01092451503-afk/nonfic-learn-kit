@@ -169,12 +169,15 @@ const CourseDetail = () => {
   const getContentI18n = (contentId: string, lang: string) =>
     contentI18nData.find((i: any) => i.content_id === contentId && i.language_code === lang);
 
+  const stripLessonPrefix = (title: string) =>
+    title.replace(/^\d+차시\.\s*/, "");
+
   const getLocalizedContentTitle = (content: any) => {
     if (isEn) {
       const en = getContentI18n(content.id, "en");
-      return en?.title || content.title;
+      return stripLessonPrefix(en?.title || content.title);
     }
-    return content.title;
+    return stripLessonPrefix(content.title);
   };
 
   const getCourseTitle = () => {
