@@ -29,7 +29,7 @@ const ContentPlayer = () => {
   const location = useLocation();
   // Derive route prefix from current path (e.g. /student, /teacher, /admin)
   const routePrefix = location.pathname.startsWith("/admin/") ? "/admin" : location.pathname.startsWith("/teacher/") ? "/teacher" : "/student";
-  const { user } = useUser();
+  const { user, profile } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
@@ -112,7 +112,12 @@ const ContentPlayer = () => {
   // Log content access for traffic monitoring
   useEffect(() => {
     if (user?.id && contentId && courseId && currentContent) {
-      logContentAccess(user.id, contentId, courseId, currentContent.content_type || "video");
+      logContentAccess(
+        user.id, contentId, courseId,
+        currentContent.content_type || "video",
+        currentContent.video_provider,
+        profile?.tenant_id,
+      );
     }
   }, [contentId, user?.id, courseId, currentContent]);
   const currentIndex = contents.findIndex((c) => c.id === contentId);

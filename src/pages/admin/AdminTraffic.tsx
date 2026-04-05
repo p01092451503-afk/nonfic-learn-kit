@@ -58,16 +58,16 @@ const AdminTraffic = () => {
   const totalEstimatedBytes = trafficLogs.reduce((sum, l) => sum + (Number(l.estimated_bytes) || 0), 0);
   const uniqueUsers = new Set(trafficLogs.map((l) => l.user_id)).size;
 
-  const videoAccess = trafficLogs.filter(
-    (l) => l.event_type === "content_access" && (l.metadata as any)?.content_type === "video"
-  ).length;
-  const docAccess = trafficLogs.filter(
-    (l) => l.event_type === "content_access" && (l.metadata as any)?.content_type === "document"
-  ).length;
+  const contentLogs = trafficLogs.filter((l) => l.event_type === "content_access");
+  const externalAccess = contentLogs.filter((l) => (l.metadata as any)?.is_external).length;
+  const selfHostedAccess = contentLogs.length - externalAccess;
 
-  // CDN estimate (content access bytes)
-  const cdnBytes = trafficLogs
-    .filter((l) => l.event_type === "content_access")
+  const videoAccess = contentLogs.filter((l) => (l.metadata as any)?.content_type === "video").length;
+  const docAccess = contentLogs.filter((l) => (l.metadata as any)?.content_type === "document").length;
+
+  // CDN estimate (only self-hosted content incurs cost)
+  const cdnBytes = contentLogs
+    .filter((l) => !(l.metadata as any)?.is_external)
     .reduce((sum, l) => sum + (Number(l.estimated_bytes) || 0), 0);
 
   // Web traffic estimate (page view bytes)
@@ -114,8 +114,8 @@ const AdminTraffic = () => {
 
   const stats = [
     { label: "웹 트래픽 (전송량)", value: formatBytes(webBytes), icon: Globe, color: "text-blue-600" },
-    { label: "CDN 전송량 (추정)", value: formatBytes(cdnBytes), icon: Play, color: "text-purple-600" },
-    { label: "총 전송량", value: formatBytes(totalEstimatedBytes), icon: TrendingUp, color: "text-green-600" },
+    { label: "자체 CDN 전송량", value: formatBytes(cdnBytes), icon: Play, color: "text-purple-600" },
+    { label: "총 전송량 (자체)", value: formatBytes(webBytes + cdnBytes), icon: TrendingUp, color: "text-green-600" },
     { label: "저장 콘텐츠", value: `${totalContents}개`, icon: HardDrive, color: "text-orange-600" },
   ];
 
@@ -187,8 +187,9 @@ const AdminTraffic = () => {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className="text-xs text-muted-foreground">영상 / 문서 재생</p>
-              <p className="text-lg font-semibold">{videoAccess} / {docAccess}</p>
+              <p className="text-xs text-muted-foreground">외부 플랫폼 / 자체 호스팅</p>
+              <p className="text-lg font-semibold">{externalAccess} / {selfHostedAccess}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">YouTube·Vimeo·망고보드 = 전송 비용 없음</p>
             </CardContent>
           </Card>
         </div>
