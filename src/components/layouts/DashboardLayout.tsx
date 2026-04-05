@@ -20,7 +20,7 @@ interface NavItem {
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  role?: "student" | "teacher" | "admin" | "superadmin";
+  role?: "student" | "teacher" | "admin";
   contentClassName?: string;
 }
 
@@ -70,12 +70,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings },
   ];
 
-  const superadminNav: NavItem[] = [
-    { label: t("nav.dashboard"), href: "/superadmin", icon: LayoutDashboard },
-    { label: t("nav.tenantManagement", "고객사 관리"), href: "/superadmin", icon: Users },
-  ];
-
-  const navItems = activeRole === "superadmin" ? superadminNav : activeRole === "admin" ? adminNav : activeRole === "teacher" ? teacherNav : studentNav;
+  const navItems = activeRole === "admin" ? adminNav : activeRole === "teacher" ? teacherNav : studentNav;
   const roleLabel = t(`roles.${activeRole}`);
 
   const handleSignOut = async () => {
