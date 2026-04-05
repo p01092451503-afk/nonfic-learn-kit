@@ -726,6 +726,42 @@ export type Database = {
           },
         ]
       }
+      traffic_logs: {
+        Row: {
+          content_id: string | null
+          course_id: string | null
+          created_at: string
+          estimated_bytes: number | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          page_path: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          estimated_bytes?: number | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          estimated_bytes?: number | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
