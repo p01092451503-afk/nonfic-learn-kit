@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { format, subDays } from "date-fns";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const formatBytes = (bytes: number) => {
   if (bytes === 0) return "0 B";
@@ -21,6 +22,7 @@ const formatBytes = (bytes: number) => {
 
 const AdminTraffic = () => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [period, setPeriod] = useState("30");
 
   const fromDate = subDays(new Date(), parseInt(period)).toISOString();
@@ -110,7 +112,6 @@ const AdminTraffic = () => {
   return (
     <DashboardLayout role="admin">
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
@@ -121,10 +122,10 @@ const AdminTraffic = () => {
               CDN 전송량, 저장공간, 웹트래픽 현황을 확인합니다
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <Calendar className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          <div className="flex w-full sm:w-auto items-center gap-2 self-start sm:self-auto">
+            <Calendar className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
             <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-[120px] sm:w-[140px]">
+              <SelectTrigger className="w-full sm:w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -136,22 +137,20 @@ const AdminTraffic = () => {
           </div>
         </div>
 
-        {/* Stat Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-          {stats.map((s, i) => (
-            <div key={i} className="stat-card !p-3 sm:!p-5" role="group" aria-label={s.label}>
+          {stats.map((stat) => (
+            <div key={stat.label} className="stat-card !p-3 sm:!p-5" role="group" aria-label={stat.label}>
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{s.label}</p>
-                  <p className="text-lg sm:text-xl font-bold text-foreground mt-1">{s.value}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{stat.label}</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground mt-1 break-words">{stat.value}</p>
                 </div>
-                <s.icon className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground opacity-60 shrink-0" aria-hidden="true" />
+                <stat.icon className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground opacity-60 shrink-0" aria-hidden="true" />
               </div>
             </div>
           ))}
         </div>
 
-        {/* Summary row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <div className="stat-card !p-3 sm:!p-4">
             <p className="text-[10px] sm:text-xs text-muted-foreground">페이지 조회수</p>
@@ -172,19 +171,18 @@ const AdminTraffic = () => {
           </div>
         </div>
 
-        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <Card>
             <CardHeader className="pb-2 px-3 sm:px-6">
               <CardTitle className="text-sm font-medium">일별 트래픽 추이</CardTitle>
             </CardHeader>
-            <CardContent className="px-1 sm:px-6">
-              <div className="h-[220px] sm:h-[250px]">
+            <CardContent className="px-2 sm:px-6">
+              <div className="h-[200px] sm:h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyChartData}>
+                  <LineChart data={dailyChartData} margin={isMobile ? { top: 8, right: 4, left: 0, bottom: 0 } : { top: 8, right: 8, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 10 }} width={35} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} tickMargin={8} minTickGap={isMobile ? 24 : 12} />
+                    <YAxis tick={{ fontSize: 10 }} width={35} hide={isMobile} />
                     <Tooltip />
                     <Line type="monotone" dataKey="views" name="페이지 조회" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
                     <Line type="monotone" dataKey="access" name="콘텐츠 접근" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
@@ -198,13 +196,13 @@ const AdminTraffic = () => {
             <CardHeader className="pb-2 px-3 sm:px-6">
               <CardTitle className="text-sm font-medium">일별 전송량 (GB)</CardTitle>
             </CardHeader>
-            <CardContent className="px-1 sm:px-6">
-              <div className="h-[220px] sm:h-[250px]">
+            <CardContent className="px-2 sm:px-6">
+              <div className="h-[200px] sm:h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dailyChartData}>
+                  <BarChart data={dailyChartData} margin={isMobile ? { top: 8, right: 4, left: 0, bottom: 0 } : { top: 8, right: 8, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 10 }} width={35} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} tickMargin={8} minTickGap={isMobile ? 24 : 12} />
+                    <YAxis tick={{ fontSize: 10 }} width={35} hide={isMobile} />
                     <Tooltip formatter={(value: number) => `${value} GB`} />
                     <Bar dataKey="bytesGB" name="전송량" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -214,7 +212,6 @@ const AdminTraffic = () => {
           </Card>
         </div>
 
-        {/* Storage breakdown */}
         <Card>
           <CardHeader className="pb-2 px-3 sm:px-6">
             <CardTitle className="text-sm font-medium">저장공간 현황</CardTitle>
@@ -222,23 +219,23 @@ const AdminTraffic = () => {
           <CardContent className="px-3 sm:px-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm gap-3">
                   <span className="text-muted-foreground">영상 콘텐츠</span>
-                  <span className="font-medium">{videoContents}개</span>
+                  <span className="font-medium shrink-0">{videoContents}개</span>
                 </div>
                 <Progress value={totalContents > 0 ? (videoContents / totalContents) * 100 : 0} className="h-2" />
               </div>
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm gap-3">
                   <span className="text-muted-foreground">문서/플립러닝</span>
-                  <span className="font-medium">{docContents}개</span>
+                  <span className="font-medium shrink-0">{docContents}개</span>
                 </div>
                 <Progress value={totalContents > 0 ? (docContents / totalContents) * 100 : 0} className="h-2" />
               </div>
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm gap-3">
                   <span className="text-muted-foreground">기타</span>
-                  <span className="font-medium">{totalContents - videoContents - docContents}개</span>
+                  <span className="font-medium shrink-0">{totalContents - videoContents - docContents}개</span>
                 </div>
                 <Progress value={totalContents > 0 ? ((totalContents - videoContents - docContents) / totalContents) * 100 : 0} className="h-2" />
               </div>
@@ -246,7 +243,6 @@ const AdminTraffic = () => {
           </CardContent>
         </Card>
 
-        {/* Top Pages */}
         <Card>
           <CardHeader className="pb-2 px-3 sm:px-6">
             <CardTitle className="text-sm font-medium">인기 페이지 TOP 10</CardTitle>
@@ -255,37 +251,61 @@ const AdminTraffic = () => {
             {topPages.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">아직 트래픽 데이터가 없습니다.</p>
             ) : (
-              <div className="overflow-x-auto -mx-3 sm:-mx-6">
-                <div className="min-w-[450px] px-3 sm:px-6">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-10">#</TableHead>
-                        <TableHead>페이지 경로</TableHead>
-                        <TableHead className="text-right">조회수</TableHead>
-                        <TableHead className="text-right w-[100px] hidden sm:table-cell">비율</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {topPages.map(([path, count], i) => (
-                        <TableRow key={path}>
-                          <TableCell className="font-medium text-muted-foreground">{i + 1}</TableCell>
-                          <TableCell className="font-mono text-xs break-all">{path}</TableCell>
-                          <TableCell className="text-right text-sm">{count.toLocaleString()}</TableCell>
-                          <TableCell className="text-right hidden sm:table-cell">
-                            <div className="flex items-center justify-end gap-2">
-                              <Progress value={(count / totalPageViews) * 100} className="h-1.5 w-16" />
-                              <span className="text-xs text-muted-foreground w-10 text-right">
-                                {((count / totalPageViews) * 100).toFixed(1)}%
-                              </span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+              <>
+                <div className="sm:hidden space-y-3" aria-label="인기 페이지 목록">
+                  {topPages.map(([path, count], index) => {
+                    const ratio = totalPageViews > 0 ? (count / totalPageViews) * 100 : 0;
+                    return (
+                      <article key={path} className="rounded-xl border border-border bg-background p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-muted-foreground">#{index + 1}</p>
+                            <p className="mt-1 font-mono text-xs text-foreground break-all">{path}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-semibold text-foreground">{count.toLocaleString()}</p>
+                            <p className="text-[10px] text-muted-foreground">{ratio.toFixed(1)}%</p>
+                          </div>
+                        </div>
+                        <Progress value={ratio} className="mt-3 h-1.5" />
+                      </article>
+                    );
+                  })}
                 </div>
-              </div>
+
+                <div className="hidden sm:block overflow-x-auto -mx-3 sm:-mx-6">
+                  <div className="min-w-[520px] px-3 sm:px-6">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-10">#</TableHead>
+                          <TableHead>페이지 경로</TableHead>
+                          <TableHead className="text-right">조회수</TableHead>
+                          <TableHead className="text-right w-[120px]">비율</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {topPages.map(([path, count], index) => {
+                          const ratio = totalPageViews > 0 ? (count / totalPageViews) * 100 : 0;
+                          return (
+                            <TableRow key={path}>
+                              <TableCell className="font-medium text-muted-foreground">{index + 1}</TableCell>
+                              <TableCell className="font-mono text-xs break-all">{path}</TableCell>
+                              <TableCell className="text-right text-sm">{count.toLocaleString()}</TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Progress value={ratio} className="h-1.5 w-16" />
+                                  <span className="text-xs text-muted-foreground w-10 text-right">{ratio.toFixed(1)}%</span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
