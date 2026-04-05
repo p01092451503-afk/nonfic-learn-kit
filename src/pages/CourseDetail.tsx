@@ -395,27 +395,60 @@ const CourseDetail = () => {
     return (
       <DashboardLayout role={role}>
         <div className="space-y-5">
-          <div className="flex items-center justify-between">
-            <button onClick={() => navigate(role === "admin" ? "/admin/courses" : "/teacher/courses")} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="h-3.5 w-3.5" /> {t("course.backToCourseList")}
+          <header className="space-y-3">
+            <button
+              type="button"
+              onClick={() => navigate(role === "admin" ? "/admin/courses" : "/teacher/courses")}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              aria-label={t("course.backToCourseList")}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              {t("course.backToCourseList")}
             </button>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={openCourseEdit}>
-                <Settings className="h-3 w-3" /> {t("course.courseSettings")}
-              </Button>
-              <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={openAddContent}>
-                <Plus className="h-3 w-3" /> {t("course.addContent")}
-              </Button>
-            </div>
-          </div>
 
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-start gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="sr-only">
+                <h1>{getCourseTitle()}</h1>
+              </div>
+              <div
+                className="ml-auto flex flex-wrap items-center justify-end gap-2"
+                role="toolbar"
+                aria-label={isEn ? "Course actions" : "강좌 작업"}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-1.5 text-xs"
+                  onClick={openCourseEdit}
+                  aria-label={t("course.courseSettings")}
+                >
+                  <Settings className="h-3 w-3" aria-hidden="true" />
+                  {t("course.courseSettings")}
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-9 gap-1.5 text-xs"
+                  onClick={openAddContent}
+                  aria-label={t("course.addContent")}
+                >
+                  <Plus className="h-3 w-3" aria-hidden="true" />
+                  {t("course.addContent")}
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          <section className="rounded-xl border border-border bg-card p-4" aria-labelledby="course-detail-heading">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               {course.thumbnail_url ? (
-                <img src={course.thumbnail_url} alt="" className="h-20 w-32 rounded-lg object-cover shrink-0" />
+                <img
+                  src={course.thumbnail_url}
+                  alt={isEn ? `${getCourseTitle()} thumbnail` : `${getCourseTitle()} 썸네일`}
+                  className="h-20 w-full rounded-lg object-cover sm:w-32 sm:shrink-0"
+                />
               ) : (
-                <div className="h-20 w-32 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                  <BookOpen className="h-6 w-6 text-muted-foreground" />
+                <div className="flex h-20 w-full items-center justify-center rounded-lg bg-accent sm:w-32 sm:shrink-0" aria-hidden="true">
+                  <BookOpen className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
                 </div>
               )}
               <div className="flex-1 min-w-0 space-y-1.5">
@@ -425,105 +458,158 @@ const CourseDetail = () => {
                   </Badge>
                   {course.is_mandatory && <Badge variant="destructive" className="text-[10px] h-5">{t("course.mandatory")}</Badge>}
                 </div>
-                <h1 className="text-base font-semibold text-foreground leading-snug">{getCourseTitle()}</h1>
-                {getCourseDesc() && <p className="text-xs text-muted-foreground line-clamp-2">{getCourseDesc()}</p>}
+                <h1 id="course-detail-heading" className="text-base font-semibold leading-snug text-foreground">
+                  {getCourseTitle()}
+                </h1>
+                {getCourseDesc() && <p className="line-clamp-2 text-xs text-muted-foreground">{getCourseDesc()}</p>}
               </div>
             </div>
-            <div className="flex items-center gap-5 mt-3 pt-3 border-t border-border">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <BookOpen className="h-3 w-3" /> {t("course.content")} <span className="font-semibold text-foreground">{contents.length}</span> | {t("course.publishedStatus")} <span className="font-semibold text-foreground">{publishedCount}</span>
-              </span>
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock className="h-3 w-3" /> {totalDuration}{t("common.minutes")}
-              </span>
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Users className="h-3 w-3" /> {enrollmentCount}
-              </span>
-            </div>
-          </div>
+            <ul className="mt-3 flex flex-wrap items-center gap-5 border-t border-border pt-3" aria-label={isEn ? "Course summary" : "강좌 요약 정보"}>
+              <li className="flex items-center gap-1 text-xs text-muted-foreground">
+                <BookOpen className="h-3 w-3" aria-hidden="true" />
+                {t("course.content")} <span className="font-semibold text-foreground">{contents.length}</span> | {t("course.publishedStatus")} <span className="font-semibold text-foreground">{publishedCount}</span>
+              </li>
+              <li className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" aria-hidden="true" />
+                {totalDuration}{t("common.minutes")}
+              </li>
+              <li className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Users className="h-3 w-3" aria-hidden="true" />
+                {enrollmentCount}
+              </li>
+            </ul>
+          </section>
 
-          {/* Content list */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="px-4 py-3 bg-secondary/30 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground">{t("course.contentList")} ({contents.length})</h2>
+          <section className="overflow-hidden rounded-xl border border-border bg-card" aria-labelledby="teacher-content-list-heading">
+            <div className="border-b border-border bg-secondary/30 px-4 py-3">
+              <h2 id="teacher-content-list-heading" className="text-sm font-semibold text-foreground">
+                {t("course.contentList")} ({contents.length})
+              </h2>
             </div>
             {contents.length === 0 ? (
-              <div className="text-center py-12 space-y-3">
-                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center mx-auto">
-                  <BookOpen className="h-5 w-5 text-muted-foreground" />
+              <div className="space-y-3 py-12 text-center" role="status" aria-live="polite">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent" aria-hidden="true">
+                  <BookOpen className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-sm text-muted-foreground">{t("course.noContents")}</p>
-                <Button variant="outline" size="sm" onClick={openAddContent} className="gap-1.5 text-xs">
-                  <Plus className="h-3 w-3" /> {t("course.addFirstContent")}
+                <Button variant="outline" size="sm" onClick={openAddContent} className="gap-1.5 text-xs" aria-label={t("course.addFirstContent")}>
+                  <Plus className="h-3 w-3" aria-hidden="true" />
+                  {t("course.addFirstContent")}
                 </Button>
               </div>
             ) : (
-              <div className="divide-y divide-border">
+              <ol className="divide-y divide-border">
                 {contents.map((content, idx) => {
                   const Icon = contentTypeIcon[content.content_type || "video"] || Video;
                   const isUnpublished = !content.is_published;
+                  const localizedTitle = getLocalizedContentTitle(content);
+                  const providerLabel = content.video_provider === "custom" ? t("course.flip") : t("course.video");
                   return (
-                    <div key={content.id} className={`flex items-center gap-2 px-3 py-2 hover:bg-accent/30 transition-colors group ${isUnpublished ? "opacity-50" : ""}`}>
-                      <div className="flex flex-col shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <button className="p-0.5 text-muted-foreground/40 hover:text-foreground disabled:opacity-20 disabled:pointer-events-none" disabled={idx === 0} onClick={() => reorderMutation.mutate({ id: content.id, newIndex: idx - 1 })}>
-                          <ChevronUp className="h-3 w-3" />
-                        </button>
-                        <button className="p-0.5 text-muted-foreground/40 hover:text-foreground disabled:opacity-20 disabled:pointer-events-none" disabled={idx === contents.length - 1} onClick={() => reorderMutation.mutate({ id: content.id, newIndex: idx + 1 })}>
-                          <ChevronDown className="h-3 w-3" />
-                        </button>
-                      </div>
-                      <span className="text-[10px] font-mono text-muted-foreground w-5 text-center shrink-0">{String(idx + 1).padStart(2, "0")}</span>
-                      <div className="h-7 w-7 rounded-md bg-accent flex items-center justify-center shrink-0">
-                        <Icon className="h-3.5 w-3.5 text-accent-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-medium text-foreground truncate">{getLocalizedContentTitle(content)}</span>
-                          {isUnpublished && <Badge variant="outline" className="text-[9px] h-4 border-dashed shrink-0">{t("course.draftStatus")}</Badge>}
-                          {content.is_preview && <Badge variant="secondary" className="text-[9px] h-4 shrink-0">{t("course.allowPreview")}</Badge>}
+                    <li key={content.id} className={isUnpublished ? "opacity-50" : undefined}>
+                      <div
+                        className="group flex items-center gap-2 px-3 py-2 transition-colors hover:bg-accent/30"
+                        role="group"
+                        aria-label={`${idx + 1}. ${localizedTitle}`}
+                      >
+                        <div className="flex shrink-0 flex-col">
+                          <button
+                            type="button"
+                            className="rounded p-0.5 text-muted-foreground/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-20"
+                            disabled={idx === 0}
+                            onClick={() => reorderMutation.mutate({ id: content.id, newIndex: idx - 1 })}
+                            aria-label={isEn ? `Move ${localizedTitle} up` : `${localizedTitle} 위로 이동`}
+                          >
+                            <ChevronUp className="h-3 w-3" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded p-0.5 text-muted-foreground/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-20"
+                            disabled={idx === contents.length - 1}
+                            onClick={() => reorderMutation.mutate({ id: content.id, newIndex: idx + 1 })}
+                            aria-label={isEn ? `Move ${localizedTitle} down` : `${localizedTitle} 아래로 이동`}
+                          >
+                            <ChevronDown className="h-3 w-3" aria-hidden="true" />
+                          </button>
+                        </div>
+                        <span className="w-5 shrink-0 text-center font-mono text-[10px] text-muted-foreground">{String(idx + 1).padStart(2, "0")}</span>
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-accent" aria-hidden="true">
+                          <Icon className="h-3.5 w-3.5 text-accent-foreground" aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="truncate text-sm font-medium text-foreground">{localizedTitle}</span>
+                            {isUnpublished && <Badge variant="outline" className="h-4 shrink-0 border-dashed text-[9px]">{t("course.draftStatus")}</Badge>}
+                            {content.is_preview && <Badge variant="secondary" className="h-4 shrink-0 text-[9px]">{t("course.allowPreview")}</Badge>}
+                          </div>
+                        </div>
+                        <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-medium ${content.video_provider === "custom" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`} aria-label={providerLabel}>
+                          {providerLabel}
+                        </span>
+                        <span className="w-10 shrink-0 text-right text-[10px] text-muted-foreground">
+                          {content.duration_minutes ? `${content.duration_minutes}${t("common.minutes")}` : "-"}
+                        </span>
+                        <div
+                          className="flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+                          role="toolbar"
+                          aria-label={isEn ? `${localizedTitle} actions` : `${localizedTitle} 작업`}
+                        >
+                          <button
+                            type="button"
+                            className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            onClick={() => togglePublishMutation.mutate({ id: content.id, published: !content.is_published })}
+                            aria-label={content.is_published ? (isEn ? `Hide ${localizedTitle}` : `${localizedTitle} 비공개`) : (isEn ? `Publish ${localizedTitle}` : `${localizedTitle} 공개`)}
+                          >
+                            {content.is_published ? <Eye className="h-3.5 w-3.5" aria-hidden="true" /> : <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />}
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            onClick={() => navigate(`${routePrefix}/courses/${courseId}/content/${content.id}${viewParam}`)}
+                            aria-label={isEn ? `Open ${localizedTitle}` : `${localizedTitle} 열기`}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            onClick={() => openEditContent(content)}
+                            aria-label={isEn ? `Edit ${localizedTitle}` : `${localizedTitle} 수정`}
+                          >
+                            <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                type="button"
+                                className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                aria-label={isEn ? `Delete ${localizedTitle}` : `${localizedTitle} 삭제`}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t("course.deleteContent")}</AlertDialogTitle>
+                                <AlertDialogDescription>{t("course.deleteContentConfirm", { title: content.title })}</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteContentMutation.mutate(content.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  {t("common.delete")}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
-                      <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded shrink-0 ${content.video_provider === "custom" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`}>
-                        {content.video_provider === "custom" ? t("course.flip") : t("course.video")}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground w-10 text-right shrink-0">
-                        {content.duration_minutes ? `${content.duration_minutes}${t("common.minutes")}` : "-"}
-                      </span>
-                      <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-                        <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => togglePublishMutation.mutate({ id: content.id, published: !content.is_published })}>
-                          {content.is_published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                        </button>
-                        <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => navigate(`${routePrefix}/courses/${courseId}/content/${content.id}${viewParam}`)}>
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </button>
-                        <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => openEditContent(content)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>{t("course.deleteContent")}</AlertDialogTitle>
-                              <AlertDialogDescription>{t("course.deleteContentConfirm", { title: content.title })}</AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => deleteContentMutation.mutate(content.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t("common.delete")}</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
+                    </li>
                   );
                 })}
-              </div>
+              </ol>
             )}
-          </div>
+          </section>
         </div>
 
-        {/* Content Add/Edit Dialog with i18n tabs */}
         <ContentDialog
           open={contentDialogOpen}
           onOpenChange={setContentDialogOpen}
@@ -537,7 +623,6 @@ const CourseDetail = () => {
           t={t}
         />
 
-        {/* Course Edit Dialog with i18n tabs */}
         <CourseEditDialog
           open={courseEditOpen}
           onOpenChange={setCourseEditOpen}
@@ -557,76 +642,110 @@ const CourseDetail = () => {
   return (
     <DashboardLayout role="student">
       <div className="space-y-6">
-        <button onClick={() => navigate("/dashboard/courses")} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="h-3.5 w-3.5" /> {t("course.myCourseRoom")}
-        </button>
+        <header className="space-y-3">
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard/courses")}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label={t("course.myCourseRoom")}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            {t("course.myCourseRoom")}
+          </button>
+        </header>
 
-        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-          <div className="flex items-start gap-4">
+        <section className="space-y-4 rounded-xl border border-border bg-card p-5" aria-labelledby="student-course-detail-heading">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
             {course.thumbnail_url ? (
-              <img src={course.thumbnail_url} alt="" className="h-16 w-16 rounded-xl object-cover shrink-0" />
+              <img
+                src={course.thumbnail_url}
+                alt={isEn ? `${getCourseTitle()} thumbnail` : `${getCourseTitle()} 썸네일`}
+                className="h-40 w-full rounded-xl object-cover sm:h-16 sm:w-16 sm:shrink-0"
+              />
             ) : (
-              <div className="h-16 w-16 rounded-xl bg-accent flex items-center justify-center shrink-0">
-                <BookOpen className="h-7 w-7 text-accent-foreground" />
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-accent" aria-hidden="true">
+                <BookOpen className="h-7 w-7 text-accent-foreground" aria-hidden="true" />
               </div>
             )}
-            <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="min-w-0 flex-1 space-y-1.5">
               <div className="flex items-center gap-2 flex-wrap">
                 {course.is_mandatory && <Badge variant="destructive" className="text-[10px]">{t("course.mandatory")}</Badge>}
               </div>
-              <h1 className="text-lg font-semibold text-foreground">{getCourseTitle()}</h1>
+              <h1 id="student-course-detail-heading" className="text-lg font-semibold text-foreground">
+                {getCourseTitle()}
+              </h1>
               {getCourseDesc() && <p className="text-xs text-muted-foreground">{getCourseDesc()}</p>}
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t border-border">
-            <span className="flex items-center gap-1"><Video className="h-3 w-3" /> {t("course.courseContentCount", { count: contents.length })}</span>
+          <ul className="flex flex-wrap items-center gap-4 border-t border-border pt-2 text-xs text-muted-foreground" aria-label={isEn ? "Course details" : "강좌 정보"}>
+            <li className="flex items-center gap-1">
+              <Video className="h-3 w-3" aria-hidden="true" />
+              {t("course.courseContentCount", { count: contents.length })}
+            </li>
             {course.estimated_duration_hours && (
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {t("course.approxDuration", { hours: course.estimated_duration_hours })}</span>
+              <li className="flex items-center gap-1">
+                <Clock className="h-3 w-3" aria-hidden="true" />
+                {t("course.approxDuration", { hours: course.estimated_duration_hours })}
+              </li>
             )}
-          </div>
+          </ul>
 
           {enrollment ? (
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" aria-label={isEn ? `Progress ${overallProgress}%` : `진도율 ${overallProgress}%`}>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">{t("course.enrollProgress")}</span>
                 <span className="font-medium text-foreground">{overallProgress}%</span>
               </div>
-              <Progress value={overallProgress} className="h-1.5" />
+              <Progress value={overallProgress} className="h-1.5" aria-label={`${t("course.enrollProgress")} ${overallProgress}%`} />
               <p className="text-[10px] text-muted-foreground">{completedCount}/{contents.length} {t("course.completed")}</p>
             </div>
           ) : (
-            <Button className="w-full sm:w-auto" onClick={() => enrollMutation.mutate()} disabled={enrollMutation.isPending}>
+            <Button className="w-full sm:w-auto" onClick={() => enrollMutation.mutate()} disabled={enrollMutation.isPending} aria-label={t("course.enrollCourse")}>
               {enrollMutation.isPending ? t("common.registering") : t("course.enrollCourse")}
             </Button>
           )}
-        </div>
+        </section>
 
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">{t("course.courseContents")}</h2>
-          <div className="space-y-1.5">
+        <section className="space-y-3" aria-labelledby="student-course-contents-heading">
+          <h2 id="student-course-contents-heading" className="text-sm font-semibold text-foreground">
+            {t("course.courseContents")}
+          </h2>
+          <ol className="space-y-1.5">
             {contents.filter(c => c.is_published).map((content, idx) => {
               const progress = progressMap.get(content.id);
               const isCompleted = progress?.completed;
               const isAccessible = !!enrollment || content.is_preview;
               const Icon = contentTypeIcon[content.content_type || "video"] || Video;
+              const localizedTitle = getLocalizedContentTitle(content);
+              const providerLabel = content.video_provider === "custom" ? t("course.flip") : t("course.video");
+              const accessibilityLabel = `${idx + 1}. ${localizedTitle}. ${providerLabel}. ${content.duration_minutes ? `${content.duration_minutes}${t("common.minutes")}. ` : ""}${content.is_preview ? `${t("course.allowPreview")}. ` : ""}${isCompleted ? `${t("course.completed")}. ` : ""}${!isAccessible ? (isEn ? "Locked" : "잠김") : ""}`;
+
               return (
-                <div key={content.id} className={`rounded-xl border border-border bg-card flex items-center gap-3 px-3 py-2.5 transition-all ${!isAccessible ? "opacity-50" : "hover:bg-accent/30 cursor-pointer"}`} onClick={() => isAccessible && navigate(`${routePrefix}/courses/${courseId}/content/${content.id}${viewParam}`)}>
-                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isCompleted ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : "bg-accent text-accent-foreground"}`}>
-                    {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : !isAccessible ? <Lock className="h-3.5 w-3.5" /> : <Icon className="h-4 w-4" />}
-                  </div>
-                  <span className="text-xs text-muted-foreground font-mono">{String(idx + 1).padStart(2, "0")}</span>
-                  <span className="text-sm font-medium text-foreground truncate flex-1">{getLocalizedContentTitle(content)}</span>
-                  <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${content.video_provider === "custom" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`}>
-                    {content.video_provider === "custom" ? t("course.flip") : t("course.video")}
-                  </span>
-                  {content.duration_minutes && <span className="text-[10px] text-muted-foreground shrink-0">{content.duration_minutes}{t("common.minutes")}</span>}
-                  {isAccessible && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                </div>
+                <li key={content.id}>
+                  <button
+                    type="button"
+                    className={`flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${!isAccessible ? "opacity-50" : "cursor-pointer hover:bg-accent/30"}`}
+                    onClick={() => isAccessible && navigate(`${routePrefix}/courses/${courseId}/content/${content.id}${viewParam}`)}
+                    aria-label={accessibilityLabel}
+                    aria-disabled={!isAccessible}
+                  >
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${isCompleted ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : "bg-accent text-accent-foreground"}`} aria-hidden="true">
+                      {isCompleted ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : !isAccessible ? <Lock className="h-3.5 w-3.5" aria-hidden="true" /> : <Icon className="h-4 w-4" aria-hidden="true" />}
+                    </div>
+                    <span className="font-mono text-xs text-muted-foreground">{String(idx + 1).padStart(2, "0")}</span>
+                    <span className="flex-1 truncate text-sm font-medium text-foreground">{localizedTitle}</span>
+                    <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium ${content.video_provider === "custom" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`}>
+                      {providerLabel}
+                    </span>
+                    {content.duration_minutes && <span className="shrink-0 text-[10px] text-muted-foreground">{content.duration_minutes}{t("common.minutes")}</span>}
+                    {isAccessible && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />}
+                  </button>
+                </li>
               );
             })}
-          </div>
-        </div>
+          </ol>
+        </section>
       </div>
     </DashboardLayout>
   );
