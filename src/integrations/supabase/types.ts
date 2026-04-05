@@ -908,7 +908,7 @@ export type Database = {
       update_streak: { Args: { p_user_id: string }; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "teacher" | "student"
+      app_role: "admin" | "teacher" | "student" | "super_admin"
       assignment_status: "draft" | "published" | "closed"
       attendance_status: "present" | "absent" | "late" | "excused"
       content_type: "video" | "document" | "quiz" | "assignment" | "live"
@@ -1042,7 +1042,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "teacher", "student"],
+      app_role: ["admin", "teacher", "student", "super_admin"],
       assignment_status: ["draft", "published", "closed"],
       attendance_status: ["present", "absent", "late", "excused"],
       content_type: ["video", "document", "quiz", "assignment", "live"],
