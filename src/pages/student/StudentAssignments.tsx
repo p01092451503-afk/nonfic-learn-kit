@@ -1,6 +1,6 @@
-import { ClipboardList, Clock, CheckCircle2, AlertCircle, ArrowRight, Send } from "lucide-react";
+import { ClipboardList, Clock, CheckCircle2, AlertCircle, ArrowRight, Send, Paperclip, X, FileIcon, Download } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,15 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = [
+  "application/pdf", "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "image/jpeg", "image/png", "image/webp", "text/plain",
+];
+
 const StudentAssignments = () => {
   const { user } = useUser();
   const { toast } = useToast();
@@ -20,6 +29,9 @@ const StudentAssignments = () => {
   const { t, i18n } = useTranslation();
   const [submitTarget, setSubmitTarget] = useState<any>(null);
   const [submissionText, setSubmissionText] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [viewTarget, setViewTarget] = useState<any>(null);
 
   const statusConfig = {
