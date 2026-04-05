@@ -187,8 +187,9 @@ const AdminTraffic = () => {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className="text-xs text-muted-foreground">영상 / 문서 재생</p>
-              <p className="text-lg font-semibold">{videoAccess} / {docAccess}</p>
+              <p className="text-xs text-muted-foreground">외부 플랫폼 / 자체 호스팅</p>
+              <p className="text-lg font-semibold">{externalAccess} / {selfHostedAccess}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">YouTube·Vimeo·망고보드 = 전송 비용 없음</p>
             </CardContent>
           </Card>
         </div>
