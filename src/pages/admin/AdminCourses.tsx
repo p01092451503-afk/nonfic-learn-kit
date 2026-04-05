@@ -135,7 +135,7 @@ const AdminCourses = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t("admin.courseManagement")}</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2"><BookOpen className="h-6 w-6" aria-hidden="true" />{t("admin.courseManagement")}</h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.courseManagementDesc")}</p>
           </div>
           <Link to="/admin/courses/new">

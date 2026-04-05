@@ -158,7 +158,7 @@ const AdminSettings = () => {
     <DashboardLayout role="admin">
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">{t("admin.settingsTitle")}</h1>
+          <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2"><Settings className="h-6 w-6" aria-hidden="true" />{t("admin.settingsTitle")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("admin.settingsDesc")}</p>
         </div>
 

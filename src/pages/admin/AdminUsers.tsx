@@ -131,7 +131,7 @@ const AdminUsers = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t("admin.userManagement")}</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2"><Users className="h-6 w-6" aria-hidden="true" />{t("admin.userManagement")}</h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.userManagementDesc")}</p>
           </div>
           <Button className="rounded-xl gap-2 w-full sm:w-auto" onClick={() => setAddOpen(true)}>

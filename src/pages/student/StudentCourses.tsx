@@ -131,7 +131,7 @@ const StudentCourses = () => {
     <DashboardLayout role="student">
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">{t("course.myCourseRoom")}</h1>
+          <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2"><BookOpen className="h-6 w-6" aria-hidden="true" />{t("course.myCourseRoom")}</h1>
         </div>
 
         <div className="bg-secondary/30 rounded-xl p-4 space-y-1.5">

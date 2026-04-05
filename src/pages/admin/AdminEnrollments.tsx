@@ -129,7 +129,7 @@ const AdminEnrollments = () => {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t("enrollment.management")}</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2"><Users className="h-6 w-6" aria-hidden="true" />{t("enrollment.management")}</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("enrollment.managementDesc")}</p>
         </div>
 
