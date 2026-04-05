@@ -33,6 +33,7 @@ import CourseDetail from "./pages/CourseDetail";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import ContentPlayer from "./pages/ContentPlayer";
 import NotFound from "./pages/NotFound";
+import TrafficLogger from "./components/TrafficLogger";
 
 const queryClient = new QueryClient();
 
@@ -43,7 +44,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
+          <TrafficLogger />
             <Route path="/" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<ProtectedRoute><RoleBasedRedirect /></ProtectedRoute>} />
