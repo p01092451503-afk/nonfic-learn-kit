@@ -1,6 +1,6 @@
-import { ClipboardList, Clock, CheckCircle2, AlertCircle, ArrowRight, Send } from "lucide-react";
+import { ClipboardList, Clock, CheckCircle2, AlertCircle, ArrowRight, Send, Paperclip, X, FileIcon, Download } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,15 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = [
+  "application/pdf", "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "image/jpeg", "image/png", "image/webp", "text/plain",
+];
+
 const StudentAssignments = () => {
   const { user } = useUser();
   const { toast } = useToast();
@@ -20,6 +29,9 @@ const StudentAssignments = () => {
   const { t, i18n } = useTranslation();
   const [submitTarget, setSubmitTarget] = useState<any>(null);
   const [submissionText, setSubmissionText] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [viewTarget, setViewTarget] = useState<any>(null);
 
   const statusConfig = {
@@ -56,12 +68,49 @@ const StudentAssignments = () => {
     enabled: !!user?.id,
   });
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files || []);
+    const valid = selected.filter((f) => {
+      if (f.size > MAX_FILE_SIZE) {
+        toast({ title: `${f.name}: 10MB 초과`, variant: "destructive" });
+        return false;
+      }
+      if (!ALLOWED_TYPES.includes(f.type)) {
+        toast({ title: `${f.name}: 지원하지 않는 형식`, variant: "destructive" });
+        return false;
+      }
+      return true;
+    });
+    setFiles((prev) => [...prev, ...valid].slice(0, 5));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeFile = (index: number) => setFiles((prev) => prev.filter((_, i) => i !== index));
+
+  const uploadFiles = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const file of files) {
+      const filePath = `${user!.id}/${Date.now()}_${file.name}`;
+      const { error } = await supabase.storage.from("assignment-files").upload(filePath, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("assignment-files").getPublicUrl(filePath);
+      urls.push(data.publicUrl);
+    }
+    return urls;
+  };
+
   const submitMutation = useMutation({
     mutationFn: async () => {
+      setUploading(true);
+      let fileUrls: string[] = [];
+      if (files.length > 0) {
+        fileUrls = await uploadFiles();
+      }
       const { error } = await supabase.from("assignment_submissions").insert({
         assignment_id: submitTarget.id,
         student_id: user!.id,
         submission_text: submissionText,
+        file_urls: fileUrls.length > 0 ? fileUrls : null,
         status: "submitted" as any,
         submitted_at: new Date().toISOString(),
       });
@@ -73,8 +122,13 @@ const StudentAssignments = () => {
       toast({ title: t("assignments.submitSuccess") });
       setSubmitTarget(null);
       setSubmissionText("");
+      setFiles([]);
+      setUploading(false);
     },
-    onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
+    onError: (e: any) => {
+      setUploading(false);
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    },
   });
 
   const submittedIds = new Set(submissions.map((s: any) => s.assignment_id));
@@ -120,11 +174,11 @@ const StudentAssignments = () => {
               <div
                 key={assignment.id}
                 className="stat-card flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 cursor-pointer group !p-3 sm:!p-4 hover:shadow-md transition-all"
-                onClick={() => { setSubmitTarget(assignment); setSubmissionText(""); }}
+                onClick={() => { setSubmitTarget(assignment); setSubmissionText(""); setFiles([]); }}
                 role="button"
                 tabIndex={0}
                 aria-label={`${assignment.title} - ${t("common.submit")}`}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSubmitTarget(assignment); setSubmissionText(""); } }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSubmitTarget(assignment); setSubmissionText(""); setFiles([]); } }}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0" aria-hidden="true">
@@ -239,17 +293,56 @@ const StudentAssignments = () => {
                   className="rounded-xl resize-none min-h-[120px]"
                 />
               </div>
+              {/* File Upload */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-1.5">
+                  <Paperclip className="h-3.5 w-3.5" /> 파일 첨부
+                  <span className="text-muted-foreground font-normal">(최대 5개, 10MB)</span>
+                </Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.xlsx,.pptx,.jpg,.jpeg,.png,.webp,.txt"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl gap-1.5 text-xs"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={files.length >= 5}
+                >
+                  <Paperclip className="h-3 w-3" /> 파일 선택
+                </Button>
+                {files.length > 0 && (
+                  <div className="space-y-1.5 mt-2">
+                    {files.map((f, i) => (
+                      <div key={i} className="flex items-center gap-2 p-2 bg-secondary/30 rounded-lg text-xs">
+                        <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="flex-1 truncate text-foreground">{f.name}</span>
+                        <span className="text-muted-foreground shrink-0">{(f.size / 1024).toFixed(0)}KB</span>
+                        <button onClick={() => removeFile(i)} className="p-0.5 rounded hover:bg-accent shrink-0">
+                          <X className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setSubmitTarget(null)} className="rounded-xl">{t("common.cancel")}</Button>
             <Button
               onClick={() => submitMutation.mutate()}
-              disabled={submitMutation.isPending || !submissionText.trim()}
+              disabled={submitMutation.isPending || uploading || (!submissionText.trim() && files.length === 0)}
               className="rounded-xl gap-1.5"
             >
               <Send className="h-3.5 w-3.5" />
-              {submitMutation.isPending ? t("assignments.submitting") : t("common.submit")}
+              {uploading ? "업로드 중..." : submitMutation.isPending ? t("assignments.submitting") : t("common.submit")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -270,6 +363,30 @@ const StudentAssignments = () => {
                   {viewTarget.submission_text || t("assignments.noSubmissionText")}
                 </div>
               </div>
+              {/* Attached files */}
+              {viewTarget.file_urls && viewTarget.file_urls.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium flex items-center gap-1.5">
+                    <Paperclip className="h-3.5 w-3.5" /> 첨부 파일
+                  </Label>
+                  {viewTarget.file_urls.map((url: string, i: number) => {
+                    const fileName = decodeURIComponent(url.split("/").pop() || "").replace(/^\d+_/, "");
+                    return (
+                      <a
+                        key={i}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-2 bg-secondary/30 rounded-lg text-xs hover:bg-secondary/50 transition-colors"
+                      >
+                        <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="flex-1 truncate text-foreground">{fileName}</span>
+                        <Download className="h-3 w-3 text-muted-foreground shrink-0" />
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
               {viewTarget.submitted_at && (
                 <p className="text-xs text-muted-foreground">{t("assignments.submitted")}: {formatDate(viewTarget.submitted_at)}</p>
               )}
