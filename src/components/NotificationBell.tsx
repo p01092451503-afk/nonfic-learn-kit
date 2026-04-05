@@ -133,7 +133,7 @@ const NotificationBell = () => {
           <div className="fixed inset-0 z-40" aria-hidden="true" onClick={closePanel} />
           <div
             ref={panelRef}
-            className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-border bg-popover shadow-lg sm:w-96"
+            className="fixed inset-x-0 top-14 z-50 mx-3 overflow-hidden rounded-xl border border-border bg-popover shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mx-0 sm:mt-2 sm:w-96"
             role="dialog"
             aria-modal="true"
             aria-label={t("notification.title")}
