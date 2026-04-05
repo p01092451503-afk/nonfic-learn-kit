@@ -15,7 +15,15 @@ const CourseRedirect = () => {
   if (userLoading) return null;
   if (!user) return <Navigate to="/" replace />;
 
-  const prefix = primaryRole === "admin" ? "/admin" : primaryRole === "teacher" ? "/teacher" : "/student";
+  const isLearningView = new URLSearchParams(search).get("view") === "learn";
+  const prefix = isLearningView
+    ? "/student"
+    : primaryRole === "admin"
+    ? "/admin"
+    : primaryRole === "teacher"
+    ? "/teacher"
+    : "/student";
+
   return <Navigate to={`${prefix}/courses/${courseId}${search}`} replace />;
 };
 
