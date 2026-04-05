@@ -259,7 +259,7 @@ const TeacherStudentDetail = () => {
             {courseDetails.map((course) => (
               <div key={course.courseId} className="rounded-xl border border-border bg-card overflow-hidden">
                 {/* Course header */}
-                <div className="px-5 py-4 border-b border-border flex items-center justify-between flex-wrap gap-2">
+                <div className="px-3 sm:px-5 py-3 sm:py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
@@ -293,7 +293,7 @@ const TeacherStudentDetail = () => {
                     const done = content.progress?.completed;
                     const pct = content.progress?.progress_percentage || 0;
                     return (
-                      <div key={content.id} className={`px-5 py-2.5 flex items-center gap-3 text-sm ${done ? "bg-green-50/50 dark:bg-green-950/10" : ""}`}>
+                      <div key={content.id} className={`px-3 sm:px-5 py-2 sm:py-2.5 flex items-center gap-2 sm:gap-3 text-sm ${done ? "bg-green-50/50 dark:bg-green-950/10" : ""}`}>
                         <span className="text-[10px] text-muted-foreground w-5 text-right shrink-0">{idx + 1}</span>
                         <div className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 ${
                           done ? "bg-green-500 text-white" : "border border-border text-muted-foreground"

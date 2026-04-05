@@ -200,15 +200,15 @@ const TeacherStudents = () => {
     <DashboardLayout role="teacher">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <Users className="h-6 w-6 text-primary" aria-hidden="true" /> {t("students.studentManagement")}
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" aria-hidden="true" /> {t("students.studentManagement")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("students.monitorStudents")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("students.monitorStudents")}</p>
           </div>
           <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-            <SelectTrigger className="w-52 h-9 text-xs">
+            <SelectTrigger className="w-full sm:w-52 h-9 text-xs">
               <SelectValue placeholder={t("students.selectCourse")} />
             </SelectTrigger>
             <SelectContent>
@@ -221,28 +221,28 @@ const TeacherStudents = () => {
         </div>
 
         {/* Stat cards */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3" aria-label={t("students.studentManagement")}>
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3" aria-label={t("students.studentManagement")}>
           {stats.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-border bg-card p-4" role="group" aria-label={stat.label}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
+            <div key={stat.label} className="rounded-xl border border-border bg-card p-3 sm:p-4" role="group" aria-label={stat.label}>
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                <span className="text-[10px] sm:text-xs text-muted-foreground">{stat.label}</span>
+                <stat.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground/50" aria-hidden="true" />
               </div>
-              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">{stat.sub}</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">{stat.sub}</p>
             </div>
           ))}
         </section>
 
         {/* Student list */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="px-5 py-4 border-b border-border">
-            <div className="flex items-center justify-between mb-1">
+          <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-1">
               <div>
-                <h2 className="text-base font-semibold text-foreground">{t("students.studentList")}</h2>
-                <p className="text-xs text-muted-foreground">{t("students.detailedStatus")}</p>
+                <h2 className="text-sm sm:text-base font-semibold text-foreground">{t("students.studentList")}</h2>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">{t("students.detailedStatus")}</p>
               </div>
-              <div className="relative w-56">
+              <div className="relative w-full sm:w-56">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <label htmlFor="student-search" className="sr-only">{t("students.searchStudent")}</label>
                 <Input

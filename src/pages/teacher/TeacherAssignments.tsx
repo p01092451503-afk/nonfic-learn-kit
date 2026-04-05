@@ -255,36 +255,36 @@ const TeacherAssignments = () => {
   return (
     <DashboardLayout role="teacher">
       <div className="space-y-8">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <ClipboardList className="h-6 w-6 text-primary" aria-hidden="true" /> {t("assignments.assignmentManagement")}
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6 text-primary" aria-hidden="true" /> {t("assignments.assignmentManagement")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("assignments.createAndGrade")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("assignments.createAndGrade")}</p>
           </div>
-          <Button className="gap-2" onClick={() => { resetForm(); setEditingAssignment(null); setDialogOpen(true); }} aria-label={t("assignments.createAssignment")}>
+          <Button className="gap-2 w-full sm:w-auto" onClick={() => { resetForm(); setEditingAssignment(null); setDialogOpen(true); }} aria-label={t("assignments.createAssignment")}>
             <Plus className="h-4 w-4" aria-hidden="true" /> {t("assignments.createAssignment")}
           </Button>
         </div>
 
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-label={t("assignments.assignmentManagement")}>
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4" aria-label={t("assignments.assignmentManagement")}>
           {stats.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-border bg-card p-5" role="group" aria-label={stat.label}>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
+            <div key={stat.label} className="rounded-xl border border-border bg-card p-3 sm:p-5" role="group" aria-label={stat.label}>
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-[11px] sm:text-sm text-muted-foreground">{stat.label}</span>
+                <stat.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground/50" aria-hidden="true" />
               </div>
-              <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
             </div>
           ))}
         </section>
 
         {/* Assignment List */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="px-6 py-5 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground">{t("assignments.assignmentList")}</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">{t("assignments.allCreated")}</p>
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">{t("assignments.assignmentList")}</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("assignments.allCreated")}</p>
           </div>
 
           {assignments.length === 0 ? (
@@ -378,31 +378,35 @@ const TeacherAssignments = () => {
           ) : (
             <div className="divide-y divide-border">
               {pendingSubmissions.slice(0, 10).map((sub: any) => (
-                <div key={sub.id} className="px-6 py-4 flex items-center gap-4 hover:bg-accent/20 transition-colors">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary shrink-0">
-                    {(profileMap.get(sub.student_id) || t("assignments.student"))[0]}
+                <div key={sub.id} className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-accent/20 transition-colors">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary shrink-0">
+                      {(profileMap.get(sub.student_id) || t("assignments.student"))[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{profileMap.get(sub.student_id) || t("assignments.student")}</p>
+                      <p className="text-xs text-muted-foreground truncate">{sub.assignments?.title} · {sub.assignments?.courses?.title}</p>
+                      {sub.file_urls && sub.file_urls.length > 0 && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Paperclip className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">{sub.file_urls.length}개 파일 첨부</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{profileMap.get(sub.student_id) || t("assignments.student")}</p>
-                    <p className="text-xs text-muted-foreground truncate">{sub.assignments?.title} · {sub.assignments?.courses?.title}</p>
-                    {sub.file_urls && sub.file_urls.length > 0 && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Paperclip className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground">{sub.file_urls.length}개 파일 첨부</span>
-                      </div>
-                    )}
+                  <div className="flex items-center justify-between sm:justify-end gap-3 pl-12 sm:pl-0">
+                    <div className="text-left sm:text-right shrink-0">
+                      <Badge variant="secondary" className="text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                        {t("assignments.ungraded")}
+                      </Badge>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        {sub.submitted_at ? formatDistanceToNow(new Date(sub.submitted_at), { addSuffix: true, locale: dateFnsLocale }) : ""}
+                      </p>
+                    </div>
+                    <Button size="sm" variant="outline" className="rounded-xl text-xs shrink-0" onClick={() => openGrade(sub)}>
+                      {t("assignments.grade")}
+                    </Button>
                   </div>
-                  <div className="text-right shrink-0">
-                    <Badge variant="secondary" className="text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                      {t("assignments.ungraded")}
-                    </Badge>
-                    <p className="text-[11px] text-muted-foreground mt-1">
-                      {sub.submitted_at ? formatDistanceToNow(new Date(sub.submitted_at), { addSuffix: true, locale: dateFnsLocale }) : ""}
-                    </p>
-                  </div>
-                  <Button size="sm" variant="outline" className="rounded-xl text-xs shrink-0" onClick={() => openGrade(sub)}>
-                    {t("assignments.grade")}
-                  </Button>
                 </div>
               ))}
             </div>
