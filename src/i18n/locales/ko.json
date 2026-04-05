@@ -98,9 +98,11 @@
     "student": "Student",
     "teacher": "Teacher",
     "admin": "Admin",
+    "superAdmin": "Super Admin",
     "adminLabel": "관리자",
     "teacherLabel": "강사",
-    "studentLabel": "학습자"
+    "studentLabel": "학습자",
+    "superAdminLabel": "슈퍼관리자"
   },
   "dashboard": {
     "learningDashboard": "학습 대시보드",
