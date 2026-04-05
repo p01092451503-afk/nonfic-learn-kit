@@ -126,7 +126,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border h-16 flex items-center px-6 gap-4" role="banner">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground" aria-label={t("common.openSidebar", "메뉴 열기")}>
             <Menu className="h-5 w-5" aria-hidden="true" />
@@ -148,7 +148,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
             </div>
           </div>
         </header>
-        <main className={contentClassName || "flex-1 p-6 lg:p-8"} role="main">{children}</main>
+        <main className={contentClassName || "flex-1 min-w-0 p-6 lg:p-8"} role="main">{children}</main>
       </div>
     </div>
   );
