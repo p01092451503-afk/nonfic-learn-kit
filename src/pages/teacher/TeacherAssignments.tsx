@@ -425,6 +425,21 @@ const TeacherAssignments = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">{profileMap.get(sub.student_id) || t("assignments.student")}</p>
                     <p className="text-xs text-muted-foreground truncate">{sub.assignments?.title} · {sub.assignments?.courses?.title}</p>
+                    {sub.file_urls && sub.file_urls.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                        <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />
+                        {sub.file_urls.map((url: string, i: number) => {
+                          const fileName = decodeURIComponent(url.split("/").pop() || "").replace(/^\d+_/, "");
+                          return (
+                            <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 bg-secondary/50 rounded text-[10px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                              <FileIcon className="h-2.5 w-2.5 shrink-0" />
+                              <span className="max-w-[120px] truncate">{fileName}</span>
+                              <Download className="h-2.5 w-2.5 shrink-0" />
+                            </a>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
                     <span className="text-sm font-semibold text-foreground">
