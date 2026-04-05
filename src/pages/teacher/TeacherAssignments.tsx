@@ -1,5 +1,5 @@
 import {
-  ClipboardList, Clock, CheckCircle2, Plus, MoreHorizontal, FileText, Info, CalendarIcon,
+  ClipboardList, Clock, CheckCircle2, Plus, MoreHorizontal, FileText, Info, CalendarIcon, Paperclip, Download, FileIcon,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -385,6 +385,12 @@ const TeacherAssignments = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">{profileMap.get(sub.student_id) || t("assignments.student")}</p>
                     <p className="text-xs text-muted-foreground truncate">{sub.assignments?.title} · {sub.assignments?.courses?.title}</p>
+                    {sub.file_urls && sub.file_urls.length > 0 && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <Paperclip className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">{sub.file_urls.length}개 파일 첨부</span>
+                      </div>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
                     <Badge variant="secondary" className="text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
@@ -547,6 +553,32 @@ const TeacherAssignments = () => {
                   {gradeTarget.submission_text || t("assignments.noSubmissionText")}
                 </div>
               </div>
+              {/* Attached Files */}
+              {gradeTarget.file_urls && gradeTarget.file_urls.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-1.5">
+                    <Paperclip className="h-3.5 w-3.5" /> 첨부 파일 ({gradeTarget.file_urls.length})
+                  </Label>
+                  <div className="space-y-1.5">
+                    {gradeTarget.file_urls.map((url: string, i: number) => {
+                      const fileName = decodeURIComponent(url.split("/").pop() || "").replace(/^\d+_/, "");
+                      return (
+                        <a
+                          key={i}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 p-2 bg-secondary/30 rounded-lg text-xs hover:bg-secondary/50 transition-colors"
+                        >
+                          <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="flex-1 truncate text-foreground">{fileName}</span>
+                          <Download className="h-3 w-3 text-muted-foreground shrink-0" />
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">{t("assignments.scoreInput")} (/ {gradeTarget.assignments?.max_score || 100})</Label>
                 <Input type="number" value={gradeScore} onChange={(e) => setGradeScore(e.target.value)} placeholder="0" className="rounded-xl" min={0} max={gradeTarget.assignments?.max_score || 100} />
