@@ -68,7 +68,7 @@ const CatalogCourseCard = ({
         </div>
       </div>
     </Link>
-    <div className="p-4 space-y-3">
+    <div className="p-4 space-y-4">
       {course.description && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{course.description}</p>}
       <div className="flex items-center gap-3 flex-wrap">
         {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && (
