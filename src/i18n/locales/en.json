@@ -98,9 +98,11 @@
     "student": "Student",
     "teacher": "Teacher",
     "admin": "Admin",
+    "superAdmin": "Super Admin",
     "adminLabel": "Admin",
     "teacherLabel": "Teacher",
-    "studentLabel": "Learner"
+    "studentLabel": "Learner",
+    "superAdminLabel": "Super Admin"
   },
   "dashboard": {
     "learningDashboard": "Learning Dashboard",
