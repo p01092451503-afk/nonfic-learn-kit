@@ -411,9 +411,9 @@ const StudentDashboard = () => {
                         className="gap-1.5 shrink-0 rounded-full w-full sm:w-auto"
                         onClick={() => {
                           if (nextContent) {
-                            navigate(`/courses/${enrollment.course_id}/content/${nextContent.id}?view=learn`);
+                            navigate(`/student/courses/${enrollment.course_id}/content/${nextContent.id}?view=learn`);
                           } else {
-                            navigate(`/courses/${enrollment.course_id}?view=learn`);
+                            navigate(`/student/courses/${enrollment.course_id}?view=learn`);
                           }
                         }}
                         aria-label={`${enrollment.courses?.title} - ${t("common.continue")}`}
