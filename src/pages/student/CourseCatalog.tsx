@@ -77,6 +77,7 @@ const CatalogCourseCard = ({
         <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> {studentCount}{t("common.people")}</span>
         {lessons > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><BookOpen className="h-3 w-3" /> {t("course.lessonsCount", { count: lessons })}</span>}
       </div>
+      <div className="pt-1">
       {enrollmentStatus === "approved" ? (
         <Link to={`/student/courses/${course.id}?view=learn`}>
           <Button variant="outline" size="sm" className="w-full rounded-xl text-xs gap-1.5">{t("catalog.continueLearning")}<ChevronRight className="h-3.5 w-3.5" /></Button>
