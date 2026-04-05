@@ -380,7 +380,6 @@ const MyPage = () => {
               </div>
             </TabsContent>
           </Tabs>
-        </div>
       </div>
     </DashboardLayout>
   );
