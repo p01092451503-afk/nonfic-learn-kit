@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Bell, AlertTriangle, BookOpen, CheckCircle2, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ const NotificationBell = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const locale = i18n.language?.startsWith("en") ? enUS : ko;
+  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications", user?.id],
@@ -58,12 +60,69 @@ const NotificationBell = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   });
 
+  const closePanel = useCallback(() => {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closePanel();
+      }
+      if (e.key === "Tab" && panelRef.current) {
+        const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, closePanel]);
+
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => {
+        const firstFocusable = panelRef.current?.querySelector<HTMLElement>("button");
+        firstFocusable?.focus();
+      });
+    }
+  }, [open]);
+
   return (
     <div className="relative">
-      <Button variant="ghost" size="icon" className="relative" onClick={() => setOpen(!open)} aria-label={t("notification.title")} aria-expanded={open} aria-haspopup="true">
+      <Button
+        ref={triggerRef}
+        variant="ghost"
+        size="icon"
+        className="relative"
+        onClick={() => setOpen(!open)}
+        aria-label={
+          unreadCount > 0
+            ? `${t("notification.title")} - ${t("notification.unreadCount", { count: unreadCount })}`
+            : t("notification.title")
+        }
+        aria-expanded={open}
+        aria-haspopup="dialog"
+      >
         <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center" aria-label={t("notification.unreadCount", { count: unreadCount })}>
+          <span
+            className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground"
+            aria-hidden="true"
+          >
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -71,62 +130,89 @@ const NotificationBell = () => {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40" aria-hidden="true" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-popover border border-border rounded-xl shadow-lg z-50 overflow-hidden" role="dialog" aria-label={t("notification.title")}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <h3 className="text-sm font-semibold text-foreground">{t("notification.title")}</h3>
+          <div className="fixed inset-0 z-40" aria-hidden="true" onClick={closePanel} />
+          <div
+            ref={panelRef}
+            className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-border bg-popover shadow-lg sm:w-96"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("notification.title")}
+          >
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <h2 className="text-sm font-semibold text-foreground" id="notification-panel-title">
+                {t("notification.title")}
+              </h2>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
+                    type="button"
                     onClick={() => markAllReadMutation.mutate()}
-                    className="text-[11px] text-primary hover:underline"
+                    className="text-[11px] text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label={t("notification.markAllRead")}
                   >
                     {t("notification.markAllRead")}
                   </button>
                 )}
-                <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-accent" aria-label={t("common.close", "닫기")}>
+                <button
+                  type="button"
+                  onClick={closePanel}
+                  className="rounded p-1 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  aria-label={t("common.close", "닫기")}
+                >
                   <X className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 </button>
               </div>
             </div>
 
-            <ul className="max-h-80 overflow-y-auto divide-y divide-border" role="list">
+            <ul
+              className="max-h-80 divide-y divide-border overflow-y-auto"
+              role="list"
+              aria-label={t("notification.title")}
+            >
               {notifications.length === 0 ? (
-                <li className="py-8 text-center text-sm text-muted-foreground">
+                <li className="py-8 text-center text-sm text-muted-foreground" role="status" aria-live="polite">
                   {t("notification.empty")}
                 </li>
               ) : (
                 notifications.map((n) => {
                   const Icon = typeIcon[n.type || "info"] || Bell;
+                  const timeAgo = formatDistanceToNow(new Date(n.created_at!), { addSuffix: true, locale });
                   return (
                     <li key={n.id}>
                       <button
-                        className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-accent/50 transition-colors ${!n.is_read ? "bg-primary/5" : ""}`}
+                        type="button"
+                        className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${!n.is_read ? "bg-primary/5" : ""}`}
                         onClick={() => {
                           if (!n.is_read) markReadMutation.mutate(n.id);
                           if (n.action_url) {
-                            setOpen(false);
+                            closePanel();
                             window.location.href = n.action_url;
                           }
                         }}
+                        aria-label={`${!n.is_read ? `(${t("notification.unread", "읽지 않음")}) ` : ""}${n.title}. ${n.message}. ${timeAgo}`}
                       >
-                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
-                          n.type === "deadline" ? "bg-destructive/10 text-destructive" :
-                          n.type === "mandatory" ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" :
-                          "bg-accent text-muted-foreground"
-                        }`} aria-hidden="true">
-                          <Icon className="h-4 w-4" />
+                        <div
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                            n.type === "deadline"
+                              ? "bg-destructive/10 text-destructive"
+                              : n.type === "mandatory"
+                              ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"
+                              : "bg-accent text-muted-foreground"
+                          }`}
+                          aria-hidden="true"
+                        >
+                          <Icon className="h-4 w-4" aria-hidden="true" />
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className={`text-xs leading-relaxed ${!n.is_read ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
                             {n.title}
                           </p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
-                          <p className="text-[10px] text-muted-foreground/60 mt-1">
-                            {formatDistanceToNow(new Date(n.created_at!), { addSuffix: true, locale })}
-                          </p>
+                          <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">{n.message}</p>
+                          <p className="mt-1 text-[10px] text-muted-foreground/60">{timeAgo}</p>
                         </div>
-                        {!n.is_read && <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" aria-label={t("notification.unread", "읽지 않음")} />}
+                        {!n.is_read && (
+                          <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                        )}
                       </button>
                     </li>
                   );
