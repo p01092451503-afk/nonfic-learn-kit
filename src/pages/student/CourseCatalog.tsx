@@ -95,6 +95,7 @@ const CatalogCourseCard = ({
         )}
       </div>
     </div>
+  </div>
 );
 
 /* ── Category Carousel Section ── */
