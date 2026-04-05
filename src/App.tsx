@@ -34,6 +34,8 @@ import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import ContentPlayer from "./pages/ContentPlayer";
 import NotFound from "./pages/NotFound";
 import TrafficLogger from "./components/TrafficLogger";
+import CourseRedirect from "./components/CourseRedirect";
+import ContentRedirect from "./components/ContentRedirect";
 
 
 const queryClient = new QueryClient();
@@ -58,6 +60,8 @@ const App = () => (
             <Route path="/dashboard/achievements" element={<ProtectedRoute><StudentAchievements /></ProtectedRoute>} />
             <Route path="/catalog" element={<ProtectedRoute><CourseCatalog /></ProtectedRoute>} />
             <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+            <Route path="/student/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+            <Route path="/student/courses/:courseId/content/:contentId" element={<ProtectedRoute><ContentPlayer /></ProtectedRoute>} />
 
             {/* Teacher */}
             <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
@@ -65,6 +69,7 @@ const App = () => (
             <Route path="/teacher/assignments" element={<ProtectedRoute><TeacherAssignments /></ProtectedRoute>} />
             <Route path="/teacher/courses/new" element={<ProtectedRoute><CreateCourse /></ProtectedRoute>} />
             <Route path="/teacher/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+            <Route path="/teacher/courses/:courseId/content/:contentId" element={<ProtectedRoute><ContentPlayer /></ProtectedRoute>} />
             <Route path="/teacher/students" element={<ProtectedRoute><TeacherStudents /></ProtectedRoute>} />
             <Route path="/teacher/students/:studentId" element={<ProtectedRoute><TeacherStudentDetail /></ProtectedRoute>} />
 
@@ -74,6 +79,7 @@ const App = () => (
             <Route path="/admin/courses" element={<ProtectedRoute><AdminCourses /></ProtectedRoute>} />
             <Route path="/admin/courses/new" element={<ProtectedRoute><CreateCourse /></ProtectedRoute>} />
             <Route path="/admin/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+            <Route path="/admin/courses/:courseId/content/:contentId" element={<ProtectedRoute><ContentPlayer /></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
             <Route path="/admin/enrollments" element={<ProtectedRoute><AdminEnrollments /></ProtectedRoute>} />
             <Route path="/admin/learning" element={<ProtectedRoute><AdminLearning /></ProtectedRoute>} />
@@ -85,9 +91,9 @@ const App = () => (
             <Route path="/dept-admin" element={<ProtectedRoute><DeptAdminDashboard /></ProtectedRoute>} />
 
 
-            {/* Course Detail & Player */}
-            <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
-            <Route path="/courses/:courseId/content/:contentId" element={<ProtectedRoute><ContentPlayer /></ProtectedRoute>} />
+            {/* Legacy generic routes → redirect to role-based paths */}
+            <Route path="/courses/:courseId" element={<ProtectedRoute><CourseRedirect /></ProtectedRoute>} />
+            <Route path="/courses/:courseId/content/:contentId" element={<ProtectedRoute><ContentRedirect /></ProtectedRoute>} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

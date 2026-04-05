@@ -82,7 +82,7 @@ const StudentCourses = () => {
     return (
       <Link
         key={enrollment.id}
-        to={`/courses/${course.id}?view=learn`}
+        to={`/student/courses/${course.id}?view=learn`}
         className="group flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:shadow-md transition-all"
       >
         {/* Thumbnail - small */}

@@ -89,6 +89,7 @@ const CourseDetail = () => {
     ? "teacher"
     : "student";
   const isTeacherOrAdmin = role === "admin" || role === "teacher";
+  const routePrefix = isAdminRoute ? "/admin" : isTeacherRoute ? "/teacher" : "/student";
   const viewParam = role === "student" ? "?view=learn" : "";
 
   // --- Queries ---
@@ -489,7 +490,7 @@ const CourseDetail = () => {
                         <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => togglePublishMutation.mutate({ id: content.id, published: !content.is_published })}>
                           {content.is_published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                         </button>
-                        <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => navigate(`/courses/${courseId}/content/${content.id}${viewParam}`)}>
+                        <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => navigate(`${routePrefix}/courses/${courseId}/content/${content.id}${viewParam}`)}>
                           <ExternalLink className="h-3.5 w-3.5" />
                         </button>
                         <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => openEditContent(content)}>
@@ -607,7 +608,7 @@ const CourseDetail = () => {
               const isAccessible = !!enrollment || content.is_preview;
               const Icon = contentTypeIcon[content.content_type || "video"] || Video;
               return (
-                <div key={content.id} className={`rounded-xl border border-border bg-card flex items-center gap-3 px-3 py-2.5 transition-all ${!isAccessible ? "opacity-50" : "hover:bg-accent/30 cursor-pointer"}`} onClick={() => isAccessible && navigate(`/courses/${courseId}/content/${content.id}${viewParam}`)}>
+                <div key={content.id} className={`rounded-xl border border-border bg-card flex items-center gap-3 px-3 py-2.5 transition-all ${!isAccessible ? "opacity-50" : "hover:bg-accent/30 cursor-pointer"}`} onClick={() => isAccessible && navigate(`${routePrefix}/courses/${courseId}/content/${content.id}${viewParam}`)}>
                   <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isCompleted ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : "bg-accent text-accent-foreground"}`}>
                     {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : !isAccessible ? <Lock className="h-3.5 w-3.5" /> : <Icon className="h-4 w-4" />}
                   </div>
