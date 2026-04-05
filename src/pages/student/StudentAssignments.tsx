@@ -174,7 +174,7 @@ const StudentAssignments = () => {
               <div
                 key={assignment.id}
                 className="stat-card flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 cursor-pointer group !p-3 sm:!p-4 hover:shadow-md transition-all"
-                onClick={() => { setSubmitTarget(assignment); setSubmissionText(""); }}
+                onClick={() => { setSubmitTarget(assignment); setSubmissionText(""); setFiles([]); }}
                 role="button"
                 tabIndex={0}
                 aria-label={`${assignment.title} - ${t("common.submit")}`}
