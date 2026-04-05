@@ -64,9 +64,8 @@ const CatalogCourseCard = ({
         {course.thumbnail_url ? (
           <img src={course.thumbnail_url} alt={course.title} className="absolute inset-0 h-full w-full object-cover" />
         ) : (
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute right-4 top-4 h-24 w-24 rounded-full bg-white/30 blur-xl" />
-            <div className="absolute bottom-2 left-6 h-16 w-16 rounded-full bg-white/20 blur-lg" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <BookOpen className="h-12 w-12 text-white/30" strokeWidth={1.2} aria-hidden="true" />
           </div>
         )}
 
