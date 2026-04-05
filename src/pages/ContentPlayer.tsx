@@ -105,6 +105,13 @@ const ContentPlayer = () => {
 
   const isMangoboard = (url: string | null) => url?.includes("mangoboard.net") ?? false;
 
+  // Log content access for traffic monitoring
+  useEffect(() => {
+    if (user?.id && contentId && courseId && currentContent) {
+      logContentAccess(user.id, contentId, courseId, currentContent.content_type || "video");
+    }
+  }, [contentId, user?.id]);
+
   const currentContent = contents.find((c) => c.id === contentId);
   const currentIndex = contents.findIndex((c) => c.id === contentId);
   const prevContent = currentIndex > 0 ? contents[currentIndex - 1] : null;
