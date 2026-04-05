@@ -369,7 +369,7 @@ const StudentDashboard = () => {
                         </div>
                       )}
                     </div>
-                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5 w-full sm:w-auto" onClick={() => navigate(`/courses/${mc.id}?view=learn`)} aria-label={`${mc.title} - ${t("common.continue")}`}>
+                    <Button size="sm" variant={isOverdue || isUrgent ? "destructive" : "outline"} className="shrink-0 rounded-full gap-1.5 w-full sm:w-auto" onClick={() => navigate(`/student/courses/${mc.id}?view=learn`)} aria-label={`${mc.title} - ${t("common.continue")}`}>
                       <Play className="h-3.5 w-3.5" aria-hidden="true" /> {t("common.continue")}
                     </Button>
                   </div>
@@ -505,7 +505,7 @@ const StudentDashboard = () => {
                     <Button
                       size="sm"
                       className="shrink-0 rounded-full w-full sm:w-auto"
-                      onClick={() => navigate(`/courses/${course.id}?view=learn`)}
+                      onClick={() => navigate(`/student/courses/${course.id}?view=learn`)}
                       aria-label={`${course.title} - ${t("common.details")}`}
                     >
                       {t("common.details")}
