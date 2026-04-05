@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Shield, GraduationCap, Users } from "lucide-react";
+import { Shield, GraduationCap, Users, Crown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const roleConfig = {
+  super_admin: { icon: Crown, path: "/superadmin", labelKey: "roles.superAdmin" },
   admin: { icon: Shield, path: "/admin", labelKey: "roles.admin" },
   teacher: { icon: Users, path: "/teacher", labelKey: "roles.teacher" },
   student: { icon: GraduationCap, path: "/student", labelKey: "roles.student" },
