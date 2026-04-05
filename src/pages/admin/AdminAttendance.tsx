@@ -81,31 +81,31 @@ const AdminAttendance = () => {
 
   return (
     <DashboardLayout role="admin">
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <CalendarCheck className="h-6 w-6" />
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <CalendarCheck className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               {t("admin.attendanceManagement")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("admin.attendanceManagementDesc")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.attendanceManagementDesc")}</p>
           </div>
-          <Button onClick={exportExcel} variant="outline" className="rounded-xl gap-2 text-sm">
-            <Download className="h-4 w-4" /> {t("admin.excelDownload")}
+          <Button onClick={exportExcel} variant="outline" className="rounded-xl gap-2 text-sm self-start sm:self-auto">
+            <Download className="h-4 w-4" aria-hidden="true" /> {t("admin.excelDownload")}
           </Button>
         </div>
 
-        <div className="stat-card space-y-4">
-          <div className="flex items-center gap-3">
+        <div className="stat-card !p-3 sm:!p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <Select value={courseFilter} onValueChange={setCourseFilter}>
-              <SelectTrigger className="w-48 h-9"><SelectValue placeholder={t("admin.allCourses")} /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-48 h-9"><SelectValue placeholder={t("admin.allCourses")} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("admin.allCourses")}</SelectItem>
                 {courses.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48 h-9"><SelectValue placeholder={t("admin.allStatuses")} /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-48 h-9"><SelectValue placeholder={t("admin.allStatuses")} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("admin.allStatuses")}</SelectItem>
                 <SelectItem value="present">{t("admin.present")}</SelectItem>
@@ -116,38 +116,40 @@ const AdminAttendance = () => {
             </Select>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("admin.dateColumn")}</TableHead>
-                <TableHead>{t("admin.nameColumn")}</TableHead>
-                <TableHead>{t("admin.courseLabel")}</TableHead>
-                <TableHead>{t("admin.statusLabel")}</TableHead>
-                <TableHead>{t("admin.checkInTime")}</TableHead>
-                <TableHead>{t("admin.notes")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t("admin.noAttendanceData")}</TableCell></TableRow>
-              ) : (
-                filtered.slice(0, 50).map((a: any) => (
-                  <TableRow key={a.id}>
-                    <TableCell className="text-sm">{formatDate(a.attendance_date)}</TableCell>
-                    <TableCell className="font-medium">{profileMap.get(a.user_id) || "-"}</TableCell>
-                    <TableCell>{courseMap.get(a.course_id) || "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusColor[a.status] as any || "outline"} className="text-[10px]">
-                        {t(`admin.${a.status}`)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{formatTime(a.check_in_time)}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">{a.notes || "-"}</TableCell>
+          <div className="overflow-x-auto -mx-3 sm:-mx-5">
+            <div className="min-w-[550px] px-3 sm:px-5">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("admin.dateColumn")}</TableHead>
+                    <TableHead>{t("admin.nameColumn")}</TableHead>
+                    <TableHead>{t("admin.courseLabel")}</TableHead>
+                    <TableHead>{t("admin.statusLabel")}</TableHead>
+                    <TableHead>{t("admin.checkInTime")}</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {filtered.length === 0 ? (
+                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t("admin.noAttendanceData")}</TableCell></TableRow>
+                  ) : (
+                    filtered.slice(0, 50).map((a: any) => (
+                      <TableRow key={a.id}>
+                        <TableCell className="text-sm">{formatDate(a.attendance_date)}</TableCell>
+                        <TableCell className="font-medium text-sm">{profileMap.get(a.user_id) || "-"}</TableCell>
+                        <TableCell className="text-sm">{courseMap.get(a.course_id) || "-"}</TableCell>
+                        <TableCell>
+                          <Badge variant={statusColor[a.status] as any || "outline"} className="text-[10px]">
+                            {t(`admin.${a.status}`)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{formatTime(a.check_in_time)}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         </div>
       </div>
     </DashboardLayout>

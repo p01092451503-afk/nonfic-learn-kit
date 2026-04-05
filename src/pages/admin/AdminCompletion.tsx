@@ -63,7 +63,6 @@ const AdminCompletion = () => {
 
   const filtered = courseFilter === "all" ? enrollments : enrollments.filter((e: any) => e.course_id === courseFilter);
 
-  // Attendance rate per user-course
   const attendanceByUserCourse = new Map<string, { total: number; present: number }>();
   attendance.forEach((a: any) => {
     const key = `${a.user_id}_${a.course_id}`;
@@ -73,7 +72,6 @@ const AdminCompletion = () => {
     if (a.status === "present" || a.status === "late") v.present++;
   });
 
-  // Avg score per student
   const scoreByStudent = new Map<string, { total: number; count: number }>();
   submissions.forEach((s: any) => {
     if (s.score == null) return;
@@ -114,69 +112,73 @@ const AdminCompletion = () => {
 
   return (
     <DashboardLayout role="admin">
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <Trophy className="h-6 w-6" />
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <Trophy className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               {t("admin.completionManagement")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("admin.completionManagementDesc")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.completionManagementDesc")}</p>
           </div>
-          <Button onClick={exportCSV} variant="outline" className="rounded-xl gap-2 text-sm">
-            <Download className="h-4 w-4" /> {t("admin.completionDownload")}
+          <Button onClick={exportCSV} variant="outline" className="rounded-xl gap-2 text-sm self-start sm:self-auto">
+            <Download className="h-4 w-4" aria-hidden="true" /> {t("admin.completionDownload")}
           </Button>
         </div>
 
-        <div className="stat-card space-y-4">
+        <div className="stat-card !p-3 sm:!p-5 space-y-4">
           <Select value={courseFilter} onValueChange={setCourseFilter}>
-            <SelectTrigger className="w-48 h-9"><SelectValue placeholder={t("admin.allCourses")} /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-48 h-9"><SelectValue placeholder={t("admin.allCourses")} /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("admin.allCourses")}</SelectItem>
               {courses.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
             </SelectContent>
           </Select>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("admin.nameColumn")}</TableHead>
-                <TableHead>{t("admin.courseLabel")}</TableHead>
-                <TableHead>{t("admin.attendanceRate")}</TableHead>
-                <TableHead>{t("admin.avgScore")}</TableHead>
-                <TableHead>{t("admin.completionReq")}</TableHead>
-                <TableHead>{t("admin.completionStatus")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t("admin.noStudentData")}</TableCell></TableRow>
-              ) : (
-                filtered.slice(0, 50).map((e: any) => {
-                  const attKey = `${e.user_id}_${e.course_id}`;
-                  const att = attendanceByUserCourse.get(attKey);
-                  const attRate = att ? Math.round(att.present / att.total * 100) : 0;
-                  const sc = scoreByStudent.get(e.user_id);
-                  const avgScore = sc ? Math.round(sc.total / sc.count) : 0;
-                  const isComplete = getCompletionStatus(e);
-                  return (
-                    <TableRow key={e.id}>
-                      <TableCell className="font-medium">{profileMap.get(e.user_id) || "-"}</TableCell>
-                      <TableCell>{courseMap.get(e.course_id)?.title || "-"}</TableCell>
-                      <TableCell className="text-sm">{attRate}%</TableCell>
-                      <TableCell className="text-sm">{avgScore}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{t("admin.progress80")}</TableCell>
-                      <TableCell>
-                        <Badge variant={isComplete ? "default" : "destructive"} className="text-[10px]">
-                          {isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto -mx-3 sm:-mx-5">
+            <div className="min-w-[580px] px-3 sm:px-5">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("admin.nameColumn")}</TableHead>
+                    <TableHead>{t("admin.courseLabel")}</TableHead>
+                    <TableHead>{t("admin.attendanceRate")}</TableHead>
+                    <TableHead>{t("admin.avgScore")}</TableHead>
+                    <TableHead>{t("admin.completionReq")}</TableHead>
+                    <TableHead>{t("admin.completionStatus")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t("admin.noStudentData")}</TableCell></TableRow>
+                  ) : (
+                    filtered.slice(0, 50).map((e: any) => {
+                      const attKey = `${e.user_id}_${e.course_id}`;
+                      const att = attendanceByUserCourse.get(attKey);
+                      const attRate = att ? Math.round(att.present / att.total * 100) : 0;
+                      const sc = scoreByStudent.get(e.user_id);
+                      const avgScore = sc ? Math.round(sc.total / sc.count) : 0;
+                      const isComplete = getCompletionStatus(e);
+                      return (
+                        <TableRow key={e.id}>
+                          <TableCell className="font-medium text-sm">{profileMap.get(e.user_id) || "-"}</TableCell>
+                          <TableCell className="text-sm">{courseMap.get(e.course_id)?.title || "-"}</TableCell>
+                          <TableCell className="text-sm">{attRate}%</TableCell>
+                          <TableCell className="text-sm">{avgScore}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{t("admin.progress80")}</TableCell>
+                          <TableCell>
+                            <Badge variant={isComplete ? "default" : "destructive"} className="text-[10px]">
+                              {isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         </div>
       </div>
     </DashboardLayout>
