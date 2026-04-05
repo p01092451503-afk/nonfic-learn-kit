@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Lock, Camera, Check, ArrowRight, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
+import { User, Lock, Camera, Check, UserCircle, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
