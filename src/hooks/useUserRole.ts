@@ -10,6 +10,4 @@ export const useUserRole = () => {
   const primaryRole = isAdmin ? "admin" : isTeacher ? "teacher" : "student";
 
   return { roles, isAdmin, isTeacher, isStudent, primaryRole };
-
-  return { roles, isSuperAdmin, isAdmin, isTeacher, isStudent, primaryRole };
 };
