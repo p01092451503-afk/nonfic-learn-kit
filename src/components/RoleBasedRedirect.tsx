@@ -22,8 +22,6 @@ const RoleBasedRedirect = () => {
   }
 
   switch (primaryRole) {
-    case "super_admin":
-      return <Navigate to="/superadmin" replace />;
     case "admin":
       return <Navigate to="/admin" replace />;
     case "teacher":
