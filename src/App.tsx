@@ -45,6 +45,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <TrafficLogger />
+          <Routes>
             <Route path="/" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<ProtectedRoute><RoleBasedRedirect /></ProtectedRoute>} />
