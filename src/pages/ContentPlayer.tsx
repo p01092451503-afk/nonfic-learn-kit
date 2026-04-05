@@ -112,7 +112,12 @@ const ContentPlayer = () => {
   // Log content access for traffic monitoring
   useEffect(() => {
     if (user?.id && contentId && courseId && currentContent) {
-      logContentAccess(user.id, contentId, courseId, currentContent.content_type || "video");
+      logContentAccess(
+        user.id, contentId, courseId,
+        currentContent.content_type || "video",
+        currentContent.video_provider,
+        profile?.tenant_id,
+      );
     }
   }, [contentId, user?.id, courseId, currentContent]);
   const currentIndex = contents.findIndex((c) => c.id === contentId);
