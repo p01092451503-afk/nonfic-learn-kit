@@ -58,16 +58,16 @@ const AdminTraffic = () => {
   const totalEstimatedBytes = trafficLogs.reduce((sum, l) => sum + (Number(l.estimated_bytes) || 0), 0);
   const uniqueUsers = new Set(trafficLogs.map((l) => l.user_id)).size;
 
-  const videoAccess = trafficLogs.filter(
-    (l) => l.event_type === "content_access" && (l.metadata as any)?.content_type === "video"
-  ).length;
-  const docAccess = trafficLogs.filter(
-    (l) => l.event_type === "content_access" && (l.metadata as any)?.content_type === "document"
-  ).length;
+  const contentLogs = trafficLogs.filter((l) => l.event_type === "content_access");
+  const externalAccess = contentLogs.filter((l) => (l.metadata as any)?.is_external).length;
+  const selfHostedAccess = contentLogs.length - externalAccess;
 
-  // CDN estimate (content access bytes)
-  const cdnBytes = trafficLogs
-    .filter((l) => l.event_type === "content_access")
+  const videoAccess = contentLogs.filter((l) => (l.metadata as any)?.content_type === "video").length;
+  const docAccess = contentLogs.filter((l) => (l.metadata as any)?.content_type === "document").length;
+
+  // CDN estimate (only self-hosted content incurs cost)
+  const cdnBytes = contentLogs
+    .filter((l) => !(l.metadata as any)?.is_external)
     .reduce((sum, l) => sum + (Number(l.estimated_bytes) || 0), 0);
 
   // Web traffic estimate (page view bytes)
