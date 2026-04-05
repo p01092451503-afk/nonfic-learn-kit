@@ -34,6 +34,8 @@ import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import ContentPlayer from "./pages/ContentPlayer";
 import NotFound from "./pages/NotFound";
 import TrafficLogger from "./components/TrafficLogger";
+import CourseRedirect from "./components/CourseRedirect";
+import ContentRedirect from "./components/ContentRedirect";
 
 
 const queryClient = new QueryClient();
