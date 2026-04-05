@@ -363,12 +363,12 @@ const TeacherAssignments = () => {
 
         {/* Pending Submissions */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="px-6 py-5 border-b border-border">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-foreground">{t("assignments.recentSubmissions")}</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">{t("assignments.recentSubmissions")}</h2>
               <Badge className="bg-primary text-primary-foreground text-[10px] font-semibold">{t("assignments.aiGrading")}</Badge>
             </div>
-            <p className="text-sm text-muted-foreground mt-0.5">{t("assignments.submissionsNeedReview")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("assignments.submissionsNeedReview")}</p>
           </div>
 
           {pendingSubmissions.length === 0 ? (
