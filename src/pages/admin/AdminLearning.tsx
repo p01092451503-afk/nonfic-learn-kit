@@ -78,37 +78,35 @@ const AdminLearning = () => {
 
   return (
     <DashboardLayout role="admin">
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <GraduationCap className="h-6 w-6" />
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               {t("admin.learningManagement")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("admin.learningManagementDesc")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.learningManagementDesc")}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={exportCSV} variant="outline" className="rounded-xl gap-2 text-sm">
-              <Download className="h-4 w-4" /> CSV {t("admin.download")}
-            </Button>
-          </div>
+          <Button onClick={exportCSV} variant="outline" className="rounded-xl gap-2 text-sm self-start sm:self-auto">
+            <Download className="h-4 w-4" aria-hidden="true" /> CSV {t("admin.download")}
+          </Button>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           {[
             { label: t("admin.totalEnrolled"), value: totalStudents, sub: t("admin.enrolledStudentsLabel"), icon: Users },
             { label: t("admin.completionCount"), value: completedCount, sub: `${filtered.length > 0 ? Math.round(completedCount / filtered.length * 100) : 0}% ${t("admin.completionRateLabel")}`, icon: GraduationCap },
             { label: t("admin.avgProgressLabel"), value: `${avgProgress}%`, sub: "", icon: BarChart3, showProgress: true },
             { label: t("admin.atRisk"), value: atRisk, sub: t("admin.needsAttention"), icon: AlertTriangle },
           ].map((stat) => (
-            <div key={stat.label} className="stat-card">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-5 w-5 text-muted-foreground" />
+            <div key={stat.label} className="stat-card !p-3 sm:!p-5" role="group" aria-label={stat.label}>
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-[10px] sm:text-xs text-muted-foreground">{stat.label}</span>
+                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" aria-hidden="true" />
               </div>
-              <span className="text-3xl font-bold text-foreground">{stat.value}</span>
-              {stat.showProgress && <Progress value={avgProgress} className="mt-2 h-2" />}
-              {stat.sub && <p className="text-xs text-primary mt-1">{stat.sub}</p>}
+              <span className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</span>
+              {stat.showProgress && <Progress value={avgProgress} className="mt-2 h-2" aria-label={`${t("admin.avgProgressLabel")}: ${avgProgress}%`} />}
+              {stat.sub && <p className="text-[10px] sm:text-xs text-primary mt-1">{stat.sub}</p>}
             </div>
           ))}
         </div>
@@ -120,86 +118,94 @@ const AdminLearning = () => {
           </TabsList>
 
           <TabsContent value="progress" className="mt-4 space-y-4">
-            <div className="stat-card">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground">{t("admin.studentProgressStatus")}</h3>
+            <div className="stat-card !p-3 sm:!p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <h3 className="text-sm sm:text-base font-semibold text-foreground">{t("admin.studentProgressStatus")}</h3>
                 <Select value={courseFilter} onValueChange={setCourseFilter}>
-                  <SelectTrigger className="w-48 h-9"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-full sm:w-48 h-9"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("admin.allCourses")}</SelectItem>
                     {courses.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("admin.nameColumn")}</TableHead>
-                    <TableHead>{t("admin.courseLabel")}</TableHead>
-                    <TableHead>{t("admin.progressLabel")}</TableHead>
-                    <TableHead>{t("admin.statusLabel")}</TableHead>
-                    <TableHead>{t("admin.startDate")}</TableHead>
-                    <TableHead>{t("admin.completionDate")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t("admin.noLearningData")}</TableCell></TableRow>
-                  ) : (
-                    filtered.slice(0, 50).map((e: any) => {
-                      const p = profileMap.get(e.user_id);
-                      const c = courseMap.get(e.course_id);
-                      return (
-                        <TableRow key={e.id}>
-                          <TableCell className="font-medium">{p?.full_name || "-"}</TableCell>
-                          <TableCell>{c?.title || "-"}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Progress value={Number(e.progress) || 0} className="w-20 h-1.5" />
-                              <span className="text-xs">{Math.round(Number(e.progress) || 0)}%</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{getStatusBadge(e)}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{formatDate(e.enrolled_at)}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{formatDate(e.completed_at)}</TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto -mx-3 sm:-mx-5">
+                <div className="min-w-[600px] px-3 sm:px-5">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("admin.nameColumn")}</TableHead>
+                        <TableHead>{t("admin.courseLabel")}</TableHead>
+                        <TableHead>{t("admin.progressLabel")}</TableHead>
+                        <TableHead>{t("admin.statusLabel")}</TableHead>
+                        <TableHead className="hidden sm:table-cell">{t("admin.startDate")}</TableHead>
+                        <TableHead className="hidden sm:table-cell">{t("admin.completionDate")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.length === 0 ? (
+                        <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t("admin.noLearningData")}</TableCell></TableRow>
+                      ) : (
+                        filtered.slice(0, 50).map((e: any) => {
+                          const p = profileMap.get(e.user_id);
+                          const c = courseMap.get(e.course_id);
+                          return (
+                            <TableRow key={e.id}>
+                              <TableCell className="font-medium text-sm">{p?.full_name || "-"}</TableCell>
+                              <TableCell className="text-sm">{c?.title || "-"}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Progress value={Number(e.progress) || 0} className="w-16 sm:w-20 h-1.5" />
+                                  <span className="text-xs">{Math.round(Number(e.progress) || 0)}%</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>{getStatusBadge(e)}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(e.enrolled_at)}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(e.completed_at)}</TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="completers" className="mt-4">
-            <div className="stat-card">
-              <h3 className="text-base font-semibold text-foreground mb-4">{t("admin.completersList")}</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("admin.nameColumn")}</TableHead>
-                    <TableHead>{t("admin.courseLabel")}</TableHead>
-                    <TableHead>{t("admin.completionDate")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.filter((e: any) => e.completed_at).length === 0 ? (
-                    <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">{t("admin.noCompleters")}</TableCell></TableRow>
-                  ) : (
-                    filtered.filter((e: any) => e.completed_at).map((e: any) => {
-                      const p = profileMap.get(e.user_id);
-                      const c = courseMap.get(e.course_id);
-                      return (
-                        <TableRow key={e.id}>
-                          <TableCell className="font-medium">{p?.full_name || "-"}</TableCell>
-                          <TableCell>{c?.title || "-"}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{formatDate(e.completed_at)}</TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+            <div className="stat-card !p-3 sm:!p-5">
+              <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4">{t("admin.completersList")}</h3>
+              <div className="overflow-x-auto -mx-3 sm:-mx-5">
+                <div className="min-w-[400px] px-3 sm:px-5">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("admin.nameColumn")}</TableHead>
+                        <TableHead>{t("admin.courseLabel")}</TableHead>
+                        <TableHead>{t("admin.completionDate")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.filter((e: any) => e.completed_at).length === 0 ? (
+                        <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">{t("admin.noCompleters")}</TableCell></TableRow>
+                      ) : (
+                        filtered.filter((e: any) => e.completed_at).map((e: any) => {
+                          const p = profileMap.get(e.user_id);
+                          const c = courseMap.get(e.course_id);
+                          return (
+                            <TableRow key={e.id}>
+                              <TableCell className="font-medium text-sm">{p?.full_name || "-"}</TableCell>
+                              <TableCell className="text-sm">{c?.title || "-"}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground">{formatDate(e.completed_at)}</TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
