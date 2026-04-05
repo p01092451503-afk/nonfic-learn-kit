@@ -687,6 +687,7 @@ export type Database = {
           phone_number: string | null
           position: string | null
           team_name: string | null
+          tenant_id: string | null
           updated_at: string | null
           user_id: string
         }
@@ -700,6 +701,7 @@ export type Database = {
           phone_number?: string | null
           position?: string | null
           team_name?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -713,6 +715,7 @@ export type Database = {
           phone_number?: string | null
           position?: string | null
           team_name?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -724,7 +727,59 @@ export type Database = {
             referencedRelation: "departments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      tenants: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string
+          domain: string | null
+          id: string
+          is_active: boolean | null
+          monthly_storage_limit_gb: number | null
+          monthly_traffic_limit_gb: number | null
+          name: string
+          notes: string | null
+          plan: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          domain?: string | null
+          id?: string
+          is_active?: boolean | null
+          monthly_storage_limit_gb?: number | null
+          monthly_traffic_limit_gb?: number | null
+          name: string
+          notes?: string | null
+          plan?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          domain?: string | null
+          id?: string
+          is_active?: boolean | null
+          monthly_storage_limit_gb?: number | null
+          monthly_traffic_limit_gb?: number | null
+          name?: string
+          notes?: string | null
+          plan?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       traffic_logs: {
         Row: {
@@ -736,6 +791,7 @@ export type Database = {
           id: string
           metadata: Json | null
           page_path: string | null
+          tenant_id: string | null
           user_id: string | null
         }
         Insert: {
@@ -747,6 +803,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           page_path?: string | null
+          tenant_id?: string | null
           user_id?: string | null
         }
         Update: {
@@ -758,9 +815,18 @@ export type Database = {
           id?: string
           metadata?: Json | null
           page_path?: string | null
+          tenant_id?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "traffic_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_badges: {
         Row: {
