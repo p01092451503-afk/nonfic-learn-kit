@@ -13,6 +13,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
+import { logContentAccess } from "@/hooks/useTrafficLogger";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from "@/components/ui/drawer";
