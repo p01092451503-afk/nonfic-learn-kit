@@ -363,6 +363,30 @@ const StudentAssignments = () => {
                   {viewTarget.submission_text || t("assignments.noSubmissionText")}
                 </div>
               </div>
+              {/* Attached files */}
+              {viewTarget.file_urls && viewTarget.file_urls.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium flex items-center gap-1.5">
+                    <Paperclip className="h-3.5 w-3.5" /> 첨부 파일
+                  </Label>
+                  {viewTarget.file_urls.map((url: string, i: number) => {
+                    const fileName = decodeURIComponent(url.split("/").pop() || "").replace(/^\d+_/, "");
+                    return (
+                      <a
+                        key={i}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-2 bg-secondary/30 rounded-lg text-xs hover:bg-secondary/50 transition-colors"
+                      >
+                        <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="flex-1 truncate text-foreground">{fileName}</span>
+                        <Download className="h-3 w-3 text-muted-foreground shrink-0" />
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
               {viewTarget.submitted_at && (
                 <p className="text-xs text-muted-foreground">{t("assignments.submitted")}: {formatDate(viewTarget.submitted_at)}</p>
               )}
