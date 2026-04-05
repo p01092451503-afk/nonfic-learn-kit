@@ -246,7 +246,7 @@ const ContentPlayer = () => {
   };
 
   const handleClose = () => {
-    navigate(`/courses/${courseId}?view=learn`);
+    navigate(`${routePrefix}/courses/${courseId}?view=learn`);
   };
 
   if (!currentContent) {
@@ -437,7 +437,7 @@ const ContentPlayer = () => {
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <div>
                   {prevContent ? (
-                    <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${prevContent.id}`)}>
+                    <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`${routePrefix}/courses/${courseId}/content/${prevContent.id}`)}>
                       <ChevronLeft className="h-4 w-4" />
                       <span className="text-sm">{t("common.previous")}</span>
                     </Button>
@@ -445,7 +445,7 @@ const ContentPlayer = () => {
                 </div>
                 <div>
                   {nextContent ? (
-                    <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`/courses/${courseId}/content/${nextContent.id}`)}>
+                    <Button variant="outline" className="rounded-xl gap-2" onClick={() => navigate(`${routePrefix}/courses/${courseId}/content/${nextContent.id}`)}>
                       <span className="text-sm">{t("common.next")}</span>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -484,7 +484,7 @@ const ContentPlayer = () => {
                     <button
                       key={c.id}
                       ref={isActive ? activeItemRef : undefined}
-                      onClick={() => navigate(`/courses/${courseId}/content/${c.id}`)}
+                      onClick={() => navigate(`${routePrefix}/courses/${courseId}/content/${c.id}`)}
                       className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition-all ${isActive ? "bg-primary/10 text-primary font-semibold ring-1 ring-primary/20" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}
                     >
                       <div className={`h-6 w-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-medium ${isCompleted ? "bg-green-500 text-white" : isActive ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
@@ -570,7 +570,7 @@ const ContentPlayer = () => {
                 return (
                   <button
                     key={c.id}
-                    onClick={() => { setMobileCurriculumOpen(false); navigate(`/courses/${courseId}/content/${c.id}`); }}
+                    onClick={() => { setMobileCurriculumOpen(false); navigate(`${routePrefix}/courses/${courseId}/content/${c.id}`); }}
                     className={`w-full text-left px-3 py-3 rounded-xl flex items-center gap-3 text-sm transition-all ${isActive ? "bg-primary/10 text-primary font-semibold ring-1 ring-primary/20" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}
                   >
                     <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-xs font-medium ${isCompleted ? "bg-green-500 text-white" : isActive ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
