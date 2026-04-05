@@ -293,17 +293,56 @@ const StudentAssignments = () => {
                   className="rounded-xl resize-none min-h-[120px]"
                 />
               </div>
+              {/* File Upload */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-1.5">
+                  <Paperclip className="h-3.5 w-3.5" /> 파일 첨부
+                  <span className="text-muted-foreground font-normal">(최대 5개, 10MB)</span>
+                </Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.xlsx,.pptx,.jpg,.jpeg,.png,.webp,.txt"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl gap-1.5 text-xs"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={files.length >= 5}
+                >
+                  <Paperclip className="h-3 w-3" /> 파일 선택
+                </Button>
+                {files.length > 0 && (
+                  <div className="space-y-1.5 mt-2">
+                    {files.map((f, i) => (
+                      <div key={i} className="flex items-center gap-2 p-2 bg-secondary/30 rounded-lg text-xs">
+                        <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="flex-1 truncate text-foreground">{f.name}</span>
+                        <span className="text-muted-foreground shrink-0">{(f.size / 1024).toFixed(0)}KB</span>
+                        <button onClick={() => removeFile(i)} className="p-0.5 rounded hover:bg-accent shrink-0">
+                          <X className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setSubmitTarget(null)} className="rounded-xl">{t("common.cancel")}</Button>
             <Button
               onClick={() => submitMutation.mutate()}
-              disabled={submitMutation.isPending || !submissionText.trim()}
+              disabled={submitMutation.isPending || uploading || (!submissionText.trim() && files.length === 0)}
               className="rounded-xl gap-1.5"
             >
               <Send className="h-3.5 w-3.5" />
-              {submitMutation.isPending ? t("assignments.submitting") : t("common.submit")}
+              {uploading ? "업로드 중..." : submitMutation.isPending ? t("assignments.submitting") : t("common.submit")}
             </Button>
           </DialogFooter>
         </DialogContent>
