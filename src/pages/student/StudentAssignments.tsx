@@ -68,12 +68,49 @@ const StudentAssignments = () => {
     enabled: !!user?.id,
   });
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files || []);
+    const valid = selected.filter((f) => {
+      if (f.size > MAX_FILE_SIZE) {
+        toast({ title: `${f.name}: 10MB 초과`, variant: "destructive" });
+        return false;
+      }
+      if (!ALLOWED_TYPES.includes(f.type)) {
+        toast({ title: `${f.name}: 지원하지 않는 형식`, variant: "destructive" });
+        return false;
+      }
+      return true;
+    });
+    setFiles((prev) => [...prev, ...valid].slice(0, 5));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeFile = (index: number) => setFiles((prev) => prev.filter((_, i) => i !== index));
+
+  const uploadFiles = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const file of files) {
+      const filePath = `${user!.id}/${Date.now()}_${file.name}`;
+      const { error } = await supabase.storage.from("assignment-files").upload(filePath, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("assignment-files").getPublicUrl(filePath);
+      urls.push(data.publicUrl);
+    }
+    return urls;
+  };
+
   const submitMutation = useMutation({
     mutationFn: async () => {
+      setUploading(true);
+      let fileUrls: string[] = [];
+      if (files.length > 0) {
+        fileUrls = await uploadFiles();
+      }
       const { error } = await supabase.from("assignment_submissions").insert({
         assignment_id: submitTarget.id,
         student_id: user!.id,
         submission_text: submissionText,
+        file_urls: fileUrls.length > 0 ? fileUrls : null,
         status: "submitted" as any,
         submitted_at: new Date().toISOString(),
       });
@@ -85,8 +122,13 @@ const StudentAssignments = () => {
       toast({ title: t("assignments.submitSuccess") });
       setSubmitTarget(null);
       setSubmissionText("");
+      setFiles([]);
+      setUploading(false);
     },
-    onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
+    onError: (e: any) => {
+      setUploading(false);
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    },
   });
 
   const submittedIds = new Set(submissions.map((s: any) => s.assignment_id));
