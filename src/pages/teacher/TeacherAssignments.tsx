@@ -385,6 +385,12 @@ const TeacherAssignments = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">{profileMap.get(sub.student_id) || t("assignments.student")}</p>
                     <p className="text-xs text-muted-foreground truncate">{sub.assignments?.title} · {sub.assignments?.courses?.title}</p>
+                    {sub.file_urls && sub.file_urls.length > 0 && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <Paperclip className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">{sub.file_urls.length}개 파일 첨부</span>
+                      </div>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
                     <Badge variant="secondary" className="text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
