@@ -178,7 +178,7 @@ const StudentAssignments = () => {
                 role="button"
                 tabIndex={0}
                 aria-label={`${assignment.title} - ${t("common.submit")}`}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSubmitTarget(assignment); setSubmissionText(""); } }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSubmitTarget(assignment); setSubmissionText(""); setFiles([]); } }}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0" aria-hidden="true">
