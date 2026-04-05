@@ -76,6 +76,7 @@ const App = () => (
             <Route path="/admin/learning" element={<ProtectedRoute><AdminLearning /></ProtectedRoute>} />
             <Route path="/admin/attendance" element={<ProtectedRoute><AdminAttendance /></ProtectedRoute>} />
             <Route path="/admin/completion" element={<ProtectedRoute><AdminCompletion /></ProtectedRoute>} />
+            <Route path="/admin/traffic" element={<ProtectedRoute><AdminTraffic /></ProtectedRoute>} />
 
             {/* Dept Admin */}
             <Route path="/dept-admin" element={<ProtectedRoute><DeptAdminDashboard /></ProtectedRoute>} />
