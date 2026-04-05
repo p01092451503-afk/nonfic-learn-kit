@@ -295,15 +295,13 @@ const TeacherAssignments = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[480px]">
                 <thead>
                   <tr className="border-b border-border bg-secondary/20">
-                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-6 py-3">{t("assignments.assignmentName")}</th>
-                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("assignments.lecture")}</th>
-                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("assignments.dueDateLabel")}</th>
-                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("assignments.score")}</th>
-                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3">{t("admin.statusLabel")}</th>
-                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 w-16">{t("common.manage")}</th>
+                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 sm:px-6 py-3">{t("assignments.assignmentName")}</th>
+                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-3 sm:px-4 py-3">{t("assignments.lecture")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-3 sm:px-4 py-3">{t("admin.statusLabel")}</th>
+                    <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-3 sm:px-4 py-3 w-14">{t("common.manage")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -311,31 +309,23 @@ const TeacherAssignments = () => {
                     const counts = submissionCountMap.get(assignment.id);
                     return (
                       <tr key={assignment.id} className="hover:bg-accent/20 transition-colors">
-                        <td className="px-6 py-4">
+                        <td className="px-4 sm:px-6 py-3 sm:py-4">
                           <p className="text-sm font-medium text-foreground">{assignment.title}</p>
                           {counts && (
-                            <p className="text-xs text-muted-foreground mt-0.5">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
                               {t("assignments.submissionCount", { total: counts.total, graded: counts.graded })}
                             </p>
                           )}
                         </td>
-                        <td className="px-4 py-4">
-                          <span className="text-sm text-muted-foreground">{assignment.courses?.title || "-"}</span>
+                        <td className="px-3 sm:px-4 py-3 sm:py-4">
+                          <span className="text-xs sm:text-sm text-muted-foreground">{assignment.courses?.title || "-"}</span>
                         </td>
-                        <td className="px-4 py-4 text-center hidden sm:table-cell">
-                          <span className="text-sm text-muted-foreground">
-                            {assignment.due_date ? formatDate(assignment.due_date) : "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-center hidden md:table-cell">
-                          <span className="text-sm text-muted-foreground">{assignment.max_score || 100}{t("common.points")}</span>
-                        </td>
-                        <td className="px-4 py-4 text-center">
+                        <td className="px-3 sm:px-4 py-3 sm:py-4 text-center">
                           <Badge variant="secondary" className={`text-[10px] font-semibold ${statusStyle[assignment.status || "draft"]}`}>
                             {statusLabel[assignment.status || "draft"]}
                           </Badge>
                         </td>
-                        <td className="px-4 py-4 text-center">
+                        <td className="px-3 sm:px-4 py-3 sm:py-4 text-center">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" aria-label={t("common.manage")}>
@@ -416,14 +406,14 @@ const TeacherAssignments = () => {
         {/* Graded */}
         {gradedSubmissions.length > 0 && (
           <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="px-6 py-5 border-b border-border">
-              <h2 className="text-lg font-semibold text-foreground">{t("assignments.gradedSubmissions")}</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">{t("assignments.recentGradedSubmissions")}</p>
+            <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">{t("assignments.gradedSubmissions")}</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("assignments.recentGradedSubmissions")}</p>
             </div>
             <div className="divide-y divide-border">
               {gradedSubmissions.slice(0, 10).map((sub: any) => (
-                <div key={sub.id} className="px-6 py-4 flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center text-sm font-semibold text-success shrink-0">
+                <div key={sub.id} className="px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-4">
+                  <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-success/10 flex items-center justify-center text-sm font-semibold text-success shrink-0">
                     {(profileMap.get(sub.student_id) || t("assignments.student"))[0]}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -437,7 +427,7 @@ const TeacherAssignments = () => {
                           return (
                             <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 bg-secondary/50 rounded text-[10px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
                               <FileIcon className="h-2.5 w-2.5 shrink-0" />
-                              <span className="max-w-[120px] truncate">{fileName}</span>
+                              <span className="max-w-[100px] sm:max-w-[120px] truncate">{fileName}</span>
                               <Download className="h-2.5 w-2.5 shrink-0" />
                             </a>
                           );
@@ -446,10 +436,10 @@ const TeacherAssignments = () => {
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-sm font-semibold text-foreground">
+                    <span className="text-xs sm:text-sm font-semibold text-foreground">
                       {sub.score != null ? `${sub.score}/${sub.assignments?.max_score || 100}${t("common.points")}` : "-"}
                     </span>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">
                       {sub.graded_at ? formatDistanceToNow(new Date(sub.graded_at), { addSuffix: true, locale: dateFnsLocale }) : ""}
                     </p>
                   </div>

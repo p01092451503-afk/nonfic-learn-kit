@@ -198,100 +198,80 @@ const TeacherCourses = () => {
         ) : viewMode === "list" ? (
           /* ───── List View ───── */
           <div className="stat-card !p-0 overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-secondary/30">
-                   <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.courseName")}</th>
-                   <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("teacher.category")}</th>
-                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.status")}</th>
-                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("teacher.difficulty")}</th>
-                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.studentCount")}</th>
-                   <th scope="col" className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.contentCount")}</th>
-                   <th scope="col" className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((course: any) => {
-                  const cat = categoryMap.get(course.category_id);
-                  const students = (enrollmentCounts as any)[course.id] || 0;
-                  const contents = (contentCounts as any)[course.id] || 0;
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[500px]">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/30">
+                    <th scope="col" className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.courseName")}</th>
+                    <th scope="col" className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("teacher.actions")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((course: any) => {
+                    const cat = categoryMap.get(course.category_id);
+                    const students = (enrollmentCounts as any)[course.id] || 0;
+                    const contents = (contentCounts as any)[course.id] || 0;
 
-                  return (
-                    <tr
-                      key={course.id}
-                      className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/teacher/courses/${course.id}`)}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-16 rounded-lg overflow-hidden shrink-0 bg-secondary">
-                          {course.thumbnail_url ? (
-                              <img src={course.thumbnail_url} alt={course.title} className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="h-full w-full flex items-center justify-center" aria-hidden="true">
-                                <BookOpen className="h-4 w-4 text-muted-foreground" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate max-w-[200px] lg:max-w-[300px]">
-                              {course.title}
-                            </p>
-                            {course.description && (
-                              <p className="text-[11px] text-muted-foreground truncate max-w-[200px] lg:max-w-[300px] mt-0.5">
-                                {course.description}
+                    return (
+                      <tr
+                        key={course.id}
+                        className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/teacher/courses/${course.id}`)}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="h-12 w-16 rounded-lg overflow-hidden shrink-0 bg-secondary">
+                              {course.thumbnail_url ? (
+                                <img src={course.thumbnail_url} alt={course.title} className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center" aria-hidden="true">
+                                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate max-w-[180px] sm:max-w-[300px]">
+                                {course.title}
                               </p>
-                            )}
+                              {course.description && (
+                                <p className="text-[11px] text-muted-foreground truncate max-w-[180px] sm:max-w-[300px] mt-0.5">
+                                  {course.description}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-3 mt-1 sm:hidden">
+                                <span className={`inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-lg ${statusColor[course.status || "draft"]}`}>
+                                  {statusLabel[course.status || "draft"] || course.status}
+                                </span>
+                                <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                  <Users className="h-3 w-3" aria-hidden="true" />{students}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        {cat?.name && (
-                          <span className="text-xs text-muted-foreground">{cat.name}</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell text-center">
-                        <span className={`inline-flex text-[10px] font-semibold px-2.5 py-1 rounded-lg ${statusColor[course.status || "draft"]}`}>
-                          {statusLabel[course.status || "draft"] || course.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-center">
-                        <span className="text-xs text-muted-foreground">
-                          {difficultyLabel[course.difficulty_level || ""] || "-"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell text-center">
-                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                          <Users className="h-3 w-3" aria-hidden="true" /> {students}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell text-center">
-                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                          <BookOpen className="h-3 w-3" aria-hidden="true" /> {contents}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" aria-label={t("teacher.actions")}>
-                              <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
-                              <Eye className="h-3.5 w-3.5 mr-2" /> {t("teacher.preview")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
-                              <Edit className="h-3.5 w-3.5 mr-2" /> {t("teacher.editCourse")}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" aria-label={t("teacher.actions")}>
+                                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40">
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
+                                <Eye className="h-3.5 w-3.5 mr-2" /> {t("teacher.preview")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
+                                <Edit className="h-3.5 w-3.5 mr-2" /> {t("teacher.editCourse")}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
           /* ───── Grid View ───── */
