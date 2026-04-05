@@ -34,11 +34,17 @@ const ScrollArrow = ({ direction, onClick }: { direction: "left" | "right"; onCl
   </button>
 );
 
-/* ── Course Card (shared between grid & carousel) ── */
+/* ── Course Card ── */
 const CatalogCourseCard = ({
-  course, cat, gradient, enrollmentStatus, studentCount, lessons, onEnroll, isPending, t,
+  course, cat, gradient, enrollmentStatus, studentCount, lessons, onEnroll, isPending, t, isGridItem,
 }: any) => (
-  <div className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 shrink-0 w-[280px]" role="article" aria-label={course.title}>
+  <div
+    className={`group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 ${
+      isGridItem ? "w-full" : "shrink-0 w-[260px] sm:w-[280px]"
+    }`}
+    role="article"
+    aria-label={course.title}
+  >
     <Link to={`/student/courses/${course.id}`} className="block">
       <div className={`relative aspect-[16/10] bg-gradient-to-br ${gradient} overflow-hidden`}>
         {course.thumbnail_url && <img src={course.thumbnail_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover" />}
@@ -61,30 +67,30 @@ const CatalogCourseCard = ({
         <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
           {cat && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium text-white/90 bg-white/20 px-2 py-0.5 rounded-md backdrop-blur-sm mb-1.5">
-              <Sparkles className="h-2.5 w-2.5" /> {cat.name}
+              <Sparkles className="h-2.5 w-2.5" aria-hidden="true" /> {cat.name}
             </span>
           )}
           <h3 className="text-sm font-bold text-white leading-snug line-clamp-2">{course.title}</h3>
         </div>
       </div>
     </Link>
-    <div className="p-4 space-y-4">
+    <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
       {course.description && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{course.description}</p>}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
         {course.estimated_duration_hours != null && course.estimated_duration_hours > 0 && (
-          <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {t("course.duration", { hours: course.estimated_duration_hours })}</span>
+          <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" aria-hidden="true" /> {t("course.duration", { hours: course.estimated_duration_hours })}</span>
         )}
-        <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> {studentCount}{t("common.people")}</span>
-        {lessons > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><BookOpen className="h-3 w-3" /> {t("course.lessonsCount", { count: lessons })}</span>}
+        <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" aria-hidden="true" /> {studentCount}{t("common.people")}</span>
+        {lessons > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-1"><BookOpen className="h-3 w-3" aria-hidden="true" /> {t("course.lessonsCount", { count: lessons })}</span>}
       </div>
       <div className="pt-1">
         {enrollmentStatus === "approved" ? (
           <Link to={`/student/courses/${course.id}?view=learn`}>
-            <Button variant="outline" size="sm" className="w-full rounded-xl text-xs gap-1.5">{t("catalog.continueLearning")}<ChevronRight className="h-3.5 w-3.5" /></Button>
+            <Button variant="outline" size="sm" className="w-full rounded-xl text-xs gap-1.5">{t("catalog.continueLearning")}<ChevronRight className="h-3.5 w-3.5" aria-hidden="true" /></Button>
           </Link>
         ) : enrollmentStatus === "pending" ? (
           <Button variant="secondary" size="sm" className="w-full rounded-xl text-xs gap-1.5 cursor-default" disabled>
-            <Hourglass className="h-3.5 w-3.5" /> {t("catalog.pendingApproval")}
+            <Hourglass className="h-3.5 w-3.5" aria-hidden="true" /> {t("catalog.pendingApproval")}
           </Button>
         ) : enrollmentStatus === "rejected" ? (
           <Button variant="outline" size="sm" className="w-full rounded-xl text-xs text-destructive border-destructive/30 cursor-default" disabled>
@@ -110,24 +116,25 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
   if (courses.length === 0) return null;
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">{category.name}</h2>
+    <section className="space-y-4" aria-label={category.name}>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground">{category.name}</h2>
         <button
           onClick={() => helpers.setActiveCategory(category.id)}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5 shrink-0"
+          aria-label={`${category.name} ${helpers.t("common.viewAll")}`}
         >
           + {helpers.t("common.viewAll")}
         </button>
       </div>
       <div className="relative">
         {courses.length > 3 && <ScrollArrow direction="left" onClick={() => scroll("left")} />}
-        <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
+        <div ref={scrollRef} className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory -mx-1 px-1" role="list" aria-label={category.name}>
           {courses.map((course: any) => {
             const cat = helpers.categoryMap.get(course.category_id);
             const gradient = categoryGradients[cat?.slug || ""] || "from-primary to-primary/80";
             return (
-              <div key={course.id} className="snap-start">
+              <div key={course.id} className="snap-start" role="listitem">
                 <CatalogCourseCard
                   course={course}
                   cat={cat}
@@ -138,6 +145,7 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
                   onEnroll={helpers.onEnroll}
                   isPending={helpers.isPending}
                   t={helpers.t}
+                  isGridItem={false}
                 />
               </div>
             );
@@ -151,7 +159,7 @@ const CategoryCarousel = ({ category, courses, helpers }: { category: any; cours
 
 /* ── Main Page ── */
 const CourseCatalog = () => {
-  const { user, profile } = useUser();
+  const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
@@ -219,7 +227,6 @@ const CourseCatalog = () => {
     },
   });
 
-  // Map course_id -> enrollment status
   const enrollmentStatusMap = new Map(enrollments.map((e: any) => [e.course_id, e.status]));
   const countMap = new Map<string, number>();
   enrollmentCounts.forEach((e: any) => countMap.set(e.course_id, (countMap.get(e.course_id) || 0) + 1));
@@ -233,7 +240,6 @@ const CourseCatalog = () => {
     return matchSearch && matchCategory;
   });
 
-  // Group courses by category for carousel view
   const coursesByCategory = new Map<string, any[]>();
   courses.forEach((c: any) => {
     if (!c.category_id) return;
@@ -253,7 +259,7 @@ const CourseCatalog = () => {
 
   return (
     <DashboardLayout role="student">
-      <div className="space-y-6">
+      <div className="space-y-5 sm:space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
@@ -264,92 +270,95 @@ const CourseCatalog = () => {
             {t("catalog.totalCourses")}: {courses.length} · {t("catalog.totalCategories")}: {categories.length} · {t("catalog.myEnrolled")}: {enrollments.filter((e: any) => e.status === "approved").length}
           </p>
         </div>
-          {/* Category tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-hide border-b border-border">
+
+        {/* Category tabs */}
+        <nav className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-hide border-b border-border -mx-1 px-1" role="tablist" aria-label={t("catalog.title")}>
+          <button
+            role="tab"
+            aria-selected={activeCategory === "all"}
+            onClick={() => { setActiveCategory("all"); setSearch(""); }}
+            className={`shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all border-b-2 -mb-[2px] ${activeCategory === "all" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+          >
+            {t("catalog.allCourses")}
+          </button>
+          {categories.map((cat: any) => (
             <button
-              onClick={() => { setActiveCategory("all"); setSearch(""); }}
-              className={`shrink-0 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-[2px] ${activeCategory === "all" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              key={cat.id}
+              role="tab"
+              aria-selected={activeCategory === cat.id}
+              onClick={() => { setActiveCategory(cat.id); setSearch(""); }}
+              className={`shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-all border-b-2 -mb-[2px] ${activeCategory === cat.id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
-              {t("catalog.allCourses")}
+              {cat.name}
             </button>
-            {categories.map((cat: any) => (
-              <button
-                key={cat.id}
-                onClick={() => { setActiveCategory(cat.id); setSearch(""); }}
-                className={`shrink-0 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-[2px] ${activeCategory === cat.id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
+          ))}
+        </nav>
 
-          {/* Search */}
-          <div className="flex justify-center">
-            <div className="relative w-full max-w-lg">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t("catalog.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-11 h-12 rounded-xl border-border bg-card text-sm" />
-            </div>
+        {/* Search */}
+        <div className="w-full sm:flex sm:justify-center">
+          <div className="relative w-full sm:max-w-lg">
+            <label htmlFor="catalog-search" className="sr-only">{t("catalog.searchPlaceholder")}</label>
+            <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <Input id="catalog-search" placeholder={t("catalog.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 sm:pl-11 h-10 sm:h-12 rounded-xl border-border bg-card text-sm" />
           </div>
-
-          {isLoading ? (
-            <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" /></div>
-          ) : isCarouselView ? (
-            /* ── Carousel view: grouped by category ── */
-            <div className="space-y-10">
-              {categories.map((cat: any) => {
-                const catCourses = coursesByCategory.get(cat.id) || [];
-                return (
-                  <CategoryCarousel
-                    key={cat.id}
-                    category={cat}
-                    courses={catCourses}
-                    helpers={carouselHelpers}
-                  />
-                );
-              })}
-              {/* Uncategorized courses */}
-              {courses.filter((c: any) => !c.category_id).length > 0 && (
-                <CategoryCarousel
-                  category={{ id: "uncategorized", name: t("common.all") }}
-                  courses={courses.filter((c: any) => !c.category_id)}
-                  helpers={carouselHelpers}
-                />
-              )}
-            </div>
-          ) : (
-            /* ── Grid view: filtered by category or search ── */
-            <>
-              <p className="text-sm text-muted-foreground">{t("catalog.resultCount", { count: filtered.length })}</p>
-              {filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 space-y-3">
-                  <div className="h-16 w-16 rounded-full bg-accent flex items-center justify-center"><BookOpen className="h-7 w-7 text-muted-foreground" /></div>
-                  <p className="text-sm text-muted-foreground">{t("catalog.noCourses")}</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                  {filtered.map((course: any) => {
-                    const cat = categoryMap.get(course.category_id);
-                    const gradient = categoryGradients[cat?.slug || ""] || "from-primary to-primary/80";
-                    return (
-                      <CatalogCourseCard
-                        key={course.id}
-                        course={course}
-                        cat={cat}
-                        gradient={gradient}
-                        enrollmentStatus={enrollmentStatusMap.get(course.id)}
-                        studentCount={countMap.get(course.id) || 0}
-                        lessons={contentCountMap.get(course.id) || 0}
-                        onEnroll={(id: string) => enrollMutation.mutate(id)}
-                        isPending={enrollMutation.isPending}
-                        t={t}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </>
-          )}
         </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-16" role="status" aria-label="Loading">
+            <span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
+          </div>
+        ) : isCarouselView ? (
+          /* ── Carousel view ── */
+          <div className="space-y-8 sm:space-y-10">
+            {categories.map((cat: any) => {
+              const catCourses = coursesByCategory.get(cat.id) || [];
+              return <CategoryCarousel key={cat.id} category={cat} courses={catCourses} helpers={carouselHelpers} />;
+            })}
+            {courses.filter((c: any) => !c.category_id).length > 0 && (
+              <CategoryCarousel
+                category={{ id: "uncategorized", name: t("common.all") }}
+                courses={courses.filter((c: any) => !c.category_id)}
+                helpers={carouselHelpers}
+              />
+            )}
+          </div>
+        ) : (
+          /* ── Grid view ── */
+          <div role="tabpanel">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4">{t("catalog.resultCount", { count: filtered.length })}</p>
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 space-y-3">
+                <div className="h-16 w-16 rounded-full bg-accent flex items-center justify-center">
+                  <BookOpen className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
+                </div>
+                <p className="text-sm text-muted-foreground">{t("catalog.noCourses")}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+                {filtered.map((course: any) => {
+                  const cat = categoryMap.get(course.category_id);
+                  const gradient = categoryGradients[cat?.slug || ""] || "from-primary to-primary/80";
+                  return (
+                    <CatalogCourseCard
+                      key={course.id}
+                      course={course}
+                      cat={cat}
+                      gradient={gradient}
+                      enrollmentStatus={enrollmentStatusMap.get(course.id)}
+                      studentCount={countMap.get(course.id) || 0}
+                      lessons={contentCountMap.get(course.id) || 0}
+                      onEnroll={(id: string) => enrollMutation.mutate(id)}
+                      isPending={enrollMutation.isPending}
+                      t={t}
+                      isGridItem={true}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </DashboardLayout>
   );
 };
