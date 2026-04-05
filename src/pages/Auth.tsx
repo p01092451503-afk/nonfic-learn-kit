@@ -9,6 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import LanguageToggle from "@/components/LanguageToggle";
 import loginBg from "@/assets/login-bg.jpg";
 
+// Preload the image as early as possible
+const preloadLink = document.createElement("link");
+preloadLink.rel = "preload";
+preloadLink.as = "image";
+preloadLink.href = loginBg;
+document.head.appendChild(preloadLink);
+
 const SAVED_EMAIL_KEY = "nonfiction_saved_email";
 
 const Auth = () => {
