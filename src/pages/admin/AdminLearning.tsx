@@ -130,7 +130,7 @@ const AdminLearning = () => {
                 </Select>
               </div>
               <div className="overflow-x-auto -mx-3 sm:-mx-5">
-                <div className="min-w-[600px] px-3 sm:px-5">
+                <div className="min-w-[420px] px-3 sm:px-5">
                   <Table>
                     <TableHeader>
                       <TableRow>
