@@ -27,6 +27,8 @@ const ContentPlayer = () => {
   const { courseId, contentId } = useParams<{ courseId: string; contentId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  // Derive route prefix from current path (e.g. /student, /teacher, /admin)
+  const routePrefix = location.pathname.startsWith("/admin/") ? "/admin" : location.pathname.startsWith("/teacher/") ? "/teacher" : "/student";
   const { user } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
