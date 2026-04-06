@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AssessmentManager from "@/components/AssessmentManager";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -608,6 +609,11 @@ const CourseDetail = () => {
               </ol>
             )}
           </section>
+
+          {/* Assessment Management Section */}
+          {courseId && (
+            <AssessmentManager courseId={courseId} />
+          )}
         </div>
 
         <ContentDialog
