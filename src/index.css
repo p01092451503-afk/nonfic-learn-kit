@@ -68,6 +68,14 @@
     --warning-foreground: 30 10% 12%;
     --info: 210 60% 50%;
     --info-foreground: 0 0% 100%;
+
+    /* Assessment dark-toned tokens */
+    --assessment-bg: 220 15% 13%;
+    --assessment-card: 220 14% 18%;
+    --assessment-card-foreground: 220 10% 92%;
+    --assessment-border: 220 12% 25%;
+    --assessment-muted: 220 10% 35%;
+    --assessment-accent: 220 12% 22%;
   }
 
   * {
@@ -104,6 +112,29 @@
 
   .nav-item-active {
     @apply bg-primary text-primary-foreground;
+  }
+
+  /* Assessment dark-toned theme scope */
+  .assessment-dark {
+    --background: var(--assessment-bg);
+    --foreground: var(--assessment-card-foreground);
+    --card: var(--assessment-card);
+    --card-foreground: var(--assessment-card-foreground);
+    --border: var(--assessment-border);
+    --muted: var(--assessment-accent);
+    --muted-foreground: var(--assessment-muted);
+    --accent: var(--assessment-accent);
+    --accent-foreground: var(--assessment-card-foreground);
+    --secondary: var(--assessment-accent);
+    --secondary-foreground: var(--assessment-card-foreground);
+    --input: var(--assessment-border);
+    --popover: var(--assessment-card);
+    --popover-foreground: var(--assessment-card-foreground);
+    --primary: 220 10% 85%;
+    --primary-foreground: 220 15% 13%;
+    --ring: 220 10% 40%;
+    background-color: hsl(var(--assessment-bg));
+    color: hsl(var(--assessment-card-foreground));
   }
 }
 

@@ -526,8 +526,8 @@ export default function AssessmentPage() {
   if (showResults && !reviewMode && latestCompleted) {
     return (
       <DashboardLayout role={layoutRole}>
-        <div className="space-y-4">
-          <Card className="border-border overflow-hidden">
+        <div className="assessment-dark -mx-4 sm:-mx-6 -mt-4 px-4 sm:px-6 pt-4 pb-6 min-h-[calc(100vh-4rem)] rounded-xl space-y-4">
+          <Card className="border-assessment-border overflow-hidden">
             <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <ClipboardCheck className="h-4 w-4 text-primary" />
@@ -569,8 +569,8 @@ export default function AssessmentPage() {
 
     return (
       <DashboardLayout role={layoutRole}>
-        <div className="space-y-4">
-          <Card className="border-border overflow-hidden">
+        <div className="assessment-dark -mx-4 sm:-mx-6 -mt-4 px-4 sm:px-6 pt-4 pb-6 min-h-[calc(100vh-4rem)] rounded-xl space-y-4">
+          <Card className="border-assessment-border overflow-hidden">
             <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <ClipboardCheck className="h-4 w-4 text-primary" />
@@ -633,8 +633,8 @@ export default function AssessmentPage() {
 
     return (
       <DashboardLayout role="student">
-        <div className="space-y-4">
-          <Card className="border-border overflow-hidden">
+        <div className="assessment-dark -mx-4 sm:-mx-6 -mt-4 px-4 sm:px-6 pt-4 pb-6 min-h-[calc(100vh-4rem)] rounded-xl space-y-4">
+          <Card className="border-assessment-border overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border">
               <div className="flex items-center gap-2">

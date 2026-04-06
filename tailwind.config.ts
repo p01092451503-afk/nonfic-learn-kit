@@ -85,6 +85,14 @@ export default {
           DEFAULT: "hsl(var(--info))",
           foreground: "hsl(var(--info-foreground))",
         },
+        assessment: {
+          DEFAULT: "hsl(var(--assessment-bg))",
+          card: "hsl(var(--assessment-card))",
+          "card-foreground": "hsl(var(--assessment-card-foreground))",
+          border: "hsl(var(--assessment-border))",
+          muted: "hsl(var(--assessment-muted))",
+          accent: "hsl(var(--assessment-accent))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
