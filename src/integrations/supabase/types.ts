@@ -109,6 +109,7 @@ export type Database = {
           correct_answer: string
           created_at: string
           explanation: string | null
+          hint: string | null
           id: string
           options: Json | null
           order_index: number
@@ -122,6 +123,7 @@ export type Database = {
           correct_answer: string
           created_at?: string
           explanation?: string | null
+          hint?: string | null
           id?: string
           options?: Json | null
           order_index?: number
@@ -135,6 +137,7 @@ export type Database = {
           correct_answer?: string
           created_at?: string
           explanation?: string | null
+          hint?: string | null
           id?: string
           options?: Json | null
           order_index?: number
