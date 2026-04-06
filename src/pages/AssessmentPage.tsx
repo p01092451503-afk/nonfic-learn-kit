@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Clock, CheckCircle2, XCircle, AlertTriangle, ClipboardCheck, Timer } from "lucide-react";
+import { ArrowLeft, X, Check, ChevronDown, ChevronUp, Timer, Share2, ClipboardCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,155 @@ const questionTypeLabels: Record<QuestionType, { ko: string; en: string }> = {
   ox: { ko: "OX", en: "True/False" },
 };
 
+// ─── Review mode: single question with correct/wrong UI ───
+function QuestionReview({
+  question,
+  index,
+  total,
+  userAnswer,
+  isCorrect,
+  isEn,
+  onNext,
+  onPrev,
+  t,
+}: {
+  question: any;
+  index: number;
+  total: number;
+  userAnswer: string | null;
+  isCorrect: boolean | null;
+  isEn: boolean;
+  onNext: () => void;
+  onPrev: () => void;
+  t: any;
+}) {
+  const [showHint, setShowHint] = useState(false);
+  const isChoice = ["multiple_choice_4", "multiple_choice_5", "ox"].includes(question.question_type);
+  const options: string[] = (question.options as string[]) || [];
+
+  return (
+    <div className="space-y-6">
+      {/* Question text */}
+      <div className="space-y-2">
+        <p className="text-base leading-relaxed">
+          <span className="font-semibold mr-2">{index + 1}.</span>
+          {question.question_text}
+        </p>
+      </div>
+
+      {/* Options / Answer display */}
+      {isChoice && (
+        <div className="space-y-3">
+          {options.map((opt, i) => {
+            const label = String.fromCharCode(65 + i); // A, B, C, D...
+            const isUserChoice = userAnswer === opt;
+            const isCorrectOption = opt === question.correct_answer;
+            const isWrong = isUserChoice && !isCorrectOption;
+
+            let borderClass = "border-border";
+            if (isCorrectOption) borderClass = "border-green-500 dark:border-green-400";
+            else if (isWrong) borderClass = "border-destructive dark:border-red-400";
+
+            return (
+              <div key={i} className={`rounded-lg border-2 ${borderClass} p-4 transition-colors`}>
+                <div className="flex items-start gap-3">
+                  <span className="font-semibold text-sm text-muted-foreground mt-0.5">{label}.</span>
+                  <div className="flex-1 space-y-2">
+                    <span className="text-sm">{opt}</span>
+                    {/* Correct answer label */}
+                    {isCorrectOption && (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                          <Check className="h-4 w-4" />
+                          <span className="text-sm font-semibold">{isEn ? "Correct" : "정답"}</span>
+                        </div>
+                        {question.explanation && (
+                          <p className="text-sm text-muted-foreground leading-relaxed pl-5">
+                            {question.explanation}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {/* Wrong answer label */}
+                    {isWrong && (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-destructive dark:text-red-400">
+                          <X className="h-4 w-4" />
+                          <span className="text-sm font-semibold">{isEn ? "Wrong" : "오답"}</span>
+                        </div>
+                        {/* Show explanation on wrong option too for context */}
+                        {question.explanation && !isCorrectOption && (
+                          <p className="text-sm text-muted-foreground leading-relaxed pl-5">
+                            {isEn
+                              ? `This is incorrect. ${question.explanation}`
+                              : `${question.explanation}`}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Short answer / Essay review */}
+      {!isChoice && (
+        <div className="space-y-3">
+          <div className={`rounded-lg border-2 p-4 ${isCorrect ? "border-green-500 dark:border-green-400" : "border-destructive dark:border-red-400"}`}>
+            <p className="text-xs text-muted-foreground mb-1">{isEn ? "Your answer" : "내 답변"}</p>
+            <p className="text-sm">{userAnswer || (isEn ? "(No answer)" : "(미답변)")}</p>
+            <div className="mt-2 flex items-center gap-1.5">
+              {isCorrect ? (
+                <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-semibold">
+                  <Check className="h-4 w-4" /> {isEn ? "Correct" : "정답"}
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-destructive dark:text-red-400 text-sm font-semibold">
+                  <X className="h-4 w-4" /> {isEn ? "Wrong" : "오답"}
+                </span>
+              )}
+            </div>
+          </div>
+          {question.correct_answer && question.question_type !== "essay" && (
+            <div className="rounded-lg border-2 border-green-500 dark:border-green-400 p-4">
+              <p className="text-xs text-muted-foreground mb-1">{isEn ? "Correct answer" : "정답"}</p>
+              <p className="text-sm font-medium">{question.correct_answer}</p>
+            </div>
+          )}
+          {question.explanation && (
+            <p className="text-sm text-muted-foreground pl-1">{question.explanation}</p>
+          )}
+        </div>
+      )}
+
+      {/* Hint toggle (only if explanation exists, shown as collapsible in review) */}
+      {question.explanation && isChoice && (
+        <button
+          type="button"
+          onClick={() => setShowHint(!showHint)}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {isEn ? "View Hint" : "힌트 보기"}
+          {showHint ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
+      )}
+
+      {/* Navigation */}
+      <div className="flex justify-between items-center pt-4">
+        <Button variant="ghost" size="sm" onClick={onPrev} disabled={index === 0}>
+          {isEn ? "Previous" : "이전"}
+        </Button>
+        <Button variant="outline" size="sm" onClick={onNext} disabled={index === total - 1}>
+          {isEn ? "Next" : "다음"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function AssessmentPage() {
   const { courseId, assessmentId } = useParams<{ courseId: string; assessmentId: string }>();
   const navigate = useNavigate();
@@ -45,6 +194,10 @@ export default function AssessmentPage() {
   const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  // One-question-per-page index (for both taking & review)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  // Review mode state
+  const [reviewMode, setReviewMode] = useState(false);
 
   // Fetch assessment
   const { data: assessment, isLoading: assessmentLoading } = useQuery({
@@ -106,13 +259,25 @@ export default function AssessmentPage() {
       if (error) throw error;
       return data;
     },
-    enabled: !!latestCompleted?.id && showResults,
+    enabled: !!latestCompleted?.id,
   });
 
   const completedAttempts = attempts.filter((a: any) => a.completed_at);
   const canAttempt = assessment ? completedAttempts.length < assessment.max_attempts : false;
   const bestScore = completedAttempts.length > 0 ? Math.max(...completedAttempts.map((a: any) => Number(a.score) || 0)) : null;
   const passed = bestScore !== null && assessment ? bestScore >= assessment.passing_score : false;
+
+  // Build answer map for review
+  const answerMap = useMemo(() => {
+    const map: Record<string, { user_answer: string | null; is_correct: boolean | null }> = {};
+    for (const a of previousAnswers) {
+      map[a.question_id] = { user_answer: a.user_answer, is_correct: a.is_correct };
+    }
+    return map;
+  }, [previousAnswers]);
+
+  const reviewCorrectCount = previousAnswers.filter((a: any) => a.is_correct === true).length;
+  const reviewWrongCount = previousAnswers.filter((a: any) => a.is_correct === false).length;
 
   // Timer
   useEffect(() => {
@@ -145,6 +310,8 @@ export default function AssessmentPage() {
       setCurrentAttemptId(id);
       setAnswers({});
       setShowResults(false);
+      setReviewMode(false);
+      setCurrentQuestionIndex(0);
     },
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
@@ -164,7 +331,6 @@ export default function AssessmentPage() {
         let pointsEarned = 0;
 
         if (q.question_type === "essay") {
-          // Essay questions need manual grading, mark as pending
           isCorrect = false;
           pointsEarned = 0;
         } else {
@@ -184,11 +350,9 @@ export default function AssessmentPage() {
         });
       }
 
-      // Insert answers
       const { error: ansErr } = await supabase.from("assessment_answers").insert(answerPayloads);
       if (ansErr) throw ansErr;
 
-      // Update attempt
       const { error: attErr } = await supabase.from("assessment_attempts").update({
         score: totalScore,
         total_points: totalPoints,
@@ -200,7 +364,10 @@ export default function AssessmentPage() {
     onSuccess: () => {
       setCurrentAttemptId(null);
       setShowResults(true);
+      setReviewMode(true);
+      setCurrentQuestionIndex(0);
       queryClient.invalidateQueries({ queryKey: ["assessment-attempts", assessmentId, user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["assessment-answers"] });
       toast({ title: t("assessment.submitted") });
     },
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
@@ -210,9 +377,11 @@ export default function AssessmentPage() {
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
+  const layoutRole = isStudentRoute ? "student" : primaryRole === "admin" ? "admin" : "teacher";
+
   if (assessmentLoading) {
     return (
-      <DashboardLayout role={isStudentRoute ? "student" : primaryRole === "admin" ? "admin" : "teacher"}>
+      <DashboardLayout role={layoutRole}>
         <div className="flex items-center justify-center h-64">
           <span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
         </div>
@@ -231,99 +400,204 @@ export default function AssessmentPage() {
     );
   }
 
-  // Taking assessment
-  if (currentAttemptId) {
-    const answeredCount = Object.values(answers).filter(a => a.trim()).length;
-    const progressPercent = questions.length > 0 ? Math.round((answeredCount / questions.length) * 100) : 0;
+  // ─── REVIEW MODE (after submission or viewing past results) ───
+  if (reviewMode && previousAnswers.length > 0) {
+    const currentQ = questions[currentQuestionIndex];
+    const ansData = currentQ ? answerMap[currentQ.id] : null;
+    const progressPercent = questions.length > 0 ? Math.round(((currentQuestionIndex + 1) / questions.length) * 100) : 0;
 
     return (
-      <DashboardLayout role="student">
-        <div className="max-w-3xl mx-auto space-y-6">
-          {/* Header with timer */}
-          <div className="flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10 py-3 border-b border-border">
-            <div>
-              <h1 className="text-lg font-semibold">{assessment.title}</h1>
-              <p className="text-xs text-muted-foreground">
-                {answeredCount}/{questions.length} {isEn ? "answered" : "답변 완료"}
-              </p>
+      <DashboardLayout role={layoutRole}>
+        <div className="max-w-3xl mx-auto">
+          <Card className="border-border overflow-hidden">
+            {/* Header bar */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <ClipboardCheck className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">{assessment.title}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setReviewMode(false); setShowResults(false); }}
+                  className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              {timeLeft !== null && (
-                <div className={`flex items-center gap-1 text-sm font-mono ${timeLeft < 60 ? "text-destructive animate-pulse" : "text-foreground"}`}>
-                  <Timer className="h-4 w-4" />
-                  {formatTime(timeLeft)}
+
+            {/* Progress bar + score counters */}
+            <div className="px-4 pt-3 pb-2 space-y-2">
+              <div className="flex items-center gap-3">
+                <Progress value={progressPercent} className="h-2 flex-1" />
+                <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">
+                  {currentQuestionIndex + 1} / {questions.length}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="flex items-center gap-1 text-xs font-semibold bg-destructive/15 text-destructive rounded-full px-2 py-0.5">
+                    <X className="h-3 w-3" /> {reviewWrongCount}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs font-semibold bg-green-500/15 text-green-600 dark:text-green-400 rounded-full px-2 py-0.5">
+                    <Check className="h-3 w-3" /> {reviewCorrectCount}
+                  </span>
                 </div>
-              )}
-              <Button size="sm" onClick={handleSubmit} disabled={submitMutation.isPending}>
-                {submitMutation.isPending ? t("common.processing") : t("common.submit")}
-              </Button>
+              </div>
             </div>
-          </div>
 
-          <Progress value={progressPercent} className="h-1.5" />
-
-          {/* Questions */}
-          <div className="space-y-6">
-            {questions.map((q: any, idx: number) => (
-              <Card key={q.id} className="border-border">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-xs text-muted-foreground">Q{idx + 1}</span>
-                    <Badge variant="outline" className="text-[9px] h-4">
-                      {isEn ? questionTypeLabels[q.question_type as QuestionType]?.en : questionTypeLabels[q.question_type as QuestionType]?.ko}
-                    </Badge>
-                    <span className="text-[10px] text-muted-foreground">{q.points}{t("common.points")}</span>
-                  </div>
-                  <CardTitle className="text-sm font-medium leading-relaxed">{q.question_text}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {["multiple_choice_4", "multiple_choice_5", "ox"].includes(q.question_type) && q.options && (
-                    <RadioGroup value={answers[q.id] || ""} onValueChange={v => setAnswers(a => ({ ...a, [q.id]: v }))}>
-                      <div className="space-y-2">
-                        {(q.options as string[]).map((opt: string, i: number) => (
-                          <div key={i} className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 hover:bg-accent/30 transition-colors">
-                            <RadioGroupItem value={opt} id={`${q.id}-${i}`} />
-                            <Label htmlFor={`${q.id}-${i}`} className="text-sm cursor-pointer flex-1">{opt}</Label>
-                          </div>
-                        ))}
-                      </div>
-                    </RadioGroup>
-                  )}
-                  {q.question_type === "short_answer" && (
-                    <Input
-                      className="h-9 text-sm"
-                      value={answers[q.id] || ""}
-                      onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))}
-                      placeholder={isEn ? "Enter your answer" : "답을 입력하세요"}
-                    />
-                  )}
-                  {q.question_type === "essay" && (
-                    <Textarea
-                      className="text-sm"
-                      value={answers[q.id] || ""}
-                      onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))}
-                      rows={4}
-                      placeholder={isEn ? "Write your answer" : "답안을 작성하세요"}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="flex justify-end pb-8">
-            <Button onClick={handleSubmit} disabled={submitMutation.isPending} size="lg">
-              {submitMutation.isPending ? t("common.processing") : t("assessment.submitAssessment")}
-            </Button>
-          </div>
+            {/* Question content */}
+            <CardContent className="pt-4 pb-6">
+              {currentQ && (
+                <QuestionReview
+                  question={currentQ}
+                  index={currentQuestionIndex}
+                  total={questions.length}
+                  userAnswer={ansData?.user_answer ?? null}
+                  isCorrect={ansData?.is_correct ?? null}
+                  isEn={!!isEn}
+                  onNext={() => setCurrentQuestionIndex(i => Math.min(i + 1, questions.length - 1))}
+                  onPrev={() => setCurrentQuestionIndex(i => Math.max(i - 1, 0))}
+                  t={t}
+                />
+              )}
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
     );
   }
 
-  // Overview / Results
+  // ─── TAKING ASSESSMENT (one question per page) ───
+  if (currentAttemptId) {
+    const currentQ = questions[currentQuestionIndex];
+    const answeredCount = Object.values(answers).filter(a => a.trim()).length;
+    const progressPercent = questions.length > 0 ? Math.round(((currentQuestionIndex + 1) / questions.length) * 100) : 0;
+    const isLastQuestion = currentQuestionIndex === questions.length - 1;
+
+    return (
+      <DashboardLayout role="student">
+        <div className="max-w-3xl mx-auto">
+          <Card className="border-border overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <ClipboardCheck className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">{assessment.title}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {timeLeft !== null && (
+                  <div className={`flex items-center gap-1 text-sm font-mono ${timeLeft < 60 ? "text-destructive animate-pulse" : "text-foreground"}`}>
+                    <Timer className="h-4 w-4" />
+                    {formatTime(timeLeft)}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Progress */}
+            <div className="px-4 pt-3 pb-2">
+              <div className="flex items-center gap-3">
+                <Progress value={progressPercent} className="h-2 flex-1" />
+                <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">
+                  {currentQuestionIndex + 1} / {questions.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Current question */}
+            <CardContent className="pt-4 pb-6 space-y-6">
+              {currentQ && (
+                <>
+                  <div>
+                    <p className="text-base leading-relaxed">
+                      <span className="font-semibold mr-2">{currentQuestionIndex + 1}.</span>
+                      {currentQ.question_text}
+                    </p>
+                  </div>
+
+                  {/* Multiple choice / OX */}
+                  {["multiple_choice_4", "multiple_choice_5", "ox"].includes(currentQ.question_type) && currentQ.options && (
+                    <RadioGroup value={answers[currentQ.id] || ""} onValueChange={v => setAnswers(a => ({ ...a, [currentQ.id]: v }))}>
+                      <div className="space-y-3">
+                        {(currentQ.options as string[]).map((opt: string, i: number) => {
+                          const label = String.fromCharCode(65 + i);
+                          const isSelected = answers[currentQ.id] === opt;
+                          return (
+                            <div
+                              key={i}
+                              className={`flex items-center gap-3 rounded-lg border-2 px-4 py-3 cursor-pointer transition-colors ${
+                                isSelected ? "border-primary bg-primary/5" : "border-border hover:bg-accent/30"
+                              }`}
+                              onClick={() => setAnswers(a => ({ ...a, [currentQ.id]: opt }))}
+                            >
+                              <span className="font-semibold text-sm text-muted-foreground">{label}.</span>
+                              <Label className="text-sm cursor-pointer flex-1">{opt}</Label>
+                              <RadioGroupItem value={opt} id={`${currentQ.id}-${i}`} className="sr-only" />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </RadioGroup>
+                  )}
+
+                  {/* Short answer */}
+                  {currentQ.question_type === "short_answer" && (
+                    <Input
+                      className="h-10 text-sm"
+                      value={answers[currentQ.id] || ""}
+                      onChange={e => setAnswers(a => ({ ...a, [currentQ.id]: e.target.value }))}
+                      placeholder={isEn ? "Enter your answer" : "답을 입력하세요"}
+                    />
+                  )}
+
+                  {/* Essay */}
+                  {currentQ.question_type === "essay" && (
+                    <Textarea
+                      className="text-sm"
+                      value={answers[currentQ.id] || ""}
+                      onChange={e => setAnswers(a => ({ ...a, [currentQ.id]: e.target.value }))}
+                      rows={5}
+                      placeholder={isEn ? "Write your answer" : "답안을 작성하세요"}
+                    />
+                  )}
+
+                  {/* Navigation */}
+                  <div className="flex justify-between items-center pt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentQuestionIndex(i => Math.max(i - 1, 0))}
+                      disabled={currentQuestionIndex === 0}
+                    >
+                      {isEn ? "Previous" : "이전"}
+                    </Button>
+
+                    {isLastQuestion ? (
+                      <Button size="sm" onClick={handleSubmit} disabled={submitMutation.isPending}>
+                        {submitMutation.isPending ? t("common.processing") : t("common.submit")}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentQuestionIndex(i => Math.min(i + 1, questions.length - 1))}
+                      >
+                        {isEn ? "Next" : "다음"}
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // ─── OVERVIEW / RESULTS ───
   return (
-    <DashboardLayout role={isStudentRoute ? "student" : primaryRole === "admin" ? "admin" : "teacher"}>
+    <DashboardLayout role={layoutRole}>
       <div className="max-w-2xl mx-auto space-y-6">
         <button
           type="button"
@@ -367,7 +641,7 @@ export default function AssessmentPage() {
             {/* Best score */}
             {bestScore !== null && (
               <div className={`rounded-lg border p-4 flex items-center gap-3 ${passed ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-900/20" : "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20"}`}>
-                {passed ? <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" /> : <AlertTriangle className="h-6 w-6 text-orange-600 dark:text-orange-400" />}
+                {passed ? <Check className="h-6 w-6 text-green-600 dark:text-green-400" /> : <X className="h-6 w-6 text-orange-600 dark:text-orange-400" />}
                 <div>
                   <p className="text-sm font-semibold">{passed ? t("assessment.passedResult") : t("assessment.failedResult")}</p>
                   <p className="text-xs text-muted-foreground">{t("assessment.bestScore")}: {bestScore}{t("common.points")}</p>
@@ -385,7 +659,22 @@ export default function AssessmentPage() {
                     <span className={a.passed ? "text-green-600 dark:text-green-400 font-medium" : "text-orange-600 dark:text-orange-400"}>
                       {Number(a.score)}/{Number(a.total_points)}{t("common.points")} {a.passed ? (isEn ? "(Pass)" : "(합격)") : (isEn ? "(Fail)" : "(불합격)")}
                     </span>
-                    <span className="text-muted-foreground">{new Date(a.completed_at).toLocaleString()}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">{new Date(a.completed_at).toLocaleString()}</span>
+                      {a.id === latestCompleted?.id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-[10px] px-2"
+                          onClick={() => {
+                            setReviewMode(true);
+                            setCurrentQuestionIndex(0);
+                          }}
+                        >
+                          {isEn ? "Review" : "오답확인"}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
