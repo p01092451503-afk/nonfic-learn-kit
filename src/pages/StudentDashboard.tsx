@@ -274,10 +274,10 @@ const StudentDashboard = () => {
   const assignmentCompletionRate = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
 
   const stats = [
-    { label: t("dashboard.coursesInProgress"), value: String(enrollmentStats?.inProgress || 0), sub: t("dashboard.inProgress"), icon: BookOpen },
-    { label: t("dashboard.coursesCompleted"), value: String(enrollmentStats?.completed || 0), sub: t("dashboard.totalCourses", { count: enrollmentStats?.total || 0 }), icon: ClipboardCheck },
+    { label: t("dashboard.coursesInProgress"), value: String(enrollmentStats?.inProgress || 0), sub: t("dashboard.inProgress"), icon: BookOpen, href: "/dashboard/courses" },
+    { label: t("dashboard.coursesCompleted"), value: String(enrollmentStats?.completed || 0), sub: t("dashboard.totalCourses", { count: enrollmentStats?.total || 0 }), icon: ClipboardCheck, href: "/dashboard/courses" },
     { label: t("dashboard.learningTime"), value: `${gamification?.experience_points ? Math.round(gamification.experience_points / 60) : 0}h`, sub: t("dashboard.cumulativeLearning"), icon: Clock },
-    { label: t("dashboard.badgesEarned"), value: String(badgeCount), sub: t("dashboard.earnedBadges"), icon: Award },
+    { label: t("dashboard.badgesEarned"), value: String(badgeCount), sub: t("dashboard.earnedBadges"), icon: Award, href: "/dashboard/achievements" },
   ];
 
   const detailStats = [
@@ -301,16 +301,27 @@ const StudentDashboard = () => {
 
         {/* Stat Cards */}
         <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label={t("dashboard.stats", "학습 통계")}>
-          {stats.map((stat) => (
-            <div key={stat.label} className="stat-card !p-4 sm:!p-6" role="group" aria-label={stat.label}>
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <span className="text-xs sm:text-sm text-muted-foreground leading-tight">{stat.label}</span>
-                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" aria-hidden="true" />
+          {stats.map((stat) => {
+            const content = (
+              <>
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <span className="text-xs sm:text-sm text-muted-foreground leading-tight">{stat.label}</span>
+                  <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" aria-hidden="true" />
+                </div>
+                <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
+              </>
+            );
+            return stat.href ? (
+              <Link key={stat.label} to={stat.href} className="stat-card !p-4 sm:!p-6 hover:shadow-md transition-shadow cursor-pointer" role="group" aria-label={stat.label}>
+                {content}
+              </Link>
+            ) : (
+              <div key={stat.label} className="stat-card !p-4 sm:!p-6" role="group" aria-label={stat.label}>
+                {content}
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
-            </div>
-          ))}
+            );
+          })}
         </section>
 
         {/* Detail Stats */}
