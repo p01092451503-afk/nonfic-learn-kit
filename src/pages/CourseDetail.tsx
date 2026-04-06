@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AssessmentManager from "@/components/AssessmentManager";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -6,6 +7,7 @@ import {
   FileText, Video, ChevronRight, BarChart3, Plus, Pencil,
   Trash2, Eye, EyeOff, Settings, ChevronUp, ChevronDown,
   GripVertical, ExternalLink, Copy, MoreHorizontal,
+  ClipboardCheck, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -608,6 +610,11 @@ const CourseDetail = () => {
               </ol>
             )}
           </section>
+
+          {/* Assessment Management Section */}
+          {courseId && (
+            <AssessmentManager courseId={courseId} />
+          )}
         </div>
 
         <ContentDialog
@@ -746,8 +753,92 @@ const CourseDetail = () => {
             })}
           </ol>
         </section>
+
+        {/* Student Assessment Section */}
+        {courseId && <StudentAssessmentSection courseId={courseId} overallProgress={overallProgress} routePrefix={routePrefix} t={t} isEn={isEn} />}
       </div>
     </DashboardLayout>
+  );
+};
+
+// --- Student Assessment Section ---
+const StudentAssessmentSection = ({
+  courseId, overallProgress, routePrefix, t, isEn,
+}: {
+  courseId: string;
+  overallProgress: number;
+  routePrefix: string;
+  t: any;
+  isEn: boolean;
+}) => {
+  const navigate = useNavigate();
+  const { data: assessment } = useQuery({
+    queryKey: ["assessment", courseId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("assessments").select("*").eq("course_id", courseId).eq("is_published", true).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { user } = useUser();
+  const { data: attempts = [] } = useQuery({
+    queryKey: ["assessment-attempts-student", assessment?.id, user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("assessment_attempts").select("*").eq("assessment_id", assessment!.id).eq("user_id", user!.id).order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!assessment?.id && !!user?.id,
+  });
+
+  if (!assessment) return null;
+
+  const threshold = Number(assessment.completion_threshold);
+  const meetsThreshold = overallProgress >= threshold;
+  const completedAttempts = attempts.filter((a: any) => a.completed_at);
+  const bestScore = completedAttempts.length > 0 ? Math.max(...completedAttempts.map((a: any) => Number(a.score) || 0)) : null;
+  const passed = bestScore !== null ? bestScore >= assessment.passing_score : false;
+
+  return (
+    <section className="rounded-xl border border-border bg-card p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <ClipboardCheck className="h-4 w-4 text-primary" />
+        <h2 className="text-sm font-semibold">{t("assessment.title")}: {assessment.title}</h2>
+      </div>
+
+      {!meetsThreshold ? (
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-1">
+          <p className="text-xs text-muted-foreground">
+            {t("assessment.progressRequired", { threshold })}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t("assessment.currentProgress", { progress: overallProgress })}
+          </p>
+          <Progress value={overallProgress} className="h-1.5 mt-1" />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {bestScore !== null && (
+            <div className={`rounded-lg border p-3 flex items-center gap-2 ${passed ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-900/20" : "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20"}`}>
+              {passed ? <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" /> : <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />}
+              <div>
+                <p className="text-xs font-semibold">{passed ? t("assessment.passedResult") : t("assessment.failedResult")}</p>
+                <p className="text-[10px] text-muted-foreground">{t("assessment.bestScore")}: {bestScore}{t("common.points")} ({completedAttempts.length}/{assessment.max_attempts} {isEn ? "attempts" : "회 응시"})</p>
+              </div>
+            </div>
+          )}
+          <Button
+            variant={bestScore !== null ? "outline" : "default"}
+            size="sm"
+            className="w-full"
+            onClick={() => navigate(`${routePrefix}/courses/${courseId}/assessment/${assessment.id}${routePrefix === "/student" ? "?view=learn" : ""}`)}
+          >
+            {bestScore !== null ? t("assessment.retakeAssessment") : t("assessment.takeAssessment")}
+          </Button>
+        </div>
+      )}
+    </section>
   );
 };
 
