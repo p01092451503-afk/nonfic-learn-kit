@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Eye, EyeOff, GripVertical, ClipboardCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, GripVertical, ClipboardCheck, Users } from "lucide-react";
+import AssessmentResults from "@/components/AssessmentResults";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,6 +58,7 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
   const [questionDialogOpen, setQuestionDialogOpen] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [questionForm, setQuestionForm] = useState<QuestionForm>(emptyQuestion);
+  const [showResults, setShowResults] = useState(false);
 
   const [assessmentForm, setAssessmentForm] = useState({
     title: "",
@@ -257,15 +259,26 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
         </h2>
         <div className="flex items-center gap-2">
           {assessment && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs gap-1"
-              onClick={() => togglePublishMutation.mutate()}
-            >
-              {assessment.is_published ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-              {assessment.is_published ? t("assessment.unpublishBtn") : t("assessment.publishBtn")}
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-1"
+                onClick={() => setShowResults(!showResults)}
+              >
+                <Users className="h-3 w-3" />
+                {showResults ? (isEn ? "Questions" : "문항 관리") : (isEn ? "Results" : "결과 보기")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-1"
+                onClick={() => togglePublishMutation.mutate()}
+              >
+                {assessment.is_published ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                {assessment.is_published ? t("assessment.unpublishBtn") : t("assessment.publishBtn")}
+              </Button>
+            </>
           )}
           <Button size="sm" className="h-8 text-xs gap-1" onClick={openEditAssessment}>
             {assessment ? <Pencil className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
@@ -297,79 +310,94 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
                 {t("assessment.passingScore")}: {assessment.passing_score}{t("common.points")} | {t("assessment.maxAttempts")}: {assessment.max_attempts}{isEn ? " times" : "회"} | {t("assessment.completionThreshold")}: {Number(assessment.completion_threshold)}% | {t("assessment.questionCount")}: {questions.length}{isEn ? "" : "문항"} ({totalPoints}{t("common.points")})
               </p>
             </div>
-            <Button size="sm" className="h-8 text-xs gap-1" onClick={openAddQuestion}>
-              <Plus className="h-3 w-3" />
-              {t("assessment.addQuestion")}
-            </Button>
+            {!showResults && (
+              <Button size="sm" className="h-8 text-xs gap-1" onClick={openAddQuestion}>
+                <Plus className="h-3 w-3" />
+                {t("assessment.addQuestion")}
+              </Button>
+            )}
           </div>
 
-          {/* Questions list */}
-          {questions.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              {t("assessment.noQuestions")}
+          {/* Results view or Questions list */}
+          {showResults ? (
+            <div className="p-4">
+              <AssessmentResults
+                courseId={courseId}
+                assessmentId={assessment.id}
+                assessmentTitle={assessment.title}
+                passingScore={assessment.passing_score}
+              />
             </div>
           ) : (
-            <ol className="divide-y divide-border">
-              {questions.map((q: any, idx: number) => (
-                <li key={q.id} className="flex items-start gap-3 px-4 py-3 hover:bg-accent/20 transition-colors group">
-                  <span className="mt-0.5 w-6 shrink-0 text-center font-mono text-xs text-muted-foreground">{idx + 1}</span>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-[9px] h-4 shrink-0">
-                        {isEn ? questionTypeLabels[q.question_type as QuestionType]?.en : questionTypeLabels[q.question_type as QuestionType]?.ko}
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">{q.points}{t("common.points")}</span>
-                    </div>
-                    <p className="text-sm text-foreground line-clamp-2">{q.question_text}</p>
-                    {q.options && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {(q.options as string[]).map((opt: string, i: number) => (
-                          <span
-                            key={i}
-                            className={`text-[10px] px-1.5 py-0.5 rounded ${opt === q.correct_answer ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium" : "bg-muted text-muted-foreground"}`}
-                          >
-                            {opt || `(${i + 1})`}
-                          </span>
-                        ))}
+            <>
+              {questions.length === 0 ? (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                  {t("assessment.noQuestions")}
+                </div>
+              ) : (
+                <ol className="divide-y divide-border">
+                  {questions.map((q: any, idx: number) => (
+                    <li key={q.id} className="flex items-start gap-3 px-4 py-3 hover:bg-accent/20 transition-colors group">
+                      <span className="mt-0.5 w-6 shrink-0 text-center font-mono text-xs text-muted-foreground">{idx + 1}</span>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-[9px] h-4 shrink-0">
+                            {isEn ? questionTypeLabels[q.question_type as QuestionType]?.en : questionTypeLabels[q.question_type as QuestionType]?.ko}
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground">{q.points}{t("common.points")}</span>
+                        </div>
+                        <p className="text-sm text-foreground line-clamp-2">{q.question_text}</p>
+                        {q.options && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {(q.options as string[]).map((opt: string, i: number) => (
+                              <span
+                                key={i}
+                                className={`text-[10px] px-1.5 py-0.5 rounded ${opt === q.correct_answer ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium" : "bg-muted text-muted-foreground"}`}
+                              >
+                                {opt || `(${i + 1})`}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {!q.options && q.correct_answer && (
+                          <p className="text-[10px] text-green-600 dark:text-green-400">
+                            {t("assessment.answer")}: {q.correct_answer}
+                          </p>
+                        )}
                       </div>
-                    )}
-                    {!q.options && q.correct_answer && (
-                      <p className="text-[10px] text-green-600 dark:text-green-400">
-                        {t("assessment.answer")}: {q.correct_answer}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    <button
-                      type="button"
-                      className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-                      onClick={() => openEditQuestion(q)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <button type="button" className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
-                          <Trash2 className="h-3.5 w-3.5" />
+                      <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                          onClick={() => openEditQuestion(q)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
                         </button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>{t("assessment.deleteQuestion")}</AlertDialogTitle>
-                          <AlertDialogDescription>{t("assessment.deleteQuestionConfirm")}</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteQuestionMutation.mutate(q.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            {t("common.delete")}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </li>
-              ))}
-            </ol>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button type="button" className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{t("assessment.deleteQuestion")}</AlertDialogTitle>
+                              <AlertDialogDescription>{t("assessment.deleteQuestionConfirm")}</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteQuestionMutation.mutate(q.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                {t("common.delete")}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </>
           )}
         </div>
       )}
