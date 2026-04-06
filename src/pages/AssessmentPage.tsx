@@ -146,7 +146,7 @@ function QuestionReview({
   );
 }
 
-// ─── Result Summary Page ───
+// ─── Result Summary Page (matches reference design) ───
 function ResultSummary({
   assessment, attempt, questions, answerMap, isEn, t,
   onReview, onRetake, onBack, canRetake,
@@ -156,102 +156,147 @@ function ResultSummary({
 }) {
   const correctCount = Object.values(answerMap).filter(a => a.is_correct === true).length;
   const wrongCount = Object.values(answerMap).filter(a => a.is_correct === false).length;
+  const skippedCount = questions.length - correctCount - wrongCount;
   const score = Number(attempt?.score || 0);
   const totalPoints = Number(attempt?.total_points || 0);
   const passed = attempt?.passed;
   const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
 
+  // Identify strong/weak areas
+  const correctQuestions = questions.filter(q => answerMap[q.id]?.is_correct === true);
+  const wrongQuestions = questions.filter(q => answerMap[q.id]?.is_correct === false);
+
   return (
     <div className="space-y-8">
-      {/* Result header */}
-      <div className="text-center space-y-4 py-6">
-        <div className={`inline-flex items-center justify-center h-20 w-20 rounded-full ${passed ? "bg-green-100 dark:bg-green-900/30" : "bg-orange-100 dark:bg-orange-900/30"}`}>
-          {passed ? <Trophy className="h-10 w-10 text-green-600 dark:text-green-400" /> : <ClipboardCheck className="h-10 w-10 text-orange-600 dark:text-orange-400" />}
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">
-            {passed ? (isEn ? "Congratulations! You passed!" : "축하합니다! 합격입니다!") : (isEn ? "Not quite there yet" : "아쉽지만 불합격입니다")}
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            {assessment.title}
+      {/* Header */}
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+          {isEn ? "Great job! Quiz completed." : "수고하셨습니다. 평가를 완료했습니다"}
+        </h2>
+      </div>
+
+      {/* 3-column stats: Score, Accuracy, Breakdown */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-xl border border-border bg-secondary/30 p-4 sm:p-5">
+          <p className="text-xs text-muted-foreground mb-2">{isEn ? "Score" : "점수"}</p>
+          <p className="text-3xl sm:text-4xl font-bold text-foreground">
+            {correctCount}<span className="text-lg text-muted-foreground">/{questions.length}</span>
           </p>
         </div>
+        <div className="rounded-xl border border-border bg-secondary/30 p-4 sm:p-5">
+          <p className="text-xs text-muted-foreground mb-2">{isEn ? "Accuracy" : "정확성"}</p>
+          <p className="text-3xl sm:text-4xl font-bold text-foreground">{percentage}%</p>
+        </div>
+        <div className="rounded-xl border border-border bg-secondary/30 p-4 sm:p-5">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{isEn ? "Correct" : "정답"}</span>
+              <span className="font-semibold text-foreground">{correctCount}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{isEn ? "Wrong" : "오답"}</span>
+              <span className="font-semibold text-foreground">{wrongCount}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{isEn ? "Skipped" : "건너뜀"}</span>
+              <span className="font-semibold text-foreground">{skippedCount}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Score card */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-xl bg-secondary/50 p-4 text-center">
-          <p className="text-xs text-muted-foreground mb-1">{isEn ? "Score" : "점수"}</p>
-          <p className="text-2xl font-bold text-foreground">{score}<span className="text-sm text-muted-foreground">/{totalPoints}</span></p>
-        </div>
-        <div className="rounded-xl bg-secondary/50 p-4 text-center">
-          <p className="text-xs text-muted-foreground mb-1">{isEn ? "Percentage" : "득점률"}</p>
-          <p className="text-2xl font-bold text-foreground">{percentage}%</p>
-        </div>
-        <div className="rounded-xl bg-green-50 dark:bg-green-900/20 p-4 text-center">
-          <p className="text-xs text-muted-foreground mb-1">{isEn ? "Correct" : "정답"}</p>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{correctCount}</p>
-        </div>
-        <div className="rounded-xl bg-red-50 dark:bg-red-900/20 p-4 text-center">
-          <p className="text-xs text-muted-foreground mb-1">{isEn ? "Wrong" : "오답"}</p>
-          <p className="text-2xl font-bold text-destructive">{wrongCount}</p>
-        </div>
-      </div>
-
-      {/* Pass/Fail status */}
-      <div className={`rounded-xl border-2 p-5 flex items-center gap-4 ${passed ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-900/20" : "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20"}`}>
-        {passed ? <Check className="h-8 w-8 text-green-600 dark:text-green-400 shrink-0" /> : <X className="h-8 w-8 text-orange-600 dark:text-orange-400 shrink-0" />}
+      {/* Pass/Fail badge */}
+      <div className={`rounded-xl border-2 p-4 flex items-center gap-4 ${passed ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-900/20" : "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20"}`}>
+        {passed ? <Check className="h-7 w-7 text-green-600 dark:text-green-400 shrink-0" /> : <X className="h-7 w-7 text-orange-600 dark:text-orange-400 shrink-0" />}
         <div>
           <p className="font-semibold text-foreground">{passed ? (isEn ? "Pass" : "합격") : (isEn ? "Fail" : "불합격")}</p>
           <p className="text-sm text-muted-foreground">
-            {isEn ? `Passing score: ${assessment.passing_score} points` : `합격 기준: ${assessment.passing_score}점`}
+            {isEn ? `Passing score: ${assessment.passing_score} points (Your score: ${score}/${totalPoints})` : `합격 기준: ${assessment.passing_score}점 (내 점수: ${score}/${totalPoints}점)`}
           </p>
         </div>
       </div>
 
-      {/* Question summary list */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">{isEn ? "Question Summary" : "문항별 결과"}</h3>
-        <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
-          {questions.map((q, idx) => {
-            const ans = answerMap[q.id];
-            const correct = ans?.is_correct;
-            return (
-              <div key={q.id} className="flex items-center gap-3 px-4 py-3 text-sm">
-                <span className="font-mono text-xs text-muted-foreground w-6 text-center">{idx + 1}</span>
-                <p className="flex-1 truncate text-foreground">{q.question_text}</p>
-                {correct === true && (
-                  <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs font-semibold shrink-0">
-                    <Check className="h-3.5 w-3.5" /> {isEn ? "Correct" : "정답"}
-                  </span>
-                )}
-                {correct === false && (
-                  <span className="flex items-center gap-1 text-destructive text-xs font-semibold shrink-0">
-                    <X className="h-3.5 w-3.5" /> {isEn ? "Wrong" : "오답"}
-                  </span>
-                )}
-                {correct === null && (
-                  <span className="text-xs text-muted-foreground shrink-0">{isEn ? "Pending" : "채점 대기"}</span>
-                )}
+      {/* Highlights & Improvement areas */}
+      {(correctQuestions.length > 0 || wrongQuestions.length > 0) && (
+        <div className="space-y-4">
+          {correctQuestions.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-foreground mb-2">{isEn ? "Highlights" : "하이라이트"}</h3>
+              <ul className="space-y-2">
+                {correctQuestions.map((q, i) => (
+                  <li key={q.id} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
+                    <span>{q.question_text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {wrongQuestions.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-foreground mb-2">{isEn ? "Areas to Review" : "중점적으로 살펴볼 영역"}</h3>
+              <ul className="space-y-2">
+                {wrongQuestions.map((q, i) => (
+                  <li key={q.id} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <X className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                    <div>
+                      <span>{q.question_text}</span>
+                      {q.explanation && (
+                        <p className="text-xs text-muted-foreground/70 mt-0.5">{q.explanation}</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Continue Learning section */}
+      <div className="space-y-3">
+        <h3 className="text-lg font-bold text-foreground">{isEn ? "Continue Learning" : "계속 학습하세요"}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Review quiz card */}
+          <button
+            type="button"
+            onClick={onReview}
+            className="flex items-center gap-4 rounded-xl border border-border bg-secondary/30 p-4 text-left hover:bg-secondary/50 transition-colors"
+          >
+            <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Eye className="h-7 w-7 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">{isEn ? "Review Quiz" : "퀴즈 복습"}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {isEn ? "Review each question with correct answers and explanations." : "각 문항의 정답과 해설을 확인하며 복습합니다."}
+              </p>
+            </div>
+          </button>
+          {/* Retake card */}
+          {canRetake && (
+            <button
+              type="button"
+              onClick={onRetake}
+              className="flex items-center gap-4 rounded-xl border border-border bg-secondary/30 p-4 text-left hover:bg-secondary/50 transition-colors"
+            >
+              <div className="h-14 w-14 rounded-xl bg-accent flex items-center justify-center shrink-0">
+                <RotateCcw className="h-7 w-7 text-muted-foreground" />
               </div>
-            );
-          })}
+              <div>
+                <p className="text-sm font-semibold text-foreground">{isEn ? "Retake Quiz" : "재응시"}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {isEn ? "Try again to improve your score." : "점수를 올리기 위해 다시 도전해보세요."}
+                </p>
+              </div>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button variant="outline" className="flex-1 gap-2" onClick={onReview}>
-          <Eye className="h-4 w-4" />
-          {isEn ? "Review Answers" : "오답 확인하기"}
-        </Button>
-        {canRetake && (
-          <Button variant="outline" className="flex-1 gap-2" onClick={onRetake}>
-            <RotateCcw className="h-4 w-4" />
-            {isEn ? "Retake" : "재응시"}
-          </Button>
-        )}
-        <Button className="flex-1" onClick={onBack}>
+      {/* Back button */}
+      <div className="pt-2">
+        <Button variant="outline" className="w-full" onClick={onBack}>
           {isEn ? "Back to Course" : "강의로 돌아가기"}
         </Button>
       </div>
