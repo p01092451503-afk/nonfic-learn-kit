@@ -130,6 +130,9 @@
     --input: var(--assessment-border);
     --popover: var(--assessment-card);
     --popover-foreground: var(--assessment-card-foreground);
+    --primary: 220 10% 85%;
+    --primary-foreground: 220 15% 13%;
+    --ring: 220 10% 40%;
     background-color: hsl(var(--assessment-bg));
     color: hsl(var(--assessment-card-foreground));
   }
