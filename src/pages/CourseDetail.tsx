@@ -7,6 +7,7 @@ import {
   FileText, Video, ChevronRight, BarChart3, Plus, Pencil,
   Trash2, Eye, EyeOff, Settings, ChevronUp, ChevronDown,
   GripVertical, ExternalLink, Copy, MoreHorizontal,
+  ClipboardCheck, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
