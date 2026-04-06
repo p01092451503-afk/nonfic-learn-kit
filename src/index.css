@@ -113,6 +113,26 @@
   .nav-item-active {
     @apply bg-primary text-primary-foreground;
   }
+
+  /* Assessment dark-toned theme scope */
+  .assessment-dark {
+    --background: var(--assessment-bg);
+    --foreground: var(--assessment-card-foreground);
+    --card: var(--assessment-card);
+    --card-foreground: var(--assessment-card-foreground);
+    --border: var(--assessment-border);
+    --muted: var(--assessment-accent);
+    --muted-foreground: var(--assessment-muted);
+    --accent: var(--assessment-accent);
+    --accent-foreground: var(--assessment-card-foreground);
+    --secondary: var(--assessment-accent);
+    --secondary-foreground: var(--assessment-card-foreground);
+    --input: var(--assessment-border);
+    --popover: var(--assessment-card);
+    --popover-foreground: var(--assessment-card-foreground);
+    background-color: hsl(var(--assessment-bg));
+    color: hsl(var(--assessment-card-foreground));
+  }
 }
 
 @layer utilities {
