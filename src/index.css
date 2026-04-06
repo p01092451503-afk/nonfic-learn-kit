@@ -68,6 +68,14 @@
     --warning-foreground: 30 10% 12%;
     --info: 210 60% 50%;
     --info-foreground: 0 0% 100%;
+
+    /* Assessment dark-toned tokens */
+    --assessment-bg: 220 15% 13%;
+    --assessment-card: 220 14% 18%;
+    --assessment-card-foreground: 220 10% 92%;
+    --assessment-border: 220 12% 25%;
+    --assessment-muted: 220 10% 35%;
+    --assessment-accent: 220 12% 22%;
   }
 
   * {
