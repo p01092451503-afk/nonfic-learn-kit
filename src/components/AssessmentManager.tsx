@@ -25,6 +25,7 @@ interface QuestionForm {
   correct_answer: string;
   points: number;
   explanation: string;
+  hint: string;
 }
 
 const emptyQuestion: QuestionForm = {
@@ -34,6 +35,7 @@ const emptyQuestion: QuestionForm = {
   correct_answer: "",
   points: 10,
   explanation: "",
+  hint: "",
 };
 
 const questionTypeLabels: Record<QuestionType, { ko: string; en: string }> = {
@@ -135,6 +137,7 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
         correct_answer: questionForm.correct_answer,
         points: questionForm.points,
         explanation: questionForm.explanation || null,
+        hint: questionForm.hint || null,
       };
 
       if (editingQuestionId) {
@@ -230,6 +233,7 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
       correct_answer: q.correct_answer,
       points: q.points,
       explanation: q.explanation || "",
+      hint: q.hint || "",
     });
     setQuestionDialogOpen(true);
   };
@@ -513,6 +517,11 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
             <div className="space-y-1">
               <Label className="text-xs">{t("assessment.explanation")}</Label>
               <Textarea className="text-sm" value={questionForm.explanation} onChange={e => setQuestionForm(f => ({ ...f, explanation: e.target.value }))} rows={2} placeholder={isEn ? "Explanation shown after grading (optional)" : "채점 후 표시될 해설 (선택사항)"} />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs">{isEn ? "Hint" : "힌트"}</Label>
+              <Textarea className="text-sm" value={questionForm.hint} onChange={e => setQuestionForm(f => ({ ...f, hint: e.target.value }))} rows={2} placeholder={isEn ? "Hint shown to students during test (optional)" : "시험 중 학생에게 보여줄 힌트 (선택사항)"} />
             </div>
           </div>
           <DialogFooter>
