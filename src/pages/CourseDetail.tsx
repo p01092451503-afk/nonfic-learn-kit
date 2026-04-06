@@ -752,6 +752,9 @@ const CourseDetail = () => {
             })}
           </ol>
         </section>
+
+        {/* Student Assessment Section */}
+        {courseId && <StudentAssessmentSection courseId={courseId} overallProgress={overallProgress} routePrefix={routePrefix} t={t} isEn={isEn} />}
       </div>
     </DashboardLayout>
   );
