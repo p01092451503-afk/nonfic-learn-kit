@@ -18,6 +18,9 @@ export type Database = {
         Row: {
           attempt_id: string
           created_at: string
+          feedback: string | null
+          graded_at: string | null
+          graded_by: string | null
           id: string
           is_correct: boolean | null
           points_earned: number | null
@@ -27,6 +30,9 @@ export type Database = {
         Insert: {
           attempt_id: string
           created_at?: string
+          feedback?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
           id?: string
           is_correct?: boolean | null
           points_earned?: number | null
@@ -36,6 +42,9 @@ export type Database = {
         Update: {
           attempt_id?: string
           created_at?: string
+          feedback?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
           id?: string
           is_correct?: boolean | null
           points_earned?: number | null
