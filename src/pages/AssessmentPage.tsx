@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, X, Check, ChevronDown, ChevronUp, Timer, Share2, ClipboardCheck } from "lucide-react";
+import { ArrowLeft, X, Check, ChevronDown, ChevronUp, Timer, ClipboardCheck, Lightbulb, Trophy, RotateCcw, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -19,35 +19,12 @@ import { useTranslation } from "react-i18next";
 
 type QuestionType = "multiple_choice_4" | "multiple_choice_5" | "short_answer" | "essay" | "ox";
 
-const questionTypeLabels: Record<QuestionType, { ko: string; en: string }> = {
-  multiple_choice_4: { ko: "4지선다", en: "4 Choices" },
-  multiple_choice_5: { ko: "5지선다", en: "5 Choices" },
-  short_answer: { ko: "단답형", en: "Short Answer" },
-  essay: { ko: "서술형", en: "Essay" },
-  ox: { ko: "OX", en: "True/False" },
-};
-
 // ─── Review mode: single question with correct/wrong UI ───
 function QuestionReview({
-  question,
-  index,
-  total,
-  userAnswer,
-  isCorrect,
-  isEn,
-  onNext,
-  onPrev,
-  t,
+  question, index, total, userAnswer, isCorrect, isEn, onNext, onPrev, t,
 }: {
-  question: any;
-  index: number;
-  total: number;
-  userAnswer: string | null;
-  isCorrect: boolean | null;
-  isEn: boolean;
-  onNext: () => void;
-  onPrev: () => void;
-  t: any;
+  question: any; index: number; total: number; userAnswer: string | null; isCorrect: boolean | null;
+  isEn: boolean; onNext: () => void; onPrev: () => void; t: any;
 }) {
   const [showHint, setShowHint] = useState(false);
   const isChoice = ["multiple_choice_4", "multiple_choice_5", "ox"].includes(question.question_type);
@@ -55,61 +32,51 @@ function QuestionReview({
 
   return (
     <div className="space-y-6">
-      {/* Question text */}
-      <div className="space-y-2">
-        <p className="text-base leading-relaxed">
-          <span className="font-semibold mr-2">{index + 1}.</span>
+      <div>
+        <p className="text-base sm:text-lg leading-relaxed">
+          <span className="font-bold mr-2">{index + 1}.</span>
           {question.question_text}
         </p>
       </div>
 
-      {/* Options / Answer display */}
       {isChoice && (
         <div className="space-y-3">
           {options.map((opt, i) => {
-            const label = String.fromCharCode(65 + i); // A, B, C, D...
+            const label = String.fromCharCode(65 + i);
             const isUserChoice = userAnswer === opt;
             const isCorrectOption = opt === question.correct_answer;
             const isWrong = isUserChoice && !isCorrectOption;
 
             let borderClass = "border-border";
-            if (isCorrectOption) borderClass = "border-green-500 dark:border-green-400";
-            else if (isWrong) borderClass = "border-destructive dark:border-red-400";
+            let bgClass = "";
+            if (isCorrectOption) { borderClass = "border-green-500 dark:border-green-400"; bgClass = "bg-green-50/50 dark:bg-green-900/10"; }
+            else if (isWrong) { borderClass = "border-destructive dark:border-red-400"; bgClass = "bg-red-50/50 dark:bg-red-900/10"; }
 
             return (
-              <div key={i} className={`rounded-lg border-2 ${borderClass} p-4 transition-colors`}>
+              <div key={i} className={`rounded-xl border-2 ${borderClass} ${bgClass} p-4 sm:p-5 transition-colors`}>
                 <div className="flex items-start gap-3">
-                  <span className="font-semibold text-sm text-muted-foreground mt-0.5">{label}.</span>
+                  <span className="font-bold text-sm text-muted-foreground mt-0.5">{label}.</span>
                   <div className="flex-1 space-y-2">
-                    <span className="text-sm">{opt}</span>
-                    {/* Correct answer label */}
+                    <span className="text-sm sm:text-base">{opt}</span>
                     {isCorrectOption && (
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
                           <Check className="h-4 w-4" />
-                          <span className="text-sm font-semibold">{isEn ? "Correct" : "정답"}</span>
+                          <span className="text-sm font-bold">{isEn ? "Correct" : "정답"}</span>
                         </div>
                         {question.explanation && (
-                          <p className="text-sm text-muted-foreground leading-relaxed pl-5">
-                            {question.explanation}
-                          </p>
+                          <p className="text-sm text-muted-foreground leading-relaxed pl-6">{question.explanation}</p>
                         )}
                       </div>
                     )}
-                    {/* Wrong answer label */}
                     {isWrong && (
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <div className="flex items-center gap-1.5 text-destructive dark:text-red-400">
                           <X className="h-4 w-4" />
-                          <span className="text-sm font-semibold">{isEn ? "Wrong" : "오답"}</span>
+                          <span className="text-sm font-bold">{isEn ? "Wrong" : "오답"}</span>
                         </div>
-                        {/* Show explanation on wrong option too for context */}
-                        {question.explanation && !isCorrectOption && (
-                          <p className="text-sm text-muted-foreground leading-relaxed pl-5">
-                            {isEn
-                              ? `This is incorrect. ${question.explanation}`
-                              : `${question.explanation}`}
-                          </p>
+                        {question.explanation && (
+                          <p className="text-sm text-muted-foreground leading-relaxed pl-6">{question.explanation}</p>
                         )}
                       </div>
                     )}
@@ -121,26 +88,25 @@ function QuestionReview({
         </div>
       )}
 
-      {/* Short answer / Essay review */}
       {!isChoice && (
         <div className="space-y-3">
-          <div className={`rounded-lg border-2 p-4 ${isCorrect ? "border-green-500 dark:border-green-400" : "border-destructive dark:border-red-400"}`}>
+          <div className={`rounded-xl border-2 p-4 sm:p-5 ${isCorrect ? "border-green-500 dark:border-green-400 bg-green-50/50 dark:bg-green-900/10" : "border-destructive dark:border-red-400 bg-red-50/50 dark:bg-red-900/10"}`}>
             <p className="text-xs text-muted-foreground mb-1">{isEn ? "Your answer" : "내 답변"}</p>
             <p className="text-sm">{userAnswer || (isEn ? "(No answer)" : "(미답변)")}</p>
-            <div className="mt-2 flex items-center gap-1.5">
+            <div className="mt-2">
               {isCorrect ? (
-                <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-semibold">
+                <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-bold">
                   <Check className="h-4 w-4" /> {isEn ? "Correct" : "정답"}
                 </span>
               ) : (
-                <span className="flex items-center gap-1 text-destructive dark:text-red-400 text-sm font-semibold">
+                <span className="flex items-center gap-1 text-destructive dark:text-red-400 text-sm font-bold">
                   <X className="h-4 w-4" /> {isEn ? "Wrong" : "오답"}
                 </span>
               )}
             </div>
           </div>
           {question.correct_answer && question.question_type !== "essay" && (
-            <div className="rounded-lg border-2 border-green-500 dark:border-green-400 p-4">
+            <div className="rounded-xl border-2 border-green-500 dark:border-green-400 bg-green-50/50 dark:bg-green-900/10 p-4 sm:p-5">
               <p className="text-xs text-muted-foreground mb-1">{isEn ? "Correct answer" : "정답"}</p>
               <p className="text-sm font-medium">{question.correct_answer}</p>
             </div>
@@ -151,25 +117,142 @@ function QuestionReview({
         </div>
       )}
 
-      {/* Hint toggle (only if explanation exists, shown as collapsible in review) */}
-      {question.explanation && isChoice && (
+      {question.hint && (
         <button
           type="button"
           onClick={() => setShowHint(!showHint)}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
+          <Lightbulb className="h-4 w-4" />
           {isEn ? "View Hint" : "힌트 보기"}
           {showHint ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
       )}
+      {showHint && question.hint && (
+        <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-sm text-amber-800 dark:text-amber-200">
+          {question.hint}
+        </div>
+      )}
 
-      {/* Navigation */}
-      <div className="flex justify-between items-center pt-4">
+      <div className="flex justify-between items-center pt-4 border-t border-border">
         <Button variant="ghost" size="sm" onClick={onPrev} disabled={index === 0}>
           {isEn ? "Previous" : "이전"}
         </Button>
         <Button variant="outline" size="sm" onClick={onNext} disabled={index === total - 1}>
           {isEn ? "Next" : "다음"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Result Summary Page ───
+function ResultSummary({
+  assessment, attempt, questions, answerMap, isEn, t,
+  onReview, onRetake, onBack, canRetake,
+}: {
+  assessment: any; attempt: any; questions: any[]; answerMap: Record<string, { user_answer: string | null; is_correct: boolean | null }>;
+  isEn: boolean; t: any; onReview: () => void; onRetake: () => void; onBack: () => void; canRetake: boolean;
+}) {
+  const correctCount = Object.values(answerMap).filter(a => a.is_correct === true).length;
+  const wrongCount = Object.values(answerMap).filter(a => a.is_correct === false).length;
+  const score = Number(attempt?.score || 0);
+  const totalPoints = Number(attempt?.total_points || 0);
+  const passed = attempt?.passed;
+  const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
+
+  return (
+    <div className="space-y-8">
+      {/* Result header */}
+      <div className="text-center space-y-4 py-6">
+        <div className={`inline-flex items-center justify-center h-20 w-20 rounded-full ${passed ? "bg-green-100 dark:bg-green-900/30" : "bg-orange-100 dark:bg-orange-900/30"}`}>
+          {passed ? <Trophy className="h-10 w-10 text-green-600 dark:text-green-400" /> : <ClipboardCheck className="h-10 w-10 text-orange-600 dark:text-orange-400" />}
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">
+            {passed ? (isEn ? "Congratulations! You passed!" : "축하합니다! 합격입니다!") : (isEn ? "Not quite there yet" : "아쉽지만 불합격입니다")}
+          </h2>
+          <p className="text-muted-foreground mt-1">
+            {assessment.title}
+          </p>
+        </div>
+      </div>
+
+      {/* Score card */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="rounded-xl bg-secondary/50 p-4 text-center">
+          <p className="text-xs text-muted-foreground mb-1">{isEn ? "Score" : "점수"}</p>
+          <p className="text-2xl font-bold text-foreground">{score}<span className="text-sm text-muted-foreground">/{totalPoints}</span></p>
+        </div>
+        <div className="rounded-xl bg-secondary/50 p-4 text-center">
+          <p className="text-xs text-muted-foreground mb-1">{isEn ? "Percentage" : "득점률"}</p>
+          <p className="text-2xl font-bold text-foreground">{percentage}%</p>
+        </div>
+        <div className="rounded-xl bg-green-50 dark:bg-green-900/20 p-4 text-center">
+          <p className="text-xs text-muted-foreground mb-1">{isEn ? "Correct" : "정답"}</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{correctCount}</p>
+        </div>
+        <div className="rounded-xl bg-red-50 dark:bg-red-900/20 p-4 text-center">
+          <p className="text-xs text-muted-foreground mb-1">{isEn ? "Wrong" : "오답"}</p>
+          <p className="text-2xl font-bold text-destructive">{wrongCount}</p>
+        </div>
+      </div>
+
+      {/* Pass/Fail status */}
+      <div className={`rounded-xl border-2 p-5 flex items-center gap-4 ${passed ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-900/20" : "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20"}`}>
+        {passed ? <Check className="h-8 w-8 text-green-600 dark:text-green-400 shrink-0" /> : <X className="h-8 w-8 text-orange-600 dark:text-orange-400 shrink-0" />}
+        <div>
+          <p className="font-semibold text-foreground">{passed ? (isEn ? "Pass" : "합격") : (isEn ? "Fail" : "불합격")}</p>
+          <p className="text-sm text-muted-foreground">
+            {isEn ? `Passing score: ${assessment.passing_score} points` : `합격 기준: ${assessment.passing_score}점`}
+          </p>
+        </div>
+      </div>
+
+      {/* Question summary list */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-semibold text-foreground">{isEn ? "Question Summary" : "문항별 결과"}</h3>
+        <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
+          {questions.map((q, idx) => {
+            const ans = answerMap[q.id];
+            const correct = ans?.is_correct;
+            return (
+              <div key={q.id} className="flex items-center gap-3 px-4 py-3 text-sm">
+                <span className="font-mono text-xs text-muted-foreground w-6 text-center">{idx + 1}</span>
+                <p className="flex-1 truncate text-foreground">{q.question_text}</p>
+                {correct === true && (
+                  <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs font-semibold shrink-0">
+                    <Check className="h-3.5 w-3.5" /> {isEn ? "Correct" : "정답"}
+                  </span>
+                )}
+                {correct === false && (
+                  <span className="flex items-center gap-1 text-destructive text-xs font-semibold shrink-0">
+                    <X className="h-3.5 w-3.5" /> {isEn ? "Wrong" : "오답"}
+                  </span>
+                )}
+                {correct === null && (
+                  <span className="text-xs text-muted-foreground shrink-0">{isEn ? "Pending" : "채점 대기"}</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button variant="outline" className="flex-1 gap-2" onClick={onReview}>
+          <Eye className="h-4 w-4" />
+          {isEn ? "Review Answers" : "오답 확인하기"}
+        </Button>
+        {canRetake && (
+          <Button variant="outline" className="flex-1 gap-2" onClick={onRetake}>
+            <RotateCcw className="h-4 w-4" />
+            {isEn ? "Retake" : "재응시"}
+          </Button>
+        )}
+        <Button className="flex-1" onClick={onBack}>
+          {isEn ? "Back to Course" : "강의로 돌아가기"}
         </Button>
       </div>
     </div>
@@ -194,10 +277,9 @@ export default function AssessmentPage() {
   const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  // One-question-per-page index (for both taking & review)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  // Review mode state
   const [reviewMode, setReviewMode] = useState(false);
+  const [showHintMap, setShowHintMap] = useState<Record<string, boolean>>({});
 
   // Fetch assessment
   const { data: assessment, isLoading: assessmentLoading } = useQuery({
@@ -225,7 +307,6 @@ export default function AssessmentPage() {
     enabled: !!assessmentId,
   });
 
-  // Randomize questions if needed
   const questions = useMemo(() => {
     if (!assessment?.randomize_questions) return rawQuestions;
     return [...rawQuestions].sort(() => Math.random() - 0.5);
@@ -247,7 +328,6 @@ export default function AssessmentPage() {
     enabled: !!assessmentId && !!user?.id,
   });
 
-  // Fetch answers for latest completed attempt
   const latestCompleted = attempts.find((a: any) => a.completed_at);
   const { data: previousAnswers = [] } = useQuery({
     queryKey: ["assessment-answers", latestCompleted?.id],
@@ -267,7 +347,6 @@ export default function AssessmentPage() {
   const bestScore = completedAttempts.length > 0 ? Math.max(...completedAttempts.map((a: any) => Number(a.score) || 0)) : null;
   const passed = bestScore !== null && assessment ? bestScore >= assessment.passing_score : false;
 
-  // Build answer map for review
   const answerMap = useMemo(() => {
     const map: Record<string, { user_answer: string | null; is_correct: boolean | null }> = {};
     for (const a of previousAnswers) {
@@ -312,6 +391,7 @@ export default function AssessmentPage() {
       setShowResults(false);
       setReviewMode(false);
       setCurrentQuestionIndex(0);
+      setShowHintMap({});
     },
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
@@ -320,7 +400,6 @@ export default function AssessmentPage() {
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!currentAttemptId) return;
-
       let totalScore = 0;
       let totalPoints = 0;
       const answerPayloads: any[] = [];
@@ -364,7 +443,7 @@ export default function AssessmentPage() {
     onSuccess: () => {
       setCurrentAttemptId(null);
       setShowResults(true);
-      setReviewMode(true);
+      setReviewMode(false);
       setCurrentQuestionIndex(0);
       queryClient.invalidateQueries({ queryKey: ["assessment-attempts", assessmentId, user?.id] });
       queryClient.invalidateQueries({ queryKey: ["assessment-answers"] });
@@ -374,9 +453,7 @@ export default function AssessmentPage() {
   });
 
   const handleSubmit = () => submitMutation.mutate();
-
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-
   const layoutRole = isStudentRoute ? "student" : primaryRole === "admin" ? "admin" : "teacher";
 
   if (assessmentLoading) {
@@ -400,7 +477,46 @@ export default function AssessmentPage() {
     );
   }
 
-  // ─── REVIEW MODE (after submission or viewing past results) ───
+  // ─── RESULT SUMMARY (shown immediately after submission) ───
+  if (showResults && !reviewMode && latestCompleted) {
+    return (
+      <DashboardLayout role={layoutRole}>
+        <div className="space-y-4">
+          <Card className="border-border overflow-hidden">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <ClipboardCheck className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">{assessment.title} — {isEn ? "Results" : "결과"}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate(`${routePrefix}/courses/${courseId}${isStudentRoute ? "?view=learn" : ""}`)}
+                className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <CardContent className="pt-6 pb-8 px-4 sm:px-6">
+              <ResultSummary
+                assessment={assessment}
+                attempt={latestCompleted}
+                questions={questions}
+                answerMap={answerMap}
+                isEn={!!isEn}
+                t={t}
+                onReview={() => { setReviewMode(true); setCurrentQuestionIndex(0); }}
+                onRetake={() => { setShowResults(false); startAttemptMutation.mutate(); }}
+                onBack={() => navigate(`${routePrefix}/courses/${courseId}${isStudentRoute ? "?view=learn" : ""}`)}
+                canRetake={canAttempt}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // ─── REVIEW MODE ───
   if (reviewMode && previousAnswers.length > 0) {
     const currentQ = questions[currentQuestionIndex];
     const ansData = currentQ ? answerMap[currentQ.id] : null;
@@ -408,27 +524,23 @@ export default function AssessmentPage() {
 
     return (
       <DashboardLayout role={layoutRole}>
-        <div className="max-w-3xl mx-auto">
+        <div className="space-y-4">
           <Card className="border-border overflow-hidden">
-            {/* Header bar */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <ClipboardCheck className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold">{assessment.title}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => { setReviewMode(false); setShowResults(false); }}
-                  className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => { setReviewMode(false); }}
+                className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
-            {/* Progress bar + score counters */}
-            <div className="px-4 pt-3 pb-2 space-y-2">
+            <div className="px-4 sm:px-6 pt-3 pb-2 space-y-2">
               <div className="flex items-center gap-3">
                 <Progress value={progressPercent} className="h-2 flex-1" />
                 <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">
@@ -445,8 +557,7 @@ export default function AssessmentPage() {
               </div>
             </div>
 
-            {/* Question content */}
-            <CardContent className="pt-4 pb-6">
+            <CardContent className="pt-4 pb-6 px-4 sm:px-6">
               {currentQ && (
                 <QuestionReview
                   question={currentQ}
@@ -467,19 +578,20 @@ export default function AssessmentPage() {
     );
   }
 
-  // ─── TAKING ASSESSMENT (one question per page) ───
+  // ─── TAKING ASSESSMENT (one question per page, full-width) ───
   if (currentAttemptId) {
     const currentQ = questions[currentQuestionIndex];
     const answeredCount = Object.values(answers).filter(a => a.trim()).length;
     const progressPercent = questions.length > 0 ? Math.round(((currentQuestionIndex + 1) / questions.length) * 100) : 0;
     const isLastQuestion = currentQuestionIndex === questions.length - 1;
+    const hintVisible = currentQ ? showHintMap[currentQ.id] : false;
 
     return (
       <DashboardLayout role="student">
-        <div className="max-w-3xl mx-auto">
+        <div className="space-y-4">
           <Card className="border-border overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <ClipboardCheck className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold">{assessment.title}</span>
@@ -491,11 +603,14 @@ export default function AssessmentPage() {
                     {formatTime(timeLeft)}
                   </div>
                 )}
+                <span className="text-xs text-muted-foreground">
+                  {isEn ? `${answeredCount}/${questions.length} answered` : `${answeredCount}/${questions.length} 응답`}
+                </span>
               </div>
             </div>
 
             {/* Progress */}
-            <div className="px-4 pt-3 pb-2">
+            <div className="px-4 sm:px-6 pt-3 pb-2">
               <div className="flex items-center gap-3">
                 <Progress value={progressPercent} className="h-2 flex-1" />
                 <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">
@@ -505,12 +620,12 @@ export default function AssessmentPage() {
             </div>
 
             {/* Current question */}
-            <CardContent className="pt-4 pb-6 space-y-6">
+            <CardContent className="pt-4 pb-6 px-4 sm:px-6 space-y-6">
               {currentQ && (
                 <>
                   <div>
-                    <p className="text-base leading-relaxed">
-                      <span className="font-semibold mr-2">{currentQuestionIndex + 1}.</span>
+                    <p className="text-base sm:text-lg leading-relaxed">
+                      <span className="font-bold mr-2">{currentQuestionIndex + 1}.</span>
                       {currentQ.question_text}
                     </p>
                   </div>
@@ -525,13 +640,13 @@ export default function AssessmentPage() {
                           return (
                             <div
                               key={i}
-                              className={`flex items-center gap-3 rounded-lg border-2 px-4 py-3 cursor-pointer transition-colors ${
-                                isSelected ? "border-primary bg-primary/5" : "border-border hover:bg-accent/30"
+                              className={`flex items-center gap-3 rounded-xl border-2 px-4 sm:px-5 py-3.5 cursor-pointer transition-all ${
+                                isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:bg-accent/30"
                               }`}
                               onClick={() => setAnswers(a => ({ ...a, [currentQ.id]: opt }))}
                             >
-                              <span className="font-semibold text-sm text-muted-foreground">{label}.</span>
-                              <Label className="text-sm cursor-pointer flex-1">{opt}</Label>
+                              <span className="font-bold text-sm text-muted-foreground">{label}.</span>
+                              <Label className="text-sm sm:text-base cursor-pointer flex-1">{opt}</Label>
                               <RadioGroupItem value={opt} id={`${currentQ.id}-${i}`} className="sr-only" />
                             </div>
                           );
@@ -543,7 +658,7 @@ export default function AssessmentPage() {
                   {/* Short answer */}
                   {currentQ.question_type === "short_answer" && (
                     <Input
-                      className="h-10 text-sm"
+                      className="h-11 text-sm sm:text-base"
                       value={answers[currentQ.id] || ""}
                       onChange={e => setAnswers(a => ({ ...a, [currentQ.id]: e.target.value }))}
                       placeholder={isEn ? "Enter your answer" : "답을 입력하세요"}
@@ -553,16 +668,36 @@ export default function AssessmentPage() {
                   {/* Essay */}
                   {currentQ.question_type === "essay" && (
                     <Textarea
-                      className="text-sm"
+                      className="text-sm sm:text-base"
                       value={answers[currentQ.id] || ""}
                       onChange={e => setAnswers(a => ({ ...a, [currentQ.id]: e.target.value }))}
-                      rows={5}
+                      rows={6}
                       placeholder={isEn ? "Write your answer" : "답안을 작성하세요"}
                     />
                   )}
 
+                  {/* Hint toggle */}
+                  {currentQ.hint && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setShowHintMap(m => ({ ...m, [currentQ.id]: !m[currentQ.id] }))}
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Lightbulb className="h-4 w-4" />
+                        {isEn ? "View Hint" : "힌트 보기"}
+                        {hintVisible ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </button>
+                      {hintVisible && (
+                        <div className="mt-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-sm text-amber-800 dark:text-amber-200">
+                          {currentQ.hint}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Navigation */}
-                  <div className="flex justify-between items-center pt-4">
+                  <div className="flex justify-between items-center pt-4 border-t border-border">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -595,10 +730,10 @@ export default function AssessmentPage() {
     );
   }
 
-  // ─── OVERVIEW / RESULTS ───
+  // ─── OVERVIEW / ENTRY POINT ───
   return (
     <DashboardLayout role={layoutRole}>
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="space-y-6">
         <button
           type="button"
           onClick={() => navigate(`${routePrefix}/courses/${courseId}${isStudentRoute ? "?view=learn" : ""}`)}
@@ -618,29 +753,28 @@ export default function AssessmentPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="rounded-lg bg-secondary/50 p-3 text-center">
+              <div className="rounded-xl bg-secondary/50 p-3 text-center">
                 <p className="text-[10px] text-muted-foreground">{t("assessment.passingScore")}</p>
                 <p className="text-lg font-bold">{assessment.passing_score}{t("common.points")}</p>
               </div>
-              <div className="rounded-lg bg-secondary/50 p-3 text-center">
+              <div className="rounded-xl bg-secondary/50 p-3 text-center">
                 <p className="text-[10px] text-muted-foreground">{t("assessment.maxAttempts")}</p>
                 <p className="text-lg font-bold">{completedAttempts.length}/{assessment.max_attempts}</p>
               </div>
-              <div className="rounded-lg bg-secondary/50 p-3 text-center">
+              <div className="rounded-xl bg-secondary/50 p-3 text-center">
                 <p className="text-[10px] text-muted-foreground">{t("assessment.questionCount")}</p>
                 <p className="text-lg font-bold">{questions.length}</p>
               </div>
               {assessment.time_limit_minutes && (
-                <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                <div className="rounded-xl bg-secondary/50 p-3 text-center">
                   <p className="text-[10px] text-muted-foreground">{t("assessment.timeLimit")}</p>
                   <p className="text-lg font-bold">{assessment.time_limit_minutes}{t("common.minutes")}</p>
                 </div>
               )}
             </div>
 
-            {/* Best score */}
             {bestScore !== null && (
-              <div className={`rounded-lg border p-4 flex items-center gap-3 ${passed ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-900/20" : "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20"}`}>
+              <div className={`rounded-xl border-2 p-4 flex items-center gap-3 ${passed ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-900/20" : "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20"}`}>
                 {passed ? <Check className="h-6 w-6 text-green-600 dark:text-green-400" /> : <X className="h-6 w-6 text-orange-600 dark:text-orange-400" />}
                 <div>
                   <p className="text-sm font-semibold">{passed ? t("assessment.passedResult") : t("assessment.failedResult")}</p>
@@ -649,13 +783,12 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            {/* Attempt history */}
             {completedAttempts.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold">{t("assessment.attemptHistory")}</h3>
                 {completedAttempts.map((a: any, i: number) => (
-                  <div key={a.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-xs">
-                    <span>{completedAttempts.length - i}{isEn ? "st attempt" : "회차"}</span>
+                  <div key={a.id} className="flex items-center justify-between rounded-xl border border-border px-4 py-3 text-xs">
+                    <span className="font-medium">{completedAttempts.length - i}{isEn ? "st attempt" : "회차"}</span>
                     <span className={a.passed ? "text-green-600 dark:text-green-400 font-medium" : "text-orange-600 dark:text-orange-400"}>
                       {Number(a.score)}/{Number(a.total_points)}{t("common.points")} {a.passed ? (isEn ? "(Pass)" : "(합격)") : (isEn ? "(Fail)" : "(불합격)")}
                     </span>
@@ -666,10 +799,7 @@ export default function AssessmentPage() {
                           variant="ghost"
                           size="sm"
                           className="h-6 text-[10px] px-2"
-                          onClick={() => {
-                            setReviewMode(true);
-                            setCurrentQuestionIndex(0);
-                          }}
+                          onClick={() => { setReviewMode(true); setCurrentQuestionIndex(0); }}
                         >
                           {isEn ? "Review" : "오답확인"}
                         </Button>
@@ -680,7 +810,6 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            {/* Action */}
             {canAttempt && (
               <Button className="w-full" onClick={() => startAttemptMutation.mutate()} disabled={startAttemptMutation.isPending}>
                 {startAttemptMutation.isPending ? t("common.processing") : completedAttempts.length === 0 ? t("assessment.startAssessment") : t("assessment.retakeAssessment")}
