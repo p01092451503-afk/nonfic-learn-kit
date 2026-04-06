@@ -58,6 +58,7 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
   const [questionDialogOpen, setQuestionDialogOpen] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [questionForm, setQuestionForm] = useState<QuestionForm>(emptyQuestion);
+  const [showResults, setShowResults] = useState(false);
 
   const [assessmentForm, setAssessmentForm] = useState({
     title: "",
@@ -258,15 +259,26 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
         </h2>
         <div className="flex items-center gap-2">
           {assessment && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs gap-1"
-              onClick={() => togglePublishMutation.mutate()}
-            >
-              {assessment.is_published ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-              {assessment.is_published ? t("assessment.unpublishBtn") : t("assessment.publishBtn")}
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-1"
+                onClick={() => setShowResults(!showResults)}
+              >
+                <Users className="h-3 w-3" />
+                {showResults ? (isEn ? "Questions" : "문항 관리") : (isEn ? "Results" : "결과 보기")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-1"
+                onClick={() => togglePublishMutation.mutate()}
+              >
+                {assessment.is_published ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                {assessment.is_published ? t("assessment.unpublishBtn") : t("assessment.publishBtn")}
+              </Button>
+            </>
           )}
           <Button size="sm" className="h-8 text-xs gap-1" onClick={openEditAssessment}>
             {assessment ? <Pencil className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
