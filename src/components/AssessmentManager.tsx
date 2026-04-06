@@ -310,13 +310,25 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
                 {t("assessment.passingScore")}: {assessment.passing_score}{t("common.points")} | {t("assessment.maxAttempts")}: {assessment.max_attempts}{isEn ? " times" : "회"} | {t("assessment.completionThreshold")}: {Number(assessment.completion_threshold)}% | {t("assessment.questionCount")}: {questions.length}{isEn ? "" : "문항"} ({totalPoints}{t("common.points")})
               </p>
             </div>
-            <Button size="sm" className="h-8 text-xs gap-1" onClick={openAddQuestion}>
-              <Plus className="h-3 w-3" />
-              {t("assessment.addQuestion")}
-            </Button>
+            {!showResults && (
+              <Button size="sm" className="h-8 text-xs gap-1" onClick={openAddQuestion}>
+                <Plus className="h-3 w-3" />
+                {t("assessment.addQuestion")}
+              </Button>
+            )}
           </div>
 
-          {/* Questions list */}
+          {/* Results view or Questions list */}
+          {showResults ? (
+            <div className="p-4">
+              <AssessmentResults
+                courseId={courseId}
+                assessmentId={assessment.id}
+                assessmentTitle={assessment.title}
+                passingScore={assessment.passing_score}
+              />
+            </div>
+          ) : (
           {questions.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
               {t("assessment.noQuestions")}
