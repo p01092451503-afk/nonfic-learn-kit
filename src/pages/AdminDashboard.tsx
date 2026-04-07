@@ -1,11 +1,13 @@
+import { useState } from "react";
 import {
   Users, BookOpen, TrendingUp, Activity, ArrowRight, Shield,
-  BarChart3, UserPlus, AlertTriangle, GraduationCap, Clock,
+  BarChart3, UserPlus, AlertTriangle, GraduationCap, Clock, Building2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +17,7 @@ const AdminDashboard = () => {
   const { profile } = useUser();
   const { t, i18n } = useTranslation();
   const displayName = profile?.full_name || t("roles.adminLabel");
+  const [branchFilter, setBranchFilter] = useState<string>("all");
 
   const { data: profileCount = 0 } = useQuery({
     queryKey: ["admin-dash-profile-count"],
