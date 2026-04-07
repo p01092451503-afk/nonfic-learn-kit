@@ -22,7 +22,7 @@ const AdminUsers = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ userId: string; name: string } | null>(null);
   const [staffEdit, setStaffEdit] = useState<StaffEditDraft | null>(null);
-  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "student", departmentId: "" });
+  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "student", departmentId: "", branchId: "" });
   const { t, i18n } = useTranslation();
   const { user } = useUser();
   const queryClient = useQueryClient();
@@ -64,13 +64,14 @@ const AdminUsers = () => {
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async () => {
+      const effectiveDeptId = newUser.departmentId === "__branch__" ? newUser.branchId : newUser.departmentId;
       const { data, error } = await supabase.functions.invoke("create-user", {
         body: {
           email: newUser.email,
           password: newUser.password,
           fullName: newUser.name,
           role: newUser.role,
-          departmentId: newUser.departmentId || undefined,
+          departmentId: effectiveDeptId || undefined,
         },
       });
       if (error) throw error;
@@ -80,7 +81,7 @@ const AdminUsers = () => {
     onSuccess: () => {
       toast.success(t("admin.userCreated"), { description: t("admin.userCreatedDesc", { name: newUser.name }) });
       setAddOpen(false);
-      setNewUser({ name: "", email: "", password: "", role: "student", departmentId: "" });
+      setNewUser({ name: "", email: "", password: "", role: "student", departmentId: "", branchId: "" });
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
     },
@@ -174,11 +175,25 @@ const AdminUsers = () => {
 
   const openStaffEdit = (profile: any) => {
     const primaryRole = getPrimaryRole(profile.user_id);
+    const deptId = profile.department_id || "";
+    const dept = departments.find((d: any) => d.id === deptId);
+    let branchId = "__none__";
+    let departmentId = "__none__";
+    if (dept) {
+      if ((dept as any).parent_department_id) {
+        branchId = (dept as any).parent_department_id;
+        departmentId = dept.id;
+      } else {
+        branchId = dept.id;
+        departmentId = "__none__";
+      }
+    }
 
     setStaffEdit({
       userId: profile.user_id,
       name: profile.full_name || "-",
-      departmentId: profile.department_id || "__none__",
+      branchId,
+      departmentId,
       position: profile.position || "",
       role: primaryRole === "super_admin" ? "admin" : primaryRole,
       roleLocked: hasProtectedRole(profile.user_id) || profile.user_id === user?.id,
@@ -187,7 +202,7 @@ const AdminUsers = () => {
 
   const updateStaffMutation = useMutation({
     mutationFn: async (draft: StaffEditDraft) => {
-      const departmentId = draft.departmentId === "__none__" ? null : draft.departmentId;
+      const departmentId = draft.departmentId !== "__none__" ? draft.departmentId : (draft.branchId !== "__none__" ? draft.branchId : null);
       const position = draft.position.trim();
 
       const { error: profileError } = await supabase
@@ -386,11 +401,23 @@ const AdminUsers = () => {
               <Input type="password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} placeholder="••••••••" className="mt-1" />
             </div>
             <div>
+              <Label>{t("branch.branchTitle")}</Label>
+              <Select value={newUser.branchId} onValueChange={(v) => setNewUser({ ...newUser, branchId: v, departmentId: "" })}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder={t("branch.branchTitle")} /></SelectTrigger>
+                <SelectContent>
+                  {departments.filter((d: any) => !d.parent_department_id).map((d: any) => (
+                    <SelectItem key={d.id} value={d.id}>{isEn ? d.name_en || d.name : d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label>{t("admin.selectDept")}</Label>
-              <Select value={newUser.departmentId} onValueChange={(v) => setNewUser({ ...newUser, departmentId: v })}>
+              <Select value={newUser.departmentId} onValueChange={(v) => setNewUser({ ...newUser, departmentId: v })} disabled={!newUser.branchId}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder={t("admin.selectDept")} /></SelectTrigger>
                 <SelectContent>
-                  {departments.map((d: any) => (
+                  <SelectItem value="__branch__">{departments.find((d: any) => d.id === newUser.branchId) ? (isEn ? (departments.find((d: any) => d.id === newUser.branchId) as any).name_en || (departments.find((d: any) => d.id === newUser.branchId) as any).name : (departments.find((d: any) => d.id === newUser.branchId) as any).name) + ` (${t("branch.branchTitle")})` : "-"}</SelectItem>
+                  {departments.filter((d: any) => d.parent_department_id === newUser.branchId).map((d: any) => (
                     <SelectItem key={d.id} value={d.id}>{isEn ? d.name_en || d.name : d.name}</SelectItem>
                   ))}
                 </SelectContent>

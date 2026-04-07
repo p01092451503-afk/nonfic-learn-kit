@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export interface StaffEditDraft {
   name: string;
   role: Exclude<StaffRole, "super_admin">;
   departmentId: string;
+  branchId: string;
   position: string;
   roleLocked: boolean;
 }
@@ -28,6 +30,7 @@ interface DepartmentOption {
   id: string;
   name: string;
   name_en: string | null;
+  parent_department_id?: string | null;
 }
 
 interface StaffEditDialogProps {
@@ -53,7 +56,18 @@ const StaffEditDialog = ({
 }: StaffEditDialogProps) => {
   const { t } = useTranslation();
 
+  const branches = useMemo(() => departments.filter((d) => !d.parent_department_id), [departments]);
+
+  const teams = useMemo(() => {
+    if (!draft?.branchId || draft.branchId === "__none__") return [];
+    return departments.filter((d) => d.parent_department_id === draft.branchId);
+  }, [departments, draft?.branchId]);
+
   if (!draft) return null;
+
+  const getDeptLabel = (d: DepartmentOption) => (isEn ? d.name_en || d.name : d.name);
+
+  const selectedBranch = branches.find((b) => b.id === draft.branchId);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -65,19 +79,42 @@ const StaffEditDialog = ({
 
         <div className="space-y-4">
           <div className="space-y-2">
+            <Label>{t("branch.branchTitle")}</Label>
+            <Select
+              value={draft.branchId}
+              onValueChange={(branchId) => onDraftChange({ ...draft, branchId, departmentId: "__none__" })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t("branch.branchTitle")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">-</SelectItem>
+                {branches.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {getDeptLabel(branch)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label>{t("admin.departmentColumn")}</Label>
             <Select
               value={draft.departmentId}
               onValueChange={(departmentId) => onDraftChange({ ...draft, departmentId })}
+              disabled={!draft.branchId || draft.branchId === "__none__"}
             >
               <SelectTrigger>
                 <SelectValue placeholder={t("admin.selectDept")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">-</SelectItem>
-                {departments.map((department) => (
-                  <SelectItem key={department.id} value={department.id}>
-                    {isEn ? department.name_en || department.name : department.name}
+                <SelectItem value="__none__">
+                  {selectedBranch ? `${getDeptLabel(selectedBranch)} (${t("branch.branchTitle")})` : "-"}
+                </SelectItem>
+                {teams.map((team) => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {getDeptLabel(team)}
                   </SelectItem>
                 ))}
               </SelectContent>
