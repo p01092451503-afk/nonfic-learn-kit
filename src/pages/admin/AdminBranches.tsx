@@ -21,7 +21,7 @@ const AdminBranches = () => {
 
   const [branchDialog, setBranchDialog] = useState(false);
   const [editingBranch, setEditingBranch] = useState<any>(null);
-  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "" });
+  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "__none__" });
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [staffSearch, setStaffSearch] = useState("");
   const [uploadBranch, setUploadBranch] = useState<string>("__csv__");
@@ -77,7 +77,7 @@ const AdminBranches = () => {
       toast({ title: editingBranch ? t("admin.deptUpdated") : t("admin.deptCreated") });
       setBranchDialog(false);
       setEditingBranch(null);
-      setBranchForm({ name: "", name_en: "", code: "", parent_department_id: "" });
+      setBranchForm({ name: "", name_en: "", code: "", parent_department_id: "__none__" });
     },
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
