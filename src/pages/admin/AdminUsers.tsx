@@ -64,13 +64,14 @@ const AdminUsers = () => {
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async () => {
+      const effectiveDeptId = newUser.departmentId === "__branch__" ? newUser.branchId : newUser.departmentId;
       const { data, error } = await supabase.functions.invoke("create-user", {
         body: {
           email: newUser.email,
           password: newUser.password,
           fullName: newUser.name,
           role: newUser.role,
-          departmentId: newUser.departmentId || undefined,
+          departmentId: effectiveDeptId || undefined,
         },
       });
       if (error) throw error;
