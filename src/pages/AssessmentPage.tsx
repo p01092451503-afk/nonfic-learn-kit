@@ -339,12 +339,29 @@ export default function AssessmentPage() {
 
   const isTeacherOrAdmin = primaryRole === "admin" || primaryRole === "teacher";
 
+  // Fetch previous attempts (must be before questions queries)
+  const { data: attempts = [] } = useQuery({
+    queryKey: ["assessment-attempts", assessmentId, user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("assessment_attempts")
+        .select("*")
+        .eq("assessment_id", assessmentId!)
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!assessmentId && !!user?.id,
+  });
+
+  const latestCompleted = attempts.find((a: any) => a.completed_at);
+
   // Fetch questions - students use secure RPC, teachers/admins use direct query
   const { data: rawQuestions = [] } = useQuery({
-    queryKey: ["assessment-questions-take", assessmentId, isTeacherOrAdmin, !!latestCompleted],
+    queryKey: ["assessment-questions-take", assessmentId, isTeacherOrAdmin],
     queryFn: async () => {
       if (isTeacherOrAdmin) {
-        // Teachers/admins can directly query
         const { data, error } = await supabase
           .from("assessment_questions")
           .select("*")
@@ -353,7 +370,6 @@ export default function AssessmentPage() {
         if (error) throw error;
         return data;
       }
-      // Students: use secure RPC function (no correct_answer/explanation during taking)
       const { data, error } = await supabase
         .rpc("get_assessment_questions_for_student", { p_assessment_id: assessmentId! });
       if (error) throw error;
@@ -364,7 +380,7 @@ export default function AssessmentPage() {
 
   // For review mode: fetch questions WITH answers (only available after completing)
   const { data: reviewQuestions = [] } = useQuery({
-    queryKey: ["assessment-questions-review", assessmentId],
+    queryKey: ["assessment-questions-review", assessmentId, !!latestCompleted],
     queryFn: async () => {
       if (isTeacherOrAdmin) {
         const { data, error } = await supabase
@@ -388,23 +404,6 @@ export default function AssessmentPage() {
     return [...rawQuestions].sort(() => Math.random() - 0.5);
   }, [rawQuestions, assessment?.randomize_questions]);
 
-  // Fetch previous attempts
-  const { data: attempts = [] } = useQuery({
-    queryKey: ["assessment-attempts", assessmentId, user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("assessment_attempts")
-        .select("*")
-        .eq("assessment_id", assessmentId!)
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!assessmentId && !!user?.id,
-  });
-
-  const latestCompleted = attempts.find((a: any) => a.completed_at);
   const { data: previousAnswers = [] } = useQuery({
     queryKey: ["assessment-answers", latestCompleted?.id],
     queryFn: async () => {
