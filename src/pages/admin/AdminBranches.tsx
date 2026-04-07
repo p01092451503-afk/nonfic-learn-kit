@@ -119,7 +119,7 @@ const AdminBranches = () => {
       const payload: any = {
         name: teamForm.name,
         name_en: teamForm.name_en || null,
-        code: teamForm.code || null,
+        code: null,
         parent_department_id: teamForm.parent_department_id || null,
       };
       if (editingTeam) {
