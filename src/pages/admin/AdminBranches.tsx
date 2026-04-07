@@ -327,24 +327,30 @@ const AdminBranches = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("admin.nameColumn")}</TableHead>
-                    <TableHead>{t("branches.branch")}</TableHead>
-                    <TableHead>{t("admin.positionColumn")}</TableHead>
-                    <TableHead>{t("admin.roleColumn")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProfiles.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">{t("admin.noUsers")}</TableCell></TableRow>
-                  ) : filteredProfiles.map((p: any) => (
-                    <TableRow key={p.user_id}>
-                      <TableCell className="font-medium">{p.full_name || "-"}</TableCell>
-                      <TableCell>{getBranchName(p.department_id)}</TableCell>
-                      <TableCell className="text-muted-foreground">{p.position || "-"}</TableCell>
-                      <TableCell>{getRoleBadge(p.user_id)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
+                     <TableHead>{t("admin.nameColumn")}</TableHead>
+                     <TableHead>{t("branches.branch")}</TableHead>
+                     <TableHead>{t("admin.positionColumn")}</TableHead>
+                     <TableHead>{t("admin.roleColumn")}</TableHead>
+                     <TableHead className="text-right">{t("common.manage")}</TableHead>
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                   {filteredProfiles.length === 0 ? (
+                     <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">{t("admin.noUsers")}</TableCell></TableRow>
+                   ) : filteredProfiles.map((p: any) => (
+                     <TableRow key={p.user_id}>
+                       <TableCell className="font-medium">{p.full_name || "-"}</TableCell>
+                       <TableCell>{getBranchName(p.department_id)}</TableCell>
+                       <TableCell className="text-muted-foreground">{p.position || "-"}</TableCell>
+                       <TableCell>{getRoleBadge(p.user_id)}</TableCell>
+                       <TableCell className="text-right">
+                         <Button variant="ghost" size="sm" onClick={() => openEditStaff(p)}>
+                           <Pencil className="h-3.5 w-3.5" />
+                         </Button>
+                       </TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
               </Table>
             </div>
           </TabsContent>
