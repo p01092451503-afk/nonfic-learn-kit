@@ -488,6 +488,8 @@
     "deleteUser": "직원 삭제",
     "deleteUserConfirm": "정말 이 직원을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
     "userDeleted": "직원이 삭제되었습니다.",
+    "editPosition": "직급 수정",
+    "positionChanged": "직급이 변경되었습니다.",
     "courseManagement": "강좌 관리",
     "courseManagementDesc": "전체 강좌를 관리하고 모니터링하세요.",
     "newCourse": "새 강좌",

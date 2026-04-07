@@ -18,6 +18,7 @@ const AdminUsers = () => {
   const [deptFilter, setDeptFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ userId: string; name: string } | null>(null);
+  const [positionEdit, setPositionEdit] = useState<{ userId: string; name: string; position: string } | null>(null);
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "student", departmentId: "" });
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
@@ -118,6 +119,19 @@ const AdminUsers = () => {
     onSuccess: () => {
       toast.success(t("admin.deptChanged"));
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+    },
+  });
+
+  // Change position mutation
+  const changePositionMutation = useMutation({
+    mutationFn: async ({ userId, position }: { userId: string; position: string }) => {
+      const { error } = await supabase.from("profiles").update({ position: position || null }).eq("user_id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(t("admin.positionChanged"));
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      setPositionEdit(null);
     },
   });
 
@@ -250,6 +264,10 @@ const AdminUsers = () => {
                             </DropdownMenuItem>
                           ))}
                           <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setPositionEdit({ userId: profile.user_id, name: profile.full_name || "-", position: profile.position || "" })}>
+                            {t("admin.editPosition")}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => setDeleteTarget({ userId: profile.user_id, name: profile.full_name || "-" })}
@@ -339,6 +357,33 @@ const AdminUsers = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Position Edit Dialog */}
+      <Dialog open={!!positionEdit} onOpenChange={(open) => !open && setPositionEdit(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("admin.editPosition")}: {positionEdit?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>{t("admin.positionColumn")}</Label>
+              <Input
+                className="mt-1"
+                value={positionEdit?.position || ""}
+                onChange={(e) => setPositionEdit(prev => prev ? { ...prev, position: e.target.value } : null)}
+                placeholder={t("admin.positionColumn")}
+              />
+            </div>
+            <Button
+              className="w-full rounded-xl"
+              onClick={() => positionEdit && changePositionMutation.mutate({ userId: positionEdit.userId, position: positionEdit.position })}
+              disabled={changePositionMutation.isPending}
+            >
+              {changePositionMutation.isPending ? t("common.processing") : t("common.save")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
