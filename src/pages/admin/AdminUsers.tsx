@@ -218,9 +218,9 @@ const AdminUsers = () => {
                           <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {["admin", "teacher", "student"].filter(r => r !== currentRole).map(r => (
-                            <DropdownMenuItem key={r} onClick={() => changeRoleMutation.mutate({ userId: profile.user_id, role: r })}>
-                              {t("admin.roleColumn")}: {roleLabel[r].text}
+                          {["admin", "teacher", "student"].map(r => (
+                            <DropdownMenuItem key={r} disabled={r === currentRole} onClick={() => r !== currentRole && changeRoleMutation.mutate({ userId: profile.user_id, role: r })}>
+                              {t("admin.roleColumn")}: {roleLabel[r].text} {r === currentRole ? "✓" : ""}
                             </DropdownMenuItem>
                           ))}
                           <DropdownMenuItem className="text-xs text-muted-foreground" disabled>—</DropdownMenuItem>
