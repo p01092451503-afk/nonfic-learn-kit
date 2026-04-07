@@ -566,9 +566,10 @@ export default function AssessmentPage() {
 
   // ─── REVIEW MODE ───
   if (reviewMode && previousAnswers.length > 0) {
-    const currentQ = questions[currentQuestionIndex];
+    const rQuestions = reviewQuestions as any[];
+    const currentQ = rQuestions[currentQuestionIndex];
     const ansData = currentQ ? answerMap[currentQ.id] : null;
-    const progressPercent = questions.length > 0 ? Math.round(((currentQuestionIndex + 1) / questions.length) * 100) : 0;
+    const progressPercent = rQuestions.length > 0 ? Math.round(((currentQuestionIndex + 1) / rQuestions.length) * 100) : 0;
 
     return (
       <DashboardLayout role={layoutRole}>
