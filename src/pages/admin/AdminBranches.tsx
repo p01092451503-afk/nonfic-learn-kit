@@ -62,7 +62,7 @@ const AdminBranches = () => {
         name: form.name,
         name_en: form.name_en || null,
         code: form.code || null,
-        parent_department_id: form.parent_department_id || null,
+        parent_department_id: form.parent_department_id === "__none__" ? null : form.parent_department_id || null,
       };
       if (editingBranch) {
         const { error } = await supabase.from("departments").update(payload).eq("id", editingBranch.id);
