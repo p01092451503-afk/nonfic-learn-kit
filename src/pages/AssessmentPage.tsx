@@ -548,7 +548,7 @@ export default function AssessmentPage() {
               <ResultSummary
                 assessment={assessment}
                 attempt={latestCompleted}
-                questions={questions}
+                questions={reviewQuestions as any[]}
                 answerMap={answerMap}
                 isEn={!!isEn}
                 t={t}
