@@ -22,7 +22,7 @@ const AdminUsers = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ userId: string; name: string } | null>(null);
   const [staffEdit, setStaffEdit] = useState<StaffEditDraft | null>(null);
-  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "student", departmentId: "" });
+  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "student", departmentId: "", branchId: "" });
   const { t, i18n } = useTranslation();
   const { user } = useUser();
   const queryClient = useQueryClient();
