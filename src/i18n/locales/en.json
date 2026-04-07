@@ -971,5 +971,8 @@
     "uploadComplete": "Upload Complete",
     "uploadSuccess": " registered",
     "uploadFailed": " failed"
+  },
+  "branch": {
+    "branchTitle": "Branch"
   }
 }
