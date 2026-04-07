@@ -173,6 +173,7 @@ const AdminUsers = () => {
     const q = search.toLowerCase().trim();
     const searchableValues = [
       profile.full_name || "",
+      profile.email || "",
       profile.department || "",
       profile.position || "",
       getDeptName(profile.department_id),
@@ -330,7 +331,7 @@ const AdminUsers = () => {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-foreground">{profile.full_name || "-"}</p>
-                          <p className="text-xs text-muted-foreground">{profile.employee_id || "-"}</p>
+                          <p className="text-xs text-muted-foreground">{profile.email || profile.employee_id || "-"}</p>
                         </div>
                       </div>
                     </td>
