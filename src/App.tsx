@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserProvider } from "@/contexts/UserContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRoute from "@/components/AdminRoute";
 import RoleBasedRedirect from "@/components/RoleBasedRedirect";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -72,29 +73,29 @@ const App = () => (
             <Route path="/teacher/students/:studentId" element={<ProtectedRoute><TeacherStudentDetail /></ProtectedRoute>} />
 
             {/* Admin */}
-            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
-            <Route path="/admin/courses" element={<ProtectedRoute><AdminCourses /></ProtectedRoute>} />
-            <Route path="/admin/courses/new" element={<ProtectedRoute><CreateCourse /></ProtectedRoute>} />
-            <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
-            <Route path="/admin/enrollments" element={<ProtectedRoute><AdminEnrollments /></ProtectedRoute>} />
-            <Route path="/admin/learning" element={<ProtectedRoute><AdminLearning /></ProtectedRoute>} />
-            <Route path="/admin/attendance" element={<ProtectedRoute><AdminAttendance /></ProtectedRoute>} />
-            <Route path="/admin/completion" element={<ProtectedRoute><AdminCompletion /></ProtectedRoute>} />
-            <Route path="/admin/traffic" element={<ProtectedRoute><AdminTraffic /></ProtectedRoute>} />
-            <Route path="/admin/branches" element={<ProtectedRoute><AdminBranches /></ProtectedRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+            <Route path="/admin/courses" element={<AdminRoute><AdminCourses /></AdminRoute>} />
+            <Route path="/admin/courses/new" element={<AdminRoute><CreateCourse /></AdminRoute>} />
+            <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+            <Route path="/admin/enrollments" element={<AdminRoute><AdminEnrollments /></AdminRoute>} />
+            <Route path="/admin/learning" element={<AdminRoute><AdminLearning /></AdminRoute>} />
+            <Route path="/admin/attendance" element={<AdminRoute><AdminAttendance /></AdminRoute>} />
+            <Route path="/admin/completion" element={<AdminRoute><AdminCompletion /></AdminRoute>} />
+            <Route path="/admin/traffic" element={<AdminRoute><AdminTraffic /></AdminRoute>} />
+            <Route path="/admin/branches" element={<AdminRoute><AdminBranches /></AdminRoute>} />
 
             {/* Dept Admin */}
             <Route path="/dept-admin" element={<ProtectedRoute><DeptAdminDashboard /></ProtectedRoute>} />
 
             {/* Course Detail & Content Player (role-based) */}
-            <Route path="/admin/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+            <Route path="/admin/courses/:courseId" element={<AdminRoute><CourseDetail /></AdminRoute>} />
             <Route path="/teacher/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
             <Route path="/student/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
-            <Route path="/admin/courses/:courseId/content/:contentId" element={<ProtectedRoute><ContentPlayer /></ProtectedRoute>} />
+            <Route path="/admin/courses/:courseId/content/:contentId" element={<AdminRoute><ContentPlayer /></AdminRoute>} />
             <Route path="/teacher/courses/:courseId/content/:contentId" element={<ProtectedRoute><ContentPlayer /></ProtectedRoute>} />
             <Route path="/student/courses/:courseId/content/:contentId" element={<ProtectedRoute><ContentPlayer /></ProtectedRoute>} />
-            <Route path="/admin/courses/:courseId/assessment/:assessmentId" element={<ProtectedRoute><AssessmentPage /></ProtectedRoute>} />
+            <Route path="/admin/courses/:courseId/assessment/:assessmentId" element={<AdminRoute><AssessmentPage /></AdminRoute>} />
             <Route path="/teacher/courses/:courseId/assessment/:assessmentId" element={<ProtectedRoute><AssessmentPage /></ProtectedRoute>} />
             <Route path="/student/courses/:courseId/assessment/:assessmentId" element={<ProtectedRoute><AssessmentPage /></ProtectedRoute>} />
 
