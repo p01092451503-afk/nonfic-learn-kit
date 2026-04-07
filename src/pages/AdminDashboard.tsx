@@ -40,7 +40,7 @@ const AdminDashboard = () => {
   const { data: enrollments = [] } = useQuery({
     queryKey: ["admin-dash-enrollments"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("enrollments").select("course_id, progress, completed_at");
+      const { data, error } = await supabase.from("enrollments").select("course_id, user_id, progress, completed_at");
       if (error) throw error;
       return data;
     },
