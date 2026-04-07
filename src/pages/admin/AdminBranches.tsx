@@ -348,7 +348,6 @@ const AdminBranches = () => {
                   <TableRow>
                     <TableHead>{t("branches.teamName")}</TableHead>
                     <TableHead>{t("branches.teamNameEn")}</TableHead>
-                    <TableHead>{t("admin.deptCode")}</TableHead>
                     <TableHead>{t("branches.belongsToBranch")}</TableHead>
                     <TableHead className="text-center">{t("branches.staffCount")}</TableHead>
                     <TableHead className="text-right">{t("common.manage")}</TableHead>
@@ -356,12 +355,12 @@ const AdminBranches = () => {
                 </TableHeader>
                 <TableBody>
                   {teams.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">{t("branches.noTeams")}</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">{t("branches.noTeams")}</TableCell></TableRow>
                   ) : teams.map((tm: any) => (
                     <TableRow key={tm.id}>
                       <TableCell className="font-medium">{tm.name}</TableCell>
                       <TableCell className="text-muted-foreground">{tm.name_en || "-"}</TableCell>
-                      <TableCell className="text-muted-foreground">{tm.code || "-"}</TableCell>
+                      
                       <TableCell>{getBranchName(tm.parent_department_id)}</TableCell>
                       <TableCell className="text-center">
                         <Badge variant="secondary"><Users className="h-3 w-3 mr-1" />{deptStaffCount(tm.id)}</Badge>
