@@ -64,31 +64,17 @@ const AdminUsers = () => {
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.auth.signUp({
-        email: newUser.email,
-        password: newUser.password,
-        options: { data: { full_name: newUser.name } },
+      const { data, error } = await supabase.functions.invoke("create-user", {
+        body: {
+          email: newUser.email,
+          password: newUser.password,
+          fullName: newUser.name,
+          role: newUser.role,
+          departmentId: newUser.departmentId || undefined,
+        },
       });
       if (error) throw error;
-
-      if (data.user) {
-        // Update profile with department
-        if (newUser.departmentId) {
-          await supabase.from("profiles").update({ department_id: newUser.departmentId }).eq("user_id", data.user.id);
-        }
-
-        const { error: deleteRoleError } = await supabase
-          .from("user_roles")
-          .delete()
-          .eq("user_id", data.user.id)
-          .neq("role", "super_admin");
-        if (deleteRoleError) throw deleteRoleError;
-
-        const { error: insertRoleError } = await supabase
-          .from("user_roles")
-          .insert({ user_id: data.user.id, role: newUser.role as StaffRole });
-        if (insertRoleError) throw insertRoleError;
-      }
+      if (data?.error) throw new Error(data.error);
       return data;
     },
     onSuccess: () => {
