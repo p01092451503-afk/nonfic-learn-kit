@@ -21,10 +21,10 @@ const AdminBranches = () => {
 
   const [branchDialog, setBranchDialog] = useState(false);
   const [editingBranch, setEditingBranch] = useState<any>(null);
-  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "" });
+  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "__none__" });
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [staffSearch, setStaffSearch] = useState("");
-  const [uploadBranch, setUploadBranch] = useState<string>("");
+  const [uploadBranch, setUploadBranch] = useState<string>("__csv__");
 
   // Fetch branches (departments)
   const { data: branches = [] } = useQuery({
@@ -62,7 +62,7 @@ const AdminBranches = () => {
         name: form.name,
         name_en: form.name_en || null,
         code: form.code || null,
-        parent_department_id: form.parent_department_id || null,
+        parent_department_id: form.parent_department_id === "__none__" ? null : form.parent_department_id || null,
       };
       if (editingBranch) {
         const { error } = await supabase.from("departments").update(payload).eq("id", editingBranch.id);
@@ -77,7 +77,7 @@ const AdminBranches = () => {
       toast({ title: editingBranch ? t("admin.deptUpdated") : t("admin.deptCreated") });
       setBranchDialog(false);
       setEditingBranch(null);
-      setBranchForm({ name: "", name_en: "", code: "", parent_department_id: "" });
+      setBranchForm({ name: "", name_en: "", code: "", parent_department_id: "__none__" });
     },
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
@@ -125,7 +125,7 @@ const AdminBranches = () => {
       if (!name || !email) continue;
 
       // Determine branch: use column value or selected upload branch
-      let deptId = uploadBranch || null;
+      let deptId = uploadBranch === "__csv__" ? null : uploadBranch || null;
       if (branchIdx !== -1 && cols[branchIdx]) {
         const branchName = cols[branchIdx];
         const found = branches.find((b: any) => b.name === branchName || b.name_en === branchName || b.code === branchName);
@@ -183,7 +183,7 @@ const AdminBranches = () => {
 
   const openEditBranch = (b: any) => {
     setEditingBranch(b);
-    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "", parent_department_id: b.parent_department_id || "" });
+    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "", parent_department_id: b.parent_department_id || "__none__" });
     setBranchDialog(true);
   };
 
@@ -329,7 +329,7 @@ const AdminBranches = () => {
                     <SelectValue placeholder={t("branches.selectUploadBranch")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{t("branches.useCSVColumn")}</SelectItem>
+                    <SelectItem value="__csv__">{t("branches.useCSVColumn")}</SelectItem>
                     {branches.map((b: any) => (
                       <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                     ))}
@@ -379,7 +379,7 @@ const AdminBranches = () => {
               <Select value={branchForm.parent_department_id} onValueChange={v => setBranchForm(f => ({ ...f, parent_department_id: v }))}>
                 <SelectTrigger><SelectValue placeholder={t("admin.noParent")} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("admin.noParent")}</SelectItem>
+                  <SelectItem value="__none__">{t("admin.noParent")}</SelectItem>
                   {branches.filter((b: any) => b.id !== editingBranch?.id).map((b: any) => (
                     <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                   ))}
