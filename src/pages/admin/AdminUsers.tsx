@@ -175,11 +175,25 @@ const AdminUsers = () => {
 
   const openStaffEdit = (profile: any) => {
     const primaryRole = getPrimaryRole(profile.user_id);
+    const deptId = profile.department_id || "";
+    const dept = departments.find((d: any) => d.id === deptId);
+    let branchId = "__none__";
+    let departmentId = "__none__";
+    if (dept) {
+      if ((dept as any).parent_department_id) {
+        branchId = (dept as any).parent_department_id;
+        departmentId = dept.id;
+      } else {
+        branchId = dept.id;
+        departmentId = "__none__";
+      }
+    }
 
     setStaffEdit({
       userId: profile.user_id,
       name: profile.full_name || "-",
-      departmentId: profile.department_id || "__none__",
+      branchId,
+      departmentId,
       position: profile.position || "",
       role: primaryRole === "super_admin" ? "admin" : primaryRole,
       roleLocked: hasProtectedRole(profile.user_id) || profile.user_id === user?.id,
