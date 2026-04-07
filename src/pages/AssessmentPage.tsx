@@ -471,49 +471,21 @@ export default function AssessmentPage() {
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
 
-  // Submit
+  // Submit - use server-side grading to avoid exposing correct answers
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!currentAttemptId) return;
-      let totalScore = 0;
-      let totalPoints = 0;
-      const answerPayloads: any[] = [];
+      const answerPayloads = questions.map((q: any) => ({
+        question_id: q.id,
+        user_answer: answers[q.id] || "",
+      }));
 
-      for (const q of questions) {
-        const userAnswer = answers[q.id] || "";
-        let isCorrect = false;
-        let pointsEarned = 0;
-
-        if (q.question_type === "essay") {
-          isCorrect = false;
-          pointsEarned = 0;
-        } else {
-          isCorrect = userAnswer.trim().toLowerCase() === q.correct_answer.trim().toLowerCase();
-          pointsEarned = isCorrect ? q.points : 0;
-        }
-
-        totalPoints += q.points;
-        totalScore += pointsEarned;
-
-        answerPayloads.push({
-          attempt_id: currentAttemptId,
-          question_id: q.id,
-          user_answer: userAnswer || null,
-          is_correct: q.question_type === "essay" ? null : isCorrect,
-          points_earned: pointsEarned,
-        });
-      }
-
-      const { error: ansErr } = await supabase.from("assessment_answers").insert(answerPayloads);
-      if (ansErr) throw ansErr;
-
-      const { error: attErr } = await supabase.from("assessment_attempts").update({
-        score: totalScore,
-        total_points: totalPoints,
-        passed: totalScore >= (assessment?.passing_score || 0),
-        completed_at: new Date().toISOString(),
-      }).eq("id", currentAttemptId);
-      if (attErr) throw attErr;
+      const { data, error } = await supabase.rpc("submit_and_grade_assessment", {
+        p_attempt_id: currentAttemptId,
+        p_answers: answerPayloads,
+      });
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       setCurrentAttemptId(null);
@@ -522,6 +494,7 @@ export default function AssessmentPage() {
       setCurrentQuestionIndex(0);
       queryClient.invalidateQueries({ queryKey: ["assessment-attempts", assessmentId, user?.id] });
       queryClient.invalidateQueries({ queryKey: ["assessment-answers"] });
+      queryClient.invalidateQueries({ queryKey: ["assessment-questions-review", assessmentId] });
       toast({ title: t("assessment.submitted") });
     },
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
