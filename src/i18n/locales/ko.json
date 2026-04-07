@@ -971,5 +971,8 @@
     "uploadComplete": "업로드 완료",
     "uploadSuccess": "명 등록 성공",
     "uploadFailed": "명 실패"
+  },
+  "branch": {
+    "branchTitle": "소속 지점"
   }
 }
