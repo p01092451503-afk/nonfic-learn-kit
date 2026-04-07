@@ -20,7 +20,7 @@ const AdminSettings = () => {
   const [deptDialogOpen, setDeptDialogOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<any>(null);
   const [deleteDeptId, setDeleteDeptId] = useState<string | null>(null);
-  const [deptForm, setDeptForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "" });
+  const [deptForm, setDeptForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "", team_name: "" });
 
   const settingSections = [
     {
@@ -76,7 +76,7 @@ const AdminSettings = () => {
 
   const createDeptMutation = useMutation({
     mutationFn: async () => {
-      const payload: any = { name: deptForm.name, name_en: deptForm.name_en || null, code: deptForm.code || null };
+      const payload: any = { name: deptForm.name, name_en: deptForm.name_en || null, code: deptForm.code || null, team_name: deptForm.team_name || null };
       if (deptForm.parent_department_id) payload.parent_department_id = deptForm.parent_department_id;
 
       if (editingDept) {
@@ -91,7 +91,7 @@ const AdminSettings = () => {
       toast.success(editingDept ? t("admin.deptUpdated") : t("admin.deptCreated"));
       setDeptDialogOpen(false);
       setEditingDept(null);
-      setDeptForm({ name: "", name_en: "", code: "", parent_department_id: "" });
+      setDeptForm({ name: "", name_en: "", code: "", parent_department_id: "", team_name: "" });
       queryClient.invalidateQueries({ queryKey: ["departments-all"] });
     },
     onError: (err: any) => toast.error(err.message),
@@ -111,13 +111,13 @@ const AdminSettings = () => {
 
   const openEditDept = (dept: any) => {
     setEditingDept(dept);
-    setDeptForm({ name: dept.name, name_en: dept.name_en || "", code: dept.code || "", parent_department_id: dept.parent_department_id || "" });
+    setDeptForm({ name: dept.name, name_en: dept.name_en || "", code: dept.code || "", parent_department_id: dept.parent_department_id || "", team_name: dept.team_name || "" });
     setDeptDialogOpen(true);
   };
 
   const openAddDept = () => {
     setEditingDept(null);
-    setDeptForm({ name: "", name_en: "", code: "", parent_department_id: "" });
+    setDeptForm({ name: "", name_en: "", code: "", parent_department_id: "", team_name: "" });
     setDeptDialogOpen(true);
   };
 
