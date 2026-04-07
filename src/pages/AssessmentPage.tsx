@@ -593,7 +593,7 @@ export default function AssessmentPage() {
               <div className="flex items-center gap-3">
                 <Progress value={progressPercent} className="h-2 flex-1" />
                 <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">
-                  {currentQuestionIndex + 1} / {questions.length}
+                   {currentQuestionIndex + 1} / {rQuestions.length}
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="flex items-center gap-1 text-xs font-semibold bg-destructive/15 text-destructive rounded-full px-2 py-0.5">
@@ -611,11 +611,11 @@ export default function AssessmentPage() {
                 <QuestionReview
                   question={currentQ}
                   index={currentQuestionIndex}
-                  total={questions.length}
+                  total={rQuestions.length}
                   userAnswer={ansData?.user_answer ?? null}
                   isCorrect={ansData?.is_correct ?? null}
                   isEn={!!isEn}
-                  onNext={() => setCurrentQuestionIndex(i => Math.min(i + 1, questions.length - 1))}
+                  onNext={() => setCurrentQuestionIndex(i => Math.min(i + 1, rQuestions.length - 1))}
                   onPrev={() => setCurrentQuestionIndex(i => Math.max(i - 1, 0))}
                   t={t}
                 />
