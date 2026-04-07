@@ -61,18 +61,6 @@ const AdminUsers = () => {
     },
   });
 
-  const roleMap = new Map<string, string>();
-  roles.forEach((r: any) => roleMap.set(r.user_id, r.role));
-
-  const filtered = profiles.filter((u: any) => {
-    const q = search.toLowerCase();
-    const matchesSearch = (u.full_name || "").toLowerCase().includes(q) || (u.department || "").toLowerCase().includes(q);
-    const matchesDept = deptFilter === "all" || u.department_id === deptFilter;
-    return matchesSearch && matchesDept;
-  });
-
-  const teacherCount = roles.filter((r: any) => r.role === "teacher").length;
-
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async () => {
