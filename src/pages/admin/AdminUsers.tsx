@@ -17,6 +17,7 @@ const AdminUsers = () => {
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ userId: string; name: string } | null>(null);
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "student", departmentId: "" });
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
