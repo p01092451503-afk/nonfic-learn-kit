@@ -1,11 +1,13 @@
+import { useState } from "react";
 import {
   Users, BookOpen, TrendingUp, Activity, ArrowRight, Shield,
-  BarChart3, UserPlus, AlertTriangle, GraduationCap, Clock,
+  BarChart3, UserPlus, AlertTriangle, GraduationCap, Clock, Building2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +17,7 @@ const AdminDashboard = () => {
   const { profile } = useUser();
   const { t, i18n } = useTranslation();
   const displayName = profile?.full_name || t("roles.adminLabel");
+  const [branchFilter, setBranchFilter] = useState<string>("all");
 
   const { data: profileCount = 0 } = useQuery({
     queryKey: ["admin-dash-profile-count"],
@@ -37,16 +40,25 @@ const AdminDashboard = () => {
   const { data: enrollments = [] } = useQuery({
     queryKey: ["admin-dash-enrollments"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("enrollments").select("course_id, progress, completed_at");
+      const { data, error } = await supabase.from("enrollments").select("course_id, user_id, progress, completed_at");
       if (error) throw error;
       return data;
     },
   });
 
-  const { data: recentProfiles = [] } = useQuery({
-    queryKey: ["admin-dash-recent-profiles"],
+  const { data: branches = [] } = useQuery({
+    queryKey: ["admin-dash-branches"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("user_id, full_name, department, created_at").order("created_at", { ascending: false }).limit(5);
+      const { data, error } = await supabase.from("departments").select("id, name, name_en").eq("is_active", true).order("display_order").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: allProfiles = [] } = useQuery({
+    queryKey: ["admin-dash-all-profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("user_id, full_name, department_id, created_at").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -63,16 +75,33 @@ const AdminDashboard = () => {
     },
   });
 
+  // Filter profiles by branch
+  const branchUserIds = branchFilter === "all"
+    ? null
+    : new Set(allProfiles.filter((p: any) => p.department_id === branchFilter).map((p: any) => p.user_id));
+
+  const filteredEnrollments = branchUserIds
+    ? enrollments.filter((e: any) => branchUserIds.has(e.user_id))
+    : enrollments;
+
+  const recentProfiles = (branchFilter === "all"
+    ? allProfiles
+    : allProfiles.filter((p: any) => p.department_id === branchFilter)
+  ).slice(0, 5);
+
+  const filteredProfileCount = branchFilter === "all" ? profileCount : (branchUserIds?.size || 0);
+
+
   const activeCourses = courses.filter((c: any) => c.status === "published").length;
   const draftCourses = courses.filter((c: any) => c.status === "draft").length;
   const pendingCourses = courses.filter((c: any) => c.status !== "published" && c.status !== "draft").length;
-  const avgCompletion = enrollments.length > 0
-    ? Math.round(enrollments.reduce((s, e) => s + (Number(e.progress) || 0), 0) / enrollments.length)
+  const avgCompletion = filteredEnrollments.length > 0
+    ? Math.round(filteredEnrollments.reduce((s: number, e: any) => s + (Number(e.progress) || 0), 0) / filteredEnrollments.length)
     : 0;
 
   const enrollmentCountMap = new Map<string, { count: number; avgProgress: number }>();
   const grouped: Record<string, { total: number; progress: number }> = {};
-  enrollments.forEach((e) => {
+  filteredEnrollments.forEach((e: any) => {
     if (!grouped[e.course_id]) grouped[e.course_id] = { total: 0, progress: 0 };
     grouped[e.course_id].total++;
     grouped[e.course_id].progress += Number(e.progress) || 0;
@@ -92,9 +121,9 @@ const AdminDashboard = () => {
   const overdueMandatory = mandatoryCourses.filter((c: any) => c.deadline && new Date(c.deadline) < new Date());
 
   const stats = [
-    { label: t("admin.totalUsers"), value: String(profileCount), sub: t("admin.studentCount2", { count: roleCounts.student }), icon: Users },
+    { label: t("admin.totalUsers"), value: String(filteredProfileCount), sub: t("admin.studentCount2", { count: roleCounts.student }), icon: Users },
     { label: t("admin.activeCourses"), value: String(activeCourses), sub: t("admin.draftCount", { count: draftCourses }), icon: BookOpen },
-    { label: t("admin.totalEnrollments"), value: String(enrollments.length), sub: t("admin.enrolledLabel"), icon: Activity },
+    { label: t("admin.totalEnrollments"), value: String(filteredEnrollments.length), sub: t("admin.enrolledLabel"), icon: Activity },
     { label: t("admin.pendingReview"), value: String(pendingCourses), sub: t("admin.reviewNeeded"), icon: Clock },
   ];
 
@@ -116,9 +145,23 @@ const AdminDashboard = () => {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.platformOverview")}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Admin</span>
+          <div className="flex items-center gap-3">
+            <Select value={branchFilter} onValueChange={setBranchFilter}>
+              <SelectTrigger className="w-44 h-9 text-xs">
+                <Building2 className="h-3.5 w-3.5 mr-1" />
+                <SelectValue placeholder={t("branches.allBranches")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("branches.allBranches")}</SelectItem>
+                {branches.map((b: any) => (
+                  <SelectItem key={b.id} value={b.id}>{i18n.language?.startsWith("en") ? b.name_en || b.name : b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Admin</span>
+            </div>
           </div>
         </div>
 

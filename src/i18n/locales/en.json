@@ -74,7 +74,9 @@
     "namePlaceholder": "John Doe",
     "heroTitle": "Learning is\nthe most beautiful\nform of growth",
     "heroSubtitle": "Grow your expertise on the NONFICTION internal education platform.",
-    "platformFooter": "NONFICTION Internal Education Platform"
+    "platformFooter": "NONFICTION Internal Education Platform",
+    "branch": "Branch",
+    "selectBranch": "Select your branch"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -92,7 +94,8 @@
     "trafficMonitoring": "Traffic Monitor",
     "courseCatalog": "Browse Courses",
     "myPage": "My Page",
-    "enrollmentManagement": "Enrollments"
+    "enrollmentManagement": "Enrollments",
+    "branchManagement": "Branches"
   },
   "roles": {
     "student": "Student",
@@ -917,5 +920,30 @@
     "assessmentAvailableDesc": "You've met the progress threshold and can now take the assessment.",
     "progressRequired": "You need {{threshold}}%+ progress to take this assessment.",
     "currentProgress": "Current progress: {{progress}}%"
+  },
+  "branches": {
+    "title": "Branch Management",
+    "subtitle": "Manage HQ and branch offices, assign staff",
+    "branchList": "Branches",
+    "staffManagement": "Staff",
+    "bulkUpload": "Bulk Upload",
+    "addBranch": "Add Branch",
+    "editBranch": "Edit Branch",
+    "branchName": "Branch Name",
+    "branchNameEn": "Branch Name (EN)",
+    "parentBranch": "Parent Branch",
+    "staffCount": "Staff",
+    "allBranches": "All Branches",
+    "branch": "Branch",
+    "bulkUploadTitle": "Bulk Staff Registration (CSV)",
+    "bulkUploadDesc": "Upload a CSV to register staff for HQ and branches at once. Name and email are required.",
+    "selectUploadBranch": "Select target branch",
+    "useCSVColumn": "Use CSV branch column",
+    "downloadTemplate": "Download Template",
+    "uploadCSV": "Upload CSV",
+    "csvFormat": "CSV Format Guide",
+    "uploadComplete": "Upload Complete",
+    "uploadSuccess": " registered",
+    "uploadFailed": " failed"
   }
 }

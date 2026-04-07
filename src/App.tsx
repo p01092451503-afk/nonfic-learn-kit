@@ -28,6 +28,7 @@ import AdminLearning from "./pages/admin/AdminLearning";
 import AdminAttendance from "./pages/admin/AdminAttendance";
 import AdminCompletion from "./pages/admin/AdminCompletion";
 import AdminTraffic from "./pages/admin/AdminTraffic";
+import AdminBranches from "./pages/admin/AdminBranches";
 import DeptAdminDashboard from "./pages/DeptAdminDashboard";
 import CourseDetail from "./pages/CourseDetail";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
@@ -81,6 +82,7 @@ const App = () => (
             <Route path="/admin/attendance" element={<ProtectedRoute><AdminAttendance /></ProtectedRoute>} />
             <Route path="/admin/completion" element={<ProtectedRoute><AdminCompletion /></ProtectedRoute>} />
             <Route path="/admin/traffic" element={<ProtectedRoute><AdminTraffic /></ProtectedRoute>} />
+            <Route path="/admin/branches" element={<ProtectedRoute><AdminBranches /></ProtectedRoute>} />
 
             {/* Dept Admin */}
             <Route path="/dept-admin" element={<ProtectedRoute><DeptAdminDashboard /></ProtectedRoute>} />

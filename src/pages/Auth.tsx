@@ -29,9 +29,17 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [isResetting, setIsResetting] = useState(false);
+  const [branches, setBranches] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from("departments").select("id, name, name_en, is_active").eq("is_active", true).order("display_order").order("name").then(({ data }) => {
+      if (data) setBranches(data);
+    });
+  }, []);
 
   useEffect(() => {
     const savedEmail = localStorage.getItem(SAVED_EMAIL_KEY);
@@ -50,7 +58,7 @@ const Auth = () => {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { name: fullName } },
+          options: { data: { name: fullName, department_id: selectedBranch || undefined } },
         });
         if (error) throw error;
         toast({ title: t("auth.signUpComplete"), description: t("auth.checkEmail") });
@@ -118,6 +126,17 @@ const Auth = () => {
                 <div className="space-y-2">
                   <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("auth.name")}</label>
                   <Input type="text" placeholder={t("auth.namePlaceholder")} value={fullName} onChange={(e) => setFullName(e.target.value)} className="h-12 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20" required />
+                </div>
+              )}
+              {isSignUp && branches.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("auth.branch")}</label>
+                  <select value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value)} className="flex h-12 w-full rounded-xl border border-border bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/20">
+                    <option value="">{t("auth.selectBranch")}</option>
+                    {branches.map((b: any) => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
                 </div>
               )}
               <div className="space-y-2">
