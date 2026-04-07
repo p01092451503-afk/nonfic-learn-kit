@@ -46,10 +46,19 @@ const AdminDashboard = () => {
     },
   });
 
-  const { data: recentProfiles = [] } = useQuery({
-    queryKey: ["admin-dash-recent-profiles"],
+  const { data: branches = [] } = useQuery({
+    queryKey: ["admin-dash-branches"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("user_id, full_name, department, created_at").order("created_at", { ascending: false }).limit(5);
+      const { data, error } = await supabase.from("departments").select("id, name, name_en").eq("is_active", true).order("display_order").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: allProfiles = [] } = useQuery({
+    queryKey: ["admin-dash-all-profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("user_id, full_name, department_id, created_at").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -65,6 +74,23 @@ const AdminDashboard = () => {
       return counts;
     },
   });
+
+  // Filter profiles by branch
+  const branchUserIds = branchFilter === "all"
+    ? null
+    : new Set(allProfiles.filter((p: any) => p.department_id === branchFilter).map((p: any) => p.user_id));
+
+  const filteredEnrollments = branchUserIds
+    ? enrollments.filter((e: any) => branchUserIds.has(e.user_id))
+    : enrollments;
+
+  const recentProfiles = (branchFilter === "all"
+    ? allProfiles
+    : allProfiles.filter((p: any) => p.department_id === branchFilter)
+  ).slice(0, 5);
+
+  const filteredProfileCount = branchFilter === "all" ? profileCount : (branchUserIds?.size || 0);
+
 
   const activeCourses = courses.filter((c: any) => c.status === "published").length;
   const draftCourses = courses.filter((c: any) => c.status === "draft").length;
