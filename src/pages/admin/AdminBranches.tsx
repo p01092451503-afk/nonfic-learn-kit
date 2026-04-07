@@ -212,6 +212,36 @@ const AdminBranches = () => {
 
   const branchStaffCount = (branchId: string) => allProfiles.filter((p: any) => p.department_id === branchId).length;
 
+  const openEditStaff = (p: any) => {
+    setEditingStaff(p);
+    const role = userRoles.find((r: any) => r.user_id === p.user_id);
+    setStaffForm({
+      department_id: p.department_id || "__none__",
+      position: p.position || "",
+      role: role?.role || "student",
+    });
+    setEditStaffDialog(true);
+  };
+
+  const updateStaffMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingStaff) return;
+      const deptId = staffForm.department_id === "__none__" ? null : staffForm.department_id;
+      const { error: pErr } = await supabase.from("profiles").update({ department_id: deptId, position: staffForm.position || null }).eq("user_id", editingStaff.user_id);
+      if (pErr) throw pErr;
+      const { error: rErr } = await supabase.from("user_roles").upsert({ user_id: editingStaff.user_id, role: staffForm.role as any });
+      if (rErr) throw rErr;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-branch-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-branch-roles"] });
+      toast({ title: t("admin.staffUpdated") });
+      setEditStaffDialog(false);
+      setEditingStaff(null);
+    },
+    onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
+  });
+
   return (
     <DashboardLayout role="admin">
       <div className="space-y-6">
