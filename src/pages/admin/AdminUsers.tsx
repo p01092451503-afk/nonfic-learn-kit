@@ -357,6 +357,33 @@ const AdminUsers = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Position Edit Dialog */}
+      <Dialog open={!!positionEdit} onOpenChange={(open) => !open && setPositionEdit(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("admin.editPosition")}: {positionEdit?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>{t("admin.positionColumn")}</Label>
+              <Input
+                className="mt-1"
+                value={positionEdit?.position || ""}
+                onChange={(e) => setPositionEdit(prev => prev ? { ...prev, position: e.target.value } : null)}
+                placeholder={t("admin.positionColumn")}
+              />
+            </div>
+            <Button
+              className="w-full rounded-xl"
+              onClick={() => positionEdit && changePositionMutation.mutate({ userId: positionEdit.userId, position: positionEdit.position })}
+              disabled={changePositionMutation.isPending}
+            >
+              {changePositionMutation.isPending ? t("common.processing") : t("common.save")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
