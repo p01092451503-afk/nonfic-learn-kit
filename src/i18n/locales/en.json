@@ -94,7 +94,8 @@
     "trafficMonitoring": "Traffic Monitor",
     "courseCatalog": "Browse Courses",
     "myPage": "My Page",
-    "enrollmentManagement": "Enrollments"
+    "enrollmentManagement": "Enrollments",
+    "branchManagement": "Branches"
   },
   "roles": {
     "student": "Student",

@@ -94,7 +94,8 @@
     "trafficMonitoring": "트래픽 모니터링",
     "courseCatalog": "강좌 탐색",
     "myPage": "마이페이지",
-    "enrollmentManagement": "수강 승인"
+    "enrollmentManagement": "수강 승인",
+    "branchManagement": "지점 관리"
   },
   "roles": {
     "student": "Student",
