@@ -202,7 +202,7 @@ const AdminUsers = () => {
 
   const updateStaffMutation = useMutation({
     mutationFn: async (draft: StaffEditDraft) => {
-      const departmentId = draft.departmentId === "__none__" ? null : draft.departmentId;
+      const departmentId = draft.departmentId !== "__none__" ? draft.departmentId : (draft.branchId !== "__none__" ? draft.branchId : null);
       const position = draft.position.trim();
 
       const { error: profileError } = await supabase
