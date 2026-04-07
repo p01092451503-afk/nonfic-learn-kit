@@ -512,10 +512,6 @@ const AdminBranches = () => {
               <label className="text-sm font-medium">{t("branches.teamNameEn")}</label>
               <Input value={teamForm.name_en} onChange={e => setTeamForm(f => ({ ...f, name_en: e.target.value }))} placeholder="e.g. Marketing Team" />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("admin.deptCode")}</label>
-              <Input value={teamForm.code} onChange={e => setTeamForm(f => ({ ...f, code: e.target.value }))} placeholder="MKT, EDU" />
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setTeamDialog(false)}>{t("common.cancel")}</Button>
