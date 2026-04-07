@@ -145,9 +145,23 @@ const AdminDashboard = () => {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.platformOverview")}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Admin</span>
+          <div className="flex items-center gap-3">
+            <Select value={branchFilter} onValueChange={setBranchFilter}>
+              <SelectTrigger className="w-44 h-9 text-xs">
+                <Building2 className="h-3.5 w-3.5 mr-1" />
+                <SelectValue placeholder={t("branches.allBranches")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("branches.allBranches")}</SelectItem>
+                {branches.map((b: any) => (
+                  <SelectItem key={b.id} value={b.id}>{i18n.language?.startsWith("en") ? b.name_en || b.name : b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Admin</span>
+            </div>
           </div>
         </div>
 
