@@ -330,7 +330,7 @@ const AdminUsers = () => {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-foreground">{profile.full_name || "-"}</p>
-                          <p className="text-xs text-muted-foreground">{profile.employee_id || "-"}</p>
+                          <p className="text-xs text-muted-foreground">{profile.email || profile.employee_id || "-"}</p>
                         </div>
                       </div>
                     </td>
