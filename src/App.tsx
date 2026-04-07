@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserProvider } from "@/contexts/UserContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRoute from "@/components/AdminRoute";
 import RoleBasedRedirect from "@/components/RoleBasedRedirect";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
