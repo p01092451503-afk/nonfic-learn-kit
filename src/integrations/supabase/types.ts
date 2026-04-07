@@ -895,6 +895,7 @@ export type Database = {
           created_at: string | null
           department: string | null
           department_id: string | null
+          email: string | null
           employee_id: string | null
           full_name: string | null
           phone_number: string | null
@@ -909,6 +910,7 @@ export type Database = {
           created_at?: string | null
           department?: string | null
           department_id?: string | null
+          email?: string | null
           employee_id?: string | null
           full_name?: string | null
           phone_number?: string | null
@@ -923,6 +925,7 @@ export type Database = {
           created_at?: string | null
           department?: string | null
           department_id?: string | null
+          email?: string | null
           employee_id?: string | null
           full_name?: string | null
           phone_number?: string | null
