@@ -18,6 +18,7 @@ const AdminUsers = () => {
   const [deptFilter, setDeptFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ userId: string; name: string } | null>(null);
+  const [positionEdit, setPositionEdit] = useState<{ userId: string; name: string; position: string } | null>(null);
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "student", departmentId: "" });
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
@@ -118,6 +119,19 @@ const AdminUsers = () => {
     onSuccess: () => {
       toast.success(t("admin.deptChanged"));
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+    },
+  });
+
+  // Change position mutation
+  const changePositionMutation = useMutation({
+    mutationFn: async ({ userId, position }: { userId: string; position: string }) => {
+      const { error } = await supabase.from("profiles").update({ position: position || null }).eq("user_id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(t("admin.positionChanged"));
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      setPositionEdit(null);
     },
   });
 
