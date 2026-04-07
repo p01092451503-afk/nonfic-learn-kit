@@ -173,6 +173,7 @@ const AdminUsers = () => {
     const q = search.toLowerCase().trim();
     const searchableValues = [
       profile.full_name || "",
+      profile.email || "",
       profile.department || "",
       profile.position || "",
       getDeptName(profile.department_id),
