@@ -110,16 +110,10 @@ const AdminBranches = () => {
   // ── Team CRUD ──
   const saveTeamMutation = useMutation({
     mutationFn: async () => {
-      if (teamForm.code) {
-        const existing = allDepts.find((d: any) => d.code === teamForm.code && d.id !== editingTeam?.id);
-        if (existing) {
-          throw new Error(`팀 코드 "${teamForm.code}"는 이미 "${existing.name}"에서 사용 중입니다.`);
-        }
-      }
       const payload: any = {
         name: teamForm.name,
         name_en: teamForm.name_en || null,
-        code: teamForm.code || null,
+        code: null,
         parent_department_id: teamForm.parent_department_id || null,
       };
       if (editingTeam) {
@@ -348,7 +342,6 @@ const AdminBranches = () => {
                   <TableRow>
                     <TableHead>{t("branches.teamName")}</TableHead>
                     <TableHead>{t("branches.teamNameEn")}</TableHead>
-                    <TableHead>{t("admin.deptCode")}</TableHead>
                     <TableHead>{t("branches.belongsToBranch")}</TableHead>
                     <TableHead className="text-center">{t("branches.staffCount")}</TableHead>
                     <TableHead className="text-right">{t("common.manage")}</TableHead>
@@ -356,12 +349,12 @@ const AdminBranches = () => {
                 </TableHeader>
                 <TableBody>
                   {teams.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">{t("branches.noTeams")}</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">{t("branches.noTeams")}</TableCell></TableRow>
                   ) : teams.map((tm: any) => (
                     <TableRow key={tm.id}>
                       <TableCell className="font-medium">{tm.name}</TableCell>
                       <TableCell className="text-muted-foreground">{tm.name_en || "-"}</TableCell>
-                      <TableCell className="text-muted-foreground">{tm.code || "-"}</TableCell>
+                      
                       <TableCell>{getBranchName(tm.parent_department_id)}</TableCell>
                       <TableCell className="text-center">
                         <Badge variant="secondary"><Users className="h-3 w-3 mr-1" />{deptStaffCount(tm.id)}</Badge>
@@ -511,10 +504,6 @@ const AdminBranches = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("branches.teamNameEn")}</label>
               <Input value={teamForm.name_en} onChange={e => setTeamForm(f => ({ ...f, name_en: e.target.value }))} placeholder="e.g. Marketing Team" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("admin.deptCode")}</label>
-              <Input value={teamForm.code} onChange={e => setTeamForm(f => ({ ...f, code: e.target.value }))} placeholder="MKT, EDU" />
             </div>
           </div>
           <DialogFooter>
