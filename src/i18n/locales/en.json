@@ -74,7 +74,9 @@
     "namePlaceholder": "John Doe",
     "heroTitle": "Learning is\nthe most beautiful\nform of growth",
     "heroSubtitle": "Grow your expertise on the NONFICTION internal education platform.",
-    "platformFooter": "NONFICTION Internal Education Platform"
+    "platformFooter": "NONFICTION Internal Education Platform",
+    "branch": "Branch",
+    "selectBranch": "Select your branch"
   },
   "nav": {
     "dashboard": "Dashboard",

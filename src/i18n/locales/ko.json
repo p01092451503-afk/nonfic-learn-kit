@@ -74,7 +74,9 @@
     "namePlaceholder": "홍길동",
     "heroTitle": "배움은\n가장 아름다운\n성장입니다",
     "heroSubtitle": "NONFICTION 사내교육 플랫폼에서 당신의 전문성을 키워보세요.",
-    "platformFooter": "NONFICTION Internal Education Platform"
+    "platformFooter": "NONFICTION Internal Education Platform",
+    "branch": "소속 지점",
+    "selectBranch": "소속 지점을 선택하세요"
   },
   "nav": {
     "dashboard": "대시보드",
