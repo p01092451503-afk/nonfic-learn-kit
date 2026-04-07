@@ -121,6 +121,24 @@ const AdminUsers = () => {
     },
   });
 
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+    },
+    onSuccess: () => {
+      toast.success(t("admin.userDeleted"));
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
+      setDeleteTarget(null);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
   const getDeptName = (deptId: string | null) => {
     if (!deptId) return "-";
     const dept = departments.find((d: any) => d.id === deptId);
