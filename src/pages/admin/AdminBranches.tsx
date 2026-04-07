@@ -25,6 +25,9 @@ const AdminBranches = () => {
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [staffSearch, setStaffSearch] = useState("");
   const [uploadBranch, setUploadBranch] = useState<string>("__csv__");
+  const [editStaffDialog, setEditStaffDialog] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<any>(null);
+  const [staffForm, setStaffForm] = useState({ department_id: "__none__", position: "", role: "student" });
 
   // Fetch branches (departments)
   const { data: branches = [] } = useQuery({
