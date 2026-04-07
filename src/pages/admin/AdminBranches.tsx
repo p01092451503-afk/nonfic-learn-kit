@@ -329,7 +329,7 @@ const AdminBranches = () => {
                     <SelectValue placeholder={t("branches.selectUploadBranch")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{t("branches.useCSVColumn")}</SelectItem>
+                    <SelectItem value="__csv__">{t("branches.useCSVColumn")}</SelectItem>
                     {branches.map((b: any) => (
                       <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                     ))}
@@ -379,7 +379,7 @@ const AdminBranches = () => {
               <Select value={branchForm.parent_department_id} onValueChange={v => setBranchForm(f => ({ ...f, parent_department_id: v }))}>
                 <SelectTrigger><SelectValue placeholder={t("admin.noParent")} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("admin.noParent")}</SelectItem>
+                  <SelectItem value="__none__">{t("admin.noParent")}</SelectItem>
                   {branches.filter((b: any) => b.id !== editingBranch?.id).map((b: any) => (
                     <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                   ))}
