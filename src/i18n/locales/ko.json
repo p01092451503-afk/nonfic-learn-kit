@@ -530,6 +530,8 @@
     "userCreatedDesc": "\"{{name}}\"님이 등록되었습니다.",
     "roleChanged": "역할 변경 완료",
     "deptChanged": "부서 변경 완료",
+    "staffUpdated": "직원 정보가 수정되었습니다",
+    "editStaff": "직원 정보 수정",
     "allDepts": "전체 부서",
     "emailColumn": "이메일",
     "platformOverview": "플랫폼 전체를 관리하고 모니터링하세요",

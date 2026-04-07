@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Building2, Plus, Upload, Download, Pencil, Trash2, Users, Search } from "lucide-react";
+import { Building2, Plus, Upload, Download, Pencil, Trash2, Users, Search, MoreVertical } from "lucide-react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,9 @@ const AdminBranches = () => {
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [staffSearch, setStaffSearch] = useState("");
   const [uploadBranch, setUploadBranch] = useState<string>("__csv__");
+  const [editStaffDialog, setEditStaffDialog] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<any>(null);
+  const [staffForm, setStaffForm] = useState({ department_id: "__none__", position: "", role: "student" });
 
   // Fetch branches (departments)
   const { data: branches = [] } = useQuery({
@@ -209,6 +212,36 @@ const AdminBranches = () => {
 
   const branchStaffCount = (branchId: string) => allProfiles.filter((p: any) => p.department_id === branchId).length;
 
+  const openEditStaff = (p: any) => {
+    setEditingStaff(p);
+    const role = userRoles.find((r: any) => r.user_id === p.user_id);
+    setStaffForm({
+      department_id: p.department_id || "__none__",
+      position: p.position || "",
+      role: role?.role || "student",
+    });
+    setEditStaffDialog(true);
+  };
+
+  const updateStaffMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingStaff) return;
+      const deptId = staffForm.department_id === "__none__" ? null : staffForm.department_id;
+      const { error: pErr } = await supabase.from("profiles").update({ department_id: deptId, position: staffForm.position || null }).eq("user_id", editingStaff.user_id);
+      if (pErr) throw pErr;
+      const { error: rErr } = await supabase.from("user_roles").upsert({ user_id: editingStaff.user_id, role: staffForm.role as any });
+      if (rErr) throw rErr;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-branch-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-branch-roles"] });
+      toast({ title: t("admin.staffUpdated") });
+      setEditStaffDialog(false);
+      setEditingStaff(null);
+    },
+    onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
+  });
+
   return (
     <DashboardLayout role="admin">
       <div className="space-y-6">
@@ -294,24 +327,30 @@ const AdminBranches = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("admin.nameColumn")}</TableHead>
-                    <TableHead>{t("branches.branch")}</TableHead>
-                    <TableHead>{t("admin.positionColumn")}</TableHead>
-                    <TableHead>{t("admin.roleColumn")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProfiles.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">{t("admin.noUsers")}</TableCell></TableRow>
-                  ) : filteredProfiles.map((p: any) => (
-                    <TableRow key={p.user_id}>
-                      <TableCell className="font-medium">{p.full_name || "-"}</TableCell>
-                      <TableCell>{getBranchName(p.department_id)}</TableCell>
-                      <TableCell className="text-muted-foreground">{p.position || "-"}</TableCell>
-                      <TableCell>{getRoleBadge(p.user_id)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
+                     <TableHead>{t("admin.nameColumn")}</TableHead>
+                     <TableHead>{t("branches.branch")}</TableHead>
+                     <TableHead>{t("admin.positionColumn")}</TableHead>
+                     <TableHead>{t("admin.roleColumn")}</TableHead>
+                     <TableHead className="text-right">{t("common.manage")}</TableHead>
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                   {filteredProfiles.length === 0 ? (
+                     <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">{t("admin.noUsers")}</TableCell></TableRow>
+                   ) : filteredProfiles.map((p: any) => (
+                     <TableRow key={p.user_id}>
+                       <TableCell className="font-medium">{p.full_name || "-"}</TableCell>
+                       <TableCell>{getBranchName(p.department_id)}</TableCell>
+                       <TableCell className="text-muted-foreground">{p.position || "-"}</TableCell>
+                       <TableCell>{getRoleBadge(p.user_id)}</TableCell>
+                       <TableCell className="text-right">
+                         <Button variant="ghost" size="sm" onClick={() => openEditStaff(p)}>
+                           <Pencil className="h-3.5 w-3.5" />
+                         </Button>
+                       </TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
               </Table>
             </div>
           </TabsContent>
@@ -391,6 +430,50 @@ const AdminBranches = () => {
             <Button variant="outline" onClick={() => setBranchDialog(false)}>{t("common.cancel")}</Button>
             <Button onClick={() => saveBranchMutation.mutate(branchForm)} disabled={!branchForm.name}>
               {editingBranch ? t("common.save") : t("common.add")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Staff Dialog */}
+      <Dialog open={editStaffDialog} onOpenChange={setEditStaffDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("admin.editStaff")} - {editingStaff?.full_name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("branches.branch")}</label>
+              <Select value={staffForm.department_id} onValueChange={v => setStaffForm(f => ({ ...f, department_id: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">-</SelectItem>
+                  {branches.map((b: any) => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("admin.positionColumn")}</label>
+              <Input value={staffForm.position} onChange={e => setStaffForm(f => ({ ...f, position: e.target.value }))} placeholder={t("admin.positionColumn")} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("admin.roleColumn")}</label>
+              <Select value={staffForm.role} onValueChange={v => setStaffForm(f => ({ ...f, role: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">{t("roles.studentLabel")}</SelectItem>
+                  <SelectItem value="teacher">{t("roles.teacherLabel")}</SelectItem>
+                  <SelectItem value="admin">{t("roles.adminLabel")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditStaffDialog(false)}>{t("common.cancel")}</Button>
+            <Button onClick={() => updateStaffMutation.mutate()} disabled={updateStaffMutation.isPending}>
+              {t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
