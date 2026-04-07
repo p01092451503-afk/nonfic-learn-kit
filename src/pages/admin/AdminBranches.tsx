@@ -78,6 +78,12 @@ const AdminBranches = () => {
   // ── Branch CRUD ──
   const saveBranchMutation = useMutation({
     mutationFn: async () => {
+      if (branchForm.code) {
+        const existing = allDepts.find((d: any) => d.code === branchForm.code && d.id !== editingBranch?.id);
+        if (existing) {
+          throw new Error(`지점 코드 "${branchForm.code}"는 이미 "${existing.name}"에서 사용 중입니다.`);
+        }
+      }
       const payload: any = {
         name: branchForm.name,
         name_en: branchForm.name_en || null,
@@ -104,6 +110,12 @@ const AdminBranches = () => {
   // ── Team CRUD ──
   const saveTeamMutation = useMutation({
     mutationFn: async () => {
+      if (teamForm.code) {
+        const existing = allDepts.find((d: any) => d.code === teamForm.code && d.id !== editingTeam?.id);
+        if (existing) {
+          throw new Error(`팀 코드 "${teamForm.code}"는 이미 "${existing.name}"에서 사용 중입니다.`);
+        }
+      }
       const payload: any = {
         name: teamForm.name,
         name_en: teamForm.name_en || null,
