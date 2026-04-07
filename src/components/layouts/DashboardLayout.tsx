@@ -61,13 +61,13 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const adminNav: NavItem[] = [
     { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard },
     { label: t("nav.userManagement"), href: "/admin/users", icon: Users },
+    { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2 },
     { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen },
     { label: t("nav.enrollmentManagement"), href: "/admin/enrollments", icon: ClipboardCheck },
     { label: t("nav.learningManagement"), href: "/admin/learning", icon: GraduationCap },
     { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
     { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy },
     { label: t("nav.trafficMonitoring", "트래픽 모니터링"), href: "/admin/traffic", icon: Activity },
-    { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2 },
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings },
   ];
 
