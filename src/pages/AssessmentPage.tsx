@@ -337,19 +337,50 @@ export default function AssessmentPage() {
     enabled: !!assessmentId,
   });
 
-  // Fetch questions
+  const isTeacherOrAdmin = primaryRole === "admin" || primaryRole === "teacher";
+
+  // Fetch questions - students use secure RPC, teachers/admins use direct query
   const { data: rawQuestions = [] } = useQuery({
-    queryKey: ["assessment-questions-take", assessmentId],
+    queryKey: ["assessment-questions-take", assessmentId, isTeacherOrAdmin, !!latestCompleted],
     queryFn: async () => {
+      if (isTeacherOrAdmin) {
+        // Teachers/admins can directly query
+        const { data, error } = await supabase
+          .from("assessment_questions")
+          .select("*")
+          .eq("assessment_id", assessmentId!)
+          .order("order_index", { ascending: true });
+        if (error) throw error;
+        return data;
+      }
+      // Students: use secure RPC function (no correct_answer/explanation during taking)
       const { data, error } = await supabase
-        .from("assessment_questions")
-        .select("*")
-        .eq("assessment_id", assessmentId!)
-        .order("order_index", { ascending: true });
+        .rpc("get_assessment_questions_for_student", { p_assessment_id: assessmentId! });
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!assessmentId,
+  });
+
+  // For review mode: fetch questions WITH answers (only available after completing)
+  const { data: reviewQuestions = [] } = useQuery({
+    queryKey: ["assessment-questions-review", assessmentId],
+    queryFn: async () => {
+      if (isTeacherOrAdmin) {
+        const { data, error } = await supabase
+          .from("assessment_questions")
+          .select("*")
+          .eq("assessment_id", assessmentId!)
+          .order("order_index", { ascending: true });
+        if (error) throw error;
+        return data;
+      }
+      const { data, error } = await supabase
+        .rpc("get_assessment_questions_with_answers", { p_assessment_id: assessmentId! });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!assessmentId && (isTeacherOrAdmin || !!latestCompleted),
   });
 
   const questions = useMemo(() => {
