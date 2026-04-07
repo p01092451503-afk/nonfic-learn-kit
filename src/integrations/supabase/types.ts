@@ -1174,6 +1174,34 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      get_assessment_questions_for_student: {
+        Args: { p_assessment_id: string }
+        Returns: {
+          assessment_id: string
+          hint: string
+          id: string
+          options: Json
+          order_index: number
+          points: number
+          question_text: string
+          question_type: Database["public"]["Enums"]["question_type"]
+        }[]
+      }
+      get_assessment_questions_with_answers: {
+        Args: { p_assessment_id: string }
+        Returns: {
+          assessment_id: string
+          correct_answer: string
+          explanation: string
+          hint: string
+          id: string
+          options: Json
+          order_index: number
+          points: number
+          question_text: string
+          question_type: Database["public"]["Enums"]["question_type"]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
