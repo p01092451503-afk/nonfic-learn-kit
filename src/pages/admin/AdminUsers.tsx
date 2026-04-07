@@ -1,30 +1,35 @@
-import { Users, Search, Filter, UserPlus, MoreVertical, Trash2 } from "lucide-react";
+import { Users, Search, UserPlus, Trash2, Pencil } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import StaffEditDialog, { type StaffEditDraft, type StaffRole } from "@/components/admin/StaffEditDialog";
+import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+
+const ROLE_PRIORITY = ["super_admin", "admin", "teacher", "student"] as const;
 
 const AdminUsers = () => {
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ userId: string; name: string } | null>(null);
-  const [positionEdit, setPositionEdit] = useState<{ userId: string; name: string; position: string } | null>(null);
+  const [staffEdit, setStaffEdit] = useState<StaffEditDraft | null>(null);
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "student", departmentId: "" });
   const { t, i18n } = useTranslation();
+  const { user } = useUser();
   const queryClient = useQueryClient();
   const isEn = i18n.language?.startsWith("en");
 
-  const roleLabel: Record<string, { text: string; className: string }> = {
+  const roleLabel: Record<(typeof ROLE_PRIORITY)[number], { text: string; className: string }> = {
+    super_admin: { text: t("roles.superAdminLabel"), className: "text-primary bg-primary/10" },
     admin: { text: t("roles.adminLabel"), className: "text-destructive bg-destructive/10" },
     teacher: { text: t("roles.teacherLabel"), className: "text-primary bg-primary/10" },
     student: { text: t("roles.studentLabel"), className: "text-foreground bg-secondary" },
@@ -56,18 +61,6 @@ const AdminUsers = () => {
     },
   });
 
-  const roleMap = new Map<string, string>();
-  roles.forEach((r: any) => roleMap.set(r.user_id, r.role));
-
-  const filtered = profiles.filter((u: any) => {
-    const q = search.toLowerCase();
-    const matchesSearch = (u.full_name || "").toLowerCase().includes(q) || (u.department || "").toLowerCase().includes(q);
-    const matchesDept = deptFilter === "all" || u.department_id === deptFilter;
-    return matchesSearch && matchesDept;
-  });
-
-  const teacherCount = roles.filter((r: any) => r.role === "teacher").length;
-
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async () => {
@@ -83,8 +76,18 @@ const AdminUsers = () => {
         if (newUser.departmentId) {
           await supabase.from("profiles").update({ department_id: newUser.departmentId }).eq("user_id", data.user.id);
         }
-        // Set role
-        await supabase.from("user_roles").upsert({ user_id: data.user.id, role: newUser.role as any });
+
+        const { error: deleteRoleError } = await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", data.user.id)
+          .neq("role", "super_admin");
+        if (deleteRoleError) throw deleteRoleError;
+
+        const { error: insertRoleError } = await supabase
+          .from("user_roles")
+          .insert({ user_id: data.user.id, role: newUser.role as StaffRole });
+        if (insertRoleError) throw insertRoleError;
       }
       return data;
     },
@@ -96,46 +99,6 @@ const AdminUsers = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
     },
     onError: (err: any) => toast.error(err.message),
-  });
-
-  // Change role mutation
-  const changeRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      // Delete existing role first, then insert new one
-      await supabase.from("user_roles").delete().eq("user_id", userId);
-      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: role as any });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success(t("admin.roleChanged"));
-      queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
-    },
-    onError: (err: any) => toast.error(err.message),
-  });
-
-  // Change department mutation
-  const changeDeptMutation = useMutation({
-    mutationFn: async ({ userId, deptId }: { userId: string; deptId: string | null }) => {
-      const { error } = await supabase.from("profiles").update({ department_id: deptId }).eq("user_id", userId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success(t("admin.deptChanged"));
-      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
-    },
-  });
-
-  // Change position mutation
-  const changePositionMutation = useMutation({
-    mutationFn: async ({ userId, position }: { userId: string; position: string }) => {
-      const { error } = await supabase.from("profiles").update({ position: position || null }).eq("user_id", userId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success(t("admin.positionChanged"));
-      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
-      setPositionEdit(null);
-    },
   });
 
   // Delete user mutation
@@ -153,8 +116,51 @@ const AdminUsers = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
       setDeleteTarget(null);
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => {
+      const message = err?.message || "";
+
+      if (message.includes("Cannot delete yourself")) {
+        toast.error(t("admin.cannotDeleteSelf"));
+        return;
+      }
+
+      if (message.includes("Cannot delete super admin")) {
+        toast.error(t("admin.cannotManageSuperAdmin"));
+        return;
+      }
+
+      if (message.includes("Admin access required")) {
+        toast.error(t("admin.adminPermissionRequired"));
+        return;
+      }
+
+      toast.error(message || t("common.error"));
+    },
   });
+
+  const rolesByUser = useMemo(() => {
+    const grouped = new Map<string, StaffRole[]>();
+
+    roles.forEach((roleRow: any) => {
+      const current = grouped.get(roleRow.user_id) ?? [];
+      const nextRole = roleRow.role as StaffRole;
+
+      if (!current.includes(nextRole)) {
+        current.push(nextRole);
+      }
+
+      grouped.set(roleRow.user_id, current);
+    });
+
+    return grouped;
+  }, [roles]);
+
+  const getPrimaryRole = (userId: string) => {
+    const assignedRoles = rolesByUser.get(userId) ?? [];
+    return ROLE_PRIORITY.find((role) => assignedRoles.includes(role as StaffRole)) ?? "student";
+  };
+
+  const hasProtectedRole = (userId: string) => (rolesByUser.get(userId) ?? []).includes("super_admin");
 
   const getDeptName = (deptId: string | null) => {
     if (!deptId) return "-";
@@ -162,6 +168,88 @@ const AdminUsers = () => {
     if (!dept) return "-";
     return isEn ? (dept as any).name_en || (dept as any).name : (dept as any).name;
   };
+
+  const filtered = profiles.filter((profile: any) => {
+    const q = search.toLowerCase().trim();
+    const searchableValues = [
+      profile.full_name || "",
+      profile.department || "",
+      profile.position || "",
+      getDeptName(profile.department_id),
+    ];
+
+    const matchesSearch = !q || searchableValues.some((value) => value.toLowerCase().includes(q));
+    const matchesDept = deptFilter === "all" || profile.department_id === deptFilter;
+    return matchesSearch && matchesDept;
+  });
+
+  const teacherCount = profiles.filter((profile: any) => getPrimaryRole(profile.user_id) === "teacher").length;
+
+  const openStaffEdit = (profile: any) => {
+    const primaryRole = getPrimaryRole(profile.user_id);
+
+    setStaffEdit({
+      userId: profile.user_id,
+      name: profile.full_name || "-",
+      departmentId: profile.department_id || "__none__",
+      position: profile.position || "",
+      role: primaryRole === "super_admin" ? "admin" : primaryRole,
+      roleLocked: hasProtectedRole(profile.user_id) || profile.user_id === user?.id,
+    });
+  };
+
+  const updateStaffMutation = useMutation({
+    mutationFn: async (draft: StaffEditDraft) => {
+      const departmentId = draft.departmentId === "__none__" ? null : draft.departmentId;
+      const position = draft.position.trim();
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ department_id: departmentId, position: position || null })
+        .eq("user_id", draft.userId);
+      if (profileError) throw profileError;
+
+      if (draft.roleLocked) return;
+
+      const { data: currentRoles, error: roleReadError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", draft.userId);
+      if (roleReadError) throw roleReadError;
+
+      if ((currentRoles ?? []).some((item) => item.role === "super_admin")) {
+        throw new Error("Cannot delete super admin");
+      }
+
+      const { error: deleteRoleError } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", draft.userId)
+        .neq("role", "super_admin");
+      if (deleteRoleError) throw deleteRoleError;
+
+      const { error: insertRoleError } = await supabase
+        .from("user_roles")
+        .insert({ user_id: draft.userId, role: draft.role as StaffRole });
+      if (insertRoleError) throw insertRoleError;
+    },
+    onSuccess: () => {
+      toast.success(t("admin.staffUpdated"));
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
+      setStaffEdit(null);
+    },
+    onError: (err: any) => {
+      const message = err?.message || "";
+
+      if (message.includes("Cannot delete super admin")) {
+        toast.error(t("admin.cannotManageSuperAdmin"));
+        return;
+      }
+
+      toast.error(message || t("common.error"));
+    },
+  });
 
   return (
     <DashboardLayout role="admin">
@@ -225,8 +313,14 @@ const AdminUsers = () => {
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.map((profile: any) => {
-                const role = roleLabel[roleMap.get(profile.user_id) || "student"] || roleLabel.student;
-                const currentRole = roleMap.get(profile.user_id) || "student";
+                const currentRole = getPrimaryRole(profile.user_id);
+                const role = roleLabel[currentRole] || roleLabel.student;
+                const deleteDisabledReason = profile.user_id === user?.id
+                  ? t("admin.cannotDeleteSelf")
+                  : hasProtectedRole(profile.user_id)
+                    ? t("admin.cannotManageSuperAdmin")
+                    : null;
+
                 return (
                   <tr key={profile.user_id} className="hover:bg-accent/30 transition-colors">
                     <td className="px-4 py-3">
@@ -250,36 +344,28 @@ const AdminUsers = () => {
                       <span className="text-sm text-muted-foreground">{profile.position || "-"}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {["admin", "teacher", "student"].map(r => (
-                            <DropdownMenuItem key={r} disabled={r === currentRole} onClick={() => r !== currentRole && changeRoleMutation.mutate({ userId: profile.user_id, role: r })}>
-                              {t("admin.roleColumn")}: {roleLabel[r].text} {r === currentRole ? "✓" : ""}
-                            </DropdownMenuItem>
-                          ))}
-                          <DropdownMenuItem className="text-xs text-muted-foreground" disabled>—</DropdownMenuItem>
-                          {departments.map((d: any) => (
-                            <DropdownMenuItem key={d.id} onClick={() => changeDeptMutation.mutate({ userId: profile.user_id, deptId: d.id })}>
-                              {t("admin.departmentColumn")}: {isEn ? d.name_en || d.name : d.name}
-                            </DropdownMenuItem>
-                          ))}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => setPositionEdit({ userId: profile.user_id, name: profile.full_name || "-", position: profile.position || "" })}>
-                            {t("admin.editPosition")}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => setDeleteTarget({ userId: profile.user_id, name: profile.full_name || "-" })}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 mr-2" />
-                            {t("admin.deleteUser")}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 rounded-full gap-1.5 px-3"
+                          onClick={() => openStaffEdit(profile)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{t("common.edit")}</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-full text-destructive hover:text-destructive"
+                          disabled={!!deleteDisabledReason}
+                          title={deleteDisabledReason || t("admin.deleteUser")}
+                          aria-label={deleteDisabledReason || t("admin.deleteUser")}
+                          onClick={() => setDeleteTarget({ userId: profile.user_id, name: profile.full_name || "-" })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -361,32 +447,16 @@ const AdminUsers = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Position Edit Dialog */}
-      <Dialog open={!!positionEdit} onOpenChange={(open) => !open && setPositionEdit(null)}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t("admin.editPosition")}: {positionEdit?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label>{t("admin.positionColumn")}</Label>
-              <Input
-                className="mt-1"
-                value={positionEdit?.position || ""}
-                onChange={(e) => setPositionEdit(prev => prev ? { ...prev, position: e.target.value } : null)}
-                placeholder={t("admin.positionColumn")}
-              />
-            </div>
-            <Button
-              className="w-full rounded-xl"
-              onClick={() => positionEdit && changePositionMutation.mutate({ userId: positionEdit.userId, position: positionEdit.position })}
-              disabled={changePositionMutation.isPending}
-            >
-              {changePositionMutation.isPending ? t("common.processing") : t("common.save")}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <StaffEditDialog
+        open={!!staffEdit}
+        onOpenChange={(open) => !open && setStaffEdit(null)}
+        draft={staffEdit}
+        onDraftChange={setStaffEdit}
+        departments={departments}
+        isEn={isEn}
+        saving={updateStaffMutation.isPending}
+        onSave={() => staffEdit && updateStaffMutation.mutate(staffEdit)}
+      />
     </DashboardLayout>
   );
 };

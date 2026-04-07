@@ -229,8 +229,17 @@ const AdminBranches = () => {
       const deptId = staffForm.department_id === "__none__" ? null : staffForm.department_id;
       const { error: pErr } = await supabase.from("profiles").update({ department_id: deptId, position: staffForm.position || null }).eq("user_id", editingStaff.user_id);
       if (pErr) throw pErr;
-      const { error: rErr } = await supabase.from("user_roles").upsert({ user_id: editingStaff.user_id, role: staffForm.role as any });
-      if (rErr) throw rErr;
+      const { error: deleteRoleError } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", editingStaff.user_id)
+        .neq("role", "super_admin");
+      if (deleteRoleError) throw deleteRoleError;
+
+      const { error: insertRoleError } = await supabase
+        .from("user_roles")
+        .insert({ user_id: editingStaff.user_id, role: staffForm.role as any });
+      if (insertRoleError) throw insertRoleError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-branch-profiles"] });

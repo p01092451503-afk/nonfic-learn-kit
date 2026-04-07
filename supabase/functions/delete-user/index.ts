@@ -35,13 +35,16 @@ Deno.serve(async (req) => {
     }
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    const { data: callerRole } = await adminClient
+    const { data: callerRoles, error: callerRolesError } = await adminClient
       .from("user_roles")
       .select("role")
-      .eq("user_id", caller.id)
-      .single();
+      .eq("user_id", caller.id);
 
-    if (!callerRole || (callerRole.role !== "admin" && callerRole.role !== "super_admin")) {
+    if (callerRolesError) throw callerRolesError;
+
+    const canManageUsers = (callerRoles ?? []).some((item) => item.role === "admin" || item.role === "super_admin");
+
+    if (!canManageUsers) {
       return new Response(JSON.stringify({ error: "Admin access required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -65,13 +68,16 @@ Deno.serve(async (req) => {
     }
 
     // Prevent deleting super_admin
-    const { data: targetRole } = await adminClient
+    const { data: targetRoles, error: targetRolesError } = await adminClient
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
 
-    if (targetRole?.role === "super_admin") {
+    if (targetRolesError) throw targetRolesError;
+
+    const isSuperAdminTarget = (targetRoles ?? []).some((item) => item.role === "super_admin");
+
+    if (isSuperAdminTarget) {
       return new Response(JSON.stringify({ error: "Cannot delete super admin" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
