@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings, Compass, UserCircle, ClipboardCheck,
-  LogOut, Menu, X, ChevronRight, GraduationCap, CalendarCheck, Activity,
+  LogOut, Menu, X, ChevronRight, GraduationCap, CalendarCheck, Activity, Building2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
     { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy },
     { label: t("nav.trafficMonitoring", "트래픽 모니터링"), href: "/admin/traffic", icon: Activity },
+    { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2 },
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings },
   ];
 
