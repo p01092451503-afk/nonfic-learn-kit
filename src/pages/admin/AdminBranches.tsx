@@ -24,7 +24,7 @@ const AdminBranches = () => {
   const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "" });
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [staffSearch, setStaffSearch] = useState("");
-  const [uploadBranch, setUploadBranch] = useState<string>("");
+  const [uploadBranch, setUploadBranch] = useState<string>("__csv__");
 
   // Fetch branches (departments)
   const { data: branches = [] } = useQuery({
@@ -125,7 +125,7 @@ const AdminBranches = () => {
       if (!name || !email) continue;
 
       // Determine branch: use column value or selected upload branch
-      let deptId = uploadBranch || null;
+      let deptId = uploadBranch === "__csv__" ? null : uploadBranch || null;
       if (branchIdx !== -1 && cols[branchIdx]) {
         const branchName = cols[branchIdx];
         const found = branches.find((b: any) => b.name === branchName || b.name_en === branchName || b.code === branchName);
@@ -183,7 +183,7 @@ const AdminBranches = () => {
 
   const openEditBranch = (b: any) => {
     setEditingBranch(b);
-    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "", parent_department_id: b.parent_department_id || "" });
+    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "", parent_department_id: b.parent_department_id || "__none__" });
     setBranchDialog(true);
   };
 
