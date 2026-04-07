@@ -21,7 +21,12 @@ const RoleSwitcher = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  if (roles.length <= 1) return null;
+  // Map roles to switchable dashboard roles (super_admin → admin)
+  const switchableRoles = Array.from(
+    new Set(roles.map((r) => (r === "super_admin" ? "admin" : r)))
+  ).filter((r) => r in roleConfig) as Array<keyof typeof roleConfig>;
+
+  if (switchableRoles.length <= 1) return null;
 
   const CurrentIcon = roleConfig[primaryRole]?.icon || GraduationCap;
 
