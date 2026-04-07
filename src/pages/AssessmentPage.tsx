@@ -337,27 +337,9 @@ export default function AssessmentPage() {
     enabled: !!assessmentId,
   });
 
-  // Fetch questions
-  const { data: rawQuestions = [] } = useQuery({
-    queryKey: ["assessment-questions-take", assessmentId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("assessment_questions")
-        .select("*")
-        .eq("assessment_id", assessmentId!)
-        .order("order_index", { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!assessmentId,
-  });
+  const isTeacherOrAdmin = primaryRole === "admin" || primaryRole === "teacher";
 
-  const questions = useMemo(() => {
-    if (!assessment?.randomize_questions) return rawQuestions;
-    return [...rawQuestions].sort(() => Math.random() - 0.5);
-  }, [rawQuestions, assessment?.randomize_questions]);
-
-  // Fetch previous attempts
+  // Fetch previous attempts (must be before questions queries)
   const { data: attempts = [] } = useQuery({
     queryKey: ["assessment-attempts", assessmentId, user?.id],
     queryFn: async () => {
@@ -374,6 +356,54 @@ export default function AssessmentPage() {
   });
 
   const latestCompleted = attempts.find((a: any) => a.completed_at);
+
+  // Fetch questions - students use secure RPC, teachers/admins use direct query
+  const { data: rawQuestions = [] } = useQuery({
+    queryKey: ["assessment-questions-take", assessmentId, isTeacherOrAdmin],
+    queryFn: async () => {
+      if (isTeacherOrAdmin) {
+        const { data, error } = await supabase
+          .from("assessment_questions")
+          .select("*")
+          .eq("assessment_id", assessmentId!)
+          .order("order_index", { ascending: true });
+        if (error) throw error;
+        return data;
+      }
+      const { data, error } = await supabase
+        .rpc("get_assessment_questions_for_student", { p_assessment_id: assessmentId! });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!assessmentId,
+  });
+
+  // For review mode: fetch questions WITH answers (only available after completing)
+  const { data: reviewQuestions = [] } = useQuery({
+    queryKey: ["assessment-questions-review", assessmentId, !!latestCompleted],
+    queryFn: async () => {
+      if (isTeacherOrAdmin) {
+        const { data, error } = await supabase
+          .from("assessment_questions")
+          .select("*")
+          .eq("assessment_id", assessmentId!)
+          .order("order_index", { ascending: true });
+        if (error) throw error;
+        return data;
+      }
+      const { data, error } = await supabase
+        .rpc("get_assessment_questions_with_answers", { p_assessment_id: assessmentId! });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!assessmentId && (isTeacherOrAdmin || !!latestCompleted),
+  });
+
+  const questions = useMemo(() => {
+    if (!assessment?.randomize_questions) return rawQuestions;
+    return [...rawQuestions].sort(() => Math.random() - 0.5);
+  }, [rawQuestions, assessment?.randomize_questions]);
+
   const { data: previousAnswers = [] } = useQuery({
     queryKey: ["assessment-answers", latestCompleted?.id],
     queryFn: async () => {
@@ -441,49 +471,21 @@ export default function AssessmentPage() {
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
 
-  // Submit
+  // Submit - use server-side grading to avoid exposing correct answers
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!currentAttemptId) return;
-      let totalScore = 0;
-      let totalPoints = 0;
-      const answerPayloads: any[] = [];
+      const answerPayloads = questions.map((q: any) => ({
+        question_id: q.id,
+        user_answer: answers[q.id] || "",
+      }));
 
-      for (const q of questions) {
-        const userAnswer = answers[q.id] || "";
-        let isCorrect = false;
-        let pointsEarned = 0;
-
-        if (q.question_type === "essay") {
-          isCorrect = false;
-          pointsEarned = 0;
-        } else {
-          isCorrect = userAnswer.trim().toLowerCase() === q.correct_answer.trim().toLowerCase();
-          pointsEarned = isCorrect ? q.points : 0;
-        }
-
-        totalPoints += q.points;
-        totalScore += pointsEarned;
-
-        answerPayloads.push({
-          attempt_id: currentAttemptId,
-          question_id: q.id,
-          user_answer: userAnswer || null,
-          is_correct: q.question_type === "essay" ? null : isCorrect,
-          points_earned: pointsEarned,
-        });
-      }
-
-      const { error: ansErr } = await supabase.from("assessment_answers").insert(answerPayloads);
-      if (ansErr) throw ansErr;
-
-      const { error: attErr } = await supabase.from("assessment_attempts").update({
-        score: totalScore,
-        total_points: totalPoints,
-        passed: totalScore >= (assessment?.passing_score || 0),
-        completed_at: new Date().toISOString(),
-      }).eq("id", currentAttemptId);
-      if (attErr) throw attErr;
+      const { data, error } = await supabase.rpc("submit_and_grade_assessment", {
+        p_attempt_id: currentAttemptId,
+        p_answers: answerPayloads,
+      });
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       setCurrentAttemptId(null);
@@ -492,6 +494,7 @@ export default function AssessmentPage() {
       setCurrentQuestionIndex(0);
       queryClient.invalidateQueries({ queryKey: ["assessment-attempts", assessmentId, user?.id] });
       queryClient.invalidateQueries({ queryKey: ["assessment-answers"] });
+      queryClient.invalidateQueries({ queryKey: ["assessment-questions-review", assessmentId] });
       toast({ title: t("assessment.submitted") });
     },
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
@@ -545,7 +548,7 @@ export default function AssessmentPage() {
               <ResultSummary
                 assessment={assessment}
                 attempt={latestCompleted}
-                questions={questions}
+                questions={reviewQuestions as any[]}
                 answerMap={answerMap}
                 isEn={!!isEn}
                 t={t}
@@ -563,9 +566,10 @@ export default function AssessmentPage() {
 
   // ─── REVIEW MODE ───
   if (reviewMode && previousAnswers.length > 0) {
-    const currentQ = questions[currentQuestionIndex];
+    const rQuestions = reviewQuestions as any[];
+    const currentQ = rQuestions[currentQuestionIndex];
     const ansData = currentQ ? answerMap[currentQ.id] : null;
-    const progressPercent = questions.length > 0 ? Math.round(((currentQuestionIndex + 1) / questions.length) * 100) : 0;
+    const progressPercent = rQuestions.length > 0 ? Math.round(((currentQuestionIndex + 1) / rQuestions.length) * 100) : 0;
 
     return (
       <DashboardLayout role={layoutRole}>
@@ -589,7 +593,7 @@ export default function AssessmentPage() {
               <div className="flex items-center gap-3">
                 <Progress value={progressPercent} className="h-2 flex-1" />
                 <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">
-                  {currentQuestionIndex + 1} / {questions.length}
+                   {currentQuestionIndex + 1} / {rQuestions.length}
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="flex items-center gap-1 text-xs font-semibold bg-destructive/15 text-destructive rounded-full px-2 py-0.5">
@@ -607,11 +611,11 @@ export default function AssessmentPage() {
                 <QuestionReview
                   question={currentQ}
                   index={currentQuestionIndex}
-                  total={questions.length}
+                  total={rQuestions.length}
                   userAnswer={ansData?.user_answer ?? null}
                   isCorrect={ansData?.is_correct ?? null}
                   isEn={!!isEn}
-                  onNext={() => setCurrentQuestionIndex(i => Math.min(i + 1, questions.length - 1))}
+                  onNext={() => setCurrentQuestionIndex(i => Math.min(i + 1, rQuestions.length - 1))}
                   onPrev={() => setCurrentQuestionIndex(i => Math.max(i - 1, 0))}
                   t={t}
                 />
