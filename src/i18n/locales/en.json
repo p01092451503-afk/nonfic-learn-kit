@@ -488,6 +488,8 @@
     "deleteUser": "Delete Staff",
     "deleteUserConfirm": "Are you sure you want to delete this staff member? This action cannot be undone.",
     "userDeleted": "Staff member deleted.",
+    "editPosition": "Edit Position",
+    "positionChanged": "Position updated.",
     "courseManagement": "Course Management",
     "courseManagementDesc": "Manage and monitor all courses.",
     "newCourse": "New Course",
