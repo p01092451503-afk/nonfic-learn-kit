@@ -21,7 +21,7 @@ const AdminBranches = () => {
 
   const [branchDialog, setBranchDialog] = useState(false);
   const [editingBranch, setEditingBranch] = useState<any>(null);
-  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "__none__" });
+  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "__none__", team_name: "" });
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [staffSearch, setStaffSearch] = useState("");
   const [uploadBranch, setUploadBranch] = useState<string>("__csv__");
@@ -66,6 +66,7 @@ const AdminBranches = () => {
         name_en: form.name_en || null,
         code: form.code || null,
         parent_department_id: form.parent_department_id === "__none__" ? null : form.parent_department_id || null,
+        team_name: form.team_name || null,
       };
       if (editingBranch) {
         const { error } = await supabase.from("departments").update(payload).eq("id", editingBranch.id);
@@ -80,7 +81,7 @@ const AdminBranches = () => {
       toast({ title: editingBranch ? t("admin.deptUpdated") : t("admin.deptCreated") });
       setBranchDialog(false);
       setEditingBranch(null);
-      setBranchForm({ name: "", name_en: "", code: "", parent_department_id: "__none__" });
+      setBranchForm({ name: "", name_en: "", code: "", parent_department_id: "__none__", team_name: "" });
     },
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
@@ -180,13 +181,13 @@ const AdminBranches = () => {
 
   const openAddBranch = () => {
     setEditingBranch(null);
-    setBranchForm({ name: "", name_en: "", code: "", parent_department_id: "" });
+    setBranchForm({ name: "", name_en: "", code: "", parent_department_id: "", team_name: "" });
     setBranchDialog(true);
   };
 
   const openEditBranch = (b: any) => {
     setEditingBranch(b);
-    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "", parent_department_id: b.parent_department_id || "__none__" });
+    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "", parent_department_id: b.parent_department_id || "__none__", team_name: b.team_name || "" });
     setBranchDialog(true);
   };
 
@@ -417,6 +418,10 @@ const AdminBranches = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("admin.deptNameEn")}</label>
               <Input value={branchForm.name_en} onChange={e => setBranchForm(f => ({ ...f, name_en: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("admin.teamName")}</label>
+              <Input value={branchForm.team_name} onChange={e => setBranchForm(f => ({ ...f, team_name: e.target.value }))} placeholder={t("admin.teamName")} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("admin.deptCode")}</label>
