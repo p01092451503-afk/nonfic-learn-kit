@@ -29,9 +29,17 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [isResetting, setIsResetting] = useState(false);
+  const [branches, setBranches] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from("departments").select("id, name, name_en, is_active").eq("is_active", true).order("display_order").order("name").then(({ data }) => {
+      if (data) setBranches(data);
+    });
+  }, []);
 
   useEffect(() => {
     const savedEmail = localStorage.getItem(SAVED_EMAIL_KEY);
@@ -50,7 +58,7 @@ const Auth = () => {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { name: fullName } },
+          options: { data: { name: fullName, department_id: selectedBranch || undefined } },
         });
         if (error) throw error;
         toast({ title: t("auth.signUpComplete"), description: t("auth.checkEmail") });
