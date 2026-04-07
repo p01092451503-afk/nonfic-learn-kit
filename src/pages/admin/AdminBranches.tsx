@@ -434,6 +434,50 @@ const AdminBranches = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Staff Dialog */}
+      <Dialog open={editStaffDialog} onOpenChange={setEditStaffDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("admin.editStaff")} - {editingStaff?.full_name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("branches.branch")}</label>
+              <Select value={staffForm.department_id} onValueChange={v => setStaffForm(f => ({ ...f, department_id: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">-</SelectItem>
+                  {branches.map((b: any) => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("admin.positionColumn")}</label>
+              <Input value={staffForm.position} onChange={e => setStaffForm(f => ({ ...f, position: e.target.value }))} placeholder={t("admin.positionColumn")} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("admin.roleColumn")}</label>
+              <Select value={staffForm.role} onValueChange={v => setStaffForm(f => ({ ...f, role: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">{t("roles.studentLabel")}</SelectItem>
+                  <SelectItem value="teacher">{t("roles.teacherLabel")}</SelectItem>
+                  <SelectItem value="admin">{t("roles.adminLabel")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditStaffDialog(false)}>{t("common.cancel")}</Button>
+            <Button onClick={() => updateStaffMutation.mutate()} disabled={updateStaffMutation.isPending}>
+              {t("common.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
