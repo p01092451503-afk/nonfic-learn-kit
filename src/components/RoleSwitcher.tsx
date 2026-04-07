@@ -38,7 +38,7 @@ const RoleSwitcher = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">
-        {roles.map((role) => {
+        {switchableRoles.map((role) => {
           const config = roleConfig[role];
           if (!config) return null;
           const Icon = config.icon;
