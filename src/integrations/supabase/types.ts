@@ -1209,6 +1209,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      submit_and_grade_assessment: {
+        Args: { p_answers: Json; p_attempt_id: string }
+        Returns: Json
+      }
       update_streak: { Args: { p_user_id: string }; Returns: undefined }
     }
     Enums: {
