@@ -95,13 +95,13 @@ const AdminDashboard = () => {
   const activeCourses = courses.filter((c: any) => c.status === "published").length;
   const draftCourses = courses.filter((c: any) => c.status === "draft").length;
   const pendingCourses = courses.filter((c: any) => c.status !== "published" && c.status !== "draft").length;
-  const avgCompletion = enrollments.length > 0
-    ? Math.round(enrollments.reduce((s, e) => s + (Number(e.progress) || 0), 0) / enrollments.length)
+  const avgCompletion = filteredEnrollments.length > 0
+    ? Math.round(filteredEnrollments.reduce((s: number, e: any) => s + (Number(e.progress) || 0), 0) / filteredEnrollments.length)
     : 0;
 
   const enrollmentCountMap = new Map<string, { count: number; avgProgress: number }>();
   const grouped: Record<string, { total: number; progress: number }> = {};
-  enrollments.forEach((e) => {
+  filteredEnrollments.forEach((e: any) => {
     if (!grouped[e.course_id]) grouped[e.course_id] = { total: 0, progress: 0 };
     grouped[e.course_id].total++;
     grouped[e.course_id].progress += Number(e.progress) || 0;
@@ -121,9 +121,9 @@ const AdminDashboard = () => {
   const overdueMandatory = mandatoryCourses.filter((c: any) => c.deadline && new Date(c.deadline) < new Date());
 
   const stats = [
-    { label: t("admin.totalUsers"), value: String(profileCount), sub: t("admin.studentCount2", { count: roleCounts.student }), icon: Users },
+    { label: t("admin.totalUsers"), value: String(filteredProfileCount), sub: t("admin.studentCount2", { count: roleCounts.student }), icon: Users },
     { label: t("admin.activeCourses"), value: String(activeCourses), sub: t("admin.draftCount", { count: draftCourses }), icon: BookOpen },
-    { label: t("admin.totalEnrollments"), value: String(enrollments.length), sub: t("admin.enrolledLabel"), icon: Activity },
+    { label: t("admin.totalEnrollments"), value: String(filteredEnrollments.length), sub: t("admin.enrolledLabel"), icon: Activity },
     { label: t("admin.pendingReview"), value: String(pendingCourses), sub: t("admin.reviewNeeded"), icon: Clock },
   ];
 
