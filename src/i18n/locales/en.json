@@ -530,6 +530,8 @@
     "userCreatedDesc": "\"{{name}}\" has been registered.",
     "roleChanged": "Role changed",
     "deptChanged": "Department changed",
+    "staffUpdated": "Staff info updated",
+    "editStaff": "Edit Staff",
     "allDepts": "All Departments",
     "emailColumn": "Email",
     "platformOverview": "Monitor and manage the entire platform",
