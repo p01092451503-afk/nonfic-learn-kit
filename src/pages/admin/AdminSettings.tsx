@@ -234,6 +234,10 @@ const AdminSettings = () => {
               <Input value={deptForm.name_en} onChange={(e) => setDeptForm({ ...deptForm, name_en: e.target.value })} className="mt-1" />
             </div>
             <div>
+              <Label>{t("admin.teamName")}</Label>
+              <Input value={deptForm.team_name} onChange={(e) => setDeptForm({ ...deptForm, team_name: e.target.value })} placeholder={t("admin.teamName")} className="mt-1" />
+            </div>
+            <div>
               <Label>{t("admin.deptCode")}</Label>
               <Input value={deptForm.code} onChange={(e) => setDeptForm({ ...deptForm, code: e.target.value })} placeholder="MKT" className="mt-1" />
             </div>
