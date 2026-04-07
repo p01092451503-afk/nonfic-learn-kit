@@ -268,6 +268,9 @@ const AdminUsers = () => {
                             {t("admin.editPosition")}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setDeleteTarget({ userId: profile.user_id, name: profile.full_name || "-" })}
                           >
                             <Trash2 className="h-3.5 w-3.5 mr-2" />
                             {t("admin.deleteUser")}
