@@ -101,13 +101,16 @@ const AdminUsers = () => {
   // Change role mutation
   const changeRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      const { error } = await supabase.from("user_roles").upsert({ user_id: userId, role: role as any });
+      // Delete existing role first, then insert new one
+      await supabase.from("user_roles").delete().eq("user_id", userId);
+      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: role as any });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(t("admin.roleChanged"));
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
     },
+    onError: (err: any) => toast.error(err.message),
   });
 
   // Change department mutation
