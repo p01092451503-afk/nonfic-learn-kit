@@ -420,6 +420,10 @@ const AdminBranches = () => {
               <Input value={branchForm.name_en} onChange={e => setBranchForm(f => ({ ...f, name_en: e.target.value }))} />
             </div>
             <div className="space-y-2">
+              <label className="text-sm font-medium">{t("admin.teamName")}</label>
+              <Input value={branchForm.team_name} onChange={e => setBranchForm(f => ({ ...f, team_name: e.target.value }))} placeholder={t("admin.teamName")} />
+            </div>
+            <div className="space-y-2">
               <label className="text-sm font-medium">{t("admin.deptCode")}</label>
               <Input value={branchForm.code} onChange={e => setBranchForm(f => ({ ...f, code: e.target.value }))} />
             </div>
