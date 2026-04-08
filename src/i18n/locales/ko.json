@@ -1026,6 +1026,8 @@
     "publish": "게시",
     "deleteConfirm": "공지사항을 삭제하시겠습니까?",
     "deleteDesc": "삭제된 공지사항은 복구할 수 없습니다.",
-    "noAnnouncements": "등록된 공지사항이 없습니다."
+    "noAnnouncements": "등록된 공지사항이 없습니다.",
+    "teacherDesc": "수강생에게 공지사항을 등록합니다.",
+    "myAnnouncements": "내 공지사항"
   }
 }
