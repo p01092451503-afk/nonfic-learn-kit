@@ -83,7 +83,7 @@ const StudentCourses = () => {
       <Link
         key={enrollment.id}
         to={`/student/courses/${course.id}?view=learn`}
-        className={`group flex items-center gap-4 p-4 hover:shadow-md transition-all ${index % 2 === 0 ? "bg-card" : "bg-muted/40"}`}
+        className={`group flex items-center gap-4 p-4 hover:shadow-md transition-all ${index % 2 === 0 ? "bg-card" : "bg-accent"}`}
       >
         {/* Thumbnail - small */}
         {course.thumbnail_url ? (
