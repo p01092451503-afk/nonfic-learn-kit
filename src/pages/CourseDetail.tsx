@@ -1277,11 +1277,11 @@ const CourseEditDialog = ({
           </div>
           <div className="space-y-1">
             <Label className="text-xs">{t("course.enTitle")}</Label>
-            <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => setEnForm(f => ({ ...f, title: e.target.value }))} placeholder="English title" />
+            <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => { setEnTitleManual(true); setEnForm(f => ({ ...f, title: e.target.value })); }} placeholder="English title" />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">{t("course.enDescription")}</Label>
-            <Textarea className="text-sm" value={enForm.description} onChange={(e) => setEnForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="English description" />
+            <Textarea className="text-sm" value={enForm.description} onChange={(e) => { setEnDescManual(true); setEnForm(f => ({ ...f, description: e.target.value })); }} rows={3} placeholder="English description" />
           </div>
         </TabsContent>
       </Tabs>
