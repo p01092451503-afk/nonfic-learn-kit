@@ -23,6 +23,42 @@ const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
 };
 
+const getYouTubeVideoId = (url: string | null) => {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url.startsWith("http") ? url : `https://${url}`);
+    const host = parsed.hostname.replace(/^www\./, "");
+
+    if (host === "youtu.be") {
+      return parsed.pathname.split("/").filter(Boolean)[0] || null;
+    }
+
+    if (["youtube.com", "m.youtube.com", "music.youtube.com"].includes(host)) {
+      if (parsed.pathname === "/watch") {
+        return parsed.searchParams.get("v");
+      }
+
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      const markerIndex = parts.findIndex((part) => ["embed", "shorts", "live"].includes(part));
+      if (markerIndex !== -1) {
+        return parts[markerIndex + 1] || null;
+      }
+    }
+  } catch {
+    // Fall through to regex parsing
+  }
+
+  const fallbackMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([^&?#/]+)/);
+  return fallbackMatch?.[1] || null;
+};
+
+const getVimeoVideoId = (url: string | null) => {
+  if (!url) return null;
+  const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return match?.[1] || null;
+};
+
 const ContentPlayer = () => {
   const { courseId, contentId } = useParams<{ courseId: string; contentId: string }>();
   const navigate = useNavigate();
