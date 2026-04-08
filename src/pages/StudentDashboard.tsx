@@ -341,7 +341,7 @@ const StudentDashboard = () => {
                 const isToday = mc.daysLeft === 0;
                 const isUrgent = mc.daysLeft !== null && mc.daysLeft <= 3;
                 return (
-                  <div key={mc.id} className={`!p-3 sm:!p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 ${isOverdue ? "bg-destructive/5" : isUrgent ? "bg-orange-50/50 dark:bg-orange-950/10" : index % 2 === 0 ? "bg-card" : "bg-accent/70"}`} role="article" aria-label={mc.title}>
+                  <div key={mc.id} className={`!p-3 sm:!p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border-b border-border last:border-b-0 ${isOverdue ? "bg-destructive/5" : isUrgent ? "bg-orange-50/50 dark:bg-orange-950/10" : ""}`} role="article" aria-label={mc.title}>
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-sm font-semibold text-foreground truncate">{mc.title}</h3>
@@ -395,7 +395,7 @@ const StudentDashboard = () => {
                 const instructorName = instructorMap.get(enrollment.courses?.instructor_id) || t("dashboard.instructor");
 
                 return (
-                  <div key={enrollment.id} className={`!p-4 sm:!p-5 space-y-3 ${index % 2 === 0 ? "bg-card" : "bg-accent/70"}`} role="article" aria-label={enrollment.courses?.title}>
+                  <div key={enrollment.id} className="!p-4 sm:!p-5 space-y-3 border-b border-border last:border-b-0" role="article" aria-label={enrollment.courses?.title}>
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
                       <div className="space-y-1 min-w-0 flex-1">
                         <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">
