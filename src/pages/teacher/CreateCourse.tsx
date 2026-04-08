@@ -198,8 +198,8 @@ const CreateCourse = () => {
     try {
       const results = await translateKoToEn(texts);
       let idx = 0;
-      if (title) setEnTitle(results[idx++] || "");
-      if (description) setEnDescription(results[idx++] || "");
+      if (title) { setEnTitle(results[idx++] || ""); setEnTitleManual(true); }
+      if (description) { setEnDescription(results[idx++] || ""); setEnDescManual(true); }
     } catch { /* silent */ }
     finally { setTranslatingCourse(false); }
   };
