@@ -52,7 +52,10 @@ const StudentBoard = () => {
     <DashboardLayout role="student">
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("board.studentTitle", "게시판")}</h1>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <ClipboardList className="h-6 w-6" />
+            {t("board.studentTitle", "게시판")}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">{t("board.studentSubtitle", "교육 자료 및 안내사항을 확인하세요.")}</p>
         </div>
 
