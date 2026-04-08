@@ -306,7 +306,7 @@ const AdminCourses = () => {
                       <td className="px-4 py-3 hidden lg:table-cell text-center">
                         {course.is_mandatory ? (
                           <div className="flex flex-col items-center gap-0.5">
-                            <Badge variant="destructive" className="text-[10px] h-5 gap-0.5">
+                            <Badge variant="destructive" className="text-[10px] h-5 gap-0.5 whitespace-nowrap">
                               <AlertTriangle className="h-2.5 w-2.5" /> {t("common.required")}
                             </Badge>
                             {daysLeft !== null && (
