@@ -1227,7 +1227,13 @@ const CourseEditDialog = ({
         </TabsContent>
 
         <TabsContent value="en" className="space-y-3 pt-2">
-          <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
+            <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleAutoTranslate} disabled={translating || (!form.title && !form.description)}>
+              {translating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+              {t("course.autoTranslate", "자동 번역")}
+            </Button>
+          </div>
           <div className="space-y-1">
             <Label className="text-xs">{t("course.enTitle")}</Label>
             <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => setEnForm(f => ({ ...f, title: e.target.value }))} placeholder="English title" />
