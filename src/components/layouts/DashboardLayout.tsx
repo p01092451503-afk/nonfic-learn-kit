@@ -79,7 +79,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.announcementManagement", "공지사항 관리"), href: "/teacher/announcements", icon: Megaphone },
     { label: t("nav.boardManagement", "게시판 관리"), href: "/teacher/board", icon: FileText },
     { label: t("nav.attendanceManagement"), href: "/teacher/attendance", icon: CalendarCheck },
-
+  ];
   const adminNav: NavItem[] = [
     { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard },
     { label: t("nav.userManagement"), href: "/admin/users", icon: Users },
