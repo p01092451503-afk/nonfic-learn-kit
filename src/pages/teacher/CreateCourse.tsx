@@ -771,9 +771,30 @@ const UnifiedContentEditor = ({
   const [showPreview, setShowPreview] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [showEn, setShowEn] = useState(false);
   const isMango = content.source === "mangoboard";
   const isValidMangoboard = isMango && content.video_url.includes("mangoboard.net");
   const Icon = isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
+
+  // Real-time sync KO → EN
+  useEffect(() => {
+    if (!content.enTitle && content.title) onChange("enTitle", content.title);
+    if (!content.enDescription && content.description) onChange("enDescription", content.description);
+  }, [content.title, content.description]);
+
+  const handleTranslateContent = async () => {
+    const texts = [content.title, content.description].filter(Boolean);
+    if (!texts.length) return;
+    setTranslating(true);
+    try {
+      const results = await translateKoToEn(texts);
+      let idx = 0;
+      if (content.title) onChange("enTitle", results[idx++] || "");
+      if (content.description) onChange("enDescription", results[idx++] || "");
+    } catch { /* silent */ }
+    finally { setTranslating(false); }
+  };
 
   const handlePreview = () => {
     if (!isValidMangoboard) return;
