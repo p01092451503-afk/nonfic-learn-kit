@@ -151,18 +151,18 @@ const StudentAssignments = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("assignments.subtitle")}</p>
         </div>
 
-        <section className="grid grid-cols-3 gap-2 sm:gap-4" aria-label={t("assignments.title")}>
-          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("assignments.unsubmitted")}>
-            <p className="text-xl sm:text-2xl font-bold text-warning">{pending.length}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("assignments.unsubmitted")}</p>
+        <section className="grid grid-cols-3 gap-2 sm:gap-3" aria-label={t("assignments.title")}>
+          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5 sm:px-4 sm:py-3" role="group" aria-label={t("assignments.unsubmitted")}>
+            <span className="text-lg sm:text-xl font-bold text-warning leading-none">{pending.length}</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight">{t("assignments.unsubmitted")}</span>
           </div>
-          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("assignments.waitingGrade")}>
-            <p className="text-xl sm:text-2xl font-bold text-info">{submitted.length}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("assignments.waitingGrade")}</p>
+          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5 sm:px-4 sm:py-3" role="group" aria-label={t("assignments.waitingGrade")}>
+            <span className="text-lg sm:text-xl font-bold text-info leading-none">{submitted.length}</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight">{t("assignments.waitingGrade")}</span>
           </div>
-          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("assignments.graded")}>
-            <p className="text-xl sm:text-2xl font-bold text-success">{graded.length}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("assignments.graded")}</p>
+          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5 sm:px-4 sm:py-3" role="group" aria-label={t("assignments.graded")}>
+            <span className="text-lg sm:text-xl font-bold text-success leading-none">{graded.length}</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight">{t("assignments.graded")}</span>
           </div>
         </section>
 
