@@ -98,7 +98,9 @@
     "branchManagement": "지점 관리",
     "announcements": "공지사항",
     "notificationManagement": "알림 관리",
-    "announcementManagement": "공지사항 관리"
+    "announcementManagement": "공지사항 관리",
+    "board": "게시판",
+    "boardManagement": "게시판 관리"
   },
   "roles": {
     "student": "Student",
@@ -1029,5 +1031,24 @@
     "noAnnouncements": "등록된 공지사항이 없습니다.",
     "teacherDesc": "수강생에게 공지사항을 등록합니다.",
     "myAnnouncements": "내 공지사항"
+  },
+  "board": {
+    "title": "게시판 관리",
+    "subtitle": "학생에게 자료를 배포하고 안내사항을 게시합니다.",
+    "studentTitle": "게시판",
+    "studentSubtitle": "교육 자료 및 안내사항을 확인하세요.",
+    "newPost": "새 게시글",
+    "editPost": "게시글 수정",
+    "allPosts": "전체 게시글",
+    "generalBoard": "일반 게시판",
+    "postTitle": "제목",
+    "postContent": "내용",
+    "linkedCourse": "연결 강좌 (선택)",
+    "attachments": "첨부파일",
+    "addFile": "파일 추가",
+    "publish": "공개",
+    "draft": "비공개",
+    "pinToTop": "상단 고정",
+    "course": "강좌"
   }
 }

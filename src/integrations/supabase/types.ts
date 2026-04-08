@@ -440,6 +440,56 @@ export type Database = {
         }
         Relationships: []
       }
+      board_posts: {
+        Row: {
+          author_id: string
+          content: string
+          course_id: string | null
+          created_at: string
+          file_urls: string[] | null
+          id: string
+          is_pinned: boolean
+          is_published: boolean
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          author_id: string
+          content: string
+          course_id?: string | null
+          created_at?: string
+          file_urls?: string[] | null
+          id?: string
+          is_pinned?: boolean
+          is_published?: boolean
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          course_id?: string | null
+          created_at?: string
+          file_urls?: string[] | null
+          id?: string
+          is_pinned?: boolean
+          is_published?: boolean
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "board_posts_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string | null
