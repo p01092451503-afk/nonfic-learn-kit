@@ -1040,7 +1040,8 @@ const ContentDialog = ({
       </DialogFooter>
     </DialogContent>
   </Dialog>
-);
+  );
+};
 
 // --- Course Edit Dialog with i18n tabs + thumbnail + extended fields ---
 const CourseEditDialog = ({
