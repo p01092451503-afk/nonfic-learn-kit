@@ -30,11 +30,26 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [hasNewAnnouncement, setHasNewAnnouncement] = useState(false);
   const { profile, signOut } = useUser();
   const { primaryRole } = useUserRole();
   const { t } = useTranslation();
 
   const activeRole = role || primaryRole;
+
+  // Check for new announcements (published within last 24 hours)
+  useEffect(() => {
+    const checkNew = async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("announcements")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true)
+        .gte("created_at", since);
+      setHasNewAnnouncement((count ?? 0) > 0);
+    };
+    checkNew();
+  }, []);
 
   // Preload user avatar for instant rendering
   useEffect(() => {
