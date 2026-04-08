@@ -95,7 +95,10 @@
     "courseCatalog": "Browse Courses",
     "myPage": "My Page",
     "enrollmentManagement": "Enrollments",
-    "branchManagement": "Branches"
+    "branchManagement": "Branches",
+    "announcements": "Announcements",
+    "notificationManagement": "Notifications",
+    "announcementManagement": "Announcements"
   },
   "roles": {
     "student": "Student",

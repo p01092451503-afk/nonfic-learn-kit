@@ -95,7 +95,10 @@
     "courseCatalog": "강좌 탐색",
     "myPage": "마이페이지",
     "enrollmentManagement": "수강 승인",
-    "branchManagement": "지점 관리"
+    "branchManagement": "지점 관리",
+    "announcements": "공지사항",
+    "notificationManagement": "알림 관리",
+    "announcementManagement": "공지사항 관리"
   },
   "roles": {
     "student": "Student",
