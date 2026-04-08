@@ -91,6 +91,61 @@ const CreateCourse = () => {
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [editDataLoaded, setEditDataLoaded] = useState(false);
+  const [existingThumbnailUrl, setExistingThumbnailUrl] = useState<string | null>(null);
+
+  // Load existing course data for edit mode
+  useEffect(() => {
+    if (!isEditMode || !editCourseId || editDataLoaded) return;
+    (async () => {
+      const { data: course, error } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("id", editCourseId)
+        .single();
+      if (error || !course) {
+        toast({ title: t("common.error"), description: "강좌를 찾을 수 없습니다.", variant: "destructive" });
+        navigate(-1);
+        return;
+      }
+      setTitle(course.title || "");
+      setDescription(course.description || "");
+      setCategoryId(course.category_id || "");
+      setDifficultyLevel(course.difficulty_level || "beginner");
+      setEstimatedHours(course.estimated_duration_hours ? String(course.estimated_duration_hours) : "");
+      setMaxStudents(course.max_students ? String(course.max_students) : "");
+      setIsMandatory(course.is_mandatory || false);
+      setDeadline(course.deadline || "");
+      setStatus(course.status || "draft");
+      if (course.thumbnail_url) {
+        setThumbnailPreview(course.thumbnail_url);
+        setExistingThumbnailUrl(course.thumbnail_url);
+      }
+
+      // Load contents
+      const { data: courseContents } = await supabase
+        .from("course_contents")
+        .select("*")
+        .eq("course_id", editCourseId)
+        .order("order_index", { ascending: true });
+      if (courseContents?.length) {
+        setContents(courseContents.map((c: any) => ({
+          tempId: c.id,
+          title: c.title || "",
+          description: c.description || "",
+          content_type: c.content_type || "video",
+          video_url: c.video_url || "",
+          video_provider: c.video_provider || "",
+          duration_minutes: c.duration_minutes,
+          is_preview: c.is_preview || false,
+          is_published: c.is_published || false,
+          source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource,
+        })));
+      }
+      setEditDataLoaded(true);
+      setDraftLoaded(true); // skip draft loading in edit mode
+    })();
+  }, [isEditMode, editCourseId, editDataLoaded]);
 
   const buildDraftData = useCallback(() => ({
     title, description, categoryId, difficultyLevel,
@@ -116,7 +171,7 @@ const CreateCourse = () => {
   }, [user, buildDraftData, toast, t]);
 
   useEffect(() => {
-    if (!user || draftLoaded) return;
+    if (!user || draftLoaded || isEditMode) return;
     (async () => {
       const { data } = await (supabase.from("course_drafts" as any) as any).select("draft_data").eq("user_id", user.id).maybeSingle();
       if (data?.draft_data) {
@@ -135,7 +190,7 @@ const CreateCourse = () => {
       }
       setDraftLoaded(true);
     })();
-  }, [user, draftLoaded]);
+  }, [user, draftLoaded, isEditMode]);
 
   const deleteDraft = useCallback(async () => {
     if (!user) return;
