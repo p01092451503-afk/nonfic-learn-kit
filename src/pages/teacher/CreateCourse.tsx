@@ -372,7 +372,20 @@ const CreateCourse = () => {
       if (courseError) throw courseError;
 
       // Delete existing contents and re-insert
+      await supabase.from("course_content_i18n").delete().eq("language_code", "en").in("content_id",
+        (await supabase.from("course_contents").select("id").eq("course_id", editCourseId!)).data?.map((c: any) => c.id) || []
+      );
       await supabase.from("course_contents").delete().eq("course_id", editCourseId!);
+
+      // Save course i18n
+      if (enTitle || enDescription) {
+        await supabase.from("course_i18n").upsert({
+          course_id: editCourseId!,
+          language_code: "en",
+          title: enTitle || title,
+          description: enDescription || description || null,
+        }, { onConflict: "course_id,language_code" });
+      }
 
       if (contents.length > 0) {
         const contentRows = contents.map((c, idx) => ({
@@ -387,10 +400,24 @@ const CreateCourse = () => {
           is_preview: c.is_preview,
           is_published: c.is_published,
         }));
-        const { error: contentError } = await supabase
+        const { data: insertedContents, error: contentError } = await supabase
           .from("course_contents")
-          .insert(contentRows);
+          .insert(contentRows)
+          .select("id");
         if (contentError) throw contentError;
+
+        // Save content i18n
+        if (insertedContents?.length) {
+          const i18nRows = insertedContents.map((ic: any, idx: number) => ({
+            content_id: ic.id,
+            language_code: "en",
+            title: contents[idx].enTitle || contents[idx].title,
+            description: contents[idx].enDescription || contents[idx].description || null,
+          })).filter((r: any) => r.title);
+          if (i18nRows.length) {
+            await supabase.from("course_content_i18n").insert(i18nRows);
+          }
+        }
       }
 
       return { id: editCourseId!, title };
