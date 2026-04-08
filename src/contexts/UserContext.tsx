@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -44,18 +44,61 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const sessionIdRef = useRef<string | null>(null);
+
+  // Record login session
+  const recordLogin = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from("user_sessions")
+        .insert({ user_id: userId, login_at: new Date().toISOString() })
+        .select("id")
+        .single();
+      if (data) {
+        sessionIdRef.current = data.id;
+        // Store in localStorage for tab close / browser close
+        localStorage.setItem("current_session_id", data.id);
+      }
+    } catch (e) {
+      console.error("Failed to record login:", e);
+    }
+  };
+
+  // Record logout
+  const recordLogout = async () => {
+    const sid = sessionIdRef.current || localStorage.getItem("current_session_id");
+    if (!sid) return;
+    try {
+      await supabase
+        .from("user_sessions")
+        .update({ logout_at: new Date().toISOString() })
+        .eq("id", sid);
+      sessionIdRef.current = null;
+      localStorage.removeItem("current_session_id");
+    } catch (e) {
+      console.error("Failed to record logout:", e);
+    }
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
+          // Record login on SIGNED_IN event
+          if (event === "SIGNED_IN") {
+            await recordLogin(session.user.id);
+          }
           setTimeout(async () => {
             await fetchUserData(session.user.id);
           }, 0);
         } else {
+          // Record logout when session ends
+          if (event === "SIGNED_OUT") {
+            await recordLogout();
+          }
           setProfile(null);
           setRoles([]);
         }
@@ -73,7 +116,32 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Record logout on browser/tab close
+    const handleBeforeUnload = () => {
+      const sid = sessionIdRef.current || localStorage.getItem("current_session_id");
+      if (sid) {
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/user_sessions?id=eq.${sid}`;
+        navigator.sendBeacon(url); // best-effort; we also update via PATCH below
+        // Use fetch with keepalive for actual update
+        fetch(url, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            "Authorization": `Bearer ${session?.access_token || ""}`,
+            "Prefer": "return=minimal",
+          },
+          body: JSON.stringify({ logout_at: new Date().toISOString() }),
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, []);
 
   const fetchUserData = async (userId: string) => {
@@ -97,6 +165,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    await recordLogout();
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
