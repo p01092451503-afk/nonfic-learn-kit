@@ -167,8 +167,8 @@ const StudentCourses = () => {
                 {t("course.inProgressCourses")} ({inProgress.length})
               </h2>
               {inProgress.length === 0 ? renderEmpty() : (
-                <div className="space-y-2">
-                  {inProgress.map((e: any) => renderListItem(e))}
+                <div className="rounded-2xl overflow-hidden border border-border">
+                  {inProgress.map((e: any, i: number) => renderListItem(e, false, i))}
                 </div>
               )}
             </section>
