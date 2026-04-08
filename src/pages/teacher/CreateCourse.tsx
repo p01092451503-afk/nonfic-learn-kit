@@ -85,6 +85,8 @@ const CreateCourse = () => {
   const [difficultyLevel, setDifficultyLevel] = useState("beginner");
   const [estimatedHours, setEstimatedHours] = useState("");
   const [translatingCourse, setTranslatingCourse] = useState(false);
+  const [enTitleManual, setEnTitleManual] = useState(false);
+  const [enDescManual, setEnDescManual] = useState(false);
   const [maxStudents, setMaxStudents] = useState("");
   const [isMandatory, setIsMandatory] = useState(false);
   const [deadline, setDeadline] = useState("");
@@ -180,11 +182,13 @@ const CreateCourse = () => {
     })();
   }, [isEditMode, editCourseId, editDataLoaded]);
 
-  // Real-time sync KO → EN for course (copy raw text so EN is never empty)
+  // Real-time sync KO → EN for course (auto-copy when user hasn't manually edited EN)
   useEffect(() => {
-    if (!enTitle && title) setEnTitle(title);
-    if (!enDescription && description) setEnDescription(description);
-  }, [title, description]);
+    if (!enTitleManual && title) setEnTitle(title);
+  }, [title, enTitleManual]);
+  useEffect(() => {
+    if (!enDescManual && description) setEnDescription(description);
+  }, [description, enDescManual]);
 
   // Auto-translate course info
   const handleTranslateCourse = async () => {
@@ -194,8 +198,8 @@ const CreateCourse = () => {
     try {
       const results = await translateKoToEn(texts);
       let idx = 0;
-      if (title) setEnTitle(results[idx++] || "");
-      if (description) setEnDescription(results[idx++] || "");
+      if (title) { setEnTitle(results[idx++] || ""); setEnTitleManual(true); }
+      if (description) { setEnDescription(results[idx++] || ""); setEnDescManual(true); }
     } catch { /* silent */ }
     finally { setTranslatingCourse(false); }
   };
@@ -286,6 +290,13 @@ const CreateCourse = () => {
             updated.video_provider = "";
             updated.video_url = "";
           }
+        }
+        // Auto-sync KO → EN for content items (only if EN hasn't been manually set differently)
+        if (field === "title" && (c.enTitle === c.title || !c.enTitle)) {
+          updated.enTitle = value;
+        }
+        if (field === "description" && (c.enDescription === c.description || !c.enDescription)) {
+          updated.enDescription = value;
         }
         return updated;
       })
