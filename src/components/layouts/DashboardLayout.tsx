@@ -57,6 +57,8 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.courseManagement"), href: "/teacher/courses", icon: BookOpen },
     { label: t("nav.assignmentManagement"), href: "/teacher/assignments", icon: ClipboardList },
     { label: t("nav.studentManagement"), href: "/teacher/students", icon: Users },
+    { label: t("nav.notificationManagement", "알림 관리"), href: "/teacher/notifications", icon: Bell },
+    { label: t("nav.announcementManagement", "공지사항 관리"), href: "/teacher/announcements", icon: Megaphone },
   ];
 
   const adminNav: NavItem[] = [
