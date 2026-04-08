@@ -179,8 +179,8 @@ const StudentCourses = () => {
                 {t("course.completedCourses")} ({completed.length})
               </h2>
               {completed.length === 0 ? renderEmpty(true) : (
-                <div className="space-y-2">
-                  {completed.map((e: any) => renderListItem(e, true))}
+                <div className="rounded-2xl overflow-hidden border border-border">
+                  {completed.map((e: any, i: number) => renderListItem(e, true, i))}
                 </div>
               )}
             </section>
