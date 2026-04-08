@@ -83,7 +83,7 @@ const StudentCourses = () => {
       <Link
         key={enrollment.id}
         to={`/student/courses/${course.id}?view=learn`}
-        className={`group flex items-center gap-4 p-4 hover:shadow-md transition-all border-b-2 border-border/80 last:border-b-0`}
+        className={`group flex items-center gap-4 p-4 hover:shadow-md transition-all border-b-2 border-foreground/20 last:border-b-0`}
       >
         {/* Thumbnail - small */}
         {course.thumbnail_url ? (
