@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
@@ -47,6 +47,8 @@ interface ContentItem {
 
 const CreateCourse = () => {
   const navigate = useNavigate();
+  const { courseId: editCourseId } = useParams<{ courseId?: string }>();
+  const isEditMode = !!editCourseId;
   const { user } = useUser();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
@@ -89,6 +91,61 @@ const CreateCourse = () => {
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [editDataLoaded, setEditDataLoaded] = useState(false);
+  const [existingThumbnailUrl, setExistingThumbnailUrl] = useState<string | null>(null);
+
+  // Load existing course data for edit mode
+  useEffect(() => {
+    if (!isEditMode || !editCourseId || editDataLoaded) return;
+    (async () => {
+      const { data: course, error } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("id", editCourseId)
+        .single();
+      if (error || !course) {
+        toast({ title: t("common.error"), description: "강좌를 찾을 수 없습니다.", variant: "destructive" });
+        navigate(-1);
+        return;
+      }
+      setTitle(course.title || "");
+      setDescription(course.description || "");
+      setCategoryId(course.category_id || "");
+      setDifficultyLevel(course.difficulty_level || "beginner");
+      setEstimatedHours(course.estimated_duration_hours ? String(course.estimated_duration_hours) : "");
+      setMaxStudents(course.max_students ? String(course.max_students) : "");
+      setIsMandatory(course.is_mandatory || false);
+      setDeadline(course.deadline || "");
+      setStatus(course.status || "draft");
+      if (course.thumbnail_url) {
+        setThumbnailPreview(course.thumbnail_url);
+        setExistingThumbnailUrl(course.thumbnail_url);
+      }
+
+      // Load contents
+      const { data: courseContents } = await supabase
+        .from("course_contents")
+        .select("*")
+        .eq("course_id", editCourseId)
+        .order("order_index", { ascending: true });
+      if (courseContents?.length) {
+        setContents(courseContents.map((c: any) => ({
+          tempId: c.id,
+          title: c.title || "",
+          description: c.description || "",
+          content_type: c.content_type || "video",
+          video_url: c.video_url || "",
+          video_provider: c.video_provider || "",
+          duration_minutes: c.duration_minutes,
+          is_preview: c.is_preview || false,
+          is_published: c.is_published || false,
+          source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource,
+        })));
+      }
+      setEditDataLoaded(true);
+      setDraftLoaded(true); // skip draft loading in edit mode
+    })();
+  }, [isEditMode, editCourseId, editDataLoaded]);
 
   const buildDraftData = useCallback(() => ({
     title, description, categoryId, difficultyLevel,
@@ -114,7 +171,7 @@ const CreateCourse = () => {
   }, [user, buildDraftData, toast, t]);
 
   useEffect(() => {
-    if (!user || draftLoaded) return;
+    if (!user || draftLoaded || isEditMode) return;
     (async () => {
       const { data } = await (supabase.from("course_drafts" as any) as any).select("draft_data").eq("user_id", user.id).maybeSingle();
       if (data?.draft_data) {
@@ -133,7 +190,7 @@ const CreateCourse = () => {
       }
       setDraftLoaded(true);
     })();
-  }, [user, draftLoaded]);
+  }, [user, draftLoaded, isEditMode]);
 
   const deleteDraft = useCallback(async () => {
     if (!user) return;
@@ -234,6 +291,66 @@ const CreateCourse = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      let thumbnailUrl = existingThumbnailUrl;
+      if (thumbnailFile) {
+        thumbnailUrl = await uploadThumbnail(editCourseId!);
+      }
+
+      const { error: courseError } = await supabase
+        .from("courses")
+        .update({
+          title,
+          description: description || null,
+          category_id: categoryId || null,
+          difficulty_level: difficultyLevel,
+          estimated_duration_hours: estimatedHours ? parseInt(estimatedHours) : null,
+          max_students: maxStudents ? parseInt(maxStudents) : null,
+          is_mandatory: isMandatory,
+          deadline: deadline || null,
+          status,
+          thumbnail_url: thumbnailUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", editCourseId!);
+      if (courseError) throw courseError;
+
+      // Delete existing contents and re-insert
+      await supabase.from("course_contents").delete().eq("course_id", editCourseId!);
+
+      if (contents.length > 0) {
+        const contentRows = contents.map((c, idx) => ({
+          course_id: editCourseId!,
+          title: c.title,
+          description: c.description || null,
+          content_type: c.content_type,
+          video_url: c.video_url || null,
+          video_provider: c.video_provider || null,
+          duration_minutes: c.duration_minutes,
+          order_index: idx,
+          is_preview: c.is_preview,
+          is_published: c.is_published,
+        }));
+        const { error: contentError } = await supabase
+          .from("course_contents")
+          .insert(contentRows);
+        if (contentError) throw contentError;
+      }
+
+      return { id: editCourseId!, title };
+    },
+    onSuccess: (course) => {
+      queryClient.invalidateQueries({ queryKey: ["teacher-courses"] });
+      queryClient.invalidateQueries({ queryKey: ["course", editCourseId] });
+      toast({ title: t("createCourse.courseUpdated", "강좌가 수정되었습니다"), description: title });
+      navigate(-1);
+    },
+    onError: (error: any) => {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async () => {
       const { data: course, error: courseError } = await supabase
@@ -310,7 +427,11 @@ const CreateCourse = () => {
       toast({ title: t("common.error"), description: t("createCourse.flipUrlRequired"), variant: "destructive" });
       return;
     }
-    createMutation.mutate();
+    if (isEditMode) {
+      updateMutation.mutate();
+    } else {
+      createMutation.mutate();
+    }
   };
 
   const dateLocale = isEn ? enUS : ko;
@@ -327,8 +448,12 @@ const CreateCourse = () => {
         </button>
 
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">{t("createCourse.title")}</h1>
-          <p className="text-muted-foreground mt-1">{t("createCourse.subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">
+            {isEditMode ? t("createCourse.editTitle", "강좌 수정") : t("createCourse.title")}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {isEditMode ? t("createCourse.editSubtitle", "강좌 정보와 콘텐츠를 수정할 수 있습니다.") : t("createCourse.subtitle")}
+          </p>
         </div>
 
         {/* Course Info */}
@@ -475,14 +600,19 @@ const CreateCourse = () => {
           <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(-1)}>
             {t("createCourse.cancel")}
           </Button>
-          <Button type="button" variant="outline" className="rounded-xl gap-2" onClick={saveDraft} disabled={savingDraft}>
-            <Save className="h-4 w-4" />
-            {savingDraft ? t("createCourse.savingBtn") : t("createCourse.saveDraftBtn")}
+          {!isEditMode && (
+            <Button type="button" variant="outline" className="rounded-xl gap-2" onClick={saveDraft} disabled={savingDraft}>
+              <Save className="h-4 w-4" />
+              {savingDraft ? t("createCourse.savingBtn") : t("createCourse.saveDraftBtn")}
+            </Button>
+          )}
+          <Button type="submit" variant="login" size="xl" disabled={isEditMode ? updateMutation.isPending : createMutation.isPending}>
+            {isEditMode
+              ? (updateMutation.isPending ? t("createCourse.updatingBtn", "수정 중...") : t("createCourse.updateBtn", "수정하기"))
+              : (createMutation.isPending ? t("createCourse.creatingBtn") : t("createCourse.createBtn"))
+            }
           </Button>
-          <Button type="submit" variant="login" size="xl" disabled={createMutation.isPending}>
-            {createMutation.isPending ? t("createCourse.creatingBtn") : t("createCourse.createBtn")}
-          </Button>
-          {lastSaved && (
+          {!isEditMode && lastSaved && (
             <span className="text-xs text-muted-foreground ml-auto">
               {t("createCourse.lastSaved", { time: format(lastSaved, "HH:mm:ss") })}
             </span>

@@ -69,6 +69,7 @@ const App = () => (
             <Route path="/teacher/courses" element={<ProtectedRoute><TeacherCourses /></ProtectedRoute>} />
             <Route path="/teacher/assignments" element={<ProtectedRoute><TeacherAssignments /></ProtectedRoute>} />
             <Route path="/teacher/courses/new" element={<ProtectedRoute><CreateCourse /></ProtectedRoute>} />
+            <Route path="/teacher/courses/:courseId/edit" element={<ProtectedRoute><CreateCourse /></ProtectedRoute>} />
             <Route path="/teacher/students" element={<ProtectedRoute><TeacherStudents /></ProtectedRoute>} />
             <Route path="/teacher/students/:studentId" element={<ProtectedRoute><TeacherStudentDetail /></ProtectedRoute>} />
 
@@ -77,6 +78,7 @@ const App = () => (
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
             <Route path="/admin/courses" element={<AdminRoute><AdminCourses /></AdminRoute>} />
             <Route path="/admin/courses/new" element={<AdminRoute><CreateCourse /></AdminRoute>} />
+            <Route path="/admin/courses/:courseId/edit" element={<AdminRoute><CreateCourse /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/enrollments" element={<AdminRoute><AdminEnrollments /></AdminRoute>} />
             <Route path="/admin/learning" element={<AdminRoute><AdminLearning /></AdminRoute>} />
