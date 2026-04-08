@@ -23,6 +23,42 @@ const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
 };
 
+const getYouTubeVideoId = (url: string | null) => {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url.startsWith("http") ? url : `https://${url}`);
+    const host = parsed.hostname.replace(/^www\./, "");
+
+    if (host === "youtu.be") {
+      return parsed.pathname.split("/").filter(Boolean)[0] || null;
+    }
+
+    if (["youtube.com", "m.youtube.com", "music.youtube.com"].includes(host)) {
+      if (parsed.pathname === "/watch") {
+        return parsed.searchParams.get("v");
+      }
+
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      const markerIndex = parts.findIndex((part) => ["embed", "shorts", "live"].includes(part));
+      if (markerIndex !== -1) {
+        return parts[markerIndex + 1] || null;
+      }
+    }
+  } catch {
+    // Fall through to regex parsing
+  }
+
+  const fallbackMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([^&?#/]+)/);
+  return fallbackMatch?.[1] || null;
+};
+
+const getVimeoVideoId = (url: string | null) => {
+  if (!url) return null;
+  const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return match?.[1] || null;
+};
+
 const ContentPlayer = () => {
   const { courseId, contentId } = useParams<{ courseId: string; contentId: string }>();
   const navigate = useNavigate();
@@ -131,12 +167,20 @@ const ContentPlayer = () => {
 
   const localVideoUrlForHook = currentContent ? getVideoUrl(currentContent) : null;
   const localProviderForHook = currentContent ? getVideoProvider(currentContent) : null;
+  const youtubeVideoId = getYouTubeVideoId(localVideoUrlForHook);
+  const vimeoVideoId = getVimeoVideoId(localVideoUrlForHook);
+
   const isYouTube = (url: string | null, provider: string | null) =>
     provider === "youtube" || url?.includes("youtube.com") || url?.includes("youtu.be");
   const isVimeo = (url: string | null, provider: string | null) =>
     provider === "vimeo" || url?.includes("vimeo.com");
-  const isTrackableVideo = !!(currentContent && localVideoUrlForHook && !isMangoboard(localVideoUrlForHook) &&
-    (isYouTube(localVideoUrlForHook, localProviderForHook) || isVimeo(localVideoUrlForHook, localProviderForHook)));
+  const isTrackableVideo = !!(
+    currentContent &&
+    localVideoUrlForHook &&
+    !isMangoboard(localVideoUrlForHook) &&
+    ((isYouTube(localVideoUrlForHook, localProviderForHook) && youtubeVideoId) ||
+      (isVimeo(localVideoUrlForHook, localProviderForHook) && vimeoVideoId))
+  );
 
   const videoProgress = useVideoProgress({
     userId: user?.id,
@@ -160,15 +204,21 @@ const ContentPlayer = () => {
     (el: HTMLElement | null) => {
       if (!el || !currentContent || !isTrackableVideo) return;
       videoIframeRef.current = el as HTMLIFrameElement;
-      const url = localVideoUrlForHook!;
-      if (isYouTube(url, localProviderForHook)) {
-        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
-        if (match) videoProgress.initYouTube(el, match[1]);
-      } else if (isVimeo(url, localProviderForHook)) {
+
+      if (youtubeVideoId) {
+        videoProgress.initYouTube(el, youtubeVideoId);
+      } else if (vimeoVideoId) {
         videoProgress.initVimeo(el as HTMLIFrameElement);
       }
     },
-    [currentContent?.id, isTrackableVideo]
+    [
+      currentContent?.id,
+      isTrackableVideo,
+      youtubeVideoId,
+      vimeoVideoId,
+      videoProgress.initYouTube,
+      videoProgress.initVimeo,
+    ]
   );
 
   const formatTime = (sec: number) => {
@@ -233,21 +283,22 @@ const ContentPlayer = () => {
   const getVideoEmbed = (url: string | null, provider: string | null) => {
     if (!url) return null;
     if (isMangoboard(url)) return normalizeMangoboardUrl(url);
-    if (provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) {
-      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
-      if (match) {
-        const params = new URLSearchParams({
-          enablejsapi: "1",
-          origin: window.location.origin,
-          ...(videoProgress.resumePosition > 0 && !currentProgress?.completed ? { start: String(videoProgress.resumePosition) } : {}),
-        });
-        return `https://www.youtube.com/embed/${match[1]}?${params.toString()}`;
-      }
+
+    const resolvedYouTubeId = getYouTubeVideoId(url);
+    if ((provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) && resolvedYouTubeId) {
+      const params = new URLSearchParams({
+        enablejsapi: "1",
+        origin: window.location.origin,
+        ...(videoProgress.resumePosition > 0 && !currentProgress?.completed ? { start: String(videoProgress.resumePosition) } : {}),
+      });
+      return `https://www.youtube.com/embed/${resolvedYouTubeId}?${params.toString()}`;
     }
-    if (provider === "vimeo" || url.includes("vimeo.com")) {
-      const match = url.match(/vimeo\.com\/(\d+)/);
-      if (match) return `https://player.vimeo.com/video/${match[1]}`;
+
+    const resolvedVimeoId = getVimeoVideoId(url);
+    if ((provider === "vimeo" || url.includes("vimeo.com")) && resolvedVimeoId) {
+      return `https://player.vimeo.com/video/${resolvedVimeoId}`;
     }
+
     return url;
   };
 
