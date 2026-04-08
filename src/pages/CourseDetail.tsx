@@ -373,9 +373,15 @@ const CourseDetail = () => {
       status: course.status || "draft",
       is_mandatory: course.is_mandatory || false,
       deadline: course.deadline || "",
+      category_id: course.category_id || "",
+      difficulty_level: course.difficulty_level || "beginner",
+      estimated_duration_hours: course.estimated_duration_hours ? String(course.estimated_duration_hours) : "",
+      max_students: course.max_students ? String(course.max_students) : "",
     });
     const enCourse = courseI18n?.find((i: any) => i.language_code === "en");
     setCourseEnForm({ title: enCourse?.title || "", description: enCourse?.description || "" });
+    setCourseThumbnailFile(null);
+    setCourseThumbnailPreview(course.thumbnail_url || null);
     setCourseEditOpen(true);
   };
 
