@@ -388,14 +388,14 @@ const StudentDashboard = () => {
               <p className="text-sm text-muted-foreground">{t("dashboard.noCourses")}</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {enrollments.map((enrollment: any) => {
+            <div className="space-y-0 rounded-2xl overflow-hidden border border-border">
+              {enrollments.map((enrollment: any, index: number) => {
                 const nextContent = getNextContent(enrollment.course_id);
                 const progress = Math.round(Number(enrollment.progress) || 0);
                 const instructorName = instructorMap.get(enrollment.courses?.instructor_id) || t("dashboard.instructor");
 
                 return (
-                  <div key={enrollment.id} className="stat-card !p-4 sm:!p-5 space-y-3" role="article" aria-label={enrollment.courses?.title}>
+                  <div key={enrollment.id} className={`!p-4 sm:!p-5 space-y-3 ${index % 2 === 0 ? "bg-card" : "bg-muted/40"}`} role="article" aria-label={enrollment.courses?.title}>
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
                       <div className="space-y-1 min-w-0 flex-1">
                         <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">
