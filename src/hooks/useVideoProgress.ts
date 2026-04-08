@@ -84,16 +84,8 @@ export function useVideoProgress({
         if (ytPlayerRef.current) {
           try { ytPlayerRef.current.destroy(); } catch {}
         }
+        // Use existing iframe element directly
         ytPlayerRef.current = new (window as any).YT.Player(el, {
-          videoId,
-          width: "100%",
-          height: "100%",
-          playerVars: {
-            autoplay: 0,
-            start: resumePosition > 0 && !isCompleted ? resumePosition : 0,
-            enablejsapi: 1,
-            origin: window.location.origin,
-          },
           events: {
             onReady: () => setPlayerReady(true),
             onStateChange: (e: any) => {
