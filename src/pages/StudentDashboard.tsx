@@ -299,43 +299,30 @@ const StudentDashboard = () => {
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("dashboard.hello")}</p>
         </div>
 
-        {/* Stat Cards */}
-        <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label={t("dashboard.stats", "학습 통계")}>
-          {stats.map((stat) => {
+        {/* Stat Cards - Compact 2 rows */}
+        <section className="grid grid-cols-4 gap-2 sm:gap-3" aria-label={t("dashboard.stats", "학습 통계")}>
+          {[...stats, ...detailStats].map((stat) => {
             const content = (
               <>
-                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <span className="text-xs sm:text-sm text-muted-foreground leading-tight">{stat.label}</span>
-                  <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" aria-hidden="true" />
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">{stat.label}</span>
+                  <stat.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1" aria-hidden="true" />
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
+                <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">{stat.value}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 truncate">{stat.sub}</p>
               </>
             );
-            return stat.href ? (
-              <Link key={stat.label} to={stat.href} className="stat-card !p-4 sm:!p-6 hover:shadow-md transition-shadow cursor-pointer" role="group" aria-label={stat.label}>
+            const href = (stat as any).href;
+            return href ? (
+              <Link key={stat.label} to={href} className="stat-card !p-2.5 sm:!p-3 hover:shadow-md transition-shadow cursor-pointer" role="group" aria-label={stat.label}>
                 {content}
               </Link>
             ) : (
-              <div key={stat.label} className="stat-card !p-4 sm:!p-6" role="group" aria-label={stat.label}>
+              <div key={stat.label} className="stat-card !p-2.5 sm:!p-3" role="group" aria-label={stat.label}>
                 {content}
               </div>
             );
           })}
-        </section>
-
-        {/* Detail Stats */}
-        <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label={t("dashboard.detailStats", "상세 통계")}>
-          {detailStats.map((stat) => (
-            <div key={stat.label} className="stat-card !p-4 sm:!p-6" role="group" aria-label={stat.label}>
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <span className="text-xs sm:text-sm text-muted-foreground leading-tight">{stat.label}</span>
-                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" aria-hidden="true" />
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.sub}</p>
-            </div>
-          ))}
         </section>
 
         {/* 필수교육 안내 */}
