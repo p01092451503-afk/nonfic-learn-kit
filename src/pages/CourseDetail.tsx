@@ -1028,21 +1028,17 @@ const ContentDialog = ({
             <Label className="text-xs">{t("course.enTitle")}</Label>
             <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => setEnForm(f => ({ ...f, title: e.target.value }))} placeholder="English title" />
           </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("course.enVideoUrl")}</Label>
-            <Input className="h-9 text-sm" value={enForm.video_url} onChange={(e) => setEnForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://..." />
-          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs">{t("course.provider")}</Label>
-              <Select value={enForm.video_provider || "same"} onValueChange={(v) => setEnForm(f => ({ ...f, video_provider: v === "same" ? "" : v }))}>
+              <Label className="text-xs">{t("course.contentType")}</Label>
+              <Select value={form.content_type} onValueChange={(v) => setForm(f => ({ ...f, content_type: v }))}>
                 <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="same">{t("course.koTab")} (same)</SelectItem>
-                  <SelectItem value="youtube">{t("course.youtube")}</SelectItem>
-                  <SelectItem value="vimeo">{t("course.vimeo")}</SelectItem>
-                  <SelectItem value="custom">{t("course.flipLearningMango")}</SelectItem>
-                  <SelectItem value="upload">{t("course.cdnUpload")}</SelectItem>
+                  <SelectItem value="video">{t("course.video")}</SelectItem>
+                  <SelectItem value="document">{t("course.document")}</SelectItem>
+                  <SelectItem value="quiz">{t("course.quiz")}</SelectItem>
+                  <SelectItem value="assignment">{t("course.assignment")}</SelectItem>
+                  <SelectItem value="live">{t("course.live")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1052,8 +1048,34 @@ const ContentDialog = ({
             </div>
           </div>
           <div className="space-y-1">
+            <Label className="text-xs">{t("course.contentUrl")}</Label>
+            <Input className="h-9 text-sm" value={enForm.video_url} onChange={(e) => setEnForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://..." />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">{t("course.provider")}</Label>
+            <Select value={enForm.video_provider || form.video_provider} onValueChange={(v) => setEnForm(f => ({ ...f, video_provider: v }))}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t("course.select")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="youtube">{t("course.youtube")}</SelectItem>
+                <SelectItem value="vimeo">{t("course.vimeo")}</SelectItem>
+                <SelectItem value="custom">{t("course.flipLearningMango")}</SelectItem>
+                <SelectItem value="upload">{t("course.cdnUpload")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
             <Label className="text-xs">{t("course.enDescription")}</Label>
             <Textarea className="text-sm" value={enForm.description} onChange={(e) => setEnForm(f => ({ ...f, description: e.target.value }))} rows={2} placeholder="English description" />
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Switch checked={form.is_published} onCheckedChange={(v) => setForm(f => ({ ...f, is_published: v }))} />
+              <Label className="text-xs">{t("course.isPublished")}</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={form.is_preview} onCheckedChange={(v) => setForm(f => ({ ...f, is_preview: v }))} />
+              <Label className="text-xs">{t("course.allowPreview")}</Label>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
