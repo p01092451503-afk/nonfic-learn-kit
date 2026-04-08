@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { User, Lock, Camera, Check, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp, Upload, ImagePlus } from "lucide-react";
+import { useState } from "react";
+import { User, Lock, Camera, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -7,30 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import AvatarTab from "@/components/mypage/AvatarTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-
-const PRESET_AVATARS = [
-  ...Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`),
-  ...Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${String(i + 9).padStart(2, "0")}.png`),
-];
-
-// Preload all avatar images on mount
-const usePreloadAvatars = () => {
-  useEffect(() => {
-    PRESET_AVATARS.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
-};
 
 const MyPage = () => {
   const { user, profile, refreshProfile } = useUser();
   const { toast } = useToast();
   const { t } = useTranslation();
-  usePreloadAvatars();
+  
 
   // Profile fields
   const [fullName, setFullName] = useState(profile?.full_name || "");
@@ -39,36 +25,8 @@ const MyPage = () => {
   const [teamName, setTeamName] = useState(profile?.team_name || "");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  // Avatar
-  const [selectedAvatar, setSelectedAvatar] = useState(profile?.avatar_url || "");
-  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: t("common.error"), description: t("mypage.fileTooLarge"), variant: "destructive" });
-      return;
-    }
-    setIsUploading(true);
-    try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `${user.id}/avatar.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
-      const urlWithCache = `${publicUrl}?t=${Date.now()}`;
-      setSelectedAvatar(urlWithCache);
-      toast({ title: t("mypage.uploadSuccess") });
-    } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
+
 
   // Password
   const [newPassword, setNewPassword] = useState("");
@@ -98,23 +56,8 @@ const MyPage = () => {
     }
   };
 
-  const handleSaveAvatar = async () => {
-    if (!user) return;
-    setIsSavingAvatar(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ avatar_url: selectedAvatar })
-        .eq("user_id", user.id);
-      if (error) throw error;
-      await refreshProfile();
-      toast({ title: t("mypage.avatarSaved") });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    } finally {
-      setIsSavingAvatar(false);
-    }
-  };
+
+
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
@@ -139,7 +82,7 @@ const MyPage = () => {
     }
   };
 
-  const currentAvatar = profile?.avatar_url;
+  
 
   // Stats for the header
   const { data: enrollmentStats } = useQuery({
@@ -208,7 +151,7 @@ const MyPage = () => {
             {/* Left: avatar + info */}
             <div className="flex items-center gap-5 lg:min-w-[320px]">
               <Avatar className="h-20 w-20 border-2 border-border shadow-sm">
-                <AvatarImage src={currentAvatar || ""} alt={profile?.full_name || ""} />
+                <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} />
                 <AvatarFallback className="bg-card text-foreground text-xl font-semibold">
                   {profile?.full_name?.charAt(0) || "?"}
                 </AvatarFallback>
@@ -335,73 +278,7 @@ const MyPage = () => {
 
             {/* Avatar Tab */}
             <TabsContent value="avatar">
-              <div className="max-w-2xl space-y-6">
-                <div className="space-y-1">
-                  <h2 className="text-lg font-semibold">{t("mypage.selectAvatar")}</h2>
-                  <p className="text-sm text-muted-foreground">{t("mypage.selectAvatarDesc")}</p>
-                </div>
-
-                {/* Illustrated style */}
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                  {PRESET_AVATARS.map((url) => (
-                    <button
-                      key={url}
-                      onClick={() => setSelectedAvatar(url)}
-                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-150 hover:scale-105 ${
-                        selectedAvatar === url
-                          ? "ring-2 ring-primary ring-offset-1 ring-offset-background shadow-sm"
-                          : "ring-1 ring-border hover:ring-muted-foreground/40"
-                      }`}
-                    >
-                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                      {selectedAvatar === url && (
-                        <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="h-2.5 w-2.5 text-primary-foreground" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Custom upload */}
-                <div className="mt-4">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl ring-1 ring-border hover:ring-primary/50 transition-all text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    <ImagePlus className="h-4 w-4" />
-                    <span>{isUploading ? t("common.saving") : t("mypage.uploadPhoto")}</span>
-                  </button>
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-
-                {/* Preview */}
-                <div className="flex items-center gap-4 p-4 bg-secondary/30 rounded-xl">
-                  <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-border bg-card">
-                    {selectedAvatar ? (
-                      <img src={selectedAvatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-lg font-bold text-muted-foreground">
-                        {profile?.full_name?.slice(0, 2) || "?"}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{t("mypage.preview")}</p>
-                    <p className="text-xs text-muted-foreground">{t("mypage.previewDesc")}</p>
-                  </div>
-                  <Button onClick={handleSaveAvatar} disabled={isSavingAvatar} className="rounded-xl gap-1.5">
-                    {isSavingAvatar ? t("common.saving") : t("mypage.applyAvatar")}
-                  </Button>
-                </div>
-              </div>
+              <AvatarTab />
             </TabsContent>
 
             {/* Password Tab */}
