@@ -448,8 +448,12 @@ const CreateCourse = () => {
         </button>
 
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">{t("createCourse.title")}</h1>
-          <p className="text-muted-foreground mt-1">{t("createCourse.subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">
+            {isEditMode ? t("createCourse.editTitle", "강좌 수정") : t("createCourse.title")}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {isEditMode ? t("createCourse.editSubtitle", "강좌 정보와 콘텐츠를 수정할 수 있습니다.") : t("createCourse.subtitle")}
+          </p>
         </div>
 
         {/* Course Info */}
