@@ -81,53 +81,45 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    // IMPORTANT: Set up listener BEFORE getSession per Supabase best practices.
+    // onAuthStateChange fires INITIAL_SESSION first, then getSession resolves.
+    // We must NOT set isLoading=false until fetchUserData completes.
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Fire-and-forget: do NOT await inside onAuthStateChange to avoid deadlocks
+          // Fire-and-forget: do NOT await inside onAuthStateChange
           if (event === "SIGNED_IN") {
             recordLogin(session.user.id);
           }
-          setTimeout(() => {
-            fetchUserData(session.user.id);
-          }, 0);
+          // fetchUserData sets isLoading=false in its finally block
+          fetchUserData(session.user.id);
         } else {
           if (event === "SIGNED_OUT") {
             recordLogout();
           }
           setProfile(null);
           setRoles([]);
+          setIsLoading(false);
         }
-        setIsLoading(false);
       }
     );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id);
-      } else {
-        setIsLoading(false);
-      }
-    });
 
     // Record logout on browser/tab close
     const handleBeforeUnload = () => {
       const sid = sessionIdRef.current || localStorage.getItem("current_session_id");
       if (sid) {
         const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/user_sessions?id=eq.${sid}`;
-        navigator.sendBeacon(url); // best-effort; we also update via PATCH below
-        // Use fetch with keepalive for actual update
+        const token = supabase.realtime?.accessToken || "";
         fetch(url, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            "Authorization": `Bearer ${session?.access_token || ""}`,
+            "Authorization": `Bearer ${token}`,
             "Prefer": "return=minimal",
           },
           body: JSON.stringify({ logout_at: new Date().toISOString() }),
