@@ -84,6 +84,7 @@ const App = () => (
             <Route path="/teacher/notifications" element={<ProtectedRoute><TeacherNotifications /></ProtectedRoute>} />
             <Route path="/teacher/announcements" element={<ProtectedRoute><TeacherAnnouncements /></ProtectedRoute>} />
             <Route path="/teacher/board" element={<ProtectedRoute><AdminBoard role="teacher" /></ProtectedRoute>} />
+            <Route path="/teacher/attendance" element={<ProtectedRoute><AdminAttendance role="teacher" /></ProtectedRoute>} />
 
             {/* Admin */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -94,7 +95,7 @@ const App = () => (
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/enrollments" element={<AdminRoute><AdminEnrollments /></AdminRoute>} />
             <Route path="/admin/learning" element={<AdminRoute><AdminLearning /></AdminRoute>} />
-            <Route path="/admin/attendance" element={<AdminRoute><AdminAttendance /></AdminRoute>} />
+            <Route path="/admin/attendance" element={<AdminRoute><AdminAttendance role="admin" /></AdminRoute>} />
             <Route path="/admin/completion" element={<AdminRoute><AdminCompletion /></AdminRoute>} />
             <Route path="/admin/traffic" element={<AdminRoute><AdminTraffic /></AdminRoute>} />
             <Route path="/admin/branches" element={<AdminRoute><AdminBranches /></AdminRoute>} />
