@@ -766,7 +766,7 @@ const UnifiedContentEditor = ({
   onRemove: () => void;
   contentTypeOptions: { value: ContentType; label: string; icon: React.ElementType }[];
   videoProviderOptions: { value: VideoProvider; label: string }[];
-  t: (key: string, defaultValue?: string) => string;
+  t: any;
 }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
