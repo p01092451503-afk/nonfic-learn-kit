@@ -1003,7 +1003,9 @@
     "messagePlaceholder": "Enter notification message",
     "recentSent": "Recent Notifications",
     "sentAt": "Sent At",
-    "readStatus": "Read"
+    "readStatus": "Read",
+    "teacherDesc": "Send notifications to your students.",
+    "myStudentsNotify": "All My Students"
   },
   "announcements": {
     "title": "Announcements",
