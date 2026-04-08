@@ -35,6 +35,8 @@ import AdminBranches from "./pages/admin/AdminBranches";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 import StudentAnnouncements from "./pages/student/StudentAnnouncements";
+import AdminBoard from "./pages/admin/AdminBoard";
+import StudentBoard from "./pages/student/StudentBoard";
 import DeptAdminDashboard from "./pages/DeptAdminDashboard";
 import CourseDetail from "./pages/CourseDetail";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
@@ -69,6 +71,7 @@ const App = () => (
             <Route path="/catalog" element={<ProtectedRoute><CourseCatalog /></ProtectedRoute>} />
             <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
             <Route path="/student/announcements" element={<ProtectedRoute><StudentAnnouncements /></ProtectedRoute>} />
+            <Route path="/student/board" element={<ProtectedRoute><StudentBoard /></ProtectedRoute>} />
 
             {/* Teacher */}
             <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
@@ -80,6 +83,7 @@ const App = () => (
             <Route path="/teacher/students/:studentId" element={<ProtectedRoute><TeacherStudentDetail /></ProtectedRoute>} />
             <Route path="/teacher/notifications" element={<ProtectedRoute><TeacherNotifications /></ProtectedRoute>} />
             <Route path="/teacher/announcements" element={<ProtectedRoute><TeacherAnnouncements /></ProtectedRoute>} />
+            <Route path="/teacher/board" element={<ProtectedRoute><AdminBoard role="teacher" /></ProtectedRoute>} />
 
             {/* Admin */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -96,6 +100,7 @@ const App = () => (
             <Route path="/admin/branches" element={<AdminRoute><AdminBranches /></AdminRoute>} />
             <Route path="/admin/notifications" element={<AdminRoute><AdminNotifications /></AdminRoute>} />
             <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
+            <Route path="/admin/board" element={<AdminRoute><AdminBoard role="admin" /></AdminRoute>} />
 
             {/* Dept Admin */}
             <Route path="/dept-admin" element={<ProtectedRoute><DeptAdminDashboard /></ProtectedRoute>} />
