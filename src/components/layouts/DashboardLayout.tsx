@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { supabase } from "@/integrations/supabase/client";
 import LanguageToggle from "@/components/LanguageToggle";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationBell from "@/components/NotificationBell";
@@ -16,6 +17,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
+  showNew?: boolean;
 }
 
 interface DashboardLayoutProps {
@@ -28,11 +30,26 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [hasNewAnnouncement, setHasNewAnnouncement] = useState(false);
   const { profile, signOut } = useUser();
   const { primaryRole } = useUserRole();
   const { t } = useTranslation();
 
   const activeRole = role || primaryRole;
+
+  // Check for new announcements (published within last 24 hours)
+  useEffect(() => {
+    const checkNew = async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("announcements")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true)
+        .gte("created_at", since);
+      setHasNewAnnouncement((count ?? 0) > 0);
+    };
+    checkNew();
+  }, []);
 
   // Preload user avatar for instant rendering
   useEffect(() => {
@@ -48,7 +65,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.myCourses"), href: "/dashboard/courses", icon: BookOpen },
     { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList },
     { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy },
-    { label: t("nav.announcements", "공지사항"), href: "/student/announcements", icon: Megaphone },
+    { label: t("nav.announcements", "공지사항"), href: "/student/announcements", icon: Megaphone, showNew: hasNewAnnouncement },
     { label: t("nav.myPage"), href: "/mypage", icon: UserCircle },
   ];
 
@@ -118,6 +135,11 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
                 aria-current={isActive ? "page" : undefined}>
                 <item.icon className="h-[18px] w-[18px]" aria-hidden="true" />
                 <span>{item.label}</span>
+                {item.showNew && (
+                  <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold leading-none rounded bg-destructive text-destructive-foreground animate-pulse">
+                    NEW
+                  </span>
+                )}
                 {isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" aria-hidden="true" />}
               </Link>
             );
