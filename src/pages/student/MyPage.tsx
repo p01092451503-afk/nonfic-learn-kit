@@ -398,14 +398,13 @@ const MyPage = () => {
                     <span>{isUploading ? t("common.saving") : t("mypage.uploadPhoto")}</span>
                   </button>
                 </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                  />
-                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
 
                 {/* Preview */}
                 <div className="flex items-center gap-4 p-4 bg-secondary/30 rounded-xl">
