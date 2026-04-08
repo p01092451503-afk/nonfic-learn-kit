@@ -210,30 +210,36 @@ const AvatarTab = () => {
           const isSelected = selectedAvatar === avatar.src;
           const isRecentlyUsed = currentSavedAvatar === avatar.src && !isSelected;
           return (
-            <button
-              key={avatar.id}
-              onClick={() => setSelectedAvatar(avatar.src)}
-              className={`relative aspect-square rounded-2xl overflow-hidden transition-all duration-150 cursor-pointer ${
-                isSelected
-                  ? "ring-2 ring-foreground scale-105 z-10"
-                  : selectedAvatar
-                    ? "opacity-70 hover:opacity-100 hover:ring-1 hover:ring-muted-foreground hover:scale-[1.03]"
-                    : "hover:ring-1 hover:ring-muted-foreground hover:scale-[1.03]"
-              }`}
-              style={{ backgroundColor: "#FAF6F0" }}
-            >
-              <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover" loading="lazy" />
-              {isSelected && (
-                <div className="absolute top-1 right-1 h-5 w-5 rounded-full bg-background border border-foreground flex items-center justify-center">
-                  <Check className="h-3 w-3 text-foreground" />
-                </div>
-              )}
-              {isRecentlyUsed && (
-                <span className="absolute top-1 left-1 text-[8px] bg-foreground/80 text-background px-1.5 py-0.5 rounded-full leading-none">
-                  {t("mypage.recentlyUsed")}
-                </span>
-              )}
-            </button>
+            <HoverCard key={avatar.id} openDelay={300} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <button
+                  onClick={() => setSelectedAvatar(avatar.src)}
+                  className={`relative aspect-square rounded-2xl overflow-hidden transition-all duration-150 cursor-pointer ${
+                    isSelected
+                      ? "ring-2 ring-foreground scale-105 z-10"
+                      : selectedAvatar
+                        ? "opacity-70 hover:opacity-100 hover:ring-1 hover:ring-muted-foreground hover:scale-[1.03]"
+                        : "hover:ring-1 hover:ring-muted-foreground hover:scale-[1.03]"
+                  }`}
+                  style={{ backgroundColor: "#FAF6F0" }}
+                >
+                  <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover" loading="lazy" />
+                  {isSelected && (
+                    <div className="absolute top-1 right-1 h-5 w-5 rounded-full bg-background border border-foreground flex items-center justify-center">
+                      <Check className="h-3 w-3 text-foreground" />
+                    </div>
+                  )}
+                  {isRecentlyUsed && (
+                    <span className="absolute top-1 left-1 text-[8px] bg-foreground/80 text-background px-1.5 py-0.5 rounded-full leading-none">
+                      {t("mypage.recentlyUsed")}
+                    </span>
+                  )}
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent side="top" className="w-48 h-48 p-1 rounded-2xl" style={{ backgroundColor: "#FAF6F0" }}>
+                <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover rounded-xl" />
+              </HoverCardContent>
+            </HoverCard>
           );
         })}
       </div>
