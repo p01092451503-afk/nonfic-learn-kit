@@ -167,12 +167,20 @@ const ContentPlayer = () => {
 
   const localVideoUrlForHook = currentContent ? getVideoUrl(currentContent) : null;
   const localProviderForHook = currentContent ? getVideoProvider(currentContent) : null;
+  const youtubeVideoId = getYouTubeVideoId(localVideoUrlForHook);
+  const vimeoVideoId = getVimeoVideoId(localVideoUrlForHook);
+
   const isYouTube = (url: string | null, provider: string | null) =>
     provider === "youtube" || url?.includes("youtube.com") || url?.includes("youtu.be");
   const isVimeo = (url: string | null, provider: string | null) =>
     provider === "vimeo" || url?.includes("vimeo.com");
-  const isTrackableVideo = !!(currentContent && localVideoUrlForHook && !isMangoboard(localVideoUrlForHook) &&
-    (isYouTube(localVideoUrlForHook, localProviderForHook) || isVimeo(localVideoUrlForHook, localProviderForHook)));
+  const isTrackableVideo = !!(
+    currentContent &&
+    localVideoUrlForHook &&
+    !isMangoboard(localVideoUrlForHook) &&
+    ((isYouTube(localVideoUrlForHook, localProviderForHook) && youtubeVideoId) ||
+      (isVimeo(localVideoUrlForHook, localProviderForHook) && vimeoVideoId))
+  );
 
   const videoProgress = useVideoProgress({
     userId: user?.id,
@@ -196,15 +204,21 @@ const ContentPlayer = () => {
     (el: HTMLElement | null) => {
       if (!el || !currentContent || !isTrackableVideo) return;
       videoIframeRef.current = el as HTMLIFrameElement;
-      const url = localVideoUrlForHook!;
-      if (isYouTube(url, localProviderForHook)) {
-        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
-        if (match) videoProgress.initYouTube(el, match[1]);
-      } else if (isVimeo(url, localProviderForHook)) {
+
+      if (youtubeVideoId) {
+        videoProgress.initYouTube(el, youtubeVideoId);
+      } else if (vimeoVideoId) {
         videoProgress.initVimeo(el as HTMLIFrameElement);
       }
     },
-    [currentContent?.id, isTrackableVideo]
+    [
+      currentContent?.id,
+      isTrackableVideo,
+      youtubeVideoId,
+      vimeoVideoId,
+      videoProgress.initYouTube,
+      videoProgress.initVimeo,
+    ]
   );
 
   const formatTime = (sec: number) => {
@@ -269,21 +283,22 @@ const ContentPlayer = () => {
   const getVideoEmbed = (url: string | null, provider: string | null) => {
     if (!url) return null;
     if (isMangoboard(url)) return normalizeMangoboardUrl(url);
-    if (provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) {
-      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?#]+)/);
-      if (match) {
-        const params = new URLSearchParams({
-          enablejsapi: "1",
-          origin: window.location.origin,
-          ...(videoProgress.resumePosition > 0 && !currentProgress?.completed ? { start: String(videoProgress.resumePosition) } : {}),
-        });
-        return `https://www.youtube.com/embed/${match[1]}?${params.toString()}`;
-      }
+
+    const resolvedYouTubeId = getYouTubeVideoId(url);
+    if ((provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) && resolvedYouTubeId) {
+      const params = new URLSearchParams({
+        enablejsapi: "1",
+        origin: window.location.origin,
+        ...(videoProgress.resumePosition > 0 && !currentProgress?.completed ? { start: String(videoProgress.resumePosition) } : {}),
+      });
+      return `https://www.youtube.com/embed/${resolvedYouTubeId}?${params.toString()}`;
     }
-    if (provider === "vimeo" || url.includes("vimeo.com")) {
-      const match = url.match(/vimeo\.com\/(\d+)/);
-      if (match) return `https://player.vimeo.com/video/${match[1]}`;
+
+    const resolvedVimeoId = getVimeoVideoId(url);
+    if ((provider === "vimeo" || url.includes("vimeo.com")) && resolvedVimeoId) {
+      return `https://player.vimeo.com/video/${resolvedVimeoId}`;
     }
+
     return url;
   };
 
