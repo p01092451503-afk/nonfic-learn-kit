@@ -335,13 +335,13 @@ const StudentDashboard = () => {
                 <p className="text-xs text-muted-foreground">{t("mandatory.subtitle")}</p>
               </div>
             </div>
-            <div className="space-y-3">
-              {mandatoryCourses.map((mc: any) => {
+            <div className="rounded-2xl overflow-hidden border border-border">
+              {mandatoryCourses.map((mc: any, index: number) => {
                 const isOverdue = mc.daysLeft !== null && mc.daysLeft < 0;
                 const isToday = mc.daysLeft === 0;
                 const isUrgent = mc.daysLeft !== null && mc.daysLeft <= 3;
                 return (
-                  <div key={mc.id} className={`stat-card !p-3 sm:!p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 ${isOverdue ? "border-destructive/40 bg-destructive/5" : isUrgent ? "border-orange-300 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/10" : ""}`} role="article" aria-label={mc.title}>
+                  <div key={mc.id} className={`!p-3 sm:!p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 ${isOverdue ? "bg-destructive/5" : isUrgent ? "bg-orange-50/50 dark:bg-orange-950/10" : index % 2 === 0 ? "bg-card" : "bg-muted/40"}`} role="article" aria-label={mc.title}>
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-sm font-semibold text-foreground truncate">{mc.title}</h3>
