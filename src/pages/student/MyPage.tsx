@@ -11,10 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 
-const PRESET_AVATARS = [
-  ...Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`),
-  ...Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${String(i + 9).padStart(2, "0")}.png`),
-];
+const PRESET_AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`);
 
 // Preload all avatar images on mount
 const usePreloadAvatars = () => {
