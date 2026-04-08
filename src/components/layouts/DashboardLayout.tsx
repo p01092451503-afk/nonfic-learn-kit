@@ -76,7 +76,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList },
     { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy },
     { label: t("nav.announcements", "공지사항"), href: "/student/announcements", icon: Megaphone, showNew: hasNewAnnouncement },
-    { label: t("nav.board", "게시판"), href: "/student/board", icon: FileText },
+    { label: t("nav.board", "게시판"), href: "/student/board", icon: FileText, showNew: hasNewBoardPost },
     { label: t("nav.myPage"), href: "/mypage", icon: UserCircle },
   ];
 
