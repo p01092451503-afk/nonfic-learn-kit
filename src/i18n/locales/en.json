@@ -98,7 +98,9 @@
     "branchManagement": "Branches",
     "announcements": "Announcements",
     "notificationManagement": "Notifications",
-    "announcementManagement": "Announcements"
+    "announcementManagement": "Announcements",
+    "board": "Board",
+    "boardManagement": "Board"
   },
   "roles": {
     "student": "Student",
@@ -1029,5 +1031,24 @@
     "noAnnouncements": "No announcements yet.",
     "teacherDesc": "Post announcements for your students.",
     "myAnnouncements": "My Announcements"
+  },
+  "board": {
+    "title": "Board Management",
+    "subtitle": "Distribute materials and post announcements for students.",
+    "studentTitle": "Board",
+    "studentSubtitle": "Check educational materials and announcements.",
+    "newPost": "New Post",
+    "editPost": "Edit Post",
+    "allPosts": "All Posts",
+    "generalBoard": "General Board",
+    "postTitle": "Title",
+    "postContent": "Content",
+    "linkedCourse": "Linked Course (optional)",
+    "attachments": "Attachments",
+    "addFile": "Add File",
+    "publish": "Published",
+    "draft": "Draft",
+    "pinToTop": "Pin to Top",
+    "course": "Course"
   }
 }
