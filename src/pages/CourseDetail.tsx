@@ -1069,6 +1069,27 @@ const CourseEditDialog = ({
   categories: { id: string; name: string }[];
 }) => {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [translating, setTranslating] = useState(false);
+
+  const handleAutoTranslate = async () => {
+    const textsToTranslate = [form.title, form.description].filter(Boolean);
+    if (textsToTranslate.length === 0) return;
+    setTranslating(true);
+    try {
+      const results = await translateKoToEn(textsToTranslate);
+      let idx = 0;
+      setEnForm(f => ({
+        ...f,
+        title: form.title ? (results[idx++] || "") : f.title,
+        description: form.description ? (results[idx++] || "") : f.description,
+      }));
+    } catch {
+      // silently fail
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   return (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
