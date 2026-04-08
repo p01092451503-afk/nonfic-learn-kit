@@ -30,6 +30,9 @@ import AdminAttendance from "./pages/admin/AdminAttendance";
 import AdminCompletion from "./pages/admin/AdminCompletion";
 import AdminTraffic from "./pages/admin/AdminTraffic";
 import AdminBranches from "./pages/admin/AdminBranches";
+import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
+import StudentAnnouncements from "./pages/student/StudentAnnouncements";
 import DeptAdminDashboard from "./pages/DeptAdminDashboard";
 import CourseDetail from "./pages/CourseDetail";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
@@ -63,6 +66,7 @@ const App = () => (
             <Route path="/dashboard/achievements" element={<ProtectedRoute><StudentAchievements /></ProtectedRoute>} />
             <Route path="/catalog" element={<ProtectedRoute><CourseCatalog /></ProtectedRoute>} />
             <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+            <Route path="/student/announcements" element={<ProtectedRoute><StudentAnnouncements /></ProtectedRoute>} />
 
             {/* Teacher */}
             <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
@@ -86,6 +90,8 @@ const App = () => (
             <Route path="/admin/completion" element={<AdminRoute><AdminCompletion /></AdminRoute>} />
             <Route path="/admin/traffic" element={<AdminRoute><AdminTraffic /></AdminRoute>} />
             <Route path="/admin/branches" element={<AdminRoute><AdminBranches /></AdminRoute>} />
+            <Route path="/admin/notifications" element={<AdminRoute><AdminNotifications /></AdminRoute>} />
+            <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
 
             {/* Dept Admin */}
             <Route path="/dept-admin" element={<ProtectedRoute><DeptAdminDashboard /></ProtectedRoute>} />
