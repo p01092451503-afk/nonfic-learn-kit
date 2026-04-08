@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { User, Lock, Camera, Check, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp, Upload, ImagePlus } from "lucide-react";
+import { useState } from "react";
+import { User, Lock, Camera, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -7,30 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import AvatarTab from "@/components/mypage/AvatarTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-
-const PRESET_AVATARS = [
-  ...Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`),
-  ...Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${String(i + 9).padStart(2, "0")}.png`),
-];
-
-// Preload all avatar images on mount
-const usePreloadAvatars = () => {
-  useEffect(() => {
-    PRESET_AVATARS.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
-};
 
 const MyPage = () => {
   const { user, profile, refreshProfile } = useUser();
   const { toast } = useToast();
   const { t } = useTranslation();
-  usePreloadAvatars();
+  
 
   // Profile fields
   const [fullName, setFullName] = useState(profile?.full_name || "");
@@ -39,36 +25,8 @@ const MyPage = () => {
   const [teamName, setTeamName] = useState(profile?.team_name || "");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  // Avatar
-  const [selectedAvatar, setSelectedAvatar] = useState(profile?.avatar_url || "");
-  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: t("common.error"), description: t("mypage.fileTooLarge"), variant: "destructive" });
-      return;
-    }
-    setIsUploading(true);
-    try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `${user.id}/avatar.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
-      const urlWithCache = `${publicUrl}?t=${Date.now()}`;
-      setSelectedAvatar(urlWithCache);
-      toast({ title: t("mypage.uploadSuccess") });
-    } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
+
 
   // Password
   const [newPassword, setNewPassword] = useState("");
@@ -98,23 +56,8 @@ const MyPage = () => {
     }
   };
 
-  const handleSaveAvatar = async () => {
-    if (!user) return;
-    setIsSavingAvatar(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ avatar_url: selectedAvatar })
-        .eq("user_id", user.id);
-      if (error) throw error;
-      await refreshProfile();
-      toast({ title: t("mypage.avatarSaved") });
-    } catch (e: any) {
-      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
-    } finally {
-      setIsSavingAvatar(false);
-    }
-  };
+
+
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
@@ -139,7 +82,7 @@ const MyPage = () => {
     }
   };
 
-  const currentAvatar = profile?.avatar_url;
+  
 
   // Stats for the header
   const { data: enrollmentStats } = useQuery({
