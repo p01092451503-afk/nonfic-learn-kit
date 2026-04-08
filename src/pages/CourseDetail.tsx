@@ -677,6 +677,16 @@ const CourseDetail = () => {
           onSubmit={() => updateCourseMutation.mutate(courseForm)}
           isPending={updateCourseMutation.isPending}
           t={t}
+          thumbnailPreview={courseThumbnailPreview}
+          onThumbnailChange={(file) => {
+            setCourseThumbnailFile(file);
+            setCourseThumbnailPreview(URL.createObjectURL(file));
+          }}
+          onThumbnailRemove={() => {
+            setCourseThumbnailFile(null);
+            setCourseThumbnailPreview(null);
+          }}
+          categories={categories}
         />
       </DashboardLayout>
     );
