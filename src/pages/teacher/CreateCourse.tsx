@@ -4,8 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
   MonitorPlay, BookOpen, ExternalLink, Link2, Eye, ImagePlus, X, CalendarIcon,
-  Save,
+  Save, Languages, Loader2,
 } from "lucide-react";
+import { translateKoToEn } from "@/lib/translate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +16,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { format, parse } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
@@ -43,6 +45,8 @@ interface ContentItem {
   is_preview: boolean;
   is_published: boolean;
   source: ContentSource;
+  enTitle: string;
+  enDescription: string;
 }
 
 const CreateCourse = () => {
@@ -75,9 +79,12 @@ const CreateCourse = () => {
   // Course fields
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [enTitle, setEnTitle] = useState("");
+  const [enDescription, setEnDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [difficultyLevel, setDifficultyLevel] = useState("beginner");
   const [estimatedHours, setEstimatedHours] = useState("");
+  const [translatingCourse, setTranslatingCourse] = useState(false);
   const [maxStudents, setMaxStudents] = useState("");
   const [isMandatory, setIsMandatory] = useState(false);
   const [deadline, setDeadline] = useState("");
@@ -122,30 +129,76 @@ const CreateCourse = () => {
         setExistingThumbnailUrl(course.thumbnail_url);
       }
 
+      // Load course i18n
+      const { data: courseI18n } = await supabase
+        .from("course_i18n")
+        .select("*")
+        .eq("course_id", editCourseId)
+        .eq("language_code", "en")
+        .maybeSingle();
+      if (courseI18n) {
+        setEnTitle(courseI18n.title || "");
+        setEnDescription(courseI18n.description || "");
+      }
+
       // Load contents
       const { data: courseContents } = await supabase
         .from("course_contents")
         .select("*")
         .eq("course_id", editCourseId)
         .order("order_index", { ascending: true });
+
+      // Load content i18n
+      const { data: contentI18ns } = await supabase
+        .from("course_content_i18n")
+        .select("*")
+        .eq("language_code", "en");
+
+      const i18nMap = new Map((contentI18ns || []).map((i: any) => [i.content_id, i]));
+
       if (courseContents?.length) {
-        setContents(courseContents.map((c: any) => ({
-          tempId: c.id,
-          title: c.title || "",
-          description: c.description || "",
-          content_type: c.content_type || "video",
-          video_url: c.video_url || "",
-          video_provider: c.video_provider || "",
-          duration_minutes: c.duration_minutes,
-          is_preview: c.is_preview || false,
-          is_published: c.is_published || false,
-          source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource,
-        })));
+        setContents(courseContents.map((c: any) => {
+          const en = i18nMap.get(c.id);
+          return {
+            tempId: c.id,
+            title: c.title || "",
+            description: c.description || "",
+            content_type: c.content_type || "video",
+            video_url: c.video_url || "",
+            video_provider: c.video_provider || "",
+            duration_minutes: c.duration_minutes,
+            is_preview: c.is_preview || false,
+            is_published: c.is_published || false,
+            source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource,
+            enTitle: en?.title || "",
+            enDescription: en?.description || "",
+          };
+        }));
       }
       setEditDataLoaded(true);
-      setDraftLoaded(true); // skip draft loading in edit mode
+      setDraftLoaded(true);
     })();
   }, [isEditMode, editCourseId, editDataLoaded]);
+
+  // Real-time sync KO → EN for course (copy raw text so EN is never empty)
+  useEffect(() => {
+    if (!enTitle && title) setEnTitle(title);
+    if (!enDescription && description) setEnDescription(description);
+  }, [title, description]);
+
+  // Auto-translate course info
+  const handleTranslateCourse = async () => {
+    const texts = [title, description].filter(Boolean);
+    if (!texts.length) return;
+    setTranslatingCourse(true);
+    try {
+      const results = await translateKoToEn(texts);
+      let idx = 0;
+      if (title) setEnTitle(results[idx++] || "");
+      if (description) setEnDescription(results[idx++] || "");
+    } catch { /* silent */ }
+    finally { setTranslatingCourse(false); }
+  };
 
   const buildDraftData = useCallback(() => ({
     title, description, categoryId, difficultyLevel,
@@ -211,6 +264,8 @@ const CreateCourse = () => {
         is_preview: false,
         is_published: true,
         source: "video",
+        enTitle: "",
+        enDescription: "",
       },
     ]);
   };
@@ -317,7 +372,20 @@ const CreateCourse = () => {
       if (courseError) throw courseError;
 
       // Delete existing contents and re-insert
+      await supabase.from("course_content_i18n").delete().eq("language_code", "en").in("content_id",
+        (await supabase.from("course_contents").select("id").eq("course_id", editCourseId!)).data?.map((c: any) => c.id) || []
+      );
       await supabase.from("course_contents").delete().eq("course_id", editCourseId!);
+
+      // Save course i18n
+      if (enTitle || enDescription) {
+        await supabase.from("course_i18n").upsert({
+          course_id: editCourseId!,
+          language_code: "en",
+          title: enTitle || title,
+          description: enDescription || description || null,
+        }, { onConflict: "course_id,language_code" });
+      }
 
       if (contents.length > 0) {
         const contentRows = contents.map((c, idx) => ({
@@ -332,10 +400,24 @@ const CreateCourse = () => {
           is_preview: c.is_preview,
           is_published: c.is_published,
         }));
-        const { error: contentError } = await supabase
+        const { data: insertedContents, error: contentError } = await supabase
           .from("course_contents")
-          .insert(contentRows);
+          .insert(contentRows)
+          .select("id");
         if (contentError) throw contentError;
+
+        // Save content i18n
+        if (insertedContents?.length) {
+          const i18nRows = insertedContents.map((ic: any, idx: number) => ({
+            content_id: ic.id,
+            language_code: "en",
+            title: contents[idx].enTitle || contents[idx].title,
+            description: contents[idx].enDescription || contents[idx].description || null,
+          })).filter((r: any) => r.title);
+          if (i18nRows.length) {
+            await supabase.from("course_content_i18n").insert(i18nRows);
+          }
+        }
       }
 
       return { id: editCourseId!, title };
@@ -379,6 +461,16 @@ const CreateCourse = () => {
         }
       }
 
+      // Save course i18n
+      if (enTitle || enDescription) {
+        await supabase.from("course_i18n").insert({
+          course_id: course.id,
+          language_code: "en",
+          title: enTitle || title,
+          description: enDescription || description || null,
+        });
+      }
+
       if (contents.length > 0) {
         const contentRows = contents.map((c, idx) => ({
           course_id: course.id,
@@ -392,10 +484,24 @@ const CreateCourse = () => {
           is_preview: c.is_preview,
           is_published: c.is_published,
         }));
-        const { error: contentError } = await supabase
+        const { data: insertedContents, error: contentError } = await supabase
           .from("course_contents")
-          .insert(contentRows);
+          .insert(contentRows)
+          .select("id");
         if (contentError) throw contentError;
+
+        // Save content i18n
+        if (insertedContents?.length) {
+          const i18nRows = insertedContents.map((ic: any, idx: number) => ({
+            content_id: ic.id,
+            language_code: "en",
+            title: contents[idx].enTitle || contents[idx].title,
+            description: contents[idx].enDescription || contents[idx].description || null,
+          })).filter((r: any) => r.title);
+          if (i18nRows.length) {
+            await supabase.from("course_content_i18n").insert(i18nRows);
+          }
+        }
       }
 
       return course;
@@ -480,15 +586,41 @@ const CreateCourse = () => {
             )}
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("createCourse.courseTitleRequired")}</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("createCourse.courseTitleExample")} className="h-11 rounded-xl border-border" />
-          </div>
+          <Tabs defaultValue="ko" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="ko" className="flex-1">{t("course.koTab", "한국어")}</TabsTrigger>
+              <TabsTrigger value="en" className="flex-1">{t("course.enTab", "English")}</TabsTrigger>
+            </TabsList>
 
-          <div className="space-y-2">
-            <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("createCourse.descriptionLabel")}</label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("createCourse.descriptionPlaceholder2")} className="min-h-[100px] rounded-xl border-border resize-none" />
-          </div>
+            <TabsContent value="ko" className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("createCourse.courseTitleRequired")}</label>
+                <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("createCourse.courseTitleExample")} className="h-11 rounded-xl border-border" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("createCourse.descriptionLabel")}</label>
+                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("createCourse.descriptionPlaceholder2")} className="min-h-[100px] rounded-xl border-border resize-none" />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="en" className="space-y-4 pt-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">{t("course.enOptional", "영어 버전 (선택)")}</p>
+                <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleTranslateCourse} disabled={translatingCourse || (!title && !description)}>
+                  {translatingCourse ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+                  {t("course.autoTranslate", "자동 번역")}
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("course.enTitle", "영어 제목")}</label>
+                <Input value={enTitle} onChange={(e) => setEnTitle(e.target.value)} placeholder="English title" className="h-11 rounded-xl border-border" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("course.enDescription", "영어 설명")}</label>
+                <Textarea value={enDescription} onChange={(e) => setEnDescription(e.target.value)} placeholder="English description" className="min-h-[100px] rounded-xl border-border resize-none" />
+              </div>
+            </TabsContent>
+          </Tabs>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -634,14 +766,35 @@ const UnifiedContentEditor = ({
   onRemove: () => void;
   contentTypeOptions: { value: ContentType; label: string; icon: React.ElementType }[];
   videoProviderOptions: { value: VideoProvider; label: string }[];
-  t: (key: string) => string;
+  t: any;
 }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [showEn, setShowEn] = useState(false);
   const isMango = content.source === "mangoboard";
   const isValidMangoboard = isMango && content.video_url.includes("mangoboard.net");
   const Icon = isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
+
+  // Real-time sync KO → EN
+  useEffect(() => {
+    if (!content.enTitle && content.title) onChange("enTitle", content.title);
+    if (!content.enDescription && content.description) onChange("enDescription", content.description);
+  }, [content.title, content.description]);
+
+  const handleTranslateContent = async () => {
+    const texts = [content.title, content.description].filter(Boolean);
+    if (!texts.length) return;
+    setTranslating(true);
+    try {
+      const results = await translateKoToEn(texts);
+      let idx = 0;
+      if (content.title) onChange("enTitle", results[idx++] || "");
+      if (content.description) onChange("enDescription", results[idx++] || "");
+    } catch { /* silent */ }
+    finally { setTranslating(false); }
+  };
 
   const handlePreview = () => {
     if (!isValidMangoboard) return;
@@ -832,7 +985,31 @@ const UnifiedContentEditor = ({
             <Switch checked={content.is_published} onCheckedChange={(v) => onChange("is_published", v)} className="scale-75" />
             {t("createCourse.publishToggle")}
           </label>
+          <button type="button" onClick={() => setShowEn(!showEn)} className="ml-auto flex items-center gap-1 text-[10px] text-primary hover:underline">
+            <Languages className="h-3 w-3" />
+            {showEn ? t("course.koTab", "한국어") : "English"}
+          </button>
         </div>
+
+        {showEn && (
+          <div className="space-y-3 p-3 rounded-lg bg-accent/50 border border-border">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-medium text-muted-foreground uppercase">English</span>
+              <Button type="button" variant="outline" size="sm" className="h-6 text-[10px] gap-1" onClick={handleTranslateContent} disabled={translating || (!content.title && !content.description)}>
+                {translating ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Languages className="h-2.5 w-2.5" />}
+                {t("course.autoTranslate", "자동 번역")}
+              </Button>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("course.enTitle", "영어 제목")}</label>
+              <Input value={content.enTitle} onChange={(e) => onChange("enTitle", e.target.value)} placeholder="English title" className="h-8 rounded-lg border-border text-xs" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("course.enDescription", "영어 설명")}</label>
+              <Textarea value={content.enDescription} onChange={(e) => onChange("enDescription", e.target.value)} placeholder="English description" className="min-h-[40px] rounded-lg border-border text-xs resize-none" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
