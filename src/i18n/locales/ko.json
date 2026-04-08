@@ -357,7 +357,9 @@
     "enDescription": "영어 설명",
     "enVideoUrl": "영어 영상 URL",
     "enOptional": "(미입력 시 한국어 폴백)",
-    "autoTranslate": "자동 번역"
+    "autoTranslate": "자동 번역",
+    "category": "카테고리",
+    "instructor": "강사"
   },
   "assignments": {
     "title": "과제",
