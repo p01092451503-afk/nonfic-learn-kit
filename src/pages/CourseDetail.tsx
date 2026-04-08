@@ -1275,6 +1275,33 @@ const CourseEditDialog = ({
               {t("course.autoTranslate", "자동 번역")}
             </Button>
           </div>
+
+          {/* Thumbnail (shared) */}
+          <div className="space-y-1">
+            <Label className="text-xs">{t("createCourse.thumbnailLabel") || "썸네일"}</Label>
+            {thumbnailPreview ? (
+              <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border">
+                <img src={thumbnailPreview} alt="thumbnail" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={onThumbnailRemove}
+                  className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-background transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="flex w-full h-24 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors"
+              >
+                <Upload className="h-4 w-4" />
+                {t("createCourse.thumbnailDropHint")}
+              </button>
+            )}
+          </div>
+
           <div className="space-y-1">
             <Label className="text-xs">{t("course.enTitle")}</Label>
             <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => { setEnTitleManual(true); setEnForm(f => ({ ...f, title: e.target.value })); }} placeholder="English title" />
@@ -1282,6 +1309,82 @@ const CourseEditDialog = ({
           <div className="space-y-1">
             <Label className="text-xs">{t("course.enDescription")}</Label>
             <Textarea className="text-sm" value={enForm.description} onChange={(e) => { setEnDescManual(true); setEnForm(f => ({ ...f, description: e.target.value })); }} rows={3} placeholder="English description" />
+          </div>
+
+          {/* Category & Difficulty (shared) */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">{t("createCourse.categoryLabel")}</Label>
+              <Select value={form.category_id} onValueChange={(v) => setForm(f => ({ ...f, category_id: v }))}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t("common.select") || "선택"} /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">{t("createCourse.difficultyLabel")}</Label>
+              <Select value={form.difficulty_level} onValueChange={(v) => setForm(f => ({ ...f, difficulty_level: v }))}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beginner">{t("createCourse.beginnerLevel")}</SelectItem>
+                  <SelectItem value="intermediate">{t("createCourse.intermediateLevel")}</SelectItem>
+                  <SelectItem value="advanced">{t("createCourse.advancedLevel")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Duration & Max students (shared) */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">{t("createCourse.estimatedDuration") || "예상 소요시간(h)"}</Label>
+              <Input className="h-9 text-sm" type="number" min={0} value={form.estimated_duration_hours} onChange={(e) => setForm(f => ({ ...f, estimated_duration_hours: e.target.value }))} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">{t("createCourse.maxStudents") || "최대 수강인원"}</Label>
+              <Input className="h-9 text-sm" type="number" min={0} value={form.max_students} onChange={(e) => setForm(f => ({ ...f, max_students: e.target.value }))} />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs">{t("course.courseStatus")}</Label>
+            <Select value={form.status} onValueChange={(v) => setForm(f => ({ ...f, status: v }))}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">{t("course.draftStatus")}</SelectItem>
+                <SelectItem value="published">{t("course.publishedStatus")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 필수교육 설정 (shared) */}
+          <Separator />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-xs font-semibold">{t("course.mandatoryToggle")}</Label>
+                <p className="text-[11px] text-muted-foreground">{t("course.mandatoryToggleDesc")}</p>
+              </div>
+              <Switch
+                checked={form.is_mandatory}
+                onCheckedChange={(v) => setForm(f => ({ ...f, is_mandatory: v }))}
+              />
+            </div>
+            {form.is_mandatory && (
+              <div className="space-y-1">
+                <Label className="text-xs">{t("course.deadlineLabel")}</Label>
+                <Input
+                  type="date"
+                  className="h-9 text-sm"
+                  value={form.deadline}
+                  onChange={(e) => setForm(f => ({ ...f, deadline: e.target.value }))}
+                />
+                <p className="text-[10px] text-muted-foreground">{t("course.deadlineHelp")}</p>
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
