@@ -129,32 +129,76 @@ const CreateCourse = () => {
         setExistingThumbnailUrl(course.thumbnail_url);
       }
 
+      // Load course i18n
+      const { data: courseI18n } = await supabase
+        .from("course_i18n")
+        .select("*")
+        .eq("course_id", editCourseId)
+        .eq("language_code", "en")
+        .maybeSingle();
+      if (courseI18n) {
+        setEnTitle(courseI18n.title || "");
+        setEnDescription(courseI18n.description || "");
+      }
+
       // Load contents
       const { data: courseContents } = await supabase
         .from("course_contents")
         .select("*")
         .eq("course_id", editCourseId)
         .order("order_index", { ascending: true });
+
+      // Load content i18n
+      const { data: contentI18ns } = await supabase
+        .from("course_content_i18n")
+        .select("*")
+        .eq("language_code", "en");
+
+      const i18nMap = new Map((contentI18ns || []).map((i: any) => [i.content_id, i]));
+
       if (courseContents?.length) {
-        setContents(courseContents.map((c: any) => ({
-          tempId: c.id,
-          title: c.title || "",
-          description: c.description || "",
-          content_type: c.content_type || "video",
-          video_url: c.video_url || "",
-          video_provider: c.video_provider || "",
-          duration_minutes: c.duration_minutes,
-          is_preview: c.is_preview || false,
-          is_published: c.is_published || false,
-          source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource,
-          enTitle: "",
-          enDescription: "",
-        })));
+        setContents(courseContents.map((c: any) => {
+          const en = i18nMap.get(c.id);
+          return {
+            tempId: c.id,
+            title: c.title || "",
+            description: c.description || "",
+            content_type: c.content_type || "video",
+            video_url: c.video_url || "",
+            video_provider: c.video_provider || "",
+            duration_minutes: c.duration_minutes,
+            is_preview: c.is_preview || false,
+            is_published: c.is_published || false,
+            source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource,
+            enTitle: en?.title || "",
+            enDescription: en?.description || "",
+          };
+        }));
       }
       setEditDataLoaded(true);
-      setDraftLoaded(true); // skip draft loading in edit mode
+      setDraftLoaded(true);
     })();
   }, [isEditMode, editCourseId, editDataLoaded]);
+
+  // Real-time sync KO → EN for course (copy raw text so EN is never empty)
+  useEffect(() => {
+    if (!enTitle && title) setEnTitle(title);
+    if (!enDescription && description) setEnDescription(description);
+  }, [title, description]);
+
+  // Auto-translate course info
+  const handleTranslateCourse = async () => {
+    const texts = [title, description].filter(Boolean);
+    if (!texts.length) return;
+    setTranslatingCourse(true);
+    try {
+      const results = await translateKoToEn(texts);
+      let idx = 0;
+      if (title) setEnTitle(results[idx++] || "");
+      if (description) setEnDescription(results[idx++] || "");
+    } catch { /* silent */ }
+    finally { setTranslatingCourse(false); }
+  };
 
   const buildDraftData = useCallback(() => ({
     title, description, categoryId, difficultyLevel,
