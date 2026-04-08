@@ -341,7 +341,7 @@ const MyPage = () => {
                   <p className="text-sm text-muted-foreground">{t("mypage.selectAvatarDesc")}</p>
                 </div>
 
-                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 gap-4">
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
                   {PRESET_AVATARS.map((url) => (
                     <button
                       key={url}
@@ -362,6 +362,22 @@ const MyPage = () => {
                       )}
                     </button>
                   ))}
+                  {/* Custom upload button */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="relative aspect-square rounded-2xl overflow-hidden border-2 border-dashed border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 bg-accent/50 flex flex-col items-center justify-center gap-1"
+                  >
+                    <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground">{isUploading ? t("common.saving") : t("mypage.uploadPhoto")}</span>
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
                 </div>
 
                 {/* Preview */}
