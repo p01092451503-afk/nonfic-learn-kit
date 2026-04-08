@@ -357,7 +357,9 @@
     "enDescription": "English Description",
     "enVideoUrl": "English Video URL",
     "enOptional": "(Falls back to Korean if empty)",
-    "autoTranslate": "Auto Translate"
+    "autoTranslate": "Auto Translate",
+    "category": "Category",
+    "instructor": "Instructor"
   },
   "assignments": {
     "title": "Assignments",
