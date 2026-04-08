@@ -260,7 +260,7 @@ const TeacherCourses = () => {
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
                                 <Eye className="h-3.5 w-3.5 mr-2" /> {t("teacher.preview")}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}/edit`); }}>
                                 <Edit className="h-3.5 w-3.5 mr-2" /> {t("teacher.editCourse")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -327,7 +327,7 @@ const TeacherCourses = () => {
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
                             <Eye className="h-3.5 w-3.5 mr-2" /> {t("teacher.preview")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}`); }}>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/courses/${course.id}/edit`); }}>
                             <Edit className="h-3.5 w-3.5 mr-2" /> {t("teacher.editCourse")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
