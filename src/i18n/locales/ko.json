@@ -1003,7 +1003,9 @@
     "messagePlaceholder": "알림 내용을 입력하세요",
     "recentSent": "최근 발송 내역",
     "sentAt": "발송일시",
-    "readStatus": "읽음"
+    "readStatus": "읽음",
+    "teacherDesc": "수강생에게 알림을 발송합니다.",
+    "myStudentsNotify": "내 수강생 전체"
   },
   "announcements": {
     "title": "공지사항",
