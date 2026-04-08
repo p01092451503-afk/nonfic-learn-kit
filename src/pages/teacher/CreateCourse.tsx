@@ -147,6 +147,8 @@ const CreateCourse = () => {
           is_preview: c.is_preview || false,
           is_published: c.is_published || false,
           source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource,
+          enTitle: "",
+          enDescription: "",
         })));
       }
       setEditDataLoaded(true);
@@ -218,6 +220,8 @@ const CreateCourse = () => {
         is_preview: false,
         is_published: true,
         source: "video",
+        enTitle: "",
+        enDescription: "",
       },
     ]);
   };
