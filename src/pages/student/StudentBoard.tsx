@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Pin, FileText, Eye, Download } from "lucide-react";
+import { Pin, FileText, Eye, Download, ClipboardList } from "lucide-react";
 import BoardComments from "@/components/BoardComments";
 
 const StudentBoard = () => {
