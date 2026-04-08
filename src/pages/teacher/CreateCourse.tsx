@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
@@ -47,6 +47,8 @@ interface ContentItem {
 
 const CreateCourse = () => {
   const navigate = useNavigate();
+  const { courseId: editCourseId } = useParams<{ courseId?: string }>();
+  const isEditMode = !!editCourseId;
   const { user } = useUser();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
