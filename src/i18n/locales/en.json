@@ -1026,6 +1026,8 @@
     "publish": "Publish",
     "deleteConfirm": "Delete this announcement?",
     "deleteDesc": "This action cannot be undone.",
-    "noAnnouncements": "No announcements yet."
+    "noAnnouncements": "No announcements yet.",
+    "teacherDesc": "Post announcements for your students.",
+    "myAnnouncements": "My Announcements"
   }
 }
