@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import AssessmentManager from "@/components/AssessmentManager";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,7 +7,7 @@ import {
   FileText, Video, ChevronRight, BarChart3, Plus, Pencil,
   Trash2, Eye, EyeOff, Settings, ChevronUp, ChevronDown,
   GripVertical, ExternalLink, Copy, MoreHorizontal,
-  ClipboardCheck, AlertTriangle,
+  ClipboardCheck, AlertTriangle, Upload, X, Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -78,8 +78,22 @@ const CourseDetail = () => {
   const [contentForm, setContentForm] = useState<ContentFormData>(emptyContent);
   const [contentEnForm, setContentEnForm] = useState<ContentI18nData>(emptyI18n);
   const [courseEditOpen, setCourseEditOpen] = useState(false);
-  const [courseForm, setCourseForm] = useState({ title: "", description: "", status: "draft", is_mandatory: false, deadline: "" });
+  const [courseForm, setCourseForm] = useState({
+    title: "", description: "", status: "draft", is_mandatory: false, deadline: "",
+    category_id: "", difficulty_level: "beginner", estimated_duration_hours: "", max_students: "",
+  });
   const [courseEnForm, setCourseEnForm] = useState({ title: "", description: "" });
+  const [courseThumbnailFile, setCourseThumbnailFile] = useState<File | null>(null);
+  const [courseThumbnailPreview, setCourseThumbnailPreview] = useState<string | null>(null);
+
+  // Categories query for edit dialog
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data } = await supabase.from("categories").select("id, name").eq("is_active", true).order("display_order");
+      return data || [];
+    },
+  });
 
   // Determine view context
   const isAdminRoute = location.pathname.startsWith("/admin/courses/");
