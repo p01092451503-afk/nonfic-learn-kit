@@ -151,7 +151,7 @@ const MyPage = () => {
             {/* Left: avatar + info */}
             <div className="flex items-center gap-5 lg:min-w-[320px]">
               <Avatar className="h-20 w-20 border-2 border-border shadow-sm">
-                <AvatarImage src={currentAvatar || ""} alt={profile?.full_name || ""} />
+                <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} />
                 <AvatarFallback className="bg-card text-foreground text-xl font-semibold">
                   {profile?.full_name?.charAt(0) || "?"}
                 </AvatarFallback>
@@ -278,73 +278,7 @@ const MyPage = () => {
 
             {/* Avatar Tab */}
             <TabsContent value="avatar">
-              <div className="max-w-2xl space-y-6">
-                <div className="space-y-1">
-                  <h2 className="text-lg font-semibold">{t("mypage.selectAvatar")}</h2>
-                  <p className="text-sm text-muted-foreground">{t("mypage.selectAvatarDesc")}</p>
-                </div>
-
-                {/* Illustrated style */}
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                  {PRESET_AVATARS.map((url) => (
-                    <button
-                      key={url}
-                      onClick={() => setSelectedAvatar(url)}
-                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-150 hover:scale-105 ${
-                        selectedAvatar === url
-                          ? "ring-2 ring-primary ring-offset-1 ring-offset-background shadow-sm"
-                          : "ring-1 ring-border hover:ring-muted-foreground/40"
-                      }`}
-                    >
-                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                      {selectedAvatar === url && (
-                        <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="h-2.5 w-2.5 text-primary-foreground" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Custom upload */}
-                <div className="mt-4">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl ring-1 ring-border hover:ring-primary/50 transition-all text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    <ImagePlus className="h-4 w-4" />
-                    <span>{isUploading ? t("common.saving") : t("mypage.uploadPhoto")}</span>
-                  </button>
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-
-                {/* Preview */}
-                <div className="flex items-center gap-4 p-4 bg-secondary/30 rounded-xl">
-                  <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-border bg-card">
-                    {selectedAvatar ? (
-                      <img src={selectedAvatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-lg font-bold text-muted-foreground">
-                        {profile?.full_name?.slice(0, 2) || "?"}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{t("mypage.preview")}</p>
-                    <p className="text-xs text-muted-foreground">{t("mypage.previewDesc")}</p>
-                  </div>
-                  <Button onClick={handleSaveAvatar} disabled={isSavingAvatar} className="rounded-xl gap-1.5">
-                    {isSavingAvatar ? t("common.saving") : t("mypage.applyAvatar")}
-                  </Button>
-                </div>
-              </div>
+              <AvatarTab />
             </TabsContent>
 
             {/* Password Tab */}
