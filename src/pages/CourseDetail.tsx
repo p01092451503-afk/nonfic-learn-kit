@@ -1089,6 +1089,26 @@ const CourseEditDialog = ({
 }) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [translating, setTranslating] = useState(false);
+  const [enTitleManual, setEnTitleManual] = useState(false);
+  const [enDescManual, setEnDescManual] = useState(false);
+  const prevKoTitle = useRef(form.title);
+  const prevKoDesc = useRef(form.description);
+
+  // Sync KO → EN title if not manually edited
+  useEffect(() => {
+    if (!enTitleManual) {
+      setEnForm(f => ({ ...f, title: form.title }));
+    }
+    prevKoTitle.current = form.title;
+  }, [form.title, enTitleManual]);
+
+  // Sync KO → EN description if not manually edited
+  useEffect(() => {
+    if (!enDescManual) {
+      setEnForm(f => ({ ...f, description: form.description }));
+    }
+    prevKoDesc.current = form.description;
+  }, [form.description, enDescManual]);
 
   const handleAutoTranslate = async () => {
     const textsToTranslate = [form.title, form.description].filter(Boolean);
@@ -1102,6 +1122,8 @@ const CourseEditDialog = ({
         title: form.title ? (results[idx++] || "") : f.title,
         description: form.description ? (results[idx++] || "") : f.description,
       }));
+      setEnTitleManual(true);
+      setEnDescManual(true);
     } catch {
       // silently fail
     } finally {
@@ -1255,11 +1277,11 @@ const CourseEditDialog = ({
           </div>
           <div className="space-y-1">
             <Label className="text-xs">{t("course.enTitle")}</Label>
-            <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => setEnForm(f => ({ ...f, title: e.target.value }))} placeholder="English title" />
+            <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => { setEnTitleManual(true); setEnForm(f => ({ ...f, title: e.target.value })); }} placeholder="English title" />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">{t("course.enDescription")}</Label>
-            <Textarea className="text-sm" value={enForm.description} onChange={(e) => setEnForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="English description" />
+            <Textarea className="text-sm" value={enForm.description} onChange={(e) => { setEnDescManual(true); setEnForm(f => ({ ...f, description: e.target.value })); }} rows={3} placeholder="English description" />
           </div>
         </TabsContent>
       </Tabs>
