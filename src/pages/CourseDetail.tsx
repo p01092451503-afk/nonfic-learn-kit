@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
+import { translateKoToEn } from "@/lib/translate";
 import AssessmentManager from "@/components/AssessmentManager";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,7 +8,7 @@ import {
   FileText, Video, ChevronRight, BarChart3, Plus, Pencil,
   Trash2, Eye, EyeOff, Settings, ChevronUp, ChevronDown,
   GripVertical, ExternalLink, Copy, MoreHorizontal,
-  ClipboardCheck, AlertTriangle, Upload, X, Image,
+  ClipboardCheck, AlertTriangle, Upload, X, Image, Languages, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
