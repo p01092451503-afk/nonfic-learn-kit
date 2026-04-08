@@ -1,4 +1,7 @@
-import { corsHeaders } from "@anthropic-ai/sdk";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 const LOVABLE_API_URL = "https://ai-gateway.lovable.dev/v1/chat/completions";
 
@@ -17,7 +20,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Validate input
     if (texts.length > 10) {
       return new Response(JSON.stringify({ error: "Maximum 10 texts at a time" }), {
         status: 400,
@@ -73,7 +75,6 @@ Deno.serve(async (req) => {
       translations = [content];
     } else {
       try {
-        // Try to parse as JSON array
         const cleaned = content.replace(/^```json?\n?/, "").replace(/\n?```$/, "").trim();
         translations = JSON.parse(cleaned);
       } catch {
