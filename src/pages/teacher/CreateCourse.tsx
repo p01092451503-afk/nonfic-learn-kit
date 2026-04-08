@@ -291,6 +291,66 @@ const CreateCourse = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      let thumbnailUrl = existingThumbnailUrl;
+      if (thumbnailFile) {
+        thumbnailUrl = await uploadThumbnail(editCourseId!);
+      }
+
+      const { error: courseError } = await supabase
+        .from("courses")
+        .update({
+          title,
+          description: description || null,
+          category_id: categoryId || null,
+          difficulty_level: difficultyLevel,
+          estimated_duration_hours: estimatedHours ? parseInt(estimatedHours) : null,
+          max_students: maxStudents ? parseInt(maxStudents) : null,
+          is_mandatory: isMandatory,
+          deadline: deadline || null,
+          status,
+          thumbnail_url: thumbnailUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", editCourseId!);
+      if (courseError) throw courseError;
+
+      // Delete existing contents and re-insert
+      await supabase.from("course_contents").delete().eq("course_id", editCourseId!);
+
+      if (contents.length > 0) {
+        const contentRows = contents.map((c, idx) => ({
+          course_id: editCourseId!,
+          title: c.title,
+          description: c.description || null,
+          content_type: c.content_type,
+          video_url: c.video_url || null,
+          video_provider: c.video_provider || null,
+          duration_minutes: c.duration_minutes,
+          order_index: idx,
+          is_preview: c.is_preview,
+          is_published: c.is_published,
+        }));
+        const { error: contentError } = await supabase
+          .from("course_contents")
+          .insert(contentRows);
+        if (contentError) throw contentError;
+      }
+
+      return { id: editCourseId!, title };
+    },
+    onSuccess: (course) => {
+      queryClient.invalidateQueries({ queryKey: ["teacher-courses"] });
+      queryClient.invalidateQueries({ queryKey: ["course", editCourseId] });
+      toast({ title: t("createCourse.courseUpdated", "강좌가 수정되었습니다"), description: title });
+      navigate(-1);
+    },
+    onError: (error: any) => {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async () => {
       const { data: course, error: courseError } = await supabase
@@ -367,7 +427,11 @@ const CreateCourse = () => {
       toast({ title: t("common.error"), description: t("createCourse.flipUrlRequired"), variant: "destructive" });
       return;
     }
-    createMutation.mutate();
+    if (isEditMode) {
+      updateMutation.mutate();
+    } else {
+      createMutation.mutate();
+    }
   };
 
   const dateLocale = isEn ? enUS : ko;
