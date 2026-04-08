@@ -73,7 +73,7 @@ const StudentCourses = () => {
     </div>
   );
 
-  const renderListItem = (enrollment: any, isCompleted = false) => {
+  const renderListItem = (enrollment: any, isCompleted = false, index = 0) => {
     const course = enrollment.courses;
     if (!course) return null;
     const cat = categoryMap.get(course.category_id);
@@ -83,7 +83,7 @@ const StudentCourses = () => {
       <Link
         key={enrollment.id}
         to={`/student/courses/${course.id}?view=learn`}
-        className="group flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:shadow-md transition-all"
+        className={`group flex items-center gap-4 p-4 hover:shadow-md transition-all ${index % 2 === 0 ? "bg-card" : "bg-muted/40"}`}
       >
         {/* Thumbnail - small */}
         {course.thumbnail_url ? (
@@ -167,8 +167,8 @@ const StudentCourses = () => {
                 {t("course.inProgressCourses")} ({inProgress.length})
               </h2>
               {inProgress.length === 0 ? renderEmpty() : (
-                <div className="space-y-2">
-                  {inProgress.map((e: any) => renderListItem(e))}
+                <div className="rounded-2xl overflow-hidden border border-border">
+                  {inProgress.map((e: any, i: number) => renderListItem(e, false, i))}
                 </div>
               )}
             </section>
@@ -179,8 +179,8 @@ const StudentCourses = () => {
                 {t("course.completedCourses")} ({completed.length})
               </h2>
               {completed.length === 0 ? renderEmpty(true) : (
-                <div className="space-y-2">
-                  {completed.map((e: any) => renderListItem(e, true))}
+                <div className="rounded-2xl overflow-hidden border border-border">
+                  {completed.map((e: any, i: number) => renderListItem(e, true, i))}
                 </div>
               )}
             </section>
