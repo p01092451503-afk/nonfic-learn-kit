@@ -335,41 +335,76 @@ const MyPage = () => {
 
             {/* Avatar Tab */}
             <TabsContent value="avatar">
-              <div className="max-w-2xl space-y-6">
+              <div className="max-w-3xl space-y-6">
                 <div className="space-y-1">
                   <h2 className="text-lg font-semibold">{t("mypage.selectAvatar")}</h2>
                   <p className="text-sm text-muted-foreground">{t("mypage.selectAvatarDesc")}</p>
                 </div>
 
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-                  {PRESET_AVATARS.map((url) => (
-                    <button
-                      key={url}
-                      onClick={() => setSelectedAvatar(url)}
-                      className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 bg-accent ${
-                        selectedAvatar === url
-                          ? "border-primary ring-2 ring-primary/20 shadow-md"
-                          : "border-border hover:border-muted-foreground/30"
-                      }`}
-                    >
-                      <img src={url} alt="" className="w-full h-full object-contain p-1" loading="lazy" />
-                      {selectedAvatar === url && (
-                        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                          <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="h-3.5 w-3.5 text-primary-foreground" />
+                {/* Illustration style */}
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("mypage.illustrationStyle", "일러스트")}</p>
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                    {PRESET_AVATARS.slice(0, 8).map((url) => (
+                      <button
+                        key={url}
+                        onClick={() => setSelectedAvatar(url)}
+                        className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 hover:scale-105 ${
+                          selectedAvatar === url
+                            ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-md"
+                            : "ring-1 ring-border hover:ring-muted-foreground/40"
+                        }`}
+                      >
+                        <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        {selectedAvatar === url && (
+                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                              <Check className="h-3 w-3 text-primary-foreground" />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                  {/* Custom upload button */}
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Simple style */}
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("mypage.simpleStyle", "심플")}</p>
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                    {PRESET_AVATARS.slice(8, 16).map((url) => (
+                      <button
+                        key={url}
+                        onClick={() => setSelectedAvatar(url)}
+                        className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 hover:scale-105 ${
+                          selectedAvatar === url
+                            ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-md"
+                            : "ring-1 ring-border hover:ring-muted-foreground/40"
+                        }`}
+                      >
+                        <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        {selectedAvatar === url && (
+                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                              <Check className="h-3 w-3 text-primary-foreground" />
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom upload */}
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("mypage.customPhoto", "직접 등록")}</p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    className="relative aspect-square rounded-2xl overflow-hidden border-2 border-dashed border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 bg-accent/50 flex flex-col items-center justify-center gap-1"
+                    className="w-20 h-20 rounded-xl ring-1 ring-border ring-dashed hover:ring-primary/50 transition-all duration-200 hover:scale-105 bg-secondary/30 flex flex-col items-center justify-center gap-1"
                   >
                     <ImagePlus className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground">{isUploading ? t("common.saving") : t("mypage.uploadPhoto")}</span>
+                    <span className="text-[9px] text-muted-foreground leading-tight">{isUploading ? t("common.saving") : t("mypage.uploadPhoto")}</span>
                   </button>
                   <input
                     ref={fileInputRef}
@@ -382,7 +417,7 @@ const MyPage = () => {
 
                 {/* Preview */}
                 <div className="flex items-center gap-4 p-4 bg-secondary/30 rounded-xl">
-                  <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-border bg-card">
+                  <div className="h-14 w-14 rounded-full overflow-hidden ring-2 ring-border bg-card shrink-0">
                     {selectedAvatar ? (
                       <img src={selectedAvatar} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -391,11 +426,11 @@ const MyPage = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{t("mypage.preview")}</p>
                     <p className="text-xs text-muted-foreground">{t("mypage.previewDesc")}</p>
                   </div>
-                  <Button onClick={handleSaveAvatar} disabled={isSavingAvatar} className="rounded-xl gap-1.5">
+                  <Button onClick={handleSaveAvatar} disabled={isSavingAvatar} className="rounded-xl gap-1.5 shrink-0">
                     {isSavingAvatar ? t("common.saving") : t("mypage.applyAvatar")}
                   </Button>
                 </div>
