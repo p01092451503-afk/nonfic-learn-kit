@@ -82,22 +82,21 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Record login on SIGNED_IN event
+          // Fire-and-forget: do NOT await inside onAuthStateChange to avoid deadlocks
           if (event === "SIGNED_IN") {
-            await recordLogin(session.user.id);
+            recordLogin(session.user.id);
           }
-          setTimeout(async () => {
-            await fetchUserData(session.user.id);
+          setTimeout(() => {
+            fetchUserData(session.user.id);
           }, 0);
         } else {
-          // Record logout when session ends
           if (event === "SIGNED_OUT") {
-            await recordLogout();
+            recordLogout();
           }
           setProfile(null);
           setRoles([]);
