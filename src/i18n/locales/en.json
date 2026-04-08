@@ -95,7 +95,10 @@
     "courseCatalog": "Browse Courses",
     "myPage": "My Page",
     "enrollmentManagement": "Enrollments",
-    "branchManagement": "Branches"
+    "branchManagement": "Branches",
+    "announcements": "Announcements",
+    "notificationManagement": "Notifications",
+    "announcementManagement": "Announcements"
   },
   "roles": {
     "student": "Student",
@@ -984,5 +987,42 @@
   },
   "branch": {
     "branchTitle": "Branch"
+  },
+  "notifications": {
+    "management": "Notification Management",
+    "managementDesc": "Send and manage notifications to students.",
+    "send": "Send Notification",
+    "target": "Target",
+    "allStudents": "All Students",
+    "individual": "Individual Student",
+    "selectStudent": "Select Student",
+    "title": "Title",
+    "message": "Message",
+    "titlePlaceholder": "Enter notification title",
+    "messagePlaceholder": "Enter notification message",
+    "recentSent": "Recent Notifications",
+    "sentAt": "Sent At",
+    "readStatus": "Read"
+  },
+  "announcements": {
+    "title": "Announcements",
+    "management": "Announcement Management",
+    "managementDesc": "Create and manage announcements.",
+    "studentDesc": "Check important notices and announcements.",
+    "create": "New Announcement",
+    "edit": "Edit Announcement",
+    "list": "Announcement List",
+    "titleLabel": "Title",
+    "content": "Content",
+    "author": "Author",
+    "status": "Status",
+    "date": "Date",
+    "published": "Published",
+    "draft": "Draft",
+    "pinned": "Pinned",
+    "publish": "Publish",
+    "deleteConfirm": "Delete this announcement?",
+    "deleteDesc": "This action cannot be undone.",
+    "noAnnouncements": "No announcements yet."
   }
 }

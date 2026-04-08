@@ -95,7 +95,10 @@
     "courseCatalog": "강좌 탐색",
     "myPage": "마이페이지",
     "enrollmentManagement": "수강 승인",
-    "branchManagement": "지점 관리"
+    "branchManagement": "지점 관리",
+    "announcements": "공지사항",
+    "notificationManagement": "알림 관리",
+    "announcementManagement": "공지사항 관리"
   },
   "roles": {
     "student": "Student",
@@ -984,5 +987,42 @@
   },
   "branch": {
     "branchTitle": "소속 지점"
+  },
+  "notifications": {
+    "management": "알림 관리",
+    "managementDesc": "학생에게 알림을 발송하고 관리합니다.",
+    "send": "알림 발송",
+    "target": "발송 대상",
+    "allStudents": "전체 학생",
+    "individual": "개별 학생",
+    "selectStudent": "학생 선택",
+    "title": "제목",
+    "message": "내용",
+    "titlePlaceholder": "알림 제목을 입력하세요",
+    "messagePlaceholder": "알림 내용을 입력하세요",
+    "recentSent": "최근 발송 내역",
+    "sentAt": "발송일시",
+    "readStatus": "읽음"
+  },
+  "announcements": {
+    "title": "공지사항",
+    "management": "공지사항 관리",
+    "managementDesc": "공지사항을 등록하고 관리합니다.",
+    "studentDesc": "중요한 공지 및 안내사항을 확인하세요.",
+    "create": "공지 등록",
+    "edit": "공지 수정",
+    "list": "공지사항 목록",
+    "titleLabel": "제목",
+    "content": "내용",
+    "author": "작성자",
+    "status": "상태",
+    "date": "등록일",
+    "published": "게시중",
+    "draft": "비공개",
+    "pinned": "상단 고정",
+    "publish": "게시",
+    "deleteConfirm": "공지사항을 삭제하시겠습니까?",
+    "deleteDesc": "삭제된 공지사항은 복구할 수 없습니다.",
+    "noAnnouncements": "등록된 공지사항이 없습니다."
   }
 }

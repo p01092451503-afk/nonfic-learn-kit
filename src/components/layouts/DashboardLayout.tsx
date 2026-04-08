@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings, Compass, UserCircle, ClipboardCheck,
-  LogOut, Menu, X, ChevronRight, GraduationCap, CalendarCheck, Activity, Building2,
+  LogOut, Menu, X, ChevronRight, GraduationCap, CalendarCheck, Activity, Building2, Bell, Megaphone,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.myCourses"), href: "/dashboard/courses", icon: BookOpen },
     { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList },
     { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy },
+    { label: t("nav.announcements", "공지사항"), href: "/student/announcements", icon: Megaphone },
     { label: t("nav.myPage"), href: "/mypage", icon: UserCircle },
   ];
 
@@ -67,6 +68,8 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.learningManagement"), href: "/admin/learning", icon: GraduationCap },
     { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
     { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy },
+    { label: t("nav.notificationManagement", "알림 관리"), href: "/admin/notifications", icon: Bell },
+    { label: t("nav.announcementManagement", "공지사항 관리"), href: "/admin/announcements", icon: Megaphone },
     { label: t("nav.trafficMonitoring", "트래픽 모니터링"), href: "/admin/traffic", icon: Activity },
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings },
   ];
