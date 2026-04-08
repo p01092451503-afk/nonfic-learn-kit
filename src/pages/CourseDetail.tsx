@@ -1070,7 +1070,7 @@ const CourseEditDialog = ({
                 className="flex w-full h-24 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors"
               >
                 <Upload className="h-4 w-4" />
-                {t("createCourse.thumbnailUploadGuide") || "클릭하여 썸네일 업로드"}
+                {t("createCourse.thumbnailDropHint")}
               </button>
             )}
             <input
@@ -1098,7 +1098,7 @@ const CourseEditDialog = ({
           {/* Category & Difficulty in row */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs">{t("createCourse.category") || "카테고리"}</Label>
+              <Label className="text-xs">{t("createCourse.categoryLabel")}</Label>
               <Select value={form.category_id} onValueChange={(v) => setForm(f => ({ ...f, category_id: v }))}>
                 <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t("common.select") || "선택"} /></SelectTrigger>
                 <SelectContent>
@@ -1109,13 +1109,13 @@ const CourseEditDialog = ({
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">{t("createCourse.difficultyLevel") || "난이도"}</Label>
+              <Label className="text-xs">{t("createCourse.difficultyLabel")}</Label>
               <Select value={form.difficulty_level} onValueChange={(v) => setForm(f => ({ ...f, difficulty_level: v }))}>
                 <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="beginner">{t("createCourse.beginner") || "초급"}</SelectItem>
-                  <SelectItem value="intermediate">{t("createCourse.intermediate") || "중급"}</SelectItem>
-                  <SelectItem value="advanced">{t("createCourse.advanced") || "고급"}</SelectItem>
+                  <SelectItem value="beginner">{t("createCourse.beginnerLevel")}</SelectItem>
+                  <SelectItem value="intermediate">{t("createCourse.intermediateLevel")}</SelectItem>
+                  <SelectItem value="advanced">{t("createCourse.advancedLevel")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
