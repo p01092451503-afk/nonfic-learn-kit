@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { translateKoToEn } from "@/lib/translate";
 import AssessmentManager from "@/components/AssessmentManager";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
@@ -906,6 +906,25 @@ const ContentDialog = ({
   t: any;
 }) => {
   const [translating, setTranslating] = useState(false);
+
+  // Real-time sync: copy non-translatable fields from KO to EN automatically
+  useEffect(() => {
+    setEnForm(f => ({
+      ...f,
+      video_url: f.video_url || form.video_url,
+      video_provider: f.video_provider || form.video_provider,
+      duration_minutes: f.duration_minutes ?? form.duration_minutes,
+    }));
+  }, [form.video_url, form.video_provider, form.duration_minutes]);
+
+  // Real-time sync: mirror KO title/description to EN (raw, untranslated) so EN is never empty
+  useEffect(() => {
+    setEnForm(f => ({
+      ...f,
+      title: f.title || form.title,
+      description: f.description || form.description,
+    }));
+  }, [form.title, form.description]);
 
   const handleAutoTranslate = async () => {
     const textsToTranslate = [form.title, form.description].filter(Boolean);
