@@ -135,6 +135,11 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
                 aria-current={isActive ? "page" : undefined}>
                 <item.icon className="h-[18px] w-[18px]" aria-hidden="true" />
                 <span>{item.label}</span>
+                {item.showNew && (
+                  <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold leading-none rounded bg-destructive text-destructive-foreground animate-pulse">
+                    NEW
+                  </span>
+                )}
                 {isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" aria-hidden="true" />}
               </Link>
             );
