@@ -1,26 +1,14 @@
-import { CalendarCheck, Download, Plus, Pencil, Trash2 } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { CalendarCheck, Download, Clock, BookOpen, LogIn, LogOut, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { useUser } from "@/contexts/UserContext";
-import { toast } from "sonner";
-
-const statusColor: Record<string, string> = {
-  present: "default",
-  absent: "destructive",
-  late: "secondary",
-  excused: "outline",
-};
 
 interface AdminAttendanceProps {
   role?: "admin" | "teacher";
@@ -29,391 +17,385 @@ interface AdminAttendanceProps {
 const AdminAttendance = ({ role = "admin" }: AdminAttendanceProps) => {
   const { t, i18n } = useTranslation();
   const { user } = useUser();
-  const queryClient = useQueryClient();
-  const [courseFilter, setCourseFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<any>(null);
-  const [deleteTarget, setDeleteTarget] = useState<any>(null);
-
-  // Form state
-  const [formCourseId, setFormCourseId] = useState("");
-  const [formUserId, setFormUserId] = useState("");
-  const [formDate, setFormDate] = useState(new Date().toISOString().slice(0, 10));
-  const [formStatus, setFormStatus] = useState<string>("present");
-  const [formNotes, setFormNotes] = useState("");
+  const [dateFilter, setDateFilter] = useState(new Date().toISOString().slice(0, 10));
+  const [searchName, setSearchName] = useState("");
 
   const isTeacher = role === "teacher";
+  const isKo = !i18n.language?.startsWith("en");
 
-  // Courses: teacher sees only their own courses
-  const { data: courses = [] } = useQuery({
-    queryKey: ["att-courses", role, user?.id],
-    queryFn: async () => {
-      let q = supabase.from("courses").select("id, title").order("title");
-      if (isTeacher && user?.id) q = q.eq("instructor_id", user.id);
-      const { data, error } = await q;
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const courseIds = courses.map((c: any) => c.id);
-
-  const { data: attendance = [] } = useQuery({
-    queryKey: ["attendance-list", role, courseIds],
-    queryFn: async () => {
-      if (isTeacher && courseIds.length === 0) return [];
-      let q = supabase.from("attendance").select("*").order("attendance_date", { ascending: false });
-      if (isTeacher) q = q.in("course_id", courseIds);
-      const { data, error } = await q;
-      if (error) throw error;
-      return data;
-    },
-    enabled: isTeacher ? courseIds.length > 0 : true,
-  });
-
-  // Get enrolled students for the selected course
-  const { data: enrolledStudents = [] } = useQuery({
-    queryKey: ["att-enrolled", formCourseId],
-    queryFn: async () => {
-      if (!formCourseId) return [];
-      const { data, error } = await supabase
-        .from("enrollments")
-        .select("user_id")
-        .eq("course_id", formCourseId)
-        .eq("status", "approved");
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!formCourseId,
-  });
-
+  // Fetch all profiles
   const { data: profiles = [] } = useQuery({
     queryKey: ["att-profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("user_id, full_name");
+      const { data, error } = await supabase.from("profiles").select("user_id, full_name, department, position");
       if (error) throw error;
       return data;
     },
   });
 
-  const profileMap = new Map(profiles.map((p: any) => [p.user_id, p.full_name]));
-  const courseMap = new Map(courses.map((c: any) => [c.id, c.title]));
-
-  const filtered = attendance.filter((a: any) => {
-    if (courseFilter !== "all" && a.course_id !== courseFilter) return false;
-    if (statusFilter !== "all" && a.status !== statusFilter) return false;
-    return true;
+  // Fetch sessions for the selected date
+  const { data: sessions = [] } = useQuery({
+    queryKey: ["user-sessions", dateFilter],
+    queryFn: async () => {
+      const startOfDay = `${dateFilter}T00:00:00.000Z`;
+      const endOfDay = `${dateFilter}T23:59:59.999Z`;
+      const { data, error } = await supabase
+        .from("user_sessions")
+        .select("*")
+        .gte("login_at", startOfDay)
+        .lte("login_at", endOfDay)
+        .order("login_at", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
   });
-  const visibleRows = filtered.slice(0, 50);
 
-  const formatDate = (d: string | null) => {
-    if (!d) return "-";
-    return i18n.language?.startsWith("en") ? new Date(d).toLocaleDateString("en-US") : new Date(d).toLocaleDateString("ko-KR");
-  };
+  // Fetch content_progress completed on this date for learning stats
+  const { data: dailyProgress = [] } = useQuery({
+    queryKey: ["daily-progress", dateFilter],
+    queryFn: async () => {
+      const startOfDay = `${dateFilter}T00:00:00.000Z`;
+      const endOfDay = `${dateFilter}T23:59:59.999Z`;
+      const { data, error } = await supabase
+        .from("content_progress")
+        .select("user_id, completed, completed_at, last_accessed_at, progress_percentage, content_id")
+        .or(`completed_at.gte.${startOfDay},last_accessed_at.gte.${startOfDay}`)
+        .or(`completed_at.lte.${endOfDay},last_accessed_at.lte.${endOfDay}`);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch content durations for learning time calculation
+  const contentIds = useMemo(() => [...new Set(dailyProgress.map((p: any) => p.content_id))], [dailyProgress]);
+  const { data: contentDurations = [] } = useQuery({
+    queryKey: ["content-durations", contentIds],
+    queryFn: async () => {
+      if (contentIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("course_contents")
+        .select("id, duration_minutes, course_id")
+        .in("id", contentIds);
+      if (error) throw error;
+      return data;
+    },
+    enabled: contentIds.length > 0,
+  });
+
+  // If teacher, get their course ids for filtering
+  const { data: teacherCourseIds = [] } = useQuery({
+    queryKey: ["teacher-course-ids", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase.from("courses").select("id").eq("instructor_id", user.id);
+      if (error) throw error;
+      return data.map((c: any) => c.id);
+    },
+    enabled: isTeacher && !!user?.id,
+  });
+
+  const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
+  const contentMap = new Map(contentDurations.map((c: any) => [c.id, c]));
+
+  // Aggregate data per user
+  const userStats = useMemo(() => {
+    const map = new Map<string, {
+      userId: string;
+      loginAt: string | null;
+      logoutAt: string | null;
+      learningMinutes: number;
+      completions: number;
+    }>();
+
+    // Sessions: first login, last logout
+    sessions.forEach((s: any) => {
+      const existing = map.get(s.user_id);
+      if (!existing) {
+        map.set(s.user_id, {
+          userId: s.user_id,
+          loginAt: s.login_at,
+          logoutAt: s.logout_at,
+          learningMinutes: 0,
+          completions: 0,
+        });
+      } else {
+        if (!existing.loginAt || s.login_at < existing.loginAt) existing.loginAt = s.login_at;
+        if (s.logout_at && (!existing.logoutAt || s.logout_at > existing.logoutAt)) existing.logoutAt = s.logout_at;
+      }
+    });
+
+    // Progress: completions and learning time
+    dailyProgress.forEach((p: any) => {
+      const content = contentMap.get(p.content_id);
+
+      // If teacher, only count their courses
+      if (isTeacher && content && !teacherCourseIds.includes(content.course_id)) return;
+
+      let entry = map.get(p.user_id);
+      if (!entry) {
+        entry = { userId: p.user_id, loginAt: null, logoutAt: null, learningMinutes: 0, completions: 0 };
+        map.set(p.user_id, entry);
+      }
+
+      if (p.completed) entry.completions += 1;
+
+      // Estimate learning time from content duration * progress
+      if (content?.duration_minutes) {
+        const pct = (p.progress_percentage || 0) / 100;
+        entry.learningMinutes += Math.round(content.duration_minutes * pct);
+      }
+    });
+
+    return Array.from(map.values());
+  }, [sessions, dailyProgress, contentMap, isTeacher, teacherCourseIds]);
+
+  // Filter by name search
+  const filteredStats = useMemo(() => {
+    if (!searchName.trim()) return userStats;
+    const q = searchName.toLowerCase();
+    return userStats.filter((s) => {
+      const p = profileMap.get(s.userId);
+      return p?.full_name?.toLowerCase().includes(q);
+    });
+  }, [userStats, searchName, profileMap]);
 
   const formatTime = (d: string | null) => {
     if (!d) return "-";
-    return new Date(d).toLocaleTimeString(i18n.language?.startsWith("en") ? "en-US" : "ko-KR", { hour: "2-digit", minute: "2-digit" });
+    return new Date(d).toLocaleTimeString(isKo ? "ko-KR" : "en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   };
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      if (!formCourseId || !formUserId || !formStatus) throw new Error("Required fields missing");
-      const payload = {
-        course_id: formCourseId,
-        user_id: formUserId,
-        attendance_date: formDate,
-        status: formStatus as any,
-        check_in_time: formStatus === "present" || formStatus === "late" ? new Date().toISOString() : null,
-        notes: formNotes || null,
-      };
-      if (editTarget) {
-        const { error } = await supabase.from("attendance").update(payload).eq("id", editTarget.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("attendance").insert(payload);
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attendance-list"] });
-      setDialogOpen(false);
-      resetForm();
-      toast.success(editTarget ? t("common.saved", "저장되었습니다") : t("common.created", "생성되었습니다"));
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("attendance").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attendance-list"] });
-      setDeleteTarget(null);
-      toast.success(t("common.deleted", "삭제되었습니다"));
-    },
-  });
-
-  const resetForm = () => {
-    setEditTarget(null);
-    setFormCourseId("");
-    setFormUserId("");
-    setFormDate(new Date().toISOString().slice(0, 10));
-    setFormStatus("present");
-    setFormNotes("");
+  const formatMinutes = (m: number) => {
+    if (m === 0) return "-";
+    const h = Math.floor(m / 60);
+    const min = m % 60;
+    return h > 0 ? `${h}${isKo ? "시간" : "h"} ${min}${isKo ? "분" : "m"}` : `${min}${isKo ? "분" : "m"}`;
   };
 
-  const openAdd = () => {
-    resetForm();
-    setDialogOpen(true);
-  };
+  // Summary stats
+  const totalUsers = filteredStats.length;
+  const totalOnline = filteredStats.filter(s => s.loginAt && !s.logoutAt).length;
+  const totalCompletions = filteredStats.reduce((a, b) => a + b.completions, 0);
+  const totalMinutes = filteredStats.reduce((a, b) => a + b.learningMinutes, 0);
 
-  const openEdit = (a: any) => {
-    setEditTarget(a);
-    setFormCourseId(a.course_id);
-    setFormUserId(a.user_id);
-    setFormDate(a.attendance_date || new Date().toISOString().slice(0, 10));
-    setFormStatus(a.status || "present");
-    setFormNotes(a.notes || "");
-    setDialogOpen(true);
-  };
-
-  const exportExcel = () => {
-    const header = [t("admin.dateColumn"), t("admin.nameColumn"), t("admin.courseLabel"), t("admin.statusLabel"), t("admin.checkInTime"), t("admin.notes")];
-    const rows = filtered.map((a: any) => [
-      formatDate(a.attendance_date),
-      profileMap.get(a.user_id) || "-",
-      courseMap.get(a.course_id) || "-",
-      a.status || "-",
-      formatTime(a.check_in_time),
-      a.notes || "",
-    ]);
-    const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
+  const exportCsv = () => {
+    const header = [
+      isKo ? "이름" : "Name",
+      isKo ? "부서" : "Department",
+      isKo ? "로그인" : "Login",
+      isKo ? "로그아웃" : "Logout",
+      isKo ? "학습시간" : "Learning Time",
+      isKo ? "완료 수" : "Completions",
+    ];
+    const rows = filteredStats.map((s) => {
+      const p = profileMap.get(s.userId);
+      return [
+        p?.full_name || "-",
+        p?.department || "-",
+        formatTime(s.loginAt),
+        formatTime(s.logoutAt),
+        formatMinutes(s.learningMinutes),
+        String(s.completions),
+      ];
+    });
+    const csv = [header, ...rows].map(r => r.join(",")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "attendance_report.csv";
+    a.download = `attendance_${dateFilter}.csv`;
     a.click();
   };
 
   return (
     <DashboardLayout role={role}>
-      <div className="space-y-6 sm:space-y-8">
+      <div className="space-y-6">
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
               <CalendarCheck className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               {t("admin.attendanceManagement")}
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.attendanceManagementDesc")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              {isKo ? "사용자 로그인/로그아웃 및 일일 학습 현황을 자동으로 추적합니다." : "Automatically tracks user login/logout and daily learning activity."}
+            </p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={openAdd} className="rounded-xl gap-2 text-sm">
-              <Plus className="h-4 w-4" /> {t("admin.markAttendance", "출석 기록")}
-            </Button>
-            <Button onClick={exportExcel} variant="outline" className="rounded-xl gap-2 text-sm">
-              <Download className="h-4 w-4" /> {t("admin.excelDownload")}
-            </Button>
+          <Button onClick={exportCsv} variant="outline" className="rounded-xl gap-2 text-sm">
+            <Download className="h-4 w-4" /> {t("admin.excelDownload")}
+          </Button>
+        </div>
+
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="stat-card !p-3 sm:!p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <p className="text-[10px] sm:text-xs">{isKo ? "전체 사용자" : "Total Users"}</p>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{totalUsers}</p>
+          </div>
+          <div className="stat-card !p-3 sm:!p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <LogIn className="h-4 w-4" />
+              <p className="text-[10px] sm:text-xs">{isKo ? "현재 온라인" : "Currently Online"}</p>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{totalOnline}</p>
+          </div>
+          <div className="stat-card !p-3 sm:!p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <p className="text-[10px] sm:text-xs">{isKo ? "총 학습시간" : "Total Learning Time"}</p>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{formatMinutes(totalMinutes)}</p>
+          </div>
+          <div className="stat-card !p-3 sm:!p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <BookOpen className="h-4 w-4" />
+              <p className="text-[10px] sm:text-xs">{isKo ? "학습 완료" : "Completions"}</p>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{totalCompletions}</p>
           </div>
         </div>
 
-        <div className="stat-card !p-3 sm:!p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-            <Select value={courseFilter} onValueChange={setCourseFilter}>
-              <SelectTrigger className="w-full sm:w-48 h-9"><SelectValue placeholder={t("admin.allCourses")} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("admin.allCourses")}</SelectItem>
-                {courses.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48 h-9"><SelectValue placeholder={t("admin.allStatuses")} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("admin.allStatuses")}</SelectItem>
-                <SelectItem value="present">{t("admin.present")}</SelectItem>
-                <SelectItem value="absent">{t("admin.absent")}</SelectItem>
-                <SelectItem value="late">{t("admin.late")}</SelectItem>
-                <SelectItem value="excused">{t("admin.excused")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <Input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="w-full sm:w-44 h-10 rounded-xl"
+          />
+          <Input
+            placeholder={isKo ? "이름 검색..." : "Search name..."}
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            className="w-full sm:w-56 h-10 rounded-xl"
+          />
+        </div>
 
+        {/* Table */}
+        <div className="stat-card !p-0 overflow-hidden">
           {/* Mobile cards */}
-          <div className="sm:hidden space-y-3" aria-label={t("admin.attendanceManagement")}>
-            {visibleRows.length === 0 ? (
-              <div className="rounded-xl border border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
-                {t("admin.noAttendanceData")}
+          <div className="sm:hidden divide-y divide-border">
+            {filteredStats.length === 0 ? (
+              <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+                {isKo ? "해당 날짜에 기록이 없습니다." : "No records for this date."}
               </div>
             ) : (
-              visibleRows.map((a: any) => (
-                <article key={a.id} className="rounded-xl border border-border bg-background p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">{formatDate(a.attendance_date)}</p>
-                      <h3 className="mt-1 text-sm font-semibold text-foreground break-words">{profileMap.get(a.user_id) || "-"}</h3>
+              filteredStats.map((s) => {
+                const p = profileMap.get(s.userId);
+                return (
+                  <div key={s.userId} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{p?.full_name || "-"}</p>
+                        <p className="text-[11px] text-muted-foreground">{p?.department || ""} {p?.position || ""}</p>
+                      </div>
+                      {s.loginAt && !s.logoutAt && (
+                        <span className="text-[10px] font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">
+                          {isKo ? "온라인" : "Online"}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Badge variant={(statusColor[a.status] as any) || "outline"} className="text-[10px]">
-                        {t(`admin.${a.status}`)}
-                      </Badge>
-                      <button onClick={() => openEdit(a)} className="p-1 text-muted-foreground hover:text-foreground"><Pencil className="h-3.5 w-3.5" /></button>
-                      <button onClick={() => setDeleteTarget(a)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">{isKo ? "로그인" : "Login"}: </span>
+                        <span className="text-foreground">{formatTime(s.loginAt)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">{isKo ? "로그아웃" : "Logout"}: </span>
+                        <span className="text-foreground">{formatTime(s.logoutAt)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">{isKo ? "학습시간" : "Study"}: </span>
+                        <span className="text-foreground">{formatMinutes(s.learningMinutes)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">{isKo ? "완료" : "Done"}: </span>
+                        <span className="text-foreground">{s.completions}</span>
+                      </div>
                     </div>
                   </div>
-                  <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                    <div className="col-span-2">
-                      <dt className="text-muted-foreground">{t("admin.courseLabel")}</dt>
-                      <dd className="mt-1 text-foreground break-words">{courseMap.get(a.course_id) || "-"}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">{t("admin.checkInTime")}</dt>
-                      <dd className="mt-1 text-foreground">{formatTime(a.check_in_time)}</dd>
-                    </div>
-                  </dl>
-                </article>
-              ))
+                );
+              })
             )}
           </div>
 
           {/* Desktop table */}
-          <div className="hidden sm:block overflow-x-auto -mx-3 sm:-mx-5">
-            <div className="min-w-[720px] px-3 sm:px-5">
-              <Table>
-                <TableHeader>
+          <div className="hidden sm:block overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-secondary/30">
+                  <TableHead className="text-xs">{isKo ? "이름" : "Name"}</TableHead>
+                  <TableHead className="text-xs">{isKo ? "부서" : "Department"}</TableHead>
+                  <TableHead className="text-xs text-center">{isKo ? "로그인" : "Login"}</TableHead>
+                  <TableHead className="text-xs text-center">{isKo ? "로그아웃" : "Logout"}</TableHead>
+                  <TableHead className="text-xs text-center">{isKo ? "상태" : "Status"}</TableHead>
+                  <TableHead className="text-xs text-center">{isKo ? "학습시간" : "Learning Time"}</TableHead>
+                  <TableHead className="text-xs text-center">{isKo ? "학습 완료 수" : "Completions"}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStats.length === 0 ? (
                   <TableRow>
-                    <TableHead>{t("admin.dateColumn")}</TableHead>
-                    <TableHead>{t("admin.nameColumn")}</TableHead>
-                    <TableHead>{t("admin.courseLabel")}</TableHead>
-                    <TableHead>{t("admin.statusLabel")}</TableHead>
-                    <TableHead>{t("admin.checkInTime")}</TableHead>
-                    <TableHead className="w-20">{t("common.actions", "관리")}</TableHead>
+                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                      {isKo ? "해당 날짜에 기록이 없습니다." : "No records for this date."}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleRows.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t("admin.noAttendanceData")}</TableCell>
-                    </TableRow>
-                  ) : (
-                    visibleRows.map((a: any) => (
-                      <TableRow key={a.id}>
-                        <TableCell className="text-sm">{formatDate(a.attendance_date)}</TableCell>
-                        <TableCell className="font-medium text-sm">{profileMap.get(a.user_id) || "-"}</TableCell>
-                        <TableCell className="max-w-[260px] text-sm whitespace-normal break-words">{courseMap.get(a.course_id) || "-"}</TableCell>
-                        <TableCell>
-                          <Badge variant={(statusColor[a.status] as any) || "outline"} className="text-[10px]">
-                            {t(`admin.${a.status}`)}
-                          </Badge>
+                ) : (
+                  filteredStats.map((s) => {
+                    const p = profileMap.get(s.userId);
+                    const isOnline = !!s.loginAt && !s.logoutAt;
+                    return (
+                      <TableRow key={s.userId}>
+                        <TableCell className="text-sm font-medium">{p?.full_name || "-"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{p?.department || "-"}</TableCell>
+                        <TableCell className="text-xs text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <LogIn className="h-3 w-3 text-muted-foreground" />
+                            {formatTime(s.loginAt)}
+                          </div>
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{formatTime(a.check_in_time)}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <button onClick={() => openEdit(a)} className="p-1 text-muted-foreground hover:text-foreground"><Pencil className="h-3.5 w-3.5" /></button>
-                            <button onClick={() => setDeleteTarget(a)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                        <TableCell className="text-xs text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <LogOut className="h-3 w-3 text-muted-foreground" />
+                            {formatTime(s.logoutAt)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {isOnline ? (
+                            <span className="text-[10px] font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2.5 py-1 rounded-lg">
+                              {isKo ? "온라인" : "Online"}
+                            </span>
+                          ) : s.loginAt ? (
+                            <span className="text-[10px] font-semibold text-muted-foreground bg-secondary px-2.5 py-1 rounded-lg">
+                              {isKo ? "오프라인" : "Offline"}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            {formatMinutes(s.learningMinutes)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <BookOpen className="h-3 w-3 text-muted-foreground" />
+                            {s.completions}
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
           </div>
         </div>
       </div>
-
-      {/* Add/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) { setDialogOpen(false); resetForm(); } else setDialogOpen(true); }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editTarget ? t("admin.editAttendance", "출석 수정") : t("admin.markAttendance", "출석 기록")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="space-y-1.5">
-              <Label>{t("admin.courseLabel")} *</Label>
-              <Select value={formCourseId} onValueChange={setFormCourseId}>
-                <SelectTrigger className="h-10"><SelectValue placeholder={t("admin.selectCourse", "강좌 선택")} /></SelectTrigger>
-                <SelectContent>
-                  {courses.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>{t("admin.nameColumn")} *</Label>
-              <Select value={formUserId} onValueChange={setFormUserId}>
-                <SelectTrigger className="h-10"><SelectValue placeholder={t("admin.selectStudent", "학생 선택")} /></SelectTrigger>
-                <SelectContent>
-                  {formCourseId ? (
-                    enrolledStudents.length > 0 ? (
-                      enrolledStudents.map((e: any) => (
-                        <SelectItem key={e.user_id} value={e.user_id}>
-                          {profileMap.get(e.user_id) || e.user_id}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <div className="px-2 py-3 text-sm text-muted-foreground text-center">{t("admin.noStudentData", "학생 데이터가 없습니다")}</div>
-                    )
-                  ) : (
-                    <div className="px-2 py-3 text-sm text-muted-foreground text-center">{t("admin.selectCourseFirst", "강좌를 먼저 선택하세요")}</div>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>{t("admin.dateColumn")}</Label>
-              <Input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="h-10" />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>{t("admin.statusLabel")} *</Label>
-              <Select value={formStatus} onValueChange={setFormStatus}>
-                <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="present">{t("admin.present")}</SelectItem>
-                  <SelectItem value="absent">{t("admin.absent")}</SelectItem>
-                  <SelectItem value="late">{t("admin.late")}</SelectItem>
-                  <SelectItem value="excused">{t("admin.excused")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>{t("admin.notes")}</Label>
-              <Textarea value={formNotes} onChange={(e) => setFormNotes(e.target.value)} placeholder={t("admin.notesPlaceholder", "비고 입력")} className="resize-none" />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>{t("common.cancel")}</Button>
-              <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !formCourseId || !formUserId}>
-                {saveMutation.isPending ? "..." : t("common.save")}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirm */}
-      <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t("common.confirmDelete", "삭제 확인")}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">{t("admin.deleteAttendanceConfirm", "이 출석 기록을 삭제하시겠습니까?")}</p>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>{t("common.cancel")}</Button>
-            <Button variant="destructive" onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)} disabled={deleteMutation.isPending}>
-              {t("common.delete")}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   );
 };
