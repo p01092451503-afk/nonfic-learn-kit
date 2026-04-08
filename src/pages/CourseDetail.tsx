@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { translateKoToEn } from "@/lib/translate";
 import AssessmentManager from "@/components/AssessmentManager";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
