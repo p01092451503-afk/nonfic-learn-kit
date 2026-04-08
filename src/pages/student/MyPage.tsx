@@ -339,32 +339,8 @@ const MyPage = () => {
                 </div>
 
                 {/* Illustrated style */}
-                <p className="text-xs font-medium text-muted-foreground">{t("mypage.illustratedStyle", "일러스트 스타일")}</p>
                 <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                  {PRESET_AVATARS.slice(0, 8).map((url) => (
-                    <button
-                      key={url}
-                      onClick={() => setSelectedAvatar(url)}
-                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-150 hover:scale-105 ${
-                        selectedAvatar === url
-                          ? "ring-2 ring-primary ring-offset-1 ring-offset-background shadow-sm"
-                          : "ring-1 ring-border hover:ring-muted-foreground/40"
-                      }`}
-                    >
-                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                      {selectedAvatar === url && (
-                        <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="h-2.5 w-2.5 text-primary-foreground" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Simplified style */}
-                <p className="text-xs font-medium text-muted-foreground mt-4">{t("mypage.simpleStyle", "심플 스타일")}</p>
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                  {PRESET_AVATARS.slice(8, 16).map((url) => (
+                  {PRESET_AVATARS.map((url) => (
                     <button
                       key={url}
                       onClick={() => setSelectedAvatar(url)}
