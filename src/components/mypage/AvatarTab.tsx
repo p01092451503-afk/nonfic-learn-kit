@@ -157,10 +157,10 @@ const AvatarTab = () => {
           <button
             key={key}
             onClick={() => setActiveCategory(key)}
-            className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
               activeCategory === key
-                ? "bg-foreground text-background"
-                : "bg-background text-muted-foreground ring-1 ring-border hover:ring-foreground/30"
+                ? "bg-foreground text-background ring-2 ring-foreground shadow-sm"
+                : "bg-background text-muted-foreground border border-border hover:border-foreground/40"
             }`}
           >
             {t(labelKey)}
