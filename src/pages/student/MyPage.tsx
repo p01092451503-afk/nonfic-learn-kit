@@ -341,36 +341,63 @@ const MyPage = () => {
                   <p className="text-sm text-muted-foreground">{t("mypage.selectAvatarDesc")}</p>
                 </div>
 
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-                  {PRESET_AVATARS.map((url) => (
+                {/* Illustrated style */}
+                <p className="text-xs font-medium text-muted-foreground">{t("mypage.illustratedStyle", "일러스트 스타일")}</p>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                  {PRESET_AVATARS.slice(0, 8).map((url) => (
                     <button
                       key={url}
                       onClick={() => setSelectedAvatar(url)}
-                      className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 bg-accent ${
+                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-150 hover:scale-105 ${
                         selectedAvatar === url
-                          ? "border-primary ring-2 ring-primary/20 shadow-md"
-                          : "border-border hover:border-muted-foreground/30"
+                          ? "ring-2 ring-primary ring-offset-1 ring-offset-background shadow-sm"
+                          : "ring-1 ring-border hover:ring-muted-foreground/40"
                       }`}
                     >
-                      <img src={url} alt="" className="w-full h-full object-contain p-1" loading="lazy" />
+                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
                       {selectedAvatar === url && (
-                        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                          <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="h-3.5 w-3.5 text-primary-foreground" />
-                          </div>
+                        <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="h-2.5 w-2.5 text-primary-foreground" />
                         </div>
                       )}
                     </button>
                   ))}
-                  {/* Custom upload button */}
+                </div>
+
+                {/* Simplified style */}
+                <p className="text-xs font-medium text-muted-foreground mt-4">{t("mypage.simpleStyle", "심플 스타일")}</p>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                  {PRESET_AVATARS.slice(8, 16).map((url) => (
+                    <button
+                      key={url}
+                      onClick={() => setSelectedAvatar(url)}
+                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-150 hover:scale-105 ${
+                        selectedAvatar === url
+                          ? "ring-2 ring-primary ring-offset-1 ring-offset-background shadow-sm"
+                          : "ring-1 ring-border hover:ring-muted-foreground/40"
+                      }`}
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      {selectedAvatar === url && (
+                        <div className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom upload */}
+                <div className="mt-4">
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    className="relative aspect-square rounded-2xl overflow-hidden border-2 border-dashed border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 bg-accent/50 flex flex-col items-center justify-center gap-1"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl ring-1 ring-border hover:ring-primary/50 transition-all text-sm text-muted-foreground hover:text-foreground"
                   >
-                    <ImagePlus className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground">{isUploading ? t("common.saving") : t("mypage.uploadPhoto")}</span>
+                    <ImagePlus className="h-4 w-4" />
+                    <span>{isUploading ? t("common.saving") : t("mypage.uploadPhoto")}</span>
                   </button>
+                </div>
                   <input
                     ref={fileInputRef}
                     type="file"
