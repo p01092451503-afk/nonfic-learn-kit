@@ -354,7 +354,8 @@
     "enTitle": "영어 제목",
     "enDescription": "영어 설명",
     "enVideoUrl": "영어 영상 URL",
-    "enOptional": "(미입력 시 한국어 폴백)"
+    "enOptional": "(미입력 시 한국어 폴백)",
+    "autoTranslate": "자동 번역"
   },
   "assignments": {
     "title": "과제",

@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
+import { translateKoToEn } from "@/lib/translate";
 import AssessmentManager from "@/components/AssessmentManager";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,7 +8,7 @@ import {
   FileText, Video, ChevronRight, BarChart3, Plus, Pencil,
   Trash2, Eye, EyeOff, Settings, ChevronUp, ChevronDown,
   GripVertical, ExternalLink, Copy, MoreHorizontal,
-  ClipboardCheck, AlertTriangle, Upload, X, Image,
+  ClipboardCheck, AlertTriangle, Upload, X, Image, Languages, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -903,7 +904,32 @@ const ContentDialog = ({
   onSubmit: () => void;
   isPending: boolean;
   t: any;
-}) => (
+}) => {
+  const [translating, setTranslating] = useState(false);
+
+  const handleAutoTranslate = async () => {
+    const textsToTranslate = [form.title, form.description].filter(Boolean);
+    if (textsToTranslate.length === 0) return;
+    setTranslating(true);
+    try {
+      const results = await translateKoToEn(textsToTranslate);
+      let idx = 0;
+      setEnForm(f => ({
+        ...f,
+        title: form.title ? (results[idx++] || "") : f.title,
+        description: form.description ? (results[idx++] || "") : f.description,
+        video_url: f.video_url || form.video_url,
+        video_provider: f.video_provider || form.video_provider,
+        duration_minutes: f.duration_minutes ?? form.duration_minutes,
+      }));
+    } catch {
+      // silently fail
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  return (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
       <DialogHeader>
@@ -972,7 +998,13 @@ const ContentDialog = ({
         </TabsContent>
 
         <TabsContent value="en" className="space-y-3 pt-2">
-          <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
+            <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleAutoTranslate} disabled={translating || (!form.title && !form.description)}>
+              {translating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+              {t("course.autoTranslate", "자동 번역")}
+            </Button>
+          </div>
           <div className="space-y-1">
             <Label className="text-xs">{t("course.enTitle")}</Label>
             <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => setEnForm(f => ({ ...f, title: e.target.value }))} placeholder="English title" />
@@ -1014,7 +1046,8 @@ const ContentDialog = ({
       </DialogFooter>
     </DialogContent>
   </Dialog>
-);
+  );
+};
 
 // --- Course Edit Dialog with i18n tabs + thumbnail + extended fields ---
 const CourseEditDialog = ({
@@ -1036,6 +1069,27 @@ const CourseEditDialog = ({
   categories: { id: string; name: string }[];
 }) => {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [translating, setTranslating] = useState(false);
+
+  const handleAutoTranslate = async () => {
+    const textsToTranslate = [form.title, form.description].filter(Boolean);
+    if (textsToTranslate.length === 0) return;
+    setTranslating(true);
+    try {
+      const results = await translateKoToEn(textsToTranslate);
+      let idx = 0;
+      setEnForm(f => ({
+        ...f,
+        title: form.title ? (results[idx++] || "") : f.title,
+        description: form.description ? (results[idx++] || "") : f.description,
+      }));
+    } catch {
+      // silently fail
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   return (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
@@ -1173,7 +1227,13 @@ const CourseEditDialog = ({
         </TabsContent>
 
         <TabsContent value="en" className="space-y-3 pt-2">
-          <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
+            <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleAutoTranslate} disabled={translating || (!form.title && !form.description)}>
+              {translating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+              {t("course.autoTranslate", "자동 번역")}
+            </Button>
+          </div>
           <div className="space-y-1">
             <Label className="text-xs">{t("course.enTitle")}</Label>
             <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => setEnForm(f => ({ ...f, title: e.target.value }))} placeholder="English title" />
