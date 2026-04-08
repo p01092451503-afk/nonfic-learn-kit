@@ -85,6 +85,8 @@ const CreateCourse = () => {
   const [difficultyLevel, setDifficultyLevel] = useState("beginner");
   const [estimatedHours, setEstimatedHours] = useState("");
   const [translatingCourse, setTranslatingCourse] = useState(false);
+  const [enTitleManual, setEnTitleManual] = useState(false);
+  const [enDescManual, setEnDescManual] = useState(false);
   const [maxStudents, setMaxStudents] = useState("");
   const [isMandatory, setIsMandatory] = useState(false);
   const [deadline, setDeadline] = useState("");
