@@ -42,6 +42,33 @@ const MyPage = () => {
   // Avatar
   const [selectedAvatar, setSelectedAvatar] = useState(profile?.avatar_url || "");
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: t("common.error"), description: t("mypage.fileTooLarge"), variant: "destructive" });
+      return;
+    }
+    setIsUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${user.id}/avatar.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+      const urlWithCache = `${publicUrl}?t=${Date.now()}`;
+      setSelectedAvatar(urlWithCache);
+      toast({ title: t("mypage.uploadSuccess") });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Password
   const [newPassword, setNewPassword] = useState("");
