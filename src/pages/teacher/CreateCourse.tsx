@@ -291,6 +291,13 @@ const CreateCourse = () => {
             updated.video_url = "";
           }
         }
+        // Auto-sync KO → EN for content items (only if EN hasn't been manually set differently)
+        if (field === "title" && (c.enTitle === c.title || !c.enTitle)) {
+          updated.enTitle = value;
+        }
+        if (field === "description" && (c.enDescription === c.description || !c.enDescription)) {
+          updated.enDescription = value;
+        }
         return updated;
       })
     );
