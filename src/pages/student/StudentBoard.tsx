@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Pin, FileText, Eye, Download } from "lucide-react";
+import BoardComments from "@/components/BoardComments";
 
 const StudentBoard = () => {
   const { t } = useTranslation();
@@ -105,6 +106,7 @@ const StudentBoard = () => {
                 ))}
               </div>
             )}
+            {selected && <BoardComments postId={selected.id} />}
           </div>
         </DialogContent>
       </Dialog>
