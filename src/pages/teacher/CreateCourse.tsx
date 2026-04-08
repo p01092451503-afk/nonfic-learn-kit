@@ -79,9 +79,12 @@ const CreateCourse = () => {
   // Course fields
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [enTitle, setEnTitle] = useState("");
+  const [enDescription, setEnDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [difficultyLevel, setDifficultyLevel] = useState("beginner");
   const [estimatedHours, setEstimatedHours] = useState("");
+  const [translatingCourse, setTranslatingCourse] = useState(false);
   const [maxStudents, setMaxStudents] = useState("");
   const [isMandatory, setIsMandatory] = useState(false);
   const [deadline, setDeadline] = useState("");
