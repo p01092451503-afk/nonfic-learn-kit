@@ -233,13 +233,30 @@ const CourseDetail = () => {
   });
 
   const updateCourseMutation = useMutation({
-    mutationFn: async (vals: { title: string; description: string; status: string; is_mandatory: boolean; deadline: string }) => {
+    mutationFn: async (vals: typeof courseForm) => {
+      let thumbnailUrl = course?.thumbnail_url || null;
+
+      // Upload thumbnail if changed
+      if (courseThumbnailFile) {
+        const ext = courseThumbnailFile.name.split(".").pop();
+        const path = `${courseId}/${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage.from("course-thumbnails").upload(path, courseThumbnailFile, { upsert: true });
+        if (uploadErr) throw uploadErr;
+        const { data: urlData } = supabase.storage.from("course-thumbnails").getPublicUrl(path);
+        thumbnailUrl = urlData.publicUrl;
+      }
+
       const { error } = await supabase.from("courses").update({
         title: vals.title,
         description: vals.description,
         status: vals.status,
         is_mandatory: vals.is_mandatory,
         deadline: vals.deadline || null,
+        category_id: vals.category_id || null,
+        difficulty_level: vals.difficulty_level || "beginner",
+        estimated_duration_hours: vals.estimated_duration_hours ? parseInt(vals.estimated_duration_hours) : 0,
+        max_students: vals.max_students ? parseInt(vals.max_students) : null,
+        thumbnail_url: thumbnailUrl,
       }).eq("id", courseId!);
       if (error) throw error;
       // Upsert English i18n
@@ -252,7 +269,7 @@ const CourseDetail = () => {
         }, { onConflict: "course_id,language_code" });
       }
     },
-    onSuccess: () => { invalidateAll(); setCourseEditOpen(false); toast({ title: t("course.courseModified") }); },
+    onSuccess: () => { invalidateAll(); setCourseEditOpen(false); setCourseThumbnailFile(null); toast({ title: t("course.courseModified") }); },
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
 
