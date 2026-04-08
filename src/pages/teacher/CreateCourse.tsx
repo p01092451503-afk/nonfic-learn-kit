@@ -45,6 +45,8 @@ interface ContentItem {
   is_preview: boolean;
   is_published: boolean;
   source: ContentSource;
+  enTitle: string;
+  enDescription: string;
 }
 
 const CreateCourse = () => {
