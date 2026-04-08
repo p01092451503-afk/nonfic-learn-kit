@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { User, Lock, Camera, Check, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { User, Lock, Camera, Check, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp, Upload, ImagePlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 
-const PRESET_AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`);
+const PRESET_AVATARS = [
+  ...Array.from({ length: 8 }, (_, i) => `/avatars/avatar-0${i + 1}.png`),
+  ...Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${String(i + 9).padStart(2, "0")}.png`),
+];
 
 // Preload all avatar images on mount
 const usePreloadAvatars = () => {
@@ -39,6 +42,33 @@ const MyPage = () => {
   // Avatar
   const [selectedAvatar, setSelectedAvatar] = useState(profile?.avatar_url || "");
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: t("common.error"), description: t("mypage.fileTooLarge"), variant: "destructive" });
+      return;
+    }
+    setIsUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${user.id}/avatar.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+      const urlWithCache = `${publicUrl}?t=${Date.now()}`;
+      setSelectedAvatar(urlWithCache);
+      toast({ title: t("mypage.uploadSuccess") });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Password
   const [newPassword, setNewPassword] = useState("");
@@ -311,7 +341,7 @@ const MyPage = () => {
                   <p className="text-sm text-muted-foreground">{t("mypage.selectAvatarDesc")}</p>
                 </div>
 
-                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 gap-4">
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
                   {PRESET_AVATARS.map((url) => (
                     <button
                       key={url}
@@ -332,6 +362,22 @@ const MyPage = () => {
                       )}
                     </button>
                   ))}
+                  {/* Custom upload button */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="relative aspect-square rounded-2xl overflow-hidden border-2 border-dashed border-border hover:border-primary/50 transition-all duration-200 hover:scale-105 bg-accent/50 flex flex-col items-center justify-center gap-1"
+                  >
+                    <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground">{isUploading ? t("common.saving") : t("mypage.uploadPhoto")}</span>
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
                 </div>
 
                 {/* Preview */}
