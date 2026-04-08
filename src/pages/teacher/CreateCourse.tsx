@@ -182,11 +182,13 @@ const CreateCourse = () => {
     })();
   }, [isEditMode, editCourseId, editDataLoaded]);
 
-  // Real-time sync KO → EN for course (copy raw text so EN is never empty)
+  // Real-time sync KO → EN for course (auto-copy when user hasn't manually edited EN)
   useEffect(() => {
-    if (!enTitle && title) setEnTitle(title);
-    if (!enDescription && description) setEnDescription(description);
-  }, [title, description]);
+    if (!enTitleManual && title) setEnTitle(title);
+  }, [title, enTitleManual]);
+  useEffect(() => {
+    if (!enDescManual && description) setEnDescription(description);
+  }, [description, enDescManual]);
 
   // Auto-translate course info
   const handleTranslateCourse = async () => {
