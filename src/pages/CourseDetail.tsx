@@ -1089,6 +1089,26 @@ const CourseEditDialog = ({
 }) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [translating, setTranslating] = useState(false);
+  const [enTitleManual, setEnTitleManual] = useState(false);
+  const [enDescManual, setEnDescManual] = useState(false);
+  const prevKoTitle = useRef(form.title);
+  const prevKoDesc = useRef(form.description);
+
+  // Sync KO → EN title if not manually edited
+  useEffect(() => {
+    if (!enTitleManual) {
+      setEnForm(f => ({ ...f, title: form.title }));
+    }
+    prevKoTitle.current = form.title;
+  }, [form.title, enTitleManual]);
+
+  // Sync KO → EN description if not manually edited
+  useEffect(() => {
+    if (!enDescManual) {
+      setEnForm(f => ({ ...f, description: form.description }));
+    }
+    prevKoDesc.current = form.description;
+  }, [form.description, enDescManual]);
 
   const handleAutoTranslate = async () => {
     const textsToTranslate = [form.title, form.description].filter(Boolean);
@@ -1102,6 +1122,8 @@ const CourseEditDialog = ({
         title: form.title ? (results[idx++] || "") : f.title,
         description: form.description ? (results[idx++] || "") : f.description,
       }));
+      setEnTitleManual(true);
+      setEnDescManual(true);
     } catch {
       // silently fail
     } finally {
