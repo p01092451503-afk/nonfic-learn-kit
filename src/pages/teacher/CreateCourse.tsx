@@ -600,14 +600,19 @@ const CreateCourse = () => {
           <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(-1)}>
             {t("createCourse.cancel")}
           </Button>
-          <Button type="button" variant="outline" className="rounded-xl gap-2" onClick={saveDraft} disabled={savingDraft}>
-            <Save className="h-4 w-4" />
-            {savingDraft ? t("createCourse.savingBtn") : t("createCourse.saveDraftBtn")}
+          {!isEditMode && (
+            <Button type="button" variant="outline" className="rounded-xl gap-2" onClick={saveDraft} disabled={savingDraft}>
+              <Save className="h-4 w-4" />
+              {savingDraft ? t("createCourse.savingBtn") : t("createCourse.saveDraftBtn")}
+            </Button>
+          )}
+          <Button type="submit" variant="login" size="xl" disabled={isEditMode ? updateMutation.isPending : createMutation.isPending}>
+            {isEditMode
+              ? (updateMutation.isPending ? t("createCourse.updatingBtn", "수정 중...") : t("createCourse.updateBtn", "수정하기"))
+              : (createMutation.isPending ? t("createCourse.creatingBtn") : t("createCourse.createBtn"))
+            }
           </Button>
-          <Button type="submit" variant="login" size="xl" disabled={createMutation.isPending}>
-            {createMutation.isPending ? t("createCourse.creatingBtn") : t("createCourse.createBtn")}
-          </Button>
-          {lastSaved && (
+          {!isEditMode && lastSaved && (
             <span className="text-xs text-muted-foreground ml-auto">
               {t("createCourse.lastSaved", { time: format(lastSaved, "HH:mm:ss") })}
             </span>
