@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          author_id: string
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_pinned: boolean
+          is_published: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          is_published?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          is_published?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       assessment_answers: {
         Row: {
           attempt_id: string
