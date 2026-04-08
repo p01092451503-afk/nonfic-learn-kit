@@ -31,16 +31,17 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hasNewAnnouncement, setHasNewAnnouncement] = useState(false);
+  const [hasNewBoardPost, setHasNewBoardPost] = useState(false);
   const { profile, signOut } = useUser();
   const { primaryRole } = useUserRole();
   const { t } = useTranslation();
 
   const activeRole = role || primaryRole;
 
-  // Check for new announcements (published within last 24 hours)
+  // Check for new announcements & board posts (published within last 24 hours)
   useEffect(() => {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const checkNew = async () => {
-      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { count } = await supabase
         .from("announcements")
         .select("id", { count: "exact", head: true })
@@ -48,7 +49,16 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
         .gte("created_at", since);
       setHasNewAnnouncement((count ?? 0) > 0);
     };
+    const checkNewBoard = async () => {
+      const { count } = await supabase
+        .from("board_posts")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true)
+        .gte("created_at", since);
+      setHasNewBoardPost((count ?? 0) > 0);
+    };
     checkNew();
+    checkNewBoard();
   }, []);
 
   // Preload user avatar for instant rendering
@@ -66,7 +76,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList },
     { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy },
     { label: t("nav.announcements", "공지사항"), href: "/student/announcements", icon: Megaphone, showNew: hasNewAnnouncement },
-    { label: t("nav.board", "게시판"), href: "/student/board", icon: FileText },
+    { label: t("nav.board", "게시판"), href: "/student/board", icon: FileText, showNew: hasNewBoardPost },
     { label: t("nav.myPage"), href: "/mypage", icon: UserCircle },
   ];
 
