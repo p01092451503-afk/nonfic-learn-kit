@@ -16,7 +16,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ClipboardList, Plus, Pencil, Trash2, Eye, ChevronDown, ChevronUp, Star, MessageSquare, ListChecks } from "lucide-react";
+import { ClipboardList, Plus, Pencil, Trash2, Eye, ChevronDown, ChevronUp, Star, MessageSquare, ListChecks, Upload, Download } from "lucide-react";
+import { useRef } from "react";
 
 interface SurveyQuestion {
   id?: string;
