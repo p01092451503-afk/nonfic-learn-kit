@@ -249,6 +249,33 @@ const TeacherAssignments = () => {
   const totalAssignments = assignments.length;
   const pendingSubmissions = submissions.filter((s: any) => s.status === "submitted");
   const gradedSubmissions = submissions.filter((s: any) => s.status === "graded" || s.status === "returned");
+
+  // Filtered pending submissions
+  const filteredPending = pendingSubmissions.filter((s: any) => {
+    if (filterAssignmentId !== "all" && s.assignment_id !== filterAssignmentId) return false;
+    if (searchStudent.trim()) {
+      const name = (profileMap.get(s.student_id) || "").toLowerCase();
+      if (!name.includes(searchStudent.toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  const toggleSub = (id: string) => {
+    setSelectedSubs((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedSubs.size === filteredPending.length) {
+      setSelectedSubs(new Set());
+    } else {
+      setSelectedSubs(new Set(filteredPending.map((s: any) => s.id)));
+    }
+  };
   const avgScore = gradedSubmissions.length > 0
     ? Math.round(gradedSubmissions.reduce((sum: number, s: any) => sum + (s.score || 0), 0) / gradedSubmissions.length)
     : 0;
