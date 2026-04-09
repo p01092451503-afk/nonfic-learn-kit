@@ -437,11 +437,20 @@ const AdminSurveys = () => {
             </div>
 
             <div className="border-t pt-4 space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <h3 className="font-semibold">질문 목록</h3>
-                <Button variant="outline" size="sm" onClick={addQuestion}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> 질문 추가
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={downloadTemplate}>
+                    <Download className="h-3.5 w-3.5 mr-1" /> 템플릿 다운로드
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-3.5 w-3.5 mr-1" /> CSV 업로드
+                  </Button>
+                  <input ref={fileInputRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFileUpload} />
+                  <Button variant="outline" size="sm" onClick={addQuestion}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> 질문 추가
+                  </Button>
+                </div>
               </div>
 
               {questions.map((q, qi) => (
