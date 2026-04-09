@@ -48,6 +48,7 @@ interface ContentItem {
   enTitle: string;
   enDescription: string;
   card_image_url?: string;
+  card_urls?: string[];
 }
 
 const CreateCourse = () => {
