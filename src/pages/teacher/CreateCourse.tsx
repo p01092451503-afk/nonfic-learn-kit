@@ -32,7 +32,7 @@ import type { Database } from "@/integrations/supabase/types";
 type ContentType = Database["public"]["Enums"]["content_type"];
 type VideoProvider = Database["public"]["Enums"]["video_provider"];
 
-type ContentSource = "video" | "mangoboard";
+type ContentSource = "video" | "mangoboard" | "card";
 
 interface ContentItem {
   tempId: string;
