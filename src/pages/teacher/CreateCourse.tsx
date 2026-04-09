@@ -841,15 +841,15 @@ const UnifiedContentEditor = ({
       </div>
 
       <div className="pl-14 space-y-3">
-        {/* Source selector: 동영상 vs 망고보드 */}
+        {/* Source selector: 동영상 vs 망고보드 vs 카드 */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.contentSourceLabel")}</label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               type="button"
               onClick={() => onChange("source", "video")}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${
-                !isMango
+                content.source === "video"
                   ? "bg-accent text-foreground border-border"
                   : "bg-transparent text-muted-foreground border-transparent hover:bg-accent/50"
               }`}
@@ -868,6 +868,18 @@ const UnifiedContentEditor = ({
             >
               <BookOpen className="h-3.5 w-3.5" />
               {t("createCourse.sourceMangoboard")}
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange("source", "card")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${
+                isCard
+                  ? "bg-accent text-foreground border-border"
+                  : "bg-transparent text-muted-foreground border-transparent hover:bg-accent/50"
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              {t("createCourse.sourceCard", "카드")}
             </button>
           </div>
         </div>
