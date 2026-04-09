@@ -47,6 +47,15 @@ const AVATAR_DATA: AvatarItem[] = [
   { id: 24, src: "/avatars/avatar-24.webp", categories: ["male", "professional"], label: "프로페셔널 남성 4" },
 ];
 
+const CATEGORIES: { key: AvatarCategory; labelKey: string }[] = [
+  { key: "all", labelKey: "mypage.catAll" },
+  { key: "female", labelKey: "mypage.catFemale" },
+  { key: "male", labelKey: "mypage.catMale" },
+  { key: "casual", labelKey: "mypage.catCasual" },
+  { key: "professional", labelKey: "mypage.catProfessional" },
+  { key: "senior", labelKey: "mypage.catSenior" },
+];
+
 const AvatarTab = () => {
   const { user, profile, refreshProfile } = useUser();
   const { toast } = useToast();
@@ -61,9 +70,6 @@ const AvatarTab = () => {
 
   const currentSavedAvatar = profile?.avatar_url || "";
 
-  useEffect(() => {
-    preloadAvatars();
-  }, []);
 
   useEffect(() => {
     if (profile?.avatar_url) {
