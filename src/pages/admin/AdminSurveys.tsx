@@ -43,6 +43,7 @@ const AdminSurveys = () => {
   const [questions, setQuestions] = useState<SurveyQuestion[]>([]);
   const [resultsDialog, setResultsDialog] = useState<any>(null);
   const [expandedSurvey, setExpandedSurvey] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: courses = [] } = useQuery({
     queryKey: ["courses-for-survey"],
