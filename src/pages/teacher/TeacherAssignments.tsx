@@ -203,7 +203,7 @@ const TeacherAssignments = () => {
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
 
-
+  const resetForm = () => {
     setFormCourseId("");
     setFormTitle("");
     setFormDescription("");
