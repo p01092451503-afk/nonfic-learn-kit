@@ -957,6 +957,42 @@ const UnifiedContentEditor = ({
               </div>
             )}
           </>
+        ) : isCard ? (
+          /* ── Card fields (세로형 카드 1080x1920 = 9:16) ── */
+          <>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase flex items-center gap-1">
+                <ImageIcon className="h-3 w-3" /> {t("createCourse.cardImageUrl", "카드 이미지 URL")}
+              </label>
+              <Input
+                value={content.video_url}
+                onChange={(e) => onChange("video_url", e.target.value)}
+                placeholder={t("createCourse.cardImageUrlPlaceholder", "이미지 URL 또는 영상 URL을 입력하세요")}
+                className="h-9 rounded-lg border-border text-xs"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                {t("createCourse.cardHint", "세로형 카드 (1080×1920) 사이즈의 이미지 또는 영상 링크를 등록하세요.")}
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.durationLabel")}</label>
+              <Input type="number" value={content.duration_minutes ?? ""} onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)} placeholder={t("createCourse.durationPlaceholder")} className="h-9 rounded-lg border-border text-xs" min="0" />
+            </div>
+
+            {/* Card preview */}
+            {content.video_url && (
+              <div className="flex justify-center">
+                <div className="w-48 rounded-xl border border-border overflow-hidden bg-muted/30" style={{ aspectRatio: "9/16" }}>
+                  {content.video_url.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i) ? (
+                    <img src={content.video_url} alt={content.title || "카드 미리보기"} className="w-full h-full object-cover" />
+                  ) : (
+                    <iframe src={content.video_url} className="w-full h-full" title={content.title || "카드 미리보기"} allowFullScreen />
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           /* ── Video fields ── */
           <>
