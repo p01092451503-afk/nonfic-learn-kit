@@ -1,5 +1,5 @@
 import {
-  ClipboardList, Clock, CheckCircle2, Plus, MoreHorizontal, FileText, Info, CalendarIcon, Paperclip, Download, FileIcon,
+  ClipboardList, Clock, CheckCircle2, Plus, MoreHorizontal, FileText, Info, CalendarIcon, Paperclip, Download, FileIcon, Search, CheckSquare,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
