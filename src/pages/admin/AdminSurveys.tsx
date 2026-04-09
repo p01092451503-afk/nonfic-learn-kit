@@ -364,9 +364,9 @@ const AdminSurveys = () => {
           </div>
         ) : surveys.length === 0 ? (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <ClipboardList className="h-12 w-12 text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">등록된 설문이 없습니다.</p>
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <ClipboardList className="h-10 w-10 text-muted-foreground mb-3" aria-hidden="true" />
+              <p className="text-sm text-muted-foreground">등록된 설문이 없습니다.</p>
             </CardContent>
           </Card>
         ) : (
