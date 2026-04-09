@@ -148,6 +148,91 @@ export type Database = {
           },
         ]
       }
+      assessment_i18n: {
+        Row: {
+          assessment_id: string
+          created_at: string
+          description: string | null
+          id: string
+          language_code: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          language_code: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          language_code?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_i18n_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_question_i18n: {
+        Row: {
+          correct_answer: string | null
+          created_at: string
+          explanation: string | null
+          hint: string | null
+          id: string
+          language_code: string
+          options: Json | null
+          question_id: string
+          question_text: string
+          updated_at: string
+        }
+        Insert: {
+          correct_answer?: string | null
+          created_at?: string
+          explanation?: string | null
+          hint?: string | null
+          id?: string
+          language_code: string
+          options?: Json | null
+          question_id: string
+          question_text: string
+          updated_at?: string
+        }
+        Update: {
+          correct_answer?: string | null
+          created_at?: string
+          explanation?: string | null
+          hint?: string | null
+          id?: string
+          language_code?: string
+          options?: Json | null
+          question_id?: string
+          question_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_question_i18n_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_questions: {
         Row: {
           assessment_id: string
