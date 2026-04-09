@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Check, ImagePlus, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -19,50 +19,33 @@ interface AvatarItem {
 
 const AVATAR_DATA: AvatarItem[] = [
   // Row 1: Original 8
-  { id: 1, src: "/avatars/avatar-01.png", categories: ["female", "casual"], label: "캐주얼 여성 1" },
-  { id: 2, src: "/avatars/avatar-02.png", categories: ["male", "professional"], label: "프로페셔널 남성 1" },
-  { id: 3, src: "/avatars/avatar-03.png", categories: ["female", "professional"], label: "프로페셔널 여성 1" },
-  { id: 4, src: "/avatars/avatar-04.png", categories: ["male", "casual"], label: "캐주얼 남성 1" },
-  { id: 5, src: "/avatars/avatar-05.png", categories: ["female", "casual"], label: "캐주얼 여성 2" },
-  { id: 6, src: "/avatars/avatar-06.png", categories: ["male", "senior", "professional"], label: "시니어 남성 1" },
-  { id: 7, src: "/avatars/avatar-07.png", categories: ["female", "casual"], label: "캐주얼 여성 3" },
-  { id: 8, src: "/avatars/avatar-08.png", categories: ["male", "casual"], label: "캐주얼 남성 2" },
+  { id: 1, src: "/avatars/avatar-01.webp", categories: ["female", "casual"], label: "캐주얼 여성 1" },
+  { id: 2, src: "/avatars/avatar-02.webp", categories: ["male", "professional"], label: "프로페셔널 남성 1" },
+  { id: 3, src: "/avatars/avatar-03.webp", categories: ["female", "professional"], label: "프로페셔널 여성 1" },
+  { id: 4, src: "/avatars/avatar-04.webp", categories: ["male", "casual"], label: "캐주얼 남성 1" },
+  { id: 5, src: "/avatars/avatar-05.webp", categories: ["female", "casual"], label: "캐주얼 여성 2" },
+  { id: 6, src: "/avatars/avatar-06.webp", categories: ["male", "senior", "professional"], label: "시니어 남성 1" },
+  { id: 7, src: "/avatars/avatar-07.webp", categories: ["female", "casual"], label: "캐주얼 여성 3" },
+  { id: 8, src: "/avatars/avatar-08.webp", categories: ["male", "casual"], label: "캐주얼 남성 2" },
   // Row 2: Beauty professional set
-  { id: 9, src: "/avatars/avatar-09.png", categories: ["female", "casual"], label: "캐주얼 여성 4" },
-  { id: 10, src: "/avatars/avatar-10.png", categories: ["male", "professional"], label: "프로페셔널 남성 2" },
-  { id: 11, src: "/avatars/avatar-11.png", categories: ["female", "casual"], label: "캐주얼 여성 5" },
-  { id: 12, src: "/avatars/avatar-12.png", categories: ["female", "casual"], label: "캐주얼 여성 6" },
-  { id: 13, src: "/avatars/avatar-13.png", categories: ["female", "senior", "professional"], label: "시니어 여성 1" },
-  { id: 14, src: "/avatars/avatar-14.png", categories: ["male", "casual"], label: "캐주얼 남성 3" },
-  { id: 15, src: "/avatars/avatar-15.png", categories: ["female", "casual"], label: "캐주얼 여성 7" },
-  { id: 16, src: "/avatars/avatar-16.png", categories: ["male", "professional"], label: "프로페셔널 남성 3" },
+  { id: 9, src: "/avatars/avatar-09.webp", categories: ["female", "casual"], label: "캐주얼 여성 4" },
+  { id: 10, src: "/avatars/avatar-10.webp", categories: ["male", "professional"], label: "프로페셔널 남성 2" },
+  { id: 11, src: "/avatars/avatar-11.webp", categories: ["female", "casual"], label: "캐주얼 여성 5" },
+  { id: 12, src: "/avatars/avatar-12.webp", categories: ["female", "casual"], label: "캐주얼 여성 6" },
+  { id: 13, src: "/avatars/avatar-13.webp", categories: ["female", "senior", "professional"], label: "시니어 여성 1" },
+  { id: 14, src: "/avatars/avatar-14.webp", categories: ["male", "casual"], label: "캐주얼 남성 3" },
+  { id: 15, src: "/avatars/avatar-15.webp", categories: ["female", "casual"], label: "캐주얼 여성 7" },
+  { id: 16, src: "/avatars/avatar-16.webp", categories: ["male", "professional"], label: "프로페셔널 남성 3" },
   // Row 3: New diverse set
-  { id: 17, src: "/avatars/avatar-17.png", categories: ["female", "professional"], label: "프로페셔널 여성 2" },
-  { id: 18, src: "/avatars/avatar-18.png", categories: ["male", "casual"], label: "캐주얼 남성 4" },
-  { id: 19, src: "/avatars/avatar-19.png", categories: ["female", "senior", "professional"], label: "시니어 여성 2" },
-  { id: 20, src: "/avatars/avatar-20.png", categories: ["male", "senior"], label: "시니어 남성 2" },
-  { id: 21, src: "/avatars/avatar-21.png", categories: ["female", "casual"], label: "캐주얼 여성 8" },
-  { id: 22, src: "/avatars/avatar-22.png", categories: ["male", "casual"], label: "캐주얼 남성 5" },
-  { id: 23, src: "/avatars/avatar-23.png", categories: ["female", "professional"], label: "프로페셔널 여성 3" },
-  { id: 24, src: "/avatars/avatar-24.png", categories: ["male", "professional"], label: "프로페셔널 남성 4" },
+  { id: 17, src: "/avatars/avatar-17.webp", categories: ["female", "professional"], label: "프로페셔널 여성 2" },
+  { id: 18, src: "/avatars/avatar-18.webp", categories: ["male", "casual"], label: "캐주얼 남성 4" },
+  { id: 19, src: "/avatars/avatar-19.webp", categories: ["female", "senior", "professional"], label: "시니어 여성 2" },
+  { id: 20, src: "/avatars/avatar-20.webp", categories: ["male", "senior"], label: "시니어 남성 2" },
+  { id: 21, src: "/avatars/avatar-21.webp", categories: ["female", "casual"], label: "캐주얼 여성 8" },
+  { id: 22, src: "/avatars/avatar-22.webp", categories: ["male", "casual"], label: "캐주얼 남성 5" },
+  { id: 23, src: "/avatars/avatar-23.webp", categories: ["female", "professional"], label: "프로페셔널 여성 3" },
+  { id: 24, src: "/avatars/avatar-24.webp", categories: ["male", "professional"], label: "프로페셔널 남성 4" },
 ];
-
-const CATEGORIES: { key: AvatarCategory; labelKey: string }[] = [
-  { key: "all", labelKey: "mypage.catAll" },
-  { key: "female", labelKey: "mypage.catFemale" },
-  { key: "male", labelKey: "mypage.catMale" },
-  { key: "casual", labelKey: "mypage.catCasual" },
-  { key: "professional", labelKey: "mypage.catProfessional" },
-  { key: "senior", labelKey: "mypage.catSenior" },
-];
-
-// Preload avatars
-const preloadAvatars = () => {
-  AVATAR_DATA.forEach(({ src }) => {
-    const img = new Image();
-    img.src = src;
-  });
-};
 
 const AvatarTab = () => {
   const { user, profile, refreshProfile } = useUser();
