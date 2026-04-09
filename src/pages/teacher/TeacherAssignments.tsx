@@ -716,6 +716,33 @@ const TeacherAssignments = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Batch Grade Dialog */}
+      <Dialog open={batchDialogOpen} onOpenChange={(v) => !v && setBatchDialogOpen(false)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("assignments.batchGradeTitle")}</DialogTitle>
+            <DialogDescription>{t("assignments.batchGradeDesc", { count: selectedSubs.size })}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{t("assignments.scoreInput")}</Label>
+              <Input type="number" value={batchScore} onChange={(e) => setBatchScore(e.target.value)} placeholder="0" className="rounded-xl" min={0} max={100} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{t("assignments.feedback")}</Label>
+              <Textarea value={batchFeedback} onChange={(e) => setBatchFeedback(e.target.value)} placeholder={t("assignments.feedbackPlaceholder")} className="rounded-xl resize-none min-h-[80px]" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBatchDialogOpen(false)} className="rounded-xl">{t("common.cancel")}</Button>
+            <Button onClick={() => batchGradeMutation.mutate()} disabled={batchGradeMutation.isPending || !batchScore} className="rounded-xl gap-1.5">
+              <CheckSquare className="h-3.5 w-3.5" />
+              {batchGradeMutation.isPending ? t("assignments.grading") : `${t("assignments.batchGrade")} (${selectedSubs.size})`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
