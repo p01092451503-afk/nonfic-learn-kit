@@ -230,17 +230,19 @@ const AdminSurveys = () => {
     const header = "질문유형,질문내용,필수여부,선택지1,선택지2,선택지3,선택지4,선택지5";
     const examples = [
       "객관식,교육 내용은 만족스러웠나요?,Y,매우 만족,만족,보통,불만족,매우 불만족",
-      "평점,강사의 전달력은 어땠나요?,Y,,,,",
-      "주관식,개선할 점이 있다면 자유롭게 적어주세요.,N,,,,"
+      "평점,강사의 전달력은 어땠나요?,Y,,,,,",
+      "주관식,개선할 점이 있다면 자유롭게 적어주세요.,N,,,,,"
     ];
-    const csv = "\uFEFF" + [header, ...examples].join("\n");
+    const csv = "\uFEFF" + [header, ...examples].join("\r\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "설문_질문_템플릿.csv";
+    a.download = "survey_question_template.csv";
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
