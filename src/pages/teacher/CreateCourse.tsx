@@ -793,8 +793,9 @@ const UnifiedContentEditor = ({
   const [translating, setTranslating] = useState(false);
   const [showEn, setShowEn] = useState(false);
   const isMango = content.source === "mangoboard";
+  const isCard = content.source === "card";
   const isValidMangoboard = isMango && content.video_url.includes("mangoboard.net");
-  const Icon = isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
+  const Icon = isCard ? LayoutGrid : isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
 
   // Real-time sync KO → EN
   useEffect(() => {
