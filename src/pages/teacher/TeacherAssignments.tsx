@@ -176,7 +176,34 @@ const TeacherAssignments = () => {
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
 
-  const resetForm = () => {
+  // Batch grade mutation
+  const batchGradeMutation = useMutation({
+    mutationFn: async () => {
+      const ids = Array.from(selectedSubs);
+      for (const id of ids) {
+        const { error } = await supabase.from("assignment_submissions").update({
+          score: parseInt(batchScore),
+          feedback: batchFeedback || null,
+          status: "graded" as any,
+          graded_at: new Date().toISOString(),
+          graded_by: user!.id,
+        }).eq("id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      const count = selectedSubs.size;
+      queryClient.invalidateQueries({ queryKey: ["teacher-submissions"] });
+      toast({ title: t("assignments.batchGradeSuccess", { count }) });
+      setSelectedSubs(new Set());
+      setBatchDialogOpen(false);
+      setBatchScore("");
+      setBatchFeedback("");
+    },
+    onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
+  });
+
+
     setFormCourseId("");
     setFormTitle("");
     setFormDescription("");
