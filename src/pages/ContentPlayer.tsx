@@ -248,6 +248,7 @@ const ContentPlayer = () => {
 
   useEffect(() => {
     setMangoElapsed(0);
+    setCardIndex(0);
   }, [contentId]);
 
   // Mangoboard timer
