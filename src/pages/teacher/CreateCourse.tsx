@@ -163,8 +163,21 @@ const CreateCourse = () => {
       if (courseContents?.length) {
         setContents(courseContents.map((c: any) => {
           const en = i18nMap.get(c.id);
-          const isCardContent = c.description?.startsWith("[card-content]");
-          const cleanDesc = isCardContent ? c.description.replace("[card-content]", "") : (c.description || "");
+          const isCard = c.description?.startsWith("[card-content]");
+          let cleanDesc = "";
+          let cardUrls: string[] = [];
+          if (isCard) {
+            const payload = c.description.replace("[card-content]", "");
+            try {
+              const parsed = JSON.parse(payload);
+              cleanDesc = parsed.desc || "";
+              cardUrls = parsed.urls || [];
+            } catch {
+              cleanDesc = payload;
+            }
+          } else {
+            cleanDesc = c.description || "";
+          }
           return {
             tempId: c.id,
             title: c.title || "",
@@ -175,9 +188,10 @@ const CreateCourse = () => {
             duration_minutes: c.duration_minutes,
             is_preview: c.is_preview || false,
             is_published: c.is_published || false,
-            source: isCardContent ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource),
+            source: isCard ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource),
             enTitle: en?.title || "",
             enDescription: en?.description || "",
+            card_urls: cardUrls.length > 0 ? cardUrls : (isCard && c.video_url ? [c.video_url] : []),
           };
         }));
       }
