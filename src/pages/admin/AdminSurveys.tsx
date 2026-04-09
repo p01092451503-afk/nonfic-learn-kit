@@ -346,12 +346,15 @@ const AdminSurveys = () => {
   return (
     <DashboardLayout role="admin">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <ClipboardList className="h-6 w-6" /> 설문 관리
-          </h1>
-          <Button onClick={openCreate} className="gap-1.5">
-            <Plus className="h-4 w-4" /> 설문 만들기
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" /> 설문 관리
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">강좌별 설문을 생성하고 관리합니다.</p>
+          </div>
+          <Button onClick={openCreate} className="rounded-xl gap-2 w-full sm:w-auto">
+            <Plus className="h-4 w-4" aria-hidden="true" /> 설문 만들기
           </Button>
         </div>
 
@@ -361,9 +364,9 @@ const AdminSurveys = () => {
           </div>
         ) : surveys.length === 0 ? (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <ClipboardList className="h-12 w-12 text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">등록된 설문이 없습니다.</p>
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <ClipboardList className="h-10 w-10 text-muted-foreground mb-3" aria-hidden="true" />
+              <p className="text-sm text-muted-foreground">등록된 설문이 없습니다.</p>
             </CardContent>
           </Card>
         ) : (
