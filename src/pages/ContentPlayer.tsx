@@ -143,6 +143,7 @@ const ContentPlayer = () => {
   const getCourseTitle = () => { if (isEn) { const en = courseI18n?.find((i: any) => i.language_code === "en"); return en?.title || course?.title || ""; } return course?.title || ""; };
 
   const isMangoboard = (url: string | null) => url?.includes("mangoboard.net") ?? false;
+  const isCardContent = (desc: string | null) => desc?.startsWith("[card-content]") ?? false;
 
   const currentContent = contents.find((c) => c.id === contentId);
 
