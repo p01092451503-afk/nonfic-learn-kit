@@ -73,11 +73,12 @@ const AvatarTab = () => {
 
   useEffect(() => {
     if (profile?.avatar_url) {
-      setSelectedAvatar(profile.avatar_url);
-      // If saved avatar is a storage URL (not a preset), treat as custom
-      const isPreset = AVATAR_DATA.some((a) => a.src === profile.avatar_url);
-      if (!isPreset && profile.avatar_url) {
-        setCustomAvatarUrl(profile.avatar_url);
+      // Migrate old .png preset paths to .webp
+      const migrated = profile.avatar_url.replace(/\/avatars\/avatar-(\d+)\.png$/, '/avatars/avatar-$1.webp');
+      setSelectedAvatar(migrated);
+      const isPreset = AVATAR_DATA.some((a) => a.src === migrated);
+      if (!isPreset && migrated) {
+        setCustomAvatarUrl(migrated);
       }
     }
   }, [profile?.avatar_url]);
