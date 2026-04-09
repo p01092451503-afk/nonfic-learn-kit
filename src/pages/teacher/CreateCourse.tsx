@@ -427,7 +427,7 @@ const CreateCourse = () => {
         const contentRows = contents.map((c, idx) => ({
           course_id: editCourseId!,
           title: c.title,
-          description: c.source === "card" ? `[card-content]${c.description || ""}` : (c.description || null),
+          description: c.source === "card" ? `[card-content]${JSON.stringify({ urls: c.card_urls || [], desc: c.description || "" })}` : (c.description || null),
           content_type: c.content_type,
           video_url: c.video_url || null,
           video_provider: c.video_provider || null,
@@ -511,7 +511,7 @@ const CreateCourse = () => {
         const contentRows = contents.map((c, idx) => ({
           course_id: course.id,
           title: c.title,
-          description: c.source === "card" ? `[card-content]${c.description || ""}` : (c.description || null),
+          description: c.source === "card" ? `[card-content]${JSON.stringify({ urls: c.card_urls || [], desc: c.description || "" })}` : (c.description || null),
           content_type: c.content_type,
           video_url: c.video_url || null,
           video_provider: c.video_provider || null,
