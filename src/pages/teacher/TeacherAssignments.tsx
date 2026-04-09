@@ -45,6 +45,12 @@ const TeacherAssignments = () => {
   const [gradeTarget, setGradeTarget] = useState<any>(null);
   const [gradeScore, setGradeScore] = useState("");
   const [gradeFeedback, setGradeFeedback] = useState("");
+  const [selectedSubs, setSelectedSubs] = useState<Set<string>>(new Set());
+  const [batchDialogOpen, setBatchDialogOpen] = useState(false);
+  const [batchScore, setBatchScore] = useState("");
+  const [batchFeedback, setBatchFeedback] = useState("");
+  const [filterAssignmentId, setFilterAssignmentId] = useState("all");
+  const [searchStudent, setSearchStudent] = useState("");
 
   // Form state
   const [formCourseId, setFormCourseId] = useState("");
