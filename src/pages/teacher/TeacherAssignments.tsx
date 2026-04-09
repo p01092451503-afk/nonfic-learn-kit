@@ -1,5 +1,5 @@
 import {
-  ClipboardList, Clock, CheckCircle2, Plus, MoreHorizontal, FileText, Info, CalendarIcon, Paperclip, Download, FileIcon,
+  ClipboardList, Clock, CheckCircle2, Plus, MoreHorizontal, FileText, Info, CalendarIcon, Paperclip, Download, FileIcon, Search, CheckSquare,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
@@ -44,6 +45,12 @@ const TeacherAssignments = () => {
   const [gradeTarget, setGradeTarget] = useState<any>(null);
   const [gradeScore, setGradeScore] = useState("");
   const [gradeFeedback, setGradeFeedback] = useState("");
+  const [selectedSubs, setSelectedSubs] = useState<Set<string>>(new Set());
+  const [batchDialogOpen, setBatchDialogOpen] = useState(false);
+  const [batchScore, setBatchScore] = useState("");
+  const [batchFeedback, setBatchFeedback] = useState("");
+  const [filterAssignmentId, setFilterAssignmentId] = useState("all");
+  const [searchStudent, setSearchStudent] = useState("");
 
   // Form state
   const [formCourseId, setFormCourseId] = useState("");
@@ -169,7 +176,34 @@ const TeacherAssignments = () => {
     onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
   });
 
-  const resetForm = () => {
+  // Batch grade mutation
+  const batchGradeMutation = useMutation({
+    mutationFn: async () => {
+      const ids = Array.from(selectedSubs);
+      for (const id of ids) {
+        const { error } = await supabase.from("assignment_submissions").update({
+          score: parseInt(batchScore),
+          feedback: batchFeedback || null,
+          status: "graded" as any,
+          graded_at: new Date().toISOString(),
+          graded_by: user!.id,
+        }).eq("id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      const count = selectedSubs.size;
+      queryClient.invalidateQueries({ queryKey: ["teacher-submissions"] });
+      toast({ title: t("assignments.batchGradeSuccess", { count }) });
+      setSelectedSubs(new Set());
+      setBatchDialogOpen(false);
+      setBatchScore("");
+      setBatchFeedback("");
+    },
+    onError: (e: any) => toast({ title: t("common.error"), description: e.message, variant: "destructive" }),
+  });
+
+
     setFormCourseId("");
     setFormTitle("");
     setFormDescription("");
@@ -215,6 +249,33 @@ const TeacherAssignments = () => {
   const totalAssignments = assignments.length;
   const pendingSubmissions = submissions.filter((s: any) => s.status === "submitted");
   const gradedSubmissions = submissions.filter((s: any) => s.status === "graded" || s.status === "returned");
+
+  // Filtered pending submissions
+  const filteredPending = pendingSubmissions.filter((s: any) => {
+    if (filterAssignmentId !== "all" && s.assignment_id !== filterAssignmentId) return false;
+    if (searchStudent.trim()) {
+      const name = (profileMap.get(s.student_id) || "").toLowerCase();
+      if (!name.includes(searchStudent.toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  const toggleSub = (id: string) => {
+    setSelectedSubs((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedSubs.size === filteredPending.length) {
+      setSelectedSubs(new Set());
+    } else {
+      setSelectedSubs(new Set(filteredPending.map((s: any) => s.id)));
+    }
+  };
   const avgScore = gradedSubmissions.length > 0
     ? Math.round(gradedSubmissions.reduce((sum: number, s: any) => sum + (s.score || 0), 0) / gradedSubmissions.length)
     : 0;
@@ -360,22 +421,65 @@ const TeacherAssignments = () => {
         {/* Pending Submissions */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-semibold text-foreground">{t("assignments.recentSubmissions")}</h2>
-              <Badge className="bg-primary text-primary-foreground text-[10px] font-semibold">{t("assignments.aiGrading")}</Badge>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg font-semibold text-foreground">{t("assignments.recentSubmissions")}</h2>
+                  <Badge className="bg-primary text-primary-foreground text-[10px] font-semibold">{pendingSubmissions.length}</Badge>
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("assignments.submissionsNeedReview")}</p>
+              </div>
+              {selectedSubs.size > 0 && (
+                <Button size="sm" className="rounded-xl gap-1.5 text-xs" onClick={() => setBatchDialogOpen(true)}>
+                  <CheckSquare className="h-3.5 w-3.5" />
+                  {t("assignments.batchGrade")} ({selectedSubs.size})
+                </Button>
+              )}
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("assignments.submissionsNeedReview")}</p>
+            {/* Filter & Search bar */}
+            {pendingSubmissions.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-3">
+                <Select value={filterAssignmentId} onValueChange={setFilterAssignmentId}>
+                  <SelectTrigger className="rounded-xl h-8 text-xs w-full sm:w-48">
+                    <SelectValue placeholder={t("assignments.filterByAssignment")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("assignments.allAssignments")}</SelectItem>
+                    {assignments.filter((a: any) => a.status === "published").map((a: any) => (
+                      <SelectItem key={a.id} value={a.id}>{a.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    value={searchStudent}
+                    onChange={(e) => setSearchStudent(e.target.value)}
+                    placeholder={t("assignments.searchStudent")}
+                    className="rounded-xl h-8 text-xs pl-8"
+                  />
+                </div>
+                <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs shrink-0" onClick={toggleAll}>
+                  {selectedSubs.size === filteredPending.length && filteredPending.length > 0 ? t("assignments.deselectAll") : t("assignments.selectAll")}
+                </Button>
+              </div>
+            )}
           </div>
 
-          {pendingSubmissions.length === 0 ? (
+          {filteredPending.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-sm text-muted-foreground">{t("assignments.noWaitingSubmissions")}</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {pendingSubmissions.slice(0, 10).map((sub: any) => (
-                <div key={sub.id} className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-accent/20 transition-colors">
+              {filteredPending.map((sub: any) => (
+                <div key={sub.id} className={`px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-accent/20 transition-colors ${selectedSubs.has(sub.id) ? "bg-accent/10" : ""}`}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Checkbox
+                      checked={selectedSubs.has(sub.id)}
+                      onCheckedChange={() => toggleSub(sub.id)}
+                      className="shrink-0"
+                    />
                     <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary shrink-0">
                       {(profileMap.get(sub.student_id) || t("assignments.student"))[0]}
                     </div>
@@ -608,6 +712,33 @@ const TeacherAssignments = () => {
             <Button variant="outline" onClick={() => setGradeTarget(null)} className="rounded-xl">{t("common.cancel")}</Button>
             <Button onClick={() => gradeMutation.mutate()} disabled={gradeMutation.isPending || !gradeScore} className="rounded-xl">
               {gradeMutation.isPending ? t("assignments.grading") : t("assignments.gradeSubmit")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Grade Dialog */}
+      <Dialog open={batchDialogOpen} onOpenChange={(v) => !v && setBatchDialogOpen(false)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("assignments.batchGradeTitle")}</DialogTitle>
+            <DialogDescription>{t("assignments.batchGradeDesc", { count: selectedSubs.size })}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{t("assignments.scoreInput")}</Label>
+              <Input type="number" value={batchScore} onChange={(e) => setBatchScore(e.target.value)} placeholder="0" className="rounded-xl" min={0} max={100} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{t("assignments.feedback")}</Label>
+              <Textarea value={batchFeedback} onChange={(e) => setBatchFeedback(e.target.value)} placeholder={t("assignments.feedbackPlaceholder")} className="rounded-xl resize-none min-h-[80px]" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBatchDialogOpen(false)} className="rounded-xl">{t("common.cancel")}</Button>
+            <Button onClick={() => batchGradeMutation.mutate()} disabled={batchGradeMutation.isPending || !batchScore} className="rounded-xl gap-1.5">
+              <CheckSquare className="h-3.5 w-3.5" />
+              {batchGradeMutation.isPending ? t("assignments.grading") : `${t("assignments.batchGrade")} (${selectedSubs.size})`}
             </Button>
           </DialogFooter>
         </DialogContent>
