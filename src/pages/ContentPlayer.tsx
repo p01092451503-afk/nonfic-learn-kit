@@ -354,7 +354,18 @@ const ContentPlayer = () => {
           <div className="max-w-5xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
             {/* Media area */}
             <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6 relative">
-              {isMangoboard(localVideoUrl) && embedUrl ? (
+              {isCardContent(currentContent.description) && localVideoUrl ? (
+                /* ── Card content (9:16 portrait) ── */
+                <div className="flex justify-center py-6">
+                  <div className="w-72 sm:w-80 rounded-2xl overflow-hidden border border-border shadow-lg" style={{ aspectRatio: "9/16" }}>
+                    {localVideoUrl.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i) ? (
+                      <img src={localVideoUrl} alt={localTitle} className="w-full h-full object-cover" />
+                    ) : (
+                      <iframe src={localVideoUrl} className="w-full h-full" title={localTitle} allowFullScreen />
+                    )}
+                  </div>
+                </div>
+              ) : isMangoboard(localVideoUrl) && embedUrl ? (
                 <button onClick={() => setMangoPopupOpen(true)} className="relative aspect-video w-full flex items-center justify-center group cursor-pointer bg-gradient-to-br from-blue-500/10 to-indigo-500/10">
                   <div className="text-center space-y-4">
                     <div className="h-20 w-20 rounded-full bg-primary/90 group-hover:bg-primary mx-auto flex items-center justify-center transition-all group-hover:scale-110 shadow-lg">
