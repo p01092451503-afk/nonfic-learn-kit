@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 import SiteSummaryCard from "@/components/admin/stats/SiteSummaryCard";
 import TodayOperationsCard from "@/components/admin/stats/TodayOperationsCard";
+import BranchLearningStats from "@/components/admin/stats/BranchLearningStats";
 import MemberStatsCard from "@/components/admin/stats/MemberStatsCard";
 import CourseStatsCard from "@/components/admin/stats/CourseStatsCard";
 import LearningActivityCard from "@/components/admin/stats/LearningActivityCard";
@@ -138,8 +139,9 @@ const AdminTraffic = () => {
 
         {/* Tabs for different stat sections */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="text-xs">종합 통계</TabsTrigger>
+            <TabsTrigger value="branch" className="text-xs">지점별 학습</TabsTrigger>
             <TabsTrigger value="traffic" className="text-xs">트래픽</TabsTrigger>
             <TabsTrigger value="learning" className="text-xs">학습 활동</TabsTrigger>
           </TabsList>
@@ -152,6 +154,11 @@ const AdminTraffic = () => {
             </div>
             <MemberStatsCard />
             <CourseStatsCard />
+          </TabsContent>
+
+          {/* Branch Learning Tab */}
+          <TabsContent value="branch" className="space-y-4">
+            <BranchLearningStats />
           </TabsContent>
 
           {/* Traffic Tab */}
