@@ -513,7 +513,7 @@ const CreateCourse = () => {
           title: c.title,
           description: c.source === "card" ? `[card-content]${JSON.stringify({ urls: c.card_urls || [], desc: c.description || "" })}` : (c.description || null),
           content_type: c.content_type,
-          video_url: c.video_url || null,
+          video_url: c.source === "card" ? (c.card_urls?.[0] || c.video_url || null) : (c.video_url || null),
           video_provider: c.video_provider || null,
           duration_minutes: c.duration_minutes,
           order_index: idx,
