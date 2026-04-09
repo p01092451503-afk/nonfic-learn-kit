@@ -172,7 +172,7 @@ const CreateCourse = () => {
             duration_minutes: c.duration_minutes,
             is_preview: c.is_preview || false,
             is_published: c.is_published || false,
-            source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource,
+            source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : (c.description?.includes("[card-content]") ? "card" as ContentSource : "video" as ContentSource),
             enTitle: en?.title || "",
             enDescription: en?.description || "",
           };
