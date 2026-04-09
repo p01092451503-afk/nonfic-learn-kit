@@ -100,10 +100,10 @@ const TeacherNotifications = () => {
   return (
     <DashboardLayout role="teacher">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">{t("notifications.management", "알림 관리")}</h1>
-            <p className="text-muted-foreground">{t("notifications.teacherDesc", "수강생에게 알림을 발송합니다.")}</p>
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2"><Bell className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />{t("notifications.management", "알림 관리")}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("notifications.teacherDesc", "수강생에게 알림을 발송합니다.")}</p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
