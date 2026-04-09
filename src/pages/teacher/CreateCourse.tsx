@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
   MonitorPlay, BookOpen, ExternalLink, Link2, Eye, ImagePlus, X, CalendarIcon,
-  Save, Languages, Loader2, LayoutGrid, Image as ImageIcon,
+  Save, Languages, Loader2, LayoutGrid, Image as ImageIcon, ChevronUp,
 } from "lucide-react";
 import { translateKoToEn } from "@/lib/translate";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,7 @@ interface ContentItem {
   enTitle: string;
   enDescription: string;
   card_image_url?: string;
+  card_urls?: string[];
 }
 
 const CreateCourse = () => {
@@ -162,8 +163,21 @@ const CreateCourse = () => {
       if (courseContents?.length) {
         setContents(courseContents.map((c: any) => {
           const en = i18nMap.get(c.id);
-          const isCardContent = c.description?.startsWith("[card-content]");
-          const cleanDesc = isCardContent ? c.description.replace("[card-content]", "") : (c.description || "");
+          const isCard = c.description?.startsWith("[card-content]");
+          let cleanDesc = "";
+          let cardUrls: string[] = [];
+          if (isCard) {
+            const payload = c.description.replace("[card-content]", "");
+            try {
+              const parsed = JSON.parse(payload);
+              cleanDesc = parsed.desc || "";
+              cardUrls = parsed.urls || [];
+            } catch {
+              cleanDesc = payload;
+            }
+          } else {
+            cleanDesc = c.description || "";
+          }
           return {
             tempId: c.id,
             title: c.title || "",
@@ -174,9 +188,10 @@ const CreateCourse = () => {
             duration_minutes: c.duration_minutes,
             is_preview: c.is_preview || false,
             is_published: c.is_published || false,
-            source: isCardContent ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource),
+            source: isCard ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource),
             enTitle: en?.title || "",
             enDescription: en?.description || "",
+            card_urls: cardUrls.length > 0 ? cardUrls : (isCard && c.video_url ? [c.video_url] : []),
           };
         }));
       }
@@ -412,9 +427,9 @@ const CreateCourse = () => {
         const contentRows = contents.map((c, idx) => ({
           course_id: editCourseId!,
           title: c.title,
-          description: c.source === "card" ? `[card-content]${c.description || ""}` : (c.description || null),
+          description: c.source === "card" ? `[card-content]${JSON.stringify({ urls: c.card_urls || [], desc: c.description || "" })}` : (c.description || null),
           content_type: c.content_type,
-          video_url: c.video_url || null,
+          video_url: c.source === "card" ? (c.card_urls?.[0] || c.video_url || null) : (c.video_url || null),
           video_provider: c.video_provider || null,
           duration_minutes: c.duration_minutes,
           order_index: idx,
@@ -496,9 +511,9 @@ const CreateCourse = () => {
         const contentRows = contents.map((c, idx) => ({
           course_id: course.id,
           title: c.title,
-          description: c.source === "card" ? `[card-content]${c.description || ""}` : (c.description || null),
+          description: c.source === "card" ? `[card-content]${JSON.stringify({ urls: c.card_urls || [], desc: c.description || "" })}` : (c.description || null),
           content_type: c.content_type,
-          video_url: c.video_url || null,
+          video_url: c.source === "card" ? (c.card_urls?.[0] || c.video_url || null) : (c.video_url || null),
           video_provider: c.video_provider || null,
           duration_minutes: c.duration_minutes,
           order_index: idx,
@@ -960,21 +975,69 @@ const UnifiedContentEditor = ({
             )}
           </>
         ) : isCard ? (
-          /* ── Card fields (세로형 카드 1080x1920 = 9:16) ── */
+          /* ── Card fields (multiple cards, 9:16) ── */
           <>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-[10px] font-medium text-muted-foreground uppercase flex items-center gap-1">
-                <ImageIcon className="h-3 w-3" /> {t("createCourse.cardImageUrl", "카드 이미지 URL")}
+                <ImageIcon className="h-3 w-3" /> 카드 이미지/영상 URL 목록
               </label>
-              <Input
-                value={content.video_url}
-                onChange={(e) => onChange("video_url", e.target.value)}
-                placeholder={t("createCourse.cardImageUrlPlaceholder", "이미지 URL 또는 영상 URL을 입력하세요")}
-                className="h-9 rounded-lg border-border text-xs"
-              />
               <p className="text-[10px] text-muted-foreground">
-                {t("createCourse.cardHint", "세로형 카드 (1080×1920) 사이즈의 이미지 또는 영상 링크를 등록하세요.")}
+                세로형 카드 (1080×1920) 사이즈의 이미지 또는 영상 링크를 여러 장 등록할 수 있습니다.
               </p>
+
+              {/* Existing card URLs */}
+              {(content.card_urls || []).map((url, cardIdx) => (
+                <div key={cardIdx} className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground w-6 shrink-0 text-center">{cardIdx + 1}</span>
+                  <Input
+                    value={url}
+                    onChange={(e) => {
+                      const newUrls = [...(content.card_urls || [])];
+                      newUrls[cardIdx] = e.target.value;
+                      onChange("card_urls", newUrls);
+                    }}
+                    placeholder="이미지 URL 또는 영상 URL"
+                    className="h-8 rounded-lg border-border text-xs flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newUrls = (content.card_urls || []).filter((_, i) => i !== cardIdx);
+                      onChange("card_urls", newUrls);
+                    }}
+                    className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                  {cardIdx > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newUrls = [...(content.card_urls || [])];
+                        [newUrls[cardIdx - 1], newUrls[cardIdx]] = [newUrls[cardIdx], newUrls[cardIdx - 1]];
+                        onChange("card_urls", newUrls);
+                      }}
+                      className="p-1 rounded hover:bg-accent text-muted-foreground transition-colors shrink-0"
+                      title="위로 이동"
+                    >
+                      <ChevronUp className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {/* Add new card URL */}
+              <button
+                type="button"
+                onClick={() => {
+                  const newUrls = [...(content.card_urls || []), ""];
+                  onChange("card_urls", newUrls);
+                }}
+                className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors py-1"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                카드 추가
+              </button>
             </div>
 
             <div className="space-y-1.5">
@@ -982,15 +1045,20 @@ const UnifiedContentEditor = ({
               <Input type="number" value={content.duration_minutes ?? ""} onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)} placeholder={t("createCourse.durationPlaceholder")} className="h-9 rounded-lg border-border text-xs" min="0" />
             </div>
 
-            {/* Card preview */}
-            {content.video_url && (
-              <div className="flex justify-center">
-                <div className="w-48 rounded-xl border border-border overflow-hidden bg-muted/30" style={{ aspectRatio: "9/16" }}>
-                  {content.video_url.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i) ? (
-                    <img src={content.video_url} alt={content.title || "카드 미리보기"} className="w-full h-full object-cover" />
-                  ) : (
-                    <iframe src={content.video_url} className="w-full h-full" title={content.title || "카드 미리보기"} allowFullScreen />
-                  )}
+            {/* Card previews */}
+            {(content.card_urls || []).filter(u => u).length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-medium text-muted-foreground uppercase">미리보기 ({(content.card_urls || []).filter(u => u).length}장)</label>
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {(content.card_urls || []).filter(u => u).map((url, i) => (
+                    <div key={i} className="w-24 rounded-lg border border-border overflow-hidden bg-muted/30 shrink-0" style={{ aspectRatio: "9/16" }}>
+                      {url.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i) ? (
+                        <img src={url} alt={`카드 ${i + 1}`} className="w-full h-full object-cover" />
+                      ) : (
+                        <iframe src={url} className="w-full h-full pointer-events-none" title={`카드 ${i + 1}`} />
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
