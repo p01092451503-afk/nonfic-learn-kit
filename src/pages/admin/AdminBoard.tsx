@@ -14,7 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Pin, Upload, X, FileText, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Pin, Upload, X, FileText, Eye, ClipboardList } from "lucide-react";
 
 const EMPTY_FORM = { title: "", content: "", is_pinned: false, is_published: true, course_id: "" };
 
@@ -138,10 +138,13 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
 
   return (
     <DashboardLayout role={role}>
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("board.title", "게시판 관리")}</h1>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <ClipboardList className="h-6 w-6" />
+              {t("board.title", "게시판 관리")}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">{t("board.subtitle", "학생에게 자료를 배포하고 안내사항을 게시합니다.")}</p>
           </div>
           <Button onClick={openNew} size="sm" className="gap-1.5">
