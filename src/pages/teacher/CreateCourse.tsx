@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
   MonitorPlay, BookOpen, ExternalLink, Link2, Eye, ImagePlus, X, CalendarIcon,
-  Save, Languages, Loader2,
+  Save, Languages, Loader2, LayoutGrid, Image as ImageIcon,
 } from "lucide-react";
 import { translateKoToEn } from "@/lib/translate";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ import type { Database } from "@/integrations/supabase/types";
 type ContentType = Database["public"]["Enums"]["content_type"];
 type VideoProvider = Database["public"]["Enums"]["video_provider"];
 
-type ContentSource = "video" | "mangoboard";
+type ContentSource = "video" | "mangoboard" | "card";
 
 interface ContentItem {
   tempId: string;
@@ -47,6 +47,7 @@ interface ContentItem {
   source: ContentSource;
   enTitle: string;
   enDescription: string;
+  card_image_url?: string;
 }
 
 const CreateCourse = () => {
@@ -161,17 +162,19 @@ const CreateCourse = () => {
       if (courseContents?.length) {
         setContents(courseContents.map((c: any) => {
           const en = i18nMap.get(c.id);
+          const isCardContent = c.description?.startsWith("[card-content]");
+          const cleanDesc = isCardContent ? c.description.replace("[card-content]", "") : (c.description || "");
           return {
             tempId: c.id,
             title: c.title || "",
-            description: c.description || "",
+            description: cleanDesc,
             content_type: c.content_type || "video",
             video_url: c.video_url || "",
             video_provider: c.video_provider || "",
             duration_minutes: c.duration_minutes,
             is_preview: c.is_preview || false,
             is_published: c.is_published || false,
-            source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource,
+            source: isCardContent ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource),
             enTitle: en?.title || "",
             enDescription: en?.description || "",
           };
@@ -285,10 +288,17 @@ const CreateCourse = () => {
             updated.content_type = "document";
             updated.video_provider = "custom";
             updated.video_url = "";
+            updated.card_image_url = "";
+          } else if (value === "card") {
+            updated.content_type = "document";
+            updated.video_provider = "custom";
+            updated.video_url = "";
+            updated.card_image_url = "";
           } else {
             updated.content_type = "video";
             updated.video_provider = "";
             updated.video_url = "";
+            updated.card_image_url = "";
           }
         }
         // Auto-sync KO → EN for content items (only if EN hasn't been manually set differently)
@@ -402,7 +412,7 @@ const CreateCourse = () => {
         const contentRows = contents.map((c, idx) => ({
           course_id: editCourseId!,
           title: c.title,
-          description: c.description || null,
+          description: c.source === "card" ? `[card-content]${c.description || ""}` : (c.description || null),
           content_type: c.content_type,
           video_url: c.video_url || null,
           video_provider: c.video_provider || null,
@@ -486,7 +496,7 @@ const CreateCourse = () => {
         const contentRows = contents.map((c, idx) => ({
           course_id: course.id,
           title: c.title,
-          description: c.description || null,
+          description: c.source === "card" ? `[card-content]${c.description || ""}` : (c.description || null),
           content_type: c.content_type,
           video_url: c.video_url || null,
           video_provider: c.video_provider || null,
@@ -785,8 +795,9 @@ const UnifiedContentEditor = ({
   const [translating, setTranslating] = useState(false);
   const [showEn, setShowEn] = useState(false);
   const isMango = content.source === "mangoboard";
+  const isCard = content.source === "card";
   const isValidMangoboard = isMango && content.video_url.includes("mangoboard.net");
-  const Icon = isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
+  const Icon = isCard ? LayoutGrid : isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
 
   // Real-time sync KO → EN
   useEffect(() => {
@@ -822,8 +833,8 @@ const UnifiedContentEditor = ({
           <GripVertical className="h-4 w-4" />
           <span className="text-xs font-medium">{String(index + 1).padStart(2, "0")}</span>
         </div>
-        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isMango ? "bg-primary/10" : "bg-accent"}`}>
-          <Icon className={`h-4 w-4 ${isMango ? "text-primary" : "text-accent-foreground"}`} />
+        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isMango || isCard ? "bg-primary/10" : "bg-accent"}`}>
+          <Icon className={`h-4 w-4 ${isMango || isCard ? "text-primary" : "text-accent-foreground"}`} />
         </div>
         <Input value={content.title} onChange={(e) => onChange("title", e.target.value)} placeholder={t("createCourse.contentTitlePlaceholder")} className="flex-1 h-9 rounded-lg border-border text-sm" required />
         <button type="button" onClick={onRemove} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
@@ -832,15 +843,15 @@ const UnifiedContentEditor = ({
       </div>
 
       <div className="pl-14 space-y-3">
-        {/* Source selector: 동영상 vs 망고보드 */}
+        {/* Source selector: 동영상 vs 망고보드 vs 카드 */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.contentSourceLabel")}</label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               type="button"
               onClick={() => onChange("source", "video")}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${
-                !isMango
+                content.source === "video"
                   ? "bg-accent text-foreground border-border"
                   : "bg-transparent text-muted-foreground border-transparent hover:bg-accent/50"
               }`}
@@ -859,6 +870,18 @@ const UnifiedContentEditor = ({
             >
               <BookOpen className="h-3.5 w-3.5" />
               {t("createCourse.sourceMangoboard")}
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange("source", "card")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${
+                isCard
+                  ? "bg-accent text-foreground border-border"
+                  : "bg-transparent text-muted-foreground border-transparent hover:bg-accent/50"
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              {t("createCourse.sourceCard", "카드")}
             </button>
           </div>
         </div>
@@ -932,6 +955,42 @@ const UnifiedContentEditor = ({
                     </div>
                   )}
                   <iframe src={normalizeMangoboardUrl(content.video_url)} className="w-full h-full" title={t("createCourse.mangoPreviewTitle")} allowFullScreen onLoad={() => setPreviewLoading(false)} onError={() => { setPreviewLoading(false); setPreviewError(true); }} />
+                </div>
+              </div>
+            )}
+          </>
+        ) : isCard ? (
+          /* ── Card fields (세로형 카드 1080x1920 = 9:16) ── */
+          <>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase flex items-center gap-1">
+                <ImageIcon className="h-3 w-3" /> {t("createCourse.cardImageUrl", "카드 이미지 URL")}
+              </label>
+              <Input
+                value={content.video_url}
+                onChange={(e) => onChange("video_url", e.target.value)}
+                placeholder={t("createCourse.cardImageUrlPlaceholder", "이미지 URL 또는 영상 URL을 입력하세요")}
+                className="h-9 rounded-lg border-border text-xs"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                {t("createCourse.cardHint", "세로형 카드 (1080×1920) 사이즈의 이미지 또는 영상 링크를 등록하세요.")}
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.durationLabel")}</label>
+              <Input type="number" value={content.duration_minutes ?? ""} onChange={(e) => onChange("duration_minutes", e.target.value ? parseInt(e.target.value) : null)} placeholder={t("createCourse.durationPlaceholder")} className="h-9 rounded-lg border-border text-xs" min="0" />
+            </div>
+
+            {/* Card preview */}
+            {content.video_url && (
+              <div className="flex justify-center">
+                <div className="w-48 rounded-xl border border-border overflow-hidden bg-muted/30" style={{ aspectRatio: "9/16" }}>
+                  {content.video_url.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i) ? (
+                    <img src={content.video_url} alt={content.title || "카드 미리보기"} className="w-full h-full object-cover" />
+                  ) : (
+                    <iframe src={content.video_url} className="w-full h-full" title={content.title || "카드 미리보기"} allowFullScreen />
+                  )}
                 </div>
               </div>
             )}
