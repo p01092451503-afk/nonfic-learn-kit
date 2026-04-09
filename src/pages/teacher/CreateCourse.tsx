@@ -162,17 +162,19 @@ const CreateCourse = () => {
       if (courseContents?.length) {
         setContents(courseContents.map((c: any) => {
           const en = i18nMap.get(c.id);
+          const isCardContent = c.description?.startsWith("[card-content]");
+          const cleanDesc = isCardContent ? c.description.replace("[card-content]", "") : (c.description || "");
           return {
             tempId: c.id,
             title: c.title || "",
-            description: c.description || "",
+            description: cleanDesc,
             content_type: c.content_type || "video",
             video_url: c.video_url || "",
             video_provider: c.video_provider || "",
             duration_minutes: c.duration_minutes,
             is_preview: c.is_preview || false,
             is_published: c.is_published || false,
-            source: c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : (c.description?.includes("[card-content]") ? "card" as ContentSource : "video" as ContentSource),
+            source: isCardContent ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource),
             enTitle: en?.title || "",
             enDescription: en?.description || "",
           };
