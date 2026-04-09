@@ -226,6 +226,76 @@ const AdminSurveys = () => {
     setQuestions(updated);
   };
 
+  const downloadTemplate = () => {
+    const header = "질문유형,질문내용,필수여부,선택지1,선택지2,선택지3,선택지4,선택지5";
+    const examples = [
+      "객관식,교육 내용은 만족스러웠나요?,Y,매우 만족,만족,보통,불만족,매우 불만족",
+      "평점,강사의 전달력은 어땠나요?,Y,,,,",
+      "주관식,개선할 점이 있다면 자유롭게 적어주세요.,N,,,,"
+    ];
+    const csv = "\uFEFF" + [header, ...examples].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "설문_질문_템플릿.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) {
+        toast({ title: "오류", description: "데이터가 없습니다. 헤더 아래에 데이터를 입력해주세요.", variant: "destructive" });
+        return;
+      }
+
+      const typeMap: Record<string, "multiple_choice" | "text" | "rating"> = {
+        "객관식": "multiple_choice",
+        "주관식": "text",
+        "평점": "rating",
+        "multiple_choice": "multiple_choice",
+        "text": "text",
+        "rating": "rating",
+      };
+
+      const newQuestions: SurveyQuestion[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map(c => c.trim());
+        if (cols.length < 2 || !cols[1]) continue;
+
+        const qType = typeMap[cols[0]] || "text";
+        const qText = cols[1];
+        const isRequired = cols[2]?.toUpperCase() !== "N";
+        const options = cols.slice(3).filter(o => o !== "");
+
+        newQuestions.push({
+          question_type: qType,
+          question_text: qText,
+          options: qType === "multiple_choice" ? (options.length >= 2 ? options : ["", ""]) : [],
+          order_index: questions.length + newQuestions.length,
+          is_required: isRequired,
+        });
+      }
+
+      if (newQuestions.length === 0) {
+        toast({ title: "오류", description: "유효한 질문이 없습니다.", variant: "destructive" });
+        return;
+      }
+
+      setQuestions(prev => [...prev, ...newQuestions]);
+      toast({ title: `${newQuestions.length}개의 질문이 추가되었습니다.` });
+    };
+    reader.readAsText(file);
+  };
+
   // Results viewer
   const openResults = async (survey: any) => {
     const { data: responses } = await supabase
