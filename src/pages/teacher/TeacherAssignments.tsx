@@ -421,22 +421,65 @@ const TeacherAssignments = () => {
         {/* Pending Submissions */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-semibold text-foreground">{t("assignments.recentSubmissions")}</h2>
-              <Badge className="bg-primary text-primary-foreground text-[10px] font-semibold">{t("assignments.aiGrading")}</Badge>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg font-semibold text-foreground">{t("assignments.recentSubmissions")}</h2>
+                  <Badge className="bg-primary text-primary-foreground text-[10px] font-semibold">{pendingSubmissions.length}</Badge>
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("assignments.submissionsNeedReview")}</p>
+              </div>
+              {selectedSubs.size > 0 && (
+                <Button size="sm" className="rounded-xl gap-1.5 text-xs" onClick={() => setBatchDialogOpen(true)}>
+                  <CheckSquare className="h-3.5 w-3.5" />
+                  {t("assignments.batchGrade")} ({selectedSubs.size})
+                </Button>
+              )}
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("assignments.submissionsNeedReview")}</p>
+            {/* Filter & Search bar */}
+            {pendingSubmissions.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-3">
+                <Select value={filterAssignmentId} onValueChange={setFilterAssignmentId}>
+                  <SelectTrigger className="rounded-xl h-8 text-xs w-full sm:w-48">
+                    <SelectValue placeholder={t("assignments.filterByAssignment")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("assignments.allAssignments")}</SelectItem>
+                    {assignments.filter((a: any) => a.status === "published").map((a: any) => (
+                      <SelectItem key={a.id} value={a.id}>{a.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    value={searchStudent}
+                    onChange={(e) => setSearchStudent(e.target.value)}
+                    placeholder={t("assignments.searchStudent")}
+                    className="rounded-xl h-8 text-xs pl-8"
+                  />
+                </div>
+                <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs shrink-0" onClick={toggleAll}>
+                  {selectedSubs.size === filteredPending.length && filteredPending.length > 0 ? t("assignments.deselectAll") : t("assignments.selectAll")}
+                </Button>
+              </div>
+            )}
           </div>
 
-          {pendingSubmissions.length === 0 ? (
+          {filteredPending.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-sm text-muted-foreground">{t("assignments.noWaitingSubmissions")}</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {pendingSubmissions.slice(0, 10).map((sub: any) => (
-                <div key={sub.id} className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-accent/20 transition-colors">
+              {filteredPending.map((sub: any) => (
+                <div key={sub.id} className={`px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-accent/20 transition-colors ${selectedSubs.has(sub.id) ? "bg-accent/10" : ""}`}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Checkbox
+                      checked={selectedSubs.has(sub.id)}
+                      onCheckedChange={() => toggleSub(sub.id)}
+                      className="shrink-0"
+                    />
                     <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary shrink-0">
                       {(profileMap.get(sub.student_id) || t("assignments.student"))[0]}
                     </div>
