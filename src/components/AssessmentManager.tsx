@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Eye, EyeOff, GripVertical, ClipboardCheck, Users } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, ClipboardCheck, Users, Languages, Loader2 } from "lucide-react";
 import AssessmentResults from "@/components/AssessmentResults";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { translateKoToEn } from "@/lib/translate";
 
 type QuestionType = "multiple_choice_4" | "multiple_choice_5" | "short_answer" | "essay" | "ox";
 
@@ -27,6 +28,18 @@ interface QuestionForm {
   points: number;
   explanation: string;
   hint: string;
+  // EN fields
+  en_question_text: string;
+  en_options: string[];
+  en_correct_answer: string;
+  en_explanation: string;
+  en_hint: string;
+  // Manual edit flags
+  en_question_text_manual: boolean;
+  en_options_manual: boolean;
+  en_correct_answer_manual: boolean;
+  en_explanation_manual: boolean;
+  en_hint_manual: boolean;
 }
 
 const emptyQuestion: QuestionForm = {
@@ -37,6 +50,16 @@ const emptyQuestion: QuestionForm = {
   points: 10,
   explanation: "",
   hint: "",
+  en_question_text: "",
+  en_options: ["", "", "", ""],
+  en_correct_answer: "",
+  en_explanation: "",
+  en_hint: "",
+  en_question_text_manual: false,
+  en_options_manual: false,
+  en_correct_answer_manual: false,
+  en_explanation_manual: false,
+  en_hint_manual: false,
 };
 
 const questionTypeLabels: Record<QuestionType, { ko: string; en: string }> = {
@@ -60,6 +83,7 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
   const [questionForm, setQuestionForm] = useState<QuestionForm>(emptyQuestion);
   const [showResults, setShowResults] = useState(false);
 
+  // Assessment form with EN fields
   const [assessmentForm, setAssessmentForm] = useState({
     title: "",
     description: "",
@@ -71,8 +95,54 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
     randomize_questions: true,
     is_published: false,
   });
+  const [enTitle, setEnTitle] = useState("");
+  const [enDescription, setEnDescription] = useState("");
+  const [enTitleManual, setEnTitleManual] = useState(false);
+  const [enDescManual, setEnDescManual] = useState(false);
+  const [translatingAssessment, setTranslatingAssessment] = useState(false);
+  const [translatingQuestion, setTranslatingQuestion] = useState(false);
 
-  // Fetch assessment for this course
+  // Auto-sync KO → EN for assessment
+  useEffect(() => {
+    if (!enTitleManual) setEnTitle(assessmentForm.title);
+  }, [assessmentForm.title, enTitleManual]);
+
+  useEffect(() => {
+    if (!enDescManual) setEnDescription(assessmentForm.description);
+  }, [assessmentForm.description, enDescManual]);
+
+  // Auto-sync KO → EN for question
+  useEffect(() => {
+    if (!questionForm.en_question_text_manual) {
+      setQuestionForm(f => ({ ...f, en_question_text: f.question_text }));
+    }
+  }, [questionForm.question_text, questionForm.en_question_text_manual]);
+
+  useEffect(() => {
+    if (!questionForm.en_correct_answer_manual) {
+      setQuestionForm(f => ({ ...f, en_correct_answer: f.correct_answer }));
+    }
+  }, [questionForm.correct_answer, questionForm.en_correct_answer_manual]);
+
+  useEffect(() => {
+    if (!questionForm.en_explanation_manual) {
+      setQuestionForm(f => ({ ...f, en_explanation: f.explanation }));
+    }
+  }, [questionForm.explanation, questionForm.en_explanation_manual]);
+
+  useEffect(() => {
+    if (!questionForm.en_hint_manual) {
+      setQuestionForm(f => ({ ...f, en_hint: f.hint }));
+    }
+  }, [questionForm.hint, questionForm.en_hint_manual]);
+
+  useEffect(() => {
+    if (!questionForm.en_options_manual) {
+      setQuestionForm(f => ({ ...f, en_options: [...f.options] }));
+    }
+  }, [questionForm.options, questionForm.en_options_manual]);
+
+  // Fetch assessment
   const { data: assessment, isLoading } = useQuery({
     queryKey: ["assessment", courseId],
     queryFn: async () => {
@@ -101,25 +171,74 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
     enabled: !!assessment?.id,
   });
 
+  // Fetch assessment i18n
+  const { data: assessmentI18n } = useQuery({
+    queryKey: ["assessment-i18n", assessment?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("assessment_i18n" as any)
+        .select("*")
+        .eq("assessment_id", assessment!.id)
+        .eq("language_code", "en")
+        .maybeSingle();
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!assessment?.id,
+  });
+
+  // Fetch question i18n
+  const { data: questionI18nList = [] } = useQuery({
+    queryKey: ["assessment-question-i18n", assessment?.id],
+    queryFn: async () => {
+      const qIds = questions.map((q: any) => q.id);
+      if (qIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("assessment_question_i18n" as any)
+        .select("*")
+        .in("question_id", qIds)
+        .eq("language_code", "en");
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+    enabled: questions.length > 0,
+  });
+
+  const questionI18nMap = new Map((questionI18nList || []).map((qi: any) => [qi.question_id, qi]));
+
   // Create/update assessment
   const upsertAssessmentMutation = useMutation({
     mutationFn: async () => {
+      let assessmentId = assessment?.id;
       if (assessment) {
         const { error } = await supabase.from("assessments").update({
           ...assessmentForm,
         }).eq("id", assessment.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("assessments").insert({
+        const { data, error } = await supabase.from("assessments").insert({
           ...assessmentForm,
           course_id: courseId,
           created_by: user!.id,
-        });
+        }).select("id").single();
         if (error) throw error;
+        assessmentId = data.id;
+      }
+
+      // Save EN i18n
+      if (assessmentId && (enTitle.trim() || enDescription.trim())) {
+        const { error } = await supabase.from("assessment_i18n" as any).upsert({
+          assessment_id: assessmentId,
+          language_code: "en",
+          title: enTitle || assessmentForm.title,
+          description: enDescription || null,
+        } as any, { onConflict: "assessment_id,language_code" });
+        if (error) console.error("i18n save error:", error);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assessment", courseId] });
+      queryClient.invalidateQueries({ queryKey: ["assessment-i18n"] });
       setAssessmentDialogOpen(false);
       toast({ title: t("assessment.saved") });
     },
@@ -142,17 +261,40 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
         hint: questionForm.hint || null,
       };
 
+      let questionId = editingQuestionId;
       if (editingQuestionId) {
         const { error } = await supabase.from("assessment_questions").update(payload).eq("id", editingQuestionId);
         if (error) throw error;
       } else {
         const maxOrder = questions.length > 0 ? Math.max(...questions.map((q: any) => q.order_index ?? 0)) + 1 : 0;
-        const { error } = await supabase.from("assessment_questions").insert({ ...payload, order_index: maxOrder });
+        const { data, error } = await supabase.from("assessment_questions").insert({ ...payload, order_index: maxOrder }).select("id").single();
         if (error) throw error;
+        questionId = data.id;
+      }
+
+      // Save EN i18n
+      if (questionId) {
+        const enPayload: any = {
+          question_id: questionId,
+          language_code: "en",
+          question_text: questionForm.en_question_text || questionForm.question_text,
+          options: ["multiple_choice_4", "multiple_choice_5", "ox"].includes(questionForm.question_type)
+            ? questionForm.en_options
+            : null,
+          correct_answer: questionForm.en_correct_answer || questionForm.correct_answer,
+          explanation: questionForm.en_explanation || null,
+          hint: questionForm.en_hint || null,
+        };
+        const { error } = await supabase.from("assessment_question_i18n" as any).upsert(
+          enPayload,
+          { onConflict: "question_id,language_code" }
+        );
+        if (error) console.error("question i18n save error:", error);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assessment-questions", assessment?.id] });
+      queryClient.invalidateQueries({ queryKey: ["assessment-question-i18n"] });
       setQuestionDialogOpen(false);
       setEditingQuestionId(null);
       setQuestionForm(emptyQuestion);
@@ -197,6 +339,10 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
         randomize_questions: assessment.randomize_questions,
         is_published: assessment.is_published,
       });
+      setEnTitle(assessmentI18n?.title || assessment.title);
+      setEnDescription(assessmentI18n?.description || assessment.description || "");
+      setEnTitleManual(!!assessmentI18n);
+      setEnDescManual(!!assessmentI18n);
     } else {
       setAssessmentForm({
         title: isEn ? "Course Assessment" : "과정 평가",
@@ -209,6 +355,10 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
         randomize_questions: true,
         is_published: false,
       });
+      setEnTitle("");
+      setEnDescription("");
+      setEnTitleManual(false);
+      setEnDescManual(false);
     }
     setAssessmentDialogOpen(true);
   };
@@ -222,6 +372,9 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
   const openEditQuestion = (q: any) => {
     setEditingQuestionId(q.id);
     const opts = q.options || [];
+    const i18n = questionI18nMap.get(q.id);
+    const enOpts = i18n?.options || [];
+
     setQuestionForm({
       question_type: q.question_type,
       question_text: q.question_text,
@@ -236,22 +389,93 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
       points: q.points,
       explanation: q.explanation || "",
       hint: q.hint || "",
+      en_question_text: i18n?.question_text || q.question_text,
+      en_options: q.question_type === "multiple_choice_5"
+        ? [...enOpts, ...Array(Math.max(0, 5 - enOpts.length)).fill("")]
+        : q.question_type === "multiple_choice_4"
+        ? [...enOpts, ...Array(Math.max(0, 4 - enOpts.length)).fill("")]
+        : q.question_type === "ox"
+        ? ["O", "X"]
+        : [],
+      en_correct_answer: i18n?.correct_answer || q.correct_answer,
+      en_explanation: i18n?.explanation || q.explanation || "",
+      en_hint: i18n?.hint || q.hint || "",
+      en_question_text_manual: !!i18n,
+      en_options_manual: !!i18n,
+      en_correct_answer_manual: !!i18n,
+      en_explanation_manual: !!i18n,
+      en_hint_manual: !!i18n,
     });
     setQuestionDialogOpen(true);
   };
 
   const handleTypeChange = (type: QuestionType) => {
     let options: string[] = [];
-    if (type === "multiple_choice_4") options = ["", "", "", ""];
-    else if (type === "multiple_choice_5") options = ["", "", "", "", ""];
-    else if (type === "ox") options = ["O", "X"];
-    setQuestionForm(f => ({ ...f, question_type: type, options, correct_answer: "" }));
+    let enOptions: string[] = [];
+    if (type === "multiple_choice_4") { options = ["", "", "", ""]; enOptions = ["", "", "", ""]; }
+    else if (type === "multiple_choice_5") { options = ["", "", "", "", ""]; enOptions = ["", "", "", "", ""]; }
+    else if (type === "ox") { options = ["O", "X"]; enOptions = ["O", "X"]; }
+    setQuestionForm(f => ({ ...f, question_type: type, options, en_options: enOptions, correct_answer: "", en_correct_answer: "", en_options_manual: false, en_correct_answer_manual: false }));
+  };
+
+  // Translate assessment
+  const handleTranslateAssessment = async () => {
+    const texts = [assessmentForm.title, assessmentForm.description].filter(Boolean);
+    if (!texts.length) return;
+    setTranslatingAssessment(true);
+    try {
+      const results = await translateKoToEn(texts);
+      let idx = 0;
+      if (assessmentForm.title) { setEnTitle(results[idx++] || ""); setEnTitleManual(true); }
+      if (assessmentForm.description) { setEnDescription(results[idx++] || ""); setEnDescManual(true); }
+    } catch { /* silent */ }
+    finally { setTranslatingAssessment(false); }
+  };
+
+  // Translate question
+  const handleTranslateQuestion = async () => {
+    const texts: string[] = [];
+    const fields: string[] = [];
+    if (questionForm.question_text) { texts.push(questionForm.question_text); fields.push("question_text"); }
+    if (questionForm.correct_answer && questionForm.question_type !== "ox") { texts.push(questionForm.correct_answer); fields.push("correct_answer"); }
+    if (questionForm.explanation) { texts.push(questionForm.explanation); fields.push("explanation"); }
+    if (questionForm.hint) { texts.push(questionForm.hint); fields.push("hint"); }
+    // Options for MCQ (not OX)
+    if (["multiple_choice_4", "multiple_choice_5"].includes(questionForm.question_type)) {
+      questionForm.options.forEach((opt, i) => {
+        if (opt.trim()) { texts.push(opt); fields.push(`option_${i}`); }
+      });
+    }
+    if (!texts.length) return;
+    setTranslatingQuestion(true);
+    try {
+      const results = await translateKoToEn(texts);
+      const newEnOptions = [...questionForm.en_options];
+      let idx = 0;
+      const updates: Partial<QuestionForm> = {};
+      for (const field of fields) {
+        if (field === "question_text") { updates.en_question_text = results[idx]; updates.en_question_text_manual = true; }
+        else if (field === "correct_answer") { updates.en_correct_answer = results[idx]; updates.en_correct_answer_manual = true; }
+        else if (field === "explanation") { updates.en_explanation = results[idx]; updates.en_explanation_manual = true; }
+        else if (field === "hint") { updates.en_hint = results[idx]; updates.en_hint_manual = true; }
+        else if (field.startsWith("option_")) {
+          const optIdx = parseInt(field.split("_")[1]);
+          newEnOptions[optIdx] = results[idx] || "";
+          updates.en_options_manual = true;
+        }
+        idx++;
+      }
+      updates.en_options = newEnOptions;
+      setQuestionForm(f => ({ ...f, ...updates }));
+    } catch { /* silent */ }
+    finally { setTranslatingQuestion(false); }
   };
 
   const totalPoints = questions.reduce((s: number, q: any) => s + (q.points || 0), 0);
 
   return (
     <section className="space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <ClipboardCheck className="h-4 w-4" aria-hidden="true" />
@@ -260,21 +484,11 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
         <div className="flex items-center gap-2">
           {assessment && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs gap-1"
-                onClick={() => setShowResults(!showResults)}
-              >
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => setShowResults(!showResults)}>
                 <Users className="h-3 w-3" />
                 {showResults ? (isEn ? "Questions" : "문항 관리") : (isEn ? "Results" : "결과 보기")}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs gap-1"
-                onClick={() => togglePublishMutation.mutate()}
-              >
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => togglePublishMutation.mutate()}>
                 {assessment.is_published ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                 {assessment.is_published ? t("assessment.unpublishBtn") : t("assessment.publishBtn")}
               </Button>
@@ -287,6 +501,7 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
         </div>
       </div>
 
+      {/* Assessment content */}
       {!assessment ? (
         <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center space-y-2">
           <ClipboardCheck className="h-8 w-8 mx-auto text-muted-foreground" />
@@ -297,7 +512,6 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
         </div>
       ) : (
         <div className="rounded-xl border border-border bg-card overflow-hidden">
-          {/* Assessment info */}
           <div className="bg-secondary/30 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
@@ -318,22 +532,14 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
             )}
           </div>
 
-          {/* Results view or Questions list */}
           {showResults ? (
             <div className="p-4">
-              <AssessmentResults
-                courseId={courseId}
-                assessmentId={assessment.id}
-                assessmentTitle={assessment.title}
-                passingScore={assessment.passing_score}
-              />
+              <AssessmentResults courseId={courseId} assessmentId={assessment.id} assessmentTitle={assessment.title} passingScore={assessment.passing_score} />
             </div>
           ) : (
             <>
               {questions.length === 0 ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">
-                  {t("assessment.noQuestions")}
-                </div>
+                <div className="py-8 text-center text-sm text-muted-foreground">{t("assessment.noQuestions")}</div>
               ) : (
                 <ol className="divide-y divide-border">
                   {questions.map((q: any, idx: number) => (
@@ -350,27 +556,18 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
                         {q.options && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {(q.options as string[]).map((opt: string, i: number) => (
-                              <span
-                                key={i}
-                                className={`text-[10px] px-1.5 py-0.5 rounded ${opt === q.correct_answer ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium" : "bg-muted text-muted-foreground"}`}
-                              >
+                              <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded ${opt === q.correct_answer ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium" : "bg-muted text-muted-foreground"}`}>
                                 {opt || `(${i + 1})`}
                               </span>
                             ))}
                           </div>
                         )}
                         {!q.options && q.correct_answer && (
-                          <p className="text-[10px] text-green-600 dark:text-green-400">
-                            {t("assessment.answer")}: {q.correct_answer}
-                          </p>
+                          <p className="text-[10px] text-green-600 dark:text-green-400">{t("assessment.answer")}: {q.correct_answer}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <button
-                          type="button"
-                          className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-                          onClick={() => openEditQuestion(q)}
-                        >
+                        <button type="button" className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground" onClick={() => openEditQuestion(q)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <AlertDialog>
@@ -409,14 +606,40 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
             <DialogTitle className="text-base">{assessment ? t("assessment.editSettings") : t("assessment.create")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* KO Title */}
             <div className="space-y-1">
-              <Label className="text-xs">{t("assessment.assessmentTitle")}</Label>
+              <Label className="text-xs">{t("assessment.assessmentTitle")} (KO)</Label>
               <Input className="h-9 text-sm" value={assessmentForm.title} onChange={e => setAssessmentForm(f => ({ ...f, title: e.target.value }))} />
             </div>
+            {/* KO Description */}
             <div className="space-y-1">
-              <Label className="text-xs">{t("assessment.description")}</Label>
+              <Label className="text-xs">{t("assessment.description")} (KO)</Label>
               <Textarea className="text-sm" value={assessmentForm.description} onChange={e => setAssessmentForm(f => ({ ...f, description: e.target.value }))} rows={2} />
             </div>
+
+            <Separator />
+
+            {/* EN Section */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">{t("course.enOptional", "영어 버전 (선택)")}</p>
+                <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleTranslateAssessment} disabled={translatingAssessment || (!assessmentForm.title && !assessmentForm.description)}>
+                  {translatingAssessment ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+                  {t("course.autoTranslate", "자동 번역")}
+                </Button>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{t("assessment.assessmentTitle")} (EN)</Label>
+                <Input className="h-9 text-sm" value={enTitle} onChange={e => { setEnTitle(e.target.value); setEnTitleManual(true); }} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{t("assessment.description")} (EN)</Label>
+                <Textarea className="text-sm" value={enDescription} onChange={e => { setEnDescription(e.target.value); setEnDescManual(true); }} rows={2} />
+              </div>
+            </div>
+
+            <Separator />
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">{t("assessment.passingScore")}</Label>
@@ -464,7 +687,7 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
 
       {/* Question Dialog */}
       <Dialog open={questionDialogOpen} onOpenChange={setQuestionDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base">{editingQuestionId ? t("assessment.editQuestion") : t("assessment.addQuestion")}</DialogTitle>
           </DialogHeader>
@@ -487,69 +710,115 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
               </div>
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs">{t("assessment.questionText")}</Label>
-              <Textarea className="text-sm" value={questionForm.question_text} onChange={e => setQuestionForm(f => ({ ...f, question_text: e.target.value }))} rows={3} />
+            {/* KO & EN question text side by side */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">{t("assessment.questionText")} (KO)</Label>
+                <Textarea className="text-sm" value={questionForm.question_text} onChange={e => setQuestionForm(f => ({ ...f, question_text: e.target.value }))} rows={3} />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">{t("assessment.questionText")} (EN)</Label>
+                  <Button type="button" variant="outline" size="sm" className="h-6 text-[10px] gap-1 px-2" onClick={handleTranslateQuestion} disabled={translatingQuestion || !questionForm.question_text.trim()}>
+                    {translatingQuestion ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Languages className="h-2.5 w-2.5" />}
+                    {t("course.autoTranslate", "자동 번역")}
+                  </Button>
+                </div>
+                <Textarea className="text-sm" value={questionForm.en_question_text} onChange={e => setQuestionForm(f => ({ ...f, en_question_text: e.target.value, en_question_text_manual: true }))} rows={3} />
+              </div>
             </div>
 
             {/* Options for MCQ and OX */}
             {["multiple_choice_4", "multiple_choice_5", "ox"].includes(questionForm.question_type) && (
               <div className="space-y-2">
                 <Label className="text-xs">{t("assessment.options")}</Label>
-                {questionForm.options.map((opt, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="correct_answer"
-                      checked={questionForm.correct_answer === opt && opt !== ""}
-                      onChange={() => setQuestionForm(f => ({ ...f, correct_answer: opt }))}
-                      className="h-4 w-4 text-primary"
-                    />
-                    {questionForm.question_type === "ox" ? (
-                      <span className="text-sm font-medium">{opt}</span>
-                    ) : (
-                      <Input
-                        className="h-8 text-sm flex-1"
-                        value={opt}
-                        placeholder={`${isEn ? "Option" : "보기"} ${i + 1}`}
-                        onChange={e => {
-                          const newOpts = [...questionForm.options];
-                          const wasSelected = questionForm.correct_answer === newOpts[i];
-                          newOpts[i] = e.target.value;
-                          setQuestionForm(f => ({
-                            ...f,
-                            options: newOpts,
-                            correct_answer: wasSelected ? e.target.value : f.correct_answer,
-                          }));
-                        }}
-                      />
-                    )}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-muted-foreground">KO</p>
+                    {questionForm.options.map((opt, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input type="radio" name="correct_answer" checked={questionForm.correct_answer === opt && opt !== ""} onChange={() => setQuestionForm(f => ({ ...f, correct_answer: opt }))} className="h-4 w-4 text-primary" />
+                        {questionForm.question_type === "ox" ? (
+                          <span className="text-sm font-medium">{opt}</span>
+                        ) : (
+                          <Input className="h-8 text-sm flex-1" value={opt} placeholder={`보기 ${i + 1}`}
+                            onChange={e => {
+                              const newOpts = [...questionForm.options];
+                              const wasSelected = questionForm.correct_answer === newOpts[i];
+                              newOpts[i] = e.target.value;
+                              setQuestionForm(f => ({ ...f, options: newOpts, correct_answer: wasSelected ? e.target.value : f.correct_answer }));
+                            }}
+                          />
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                  {questionForm.question_type !== "ox" && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] text-muted-foreground">EN</p>
+                      {questionForm.en_options.map((opt, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <div className="w-4" />
+                          <Input className="h-8 text-sm flex-1" value={opt} placeholder={`Option ${i + 1}`}
+                            onChange={e => {
+                              const newOpts = [...questionForm.en_options];
+                              newOpts[i] = e.target.value;
+                              setQuestionForm(f => ({ ...f, en_options: newOpts, en_options_manual: true }));
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <p className="text-[10px] text-muted-foreground">{t("assessment.selectCorrect")}</p>
               </div>
             )}
 
             {/* Short answer / essay correct answer */}
             {["short_answer", "essay"].includes(questionForm.question_type) && (
-              <div className="space-y-1">
-                <Label className="text-xs">{t("assessment.correctAnswer")}</Label>
-                {questionForm.question_type === "short_answer" ? (
-                  <Input className="h-9 text-sm" value={questionForm.correct_answer} onChange={e => setQuestionForm(f => ({ ...f, correct_answer: e.target.value }))} placeholder={isEn ? "Exact match answer" : "정답 (일치하는 답)"} />
-                ) : (
-                  <Textarea className="text-sm" value={questionForm.correct_answer} onChange={e => setQuestionForm(f => ({ ...f, correct_answer: e.target.value }))} rows={2} placeholder={isEn ? "Model answer / keywords" : "모범 답안 / 키워드"} />
-                )}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">{t("assessment.correctAnswer")} (KO)</Label>
+                  {questionForm.question_type === "short_answer" ? (
+                    <Input className="h-9 text-sm" value={questionForm.correct_answer} onChange={e => setQuestionForm(f => ({ ...f, correct_answer: e.target.value }))} placeholder="정답 (일치하는 답)" />
+                  ) : (
+                    <Textarea className="text-sm" value={questionForm.correct_answer} onChange={e => setQuestionForm(f => ({ ...f, correct_answer: e.target.value }))} rows={2} placeholder="모범 답안 / 키워드" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">{t("assessment.correctAnswer")} (EN)</Label>
+                  {questionForm.question_type === "short_answer" ? (
+                    <Input className="h-9 text-sm" value={questionForm.en_correct_answer} onChange={e => setQuestionForm(f => ({ ...f, en_correct_answer: e.target.value, en_correct_answer_manual: true }))} placeholder="Exact match answer" />
+                  ) : (
+                    <Textarea className="text-sm" value={questionForm.en_correct_answer} onChange={e => setQuestionForm(f => ({ ...f, en_correct_answer: e.target.value, en_correct_answer_manual: true }))} rows={2} placeholder="Model answer / keywords" />
+                  )}
+                </div>
               </div>
             )}
 
-            <div className="space-y-1">
-              <Label className="text-xs">{t("assessment.explanation")}</Label>
-              <Textarea className="text-sm" value={questionForm.explanation} onChange={e => setQuestionForm(f => ({ ...f, explanation: e.target.value }))} rows={2} placeholder={isEn ? "Explanation shown after grading (optional)" : "채점 후 표시될 해설 (선택사항)"} />
+            {/* Explanation */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">{t("assessment.explanation")} (KO)</Label>
+                <Textarea className="text-sm" value={questionForm.explanation} onChange={e => setQuestionForm(f => ({ ...f, explanation: e.target.value }))} rows={2} placeholder="채점 후 표시될 해설 (선택사항)" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{t("assessment.explanation")} (EN)</Label>
+                <Textarea className="text-sm" value={questionForm.en_explanation} onChange={e => setQuestionForm(f => ({ ...f, en_explanation: e.target.value, en_explanation_manual: true }))} rows={2} placeholder="Explanation shown after grading (optional)" />
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs">{isEn ? "Hint" : "힌트"}</Label>
-              <Textarea className="text-sm" value={questionForm.hint} onChange={e => setQuestionForm(f => ({ ...f, hint: e.target.value }))} rows={2} placeholder={isEn ? "Hint shown to students during test (optional)" : "시험 중 학생에게 보여줄 힌트 (선택사항)"} />
+            {/* Hint */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">{isEn ? "Hint" : "힌트"} (KO)</Label>
+                <Textarea className="text-sm" value={questionForm.hint} onChange={e => setQuestionForm(f => ({ ...f, hint: e.target.value }))} rows={2} placeholder="시험 중 학생에게 보여줄 힌트 (선택사항)" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{isEn ? "Hint" : "힌트"} (EN)</Label>
+                <Textarea className="text-sm" value={questionForm.en_hint} onChange={e => setQuestionForm(f => ({ ...f, en_hint: e.target.value, en_hint_manual: true }))} rows={2} placeholder="Hint shown to students during test (optional)" />
+              </div>
             </div>
           </div>
           <DialogFooter>
