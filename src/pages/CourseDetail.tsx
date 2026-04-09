@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { translateKoToEn } from "@/lib/translate";
 import AssessmentManager from "@/components/AssessmentManager";
+import StudentSurvey from "@/components/StudentSurvey";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -804,6 +805,14 @@ const CourseDetail = () => {
 
         {/* Student Assessment Section */}
         {courseId && <StudentAssessmentSection courseId={courseId} overallProgress={overallProgress} routePrefix={routePrefix} t={t} isEn={isEn} />}
+
+        {/* Survey Section - shown after course completion */}
+        {courseId && enrollment?.completed_at && (
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold">{t("survey.title", "과정 설문")}</h2>
+            <StudentSurvey courseId={courseId} />
+          </section>
+        )}
       </div>
     </DashboardLayout>
   );
