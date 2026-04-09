@@ -144,6 +144,18 @@ const ContentPlayer = () => {
 
   const isMangoboard = (url: string | null) => url?.includes("mangoboard.net") ?? false;
   const isCardContent = (desc: string | null) => desc?.startsWith("[card-content]") ?? false;
+  
+  const getCardUrls = (desc: string | null, fallbackUrl: string | null): string[] => {
+    if (!desc?.startsWith("[card-content]")) return fallbackUrl ? [fallbackUrl] : [];
+    const payload = desc.replace("[card-content]", "");
+    try {
+      const parsed = JSON.parse(payload);
+      if (parsed.urls && parsed.urls.length > 0) return parsed.urls;
+    } catch { /* old format */ }
+    return fallbackUrl ? [fallbackUrl] : [];
+  };
+
+  const [cardIndex, setCardIndex] = useState(0);
 
   const currentContent = contents.find((c) => c.id === contentId);
 
