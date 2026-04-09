@@ -494,7 +494,7 @@ const CreateCourse = () => {
         const contentRows = contents.map((c, idx) => ({
           course_id: course.id,
           title: c.title,
-          description: c.description || null,
+          description: c.source === "card" ? `[card-content]${c.description || ""}` : (c.description || null),
           content_type: c.content_type,
           video_url: c.video_url || null,
           video_provider: c.video_provider || null,
