@@ -103,7 +103,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.announcementManagement", "공지사항 관리"), href: "/admin/announcements", icon: Megaphone },
     { label: t("nav.boardManagement", "게시판 관리"), href: "/admin/board", icon: FileText },
     { label: t("nav.surveyManagement", "설문 관리"), href: "/admin/surveys", icon: ClipboardList },
-    { label: t("nav.trafficMonitoring", "트래픽 모니터링"), href: "/admin/traffic", icon: Activity },
+    { label: t("nav.trafficMonitoring", "통계 현황"), href: "/admin/traffic", icon: BarChart3 },
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings },
   ];
 
