@@ -286,10 +286,17 @@ const CreateCourse = () => {
             updated.content_type = "document";
             updated.video_provider = "custom";
             updated.video_url = "";
+            updated.card_image_url = "";
+          } else if (value === "card") {
+            updated.content_type = "document";
+            updated.video_provider = "custom";
+            updated.video_url = "";
+            updated.card_image_url = "";
           } else {
             updated.content_type = "video";
             updated.video_provider = "";
             updated.video_url = "";
+            updated.card_image_url = "";
           }
         }
         // Auto-sync KO → EN for content items (only if EN hasn't been manually set differently)
