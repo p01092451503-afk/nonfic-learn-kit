@@ -454,7 +454,17 @@
     "submissionDetail": "Submission Detail",
     "noSubmissionText": "No submission text",
     "ungraded": "Ungraded",
-    "student": "Student"
+    "student": "Student",
+    "batchGrade": "Batch Grade",
+    "batchGradeTitle": "Batch Grade",
+    "batchGradeDesc": "Apply the same score and feedback to {{count}} selected submissions.",
+    "batchGradeSuccess": "{{count}} submissions graded.",
+    "selectedCount": "{{count}} selected",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "filterByAssignment": "Filter by Assignment",
+    "allAssignments": "All Assignments",
+    "searchStudent": "Search student"
   },
   "achievements": {
     "title": "Achievements",

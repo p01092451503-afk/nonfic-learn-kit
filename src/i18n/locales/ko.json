@@ -454,7 +454,17 @@
     "submissionDetail": "제출 상세",
     "noSubmissionText": "제출 내용 없음",
     "ungraded": "미채점",
-    "student": "학생"
+    "student": "학생",
+    "batchGrade": "일괄 채점",
+    "batchGradeTitle": "일괄 채점",
+    "batchGradeDesc": "선택한 {{count}}개 제출물에 동일한 점수와 피드백을 부여합니다.",
+    "batchGradeSuccess": "{{count}}건의 채점이 완료되었습니다.",
+    "selectedCount": "{{count}}개 선택",
+    "selectAll": "전체 선택",
+    "deselectAll": "선택 해제",
+    "filterByAssignment": "과제별 필터",
+    "allAssignments": "모든 과제",
+    "searchStudent": "학생 검색"
   },
   "achievements": {
     "title": "성취",
