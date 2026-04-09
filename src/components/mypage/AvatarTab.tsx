@@ -213,7 +213,7 @@ const AvatarTab = () => {
                   }`}
                   style={{ backgroundColor: "#FAF6F0" }}
                 >
-                  <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   {isSelected && (
                     <div className="absolute top-1 right-1 h-5 w-5 rounded-full bg-background border border-foreground flex items-center justify-center">
                       <Check className="h-3 w-3 text-foreground" />
