@@ -29,10 +29,10 @@ const AdminUsers = () => {
   const isEn = i18n.language?.startsWith("en");
 
   const roleLabel: Record<(typeof ROLE_PRIORITY)[number], { text: string; className: string }> = {
-    super_admin: { text: t("roles.superAdminLabel"), className: "text-primary bg-primary/10" },
-    admin: { text: t("roles.adminLabel"), className: "text-destructive bg-destructive/10" },
-    teacher: { text: t("roles.teacherLabel"), className: "text-primary bg-primary/10" },
-    student: { text: t("roles.studentLabel"), className: "text-foreground bg-secondary" },
+    super_admin: { text: t("roles.superAdminLabel", "슈퍼관리자"), className: "text-primary bg-primary/10" },
+    admin: { text: t("roles.adminLabel", "관리자"), className: "text-destructive bg-destructive/10" },
+    teacher: { text: t("roles.teacherLabel", "강사"), className: "text-primary bg-primary/10" },
+    student: { text: t("roles.studentLabel", "학습자"), className: "text-foreground bg-secondary" },
   };
 
   const { data: profiles = [] } = useQuery({
