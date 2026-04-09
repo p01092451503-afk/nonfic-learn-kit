@@ -367,18 +367,64 @@ const ContentPlayer = () => {
           <div className="max-w-5xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
             {/* Media area */}
             <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6 relative">
-              {isCardContent(currentContent.description) && localVideoUrl ? (
-                /* ── Card content (9:16 portrait) ── */
-                <div className="flex justify-center py-6">
-                  <div className="w-72 sm:w-80 rounded-2xl overflow-hidden border border-border shadow-lg" style={{ aspectRatio: "9/16" }}>
-                    {localVideoUrl.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i) ? (
-                      <img src={localVideoUrl} alt={localTitle} className="w-full h-full object-cover" />
-                    ) : (
-                      <iframe src={localVideoUrl} className="w-full h-full" title={localTitle} allowFullScreen />
+              {isCardContent(currentContent.description) ? (() => {
+                const urls = getCardUrls(currentContent.description, localVideoUrl);
+                const totalCards = urls.length;
+                const currentUrl = urls[cardIndex] || urls[0] || "";
+                const isImage = currentUrl.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i);
+                return (
+                  <div className="flex flex-col items-center py-6 space-y-4">
+                    {/* Card display */}
+                    <div className="relative w-72 sm:w-80">
+                      <div className="rounded-2xl overflow-hidden border border-border shadow-lg" style={{ aspectRatio: "9/16" }}>
+                        {isImage ? (
+                          <img src={currentUrl} alt={`${localTitle} - ${cardIndex + 1}/${totalCards}`} className="w-full h-full object-cover" />
+                        ) : currentUrl ? (
+                          <iframe src={currentUrl} className="w-full h-full" title={`${localTitle} - ${cardIndex + 1}`} allowFullScreen />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">카드 없음</div>
+                        )}
+                      </div>
+
+                      {/* Navigation arrows */}
+                      {totalCards > 1 && (
+                        <>
+                          <button
+                            onClick={() => setCardIndex(Math.max(0, cardIndex - 1))}
+                            disabled={cardIndex === 0}
+                            className="absolute left-[-40px] top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-background/80 border border-border shadow flex items-center justify-center disabled:opacity-30 hover:bg-background transition-colors"
+                          >
+                            <ChevronLeft className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => setCardIndex(Math.min(totalCards - 1, cardIndex + 1))}
+                            disabled={cardIndex === totalCards - 1}
+                            className="absolute right-[-40px] top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-background/80 border border-border shadow flex items-center justify-center disabled:opacity-30 hover:bg-background transition-colors"
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Card indicator */}
+                    {totalCards > 1 && (
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-1.5">
+                          {urls.map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setCardIndex(i)}
+                              className={`h-2 rounded-full transition-all ${i === cardIndex ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground font-medium">{cardIndex + 1} / {totalCards}</span>
+                      </div>
                     )}
                   </div>
-                </div>
-              ) : isMangoboard(localVideoUrl) && embedUrl ? (
+                );
+              })() : isMangoboard(localVideoUrl) && embedUrl ? (
                 <button onClick={() => setMangoPopupOpen(true)} className="relative aspect-video w-full flex items-center justify-center group cursor-pointer bg-gradient-to-br from-blue-500/10 to-indigo-500/10">
                   <div className="text-center space-y-4">
                     <div className="h-20 w-20 rounded-full bg-primary/90 group-hover:bg-primary mx-auto flex items-center justify-center transition-all group-hover:scale-110 shadow-lg">
