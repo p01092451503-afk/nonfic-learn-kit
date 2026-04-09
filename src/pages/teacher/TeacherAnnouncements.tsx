@@ -86,10 +86,13 @@ const TeacherAnnouncements = () => {
   return (
     <DashboardLayout role="teacher">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">{t("announcements.management", "공지사항 관리")}</h1>
-            <p className="text-muted-foreground">{t("announcements.teacherDesc", "수강생에게 공지사항을 등록합니다.")}</p>
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+              <Megaphone className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+              {t("announcements.management", "공지사항 관리")}
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("announcements.teacherDesc", "수강생에게 공지사항을 등록합니다.")}</p>
           </div>
           <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
             <Plus className="h-4 w-4 mr-2" />{t("announcements.create", "공지 등록")}
