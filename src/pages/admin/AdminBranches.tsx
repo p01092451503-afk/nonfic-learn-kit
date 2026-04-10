@@ -188,8 +188,10 @@ const AdminBranches = () => {
   const getRoleBadge = (userId: string) => {
     const role = userRoles.find((r: any) => r.user_id === userId);
     if (!role) return null;
-    const variants: Record<string, string> = { admin: "destructive", teacher: "secondary", student: "outline" };
-    return <Badge variant={variants[role.role] as any || "outline"}>{t(`roles.${role.role}Label`)}</Badge>;
+    const variants: Record<string, string> = { admin: "destructive", super_admin: "destructive", teacher: "secondary", student: "outline" };
+    const labelMap: Record<string, string> = { super_admin: "superAdminLabel", admin: "adminLabel", teacher: "teacherLabel", student: "studentLabel" };
+    const labelKey = labelMap[role.role] || `${role.role}Label`;
+    return <Badge variant={variants[role.role] as any || "outline"}>{t(`roles.${labelKey}`)}</Badge>;
   };
 
   const openEditStaff = (p: any) => {
