@@ -537,7 +537,62 @@ const AdminSurveys = () => {
       <Dialog open={!!resultsDialog} onOpenChange={() => setResultsDialog(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>설문 결과: {resultsDialog?.survey?.title}</DialogTitle>
+            <div className="flex items-center justify-between gap-2">
+              <DialogTitle>설문 결과: {resultsDialog?.survey?.title}</DialogTitle>
+              {resultsDialog && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => {
+                    const d = resultsDialog;
+                    const lines: string[] = [];
+                    lines.push("═══════════════════════════════════════");
+                    lines.push(`📋 설문 결과 리포트`);
+                    lines.push("═══════════════════════════════════════");
+                    lines.push(`설문명: ${d.survey.title}`);
+                    lines.push(`과정: ${d.survey.courses?.title || "-"}`);
+                    lines.push(`총 응답자: ${d.responses.length}명`);
+                    lines.push(`작성일: ${new Date().toLocaleDateString("ko-KR")}`);
+                    lines.push("───────────────────────────────────────");
+                    lines.push("");
+
+                    d.questions.forEach((q: any, qi: number) => {
+                      const qAnswers = d.answers.filter((a: any) => a.question_id === q.id);
+                      lines.push(`Q${qi + 1}. ${q.question_text}`);
+
+                      if (q.question_type === "multiple_choice") {
+                        ((q.options as string[]) || []).forEach((opt: string) => {
+                          const count = qAnswers.filter((a: any) => a.answer_text === opt).length;
+                          const pct = qAnswers.length > 0 ? Math.round((count / qAnswers.length) * 100) : 0;
+                          const bar = "█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pct / 5));
+                          lines.push(`  ${opt}: ${bar} ${count}명 (${pct}%)`);
+                        });
+                      } else if (q.question_type === "rating") {
+                        const avg = qAnswers.length > 0
+                          ? (qAnswers.reduce((s: number, a: any) => s + (a.answer_value || 0), 0) / qAnswers.length).toFixed(1)
+                          : "-";
+                        lines.push(`  평균 평점: ⭐ ${avg} / 5`);
+                      } else if (q.question_type === "text") {
+                        qAnswers.forEach((a: any, i: number) => {
+                          lines.push(`  • ${a.answer_text || "-"}`);
+                        });
+                        if (qAnswers.length === 0) lines.push(`  (응답 없음)`);
+                      }
+                      lines.push("");
+                    });
+
+                    lines.push("───────────────────────────────────────");
+                    lines.push("NONFICTION LMS | 자동 생성 리포트");
+
+                    navigator.clipboard.writeText(lines.join("\n"));
+                    toast({ title: "리포트가 클립보드에 복사되었습니다." });
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5 mr-1" /> 리포트 복사
+                </Button>
+              )}
+            </div>
           </DialogHeader>
           {resultsDialog && (
             <Tabs defaultValue="summary">
