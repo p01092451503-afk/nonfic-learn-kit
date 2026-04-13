@@ -52,7 +52,12 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
   // Student name
   ctx.font = "bold 52px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = "#1a1a2e";
-  ctx.fillText(data.studentName, W / 2, 420);
+  ctx.fillText(data.studentName, W / 2, 400);
+
+  // Student email (ID)
+  ctx.font = "24px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = "#555";
+  ctx.fillText(`(${data.studentEmail})`, W / 2, 445);
 
   // Description
   ctx.font = "28px 'Noto Sans KR', sans-serif";
