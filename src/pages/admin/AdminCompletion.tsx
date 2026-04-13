@@ -1,4 +1,4 @@
-import { Trophy, Download, Settings, FileImage, Award, ChevronDown, ChevronUp } from "lucide-react";
+import { Trophy, Download, Settings, FileImage, Award, ChevronDown, ChevronUp, Layers } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import CompletionCriteriaDialog from "@/components/admin/CompletionCriteriaDialog";
 import CertificateTemplateDialog from "@/components/admin/CertificateTemplateDialog";
+import BulkCompletionSettingsDialog from "@/components/admin/BulkCompletionSettingsDialog";
 import { generateCertificateImage, downloadBlob } from "@/lib/certificateGenerator";
 
 const AdminCompletion = () => {
