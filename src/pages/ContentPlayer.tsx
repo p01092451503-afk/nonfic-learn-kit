@@ -441,6 +441,7 @@ const ContentPlayer = () => {
                 <div className="relative">
                   <div className="aspect-video w-full">
                     <iframe
+                      key={`video-${contentId}`}
                       ref={isTrackableVideo ? videoIframeCallback : undefined}
                       id={`video-player-${contentId}`}
                       src={embedUrl}
