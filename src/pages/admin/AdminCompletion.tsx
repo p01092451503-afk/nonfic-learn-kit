@@ -104,6 +104,7 @@ const AdminCompletion = () => {
   });
 
   const profileMap = new Map(profiles.map((p: any) => [p.user_id, p.full_name]));
+  const emailMap = new Map(profiles.map((p: any) => [p.user_id, p.email || ""]));
   const criteriaMap = new Map(criteriaList.map((c: any) => [c.course_id, c]));
   const templateMap = new Map(templates.map((t: any) => [t.course_id, t]));
   const certSet = new Set(certificates.map((c: any) => `${c.user_id}_${c.course_id}`));
@@ -173,6 +174,7 @@ const AdminCompletion = () => {
       const template = templateMap.get(enrollment.course_id);
       const blob = await generateCertificateImage({
         studentName: profileMap.get(enrollment.user_id) || "-",
+        studentEmail: emailMap.get(enrollment.user_id) || "-",
         courseName: course?.title || "-",
         issuedDate: new Date().toLocaleDateString("ko-KR"),
         certificateNumber: certNumber,
