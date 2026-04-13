@@ -5,6 +5,7 @@
 
 interface CertificateData {
   studentName: string;
+  studentEmail: string;
   courseName: string;
   issuedDate: string;
   certificateNumber: string;

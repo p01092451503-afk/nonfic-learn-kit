@@ -284,6 +284,9 @@ const MyPage = () => {
             <TabsTrigger value="avatar" className="rounded-lg gap-1.5 text-sm">
               <Camera className="h-4 w-4" /> {t("mypage.avatarTab")}
             </TabsTrigger>
+            <TabsTrigger value="certificates" className="rounded-lg gap-1.5 text-sm">
+              <Award className="h-4 w-4" /> 이수증
+            </TabsTrigger>
             <TabsTrigger value="password" className="rounded-lg gap-1.5 text-sm">
               <Lock className="h-4 w-4" /> {t("mypage.passwordTab")}
             </TabsTrigger>
