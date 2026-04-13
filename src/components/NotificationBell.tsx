@@ -37,7 +37,8 @@ const NotificationBell = () => {
       return data;
     },
     enabled: !!user?.id,
-    refetchInterval: 60000,
+    staleTime: 2 * 60 * 1000,   // 2min stale — reduces polling pressure
+    refetchInterval: 120_000,     // Poll every 2min instead of 1min
   });
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
@@ -49,13 +50,15 @@ const NotificationBell = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   });
 
+  // Batch mark-all-read into a single query using .in()
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
       const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
       if (unreadIds.length === 0) return;
-      for (const id of unreadIds) {
-        await supabase.from("notifications").update({ is_read: true }).eq("id", id);
-      }
+      await supabase
+        .from("notifications")
+        .update({ is_read: true })
+        .in("id", unreadIds);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   });

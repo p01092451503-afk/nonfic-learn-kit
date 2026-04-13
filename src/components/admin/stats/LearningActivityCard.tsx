@@ -4,92 +4,43 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, FileCheck, ClipboardCheck, MessageSquare } from "lucide-react";
 
 const LearningActivityCard = () => {
-  const { data: contentCompletions = 0 } = useQuery({
-    queryKey: ["stat-content-completions"],
+  // Single combined query — 6 individual queries → 1 parallel batch
+  const { data } = useQuery({
+    queryKey: ["stat-learning-activity"],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("content_progress")
-        .select("*", { count: "exact", head: true })
-        .eq("completed", true);
-      if (error) throw error;
-      return count || 0;
+      const [contentRes, attemptRes, passedRes, subRes, gradedRes, boardRes, surveyRes] = await Promise.all([
+        supabase.from("content_progress").select("*", { count: "exact", head: true }).eq("completed", true),
+        supabase.from("assessment_attempts").select("*", { count: "exact", head: true }),
+        supabase.from("assessment_attempts").select("*", { count: "exact", head: true }).eq("passed", true),
+        supabase.from("assignment_submissions").select("*", { count: "exact", head: true }),
+        supabase.from("assignment_submissions").select("*", { count: "exact", head: true }).eq("status", "graded"),
+        supabase.from("board_posts").select("*", { count: "exact", head: true }),
+        supabase.from("survey_responses").select("*", { count: "exact", head: true }),
+      ]);
+      return {
+        contentCompletions: contentRes.count || 0,
+        assessmentAttempts: attemptRes.count || 0,
+        assessmentPassed: passedRes.count || 0,
+        submissionCount: subRes.count || 0,
+        gradedCount: gradedRes.count || 0,
+        boardPostCount: boardRes.count || 0,
+        surveyResponseCount: surveyRes.count || 0,
+      };
     },
+    staleTime: 5 * 60 * 1000,
   });
 
-  const { data: assessmentAttempts = 0 } = useQuery({
-    queryKey: ["stat-assessment-attempts"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("assessment_attempts")
-        .select("*", { count: "exact", head: true });
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: assessmentPassed = 0 } = useQuery({
-    queryKey: ["stat-assessment-passed"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("assessment_attempts")
-        .select("*", { count: "exact", head: true })
-        .eq("passed", true);
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: submissionCount = 0 } = useQuery({
-    queryKey: ["stat-submission-count"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("assignment_submissions")
-        .select("*", { count: "exact", head: true });
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: gradedCount = 0 } = useQuery({
-    queryKey: ["stat-graded-count"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("assignment_submissions")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "graded");
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: boardPostCount = 0 } = useQuery({
-    queryKey: ["stat-board-posts"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("board_posts")
-        .select("*", { count: "exact", head: true });
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: surveyResponseCount = 0 } = useQuery({
-    queryKey: ["stat-survey-responses"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("survey_responses")
-        .select("*", { count: "exact", head: true });
-      if (error) throw error;
-      return count || 0;
-    },
-  });
+  const stats = data || {
+    contentCompletions: 0, assessmentAttempts: 0, assessmentPassed: 0,
+    submissionCount: 0, gradedCount: 0, boardPostCount: 0, surveyResponseCount: 0,
+  };
 
   const items = [
-    { label: "콘텐츠 이수", value: contentCompletions, icon: BookOpen, color: "text-primary bg-primary/10" },
-    { label: "평가 응시", value: assessmentAttempts, sub: `합격 ${assessmentPassed}건`, icon: ClipboardCheck, color: "text-chart-2 bg-chart-2/10" },
-    { label: "과제 제출", value: submissionCount, sub: `채점 ${gradedCount}건`, icon: FileCheck, color: "text-chart-3 bg-chart-3/10" },
-    { label: "게시판 글", value: boardPostCount, icon: MessageSquare, color: "text-chart-4 bg-chart-4/10" },
-    { label: "설문 응답", value: surveyResponseCount, icon: ClipboardCheck, color: "text-chart-5 bg-chart-5/10" },
+    { label: "콘텐츠 이수", value: stats.contentCompletions, icon: BookOpen, color: "text-primary bg-primary/10" },
+    { label: "평가 응시", value: stats.assessmentAttempts, sub: `합격 ${stats.assessmentPassed}건`, icon: ClipboardCheck, color: "text-chart-2 bg-chart-2/10" },
+    { label: "과제 제출", value: stats.submissionCount, sub: `채점 ${stats.gradedCount}건`, icon: FileCheck, color: "text-chart-3 bg-chart-3/10" },
+    { label: "게시판 글", value: stats.boardPostCount, icon: MessageSquare, color: "text-chart-4 bg-chart-4/10" },
+    { label: "설문 응답", value: stats.surveyResponseCount, icon: ClipboardCheck, color: "text-chart-5 bg-chart-5/10" },
   ];
 
   return (
