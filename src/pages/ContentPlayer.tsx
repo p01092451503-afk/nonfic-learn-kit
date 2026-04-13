@@ -446,8 +446,10 @@ const ContentPlayer = () => {
                       id={`video-player-${contentId}`}
                       src={embedUrl}
                       className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                       allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      sandbox="allow-scripts allow-same-origin allow-popups allow-presentation allow-forms"
                       title={localTitle}
                     />
                   </div>
