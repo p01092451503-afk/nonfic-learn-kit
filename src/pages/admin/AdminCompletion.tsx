@@ -1,8 +1,7 @@
-import { Trophy, Download, Settings, FileImage, Award } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Trophy, Download, Settings, FileImage, Award, ChevronDown, ChevronUp } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -16,7 +15,7 @@ import { generateCertificateImage, downloadBlob } from "@/lib/certificateGenerat
 const AdminCompletion = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const [courseFilter, setCourseFilter] = useState("all");
+  const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
   const [criteriaDialog, setCriteriaDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: "", courseName: "" });
   const [templateDialog, setTemplateDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: "", courseName: "" });
   const [issuingCert, setIssuingCert] = useState<string | null>(null);
@@ -103,12 +102,10 @@ const AdminCompletion = () => {
   });
 
   const profileMap = new Map(profiles.map((p: any) => [p.user_id, p.full_name]));
-  const courseMap = new Map(courses.map((c: any) => [c.id, c]));
   const criteriaMap = new Map(criteriaList.map((c: any) => [c.course_id, c]));
   const templateMap = new Map(templates.map((t: any) => [t.course_id, t]));
   const certSet = new Set(certificates.map((c: any) => `${c.user_id}_${c.course_id}`));
 
-  // Best assessment score per user (across all assessments)
   const bestScoreByUser = new Map<string, number>();
   assessmentAttempts.forEach((a: any) => {
     if (a.score != null && a.completed_at) {
@@ -117,8 +114,11 @@ const AdminCompletion = () => {
     }
   });
 
-  const filtered = courseFilter === "all" ? enrollments : enrollments.filter((e: any) => e.course_id === courseFilter);
-  const visibleRows = filtered.slice(0, 50);
+  const enrollmentsByCourse = new Map<string, any[]>();
+  enrollments.forEach((e: any) => {
+    if (!enrollmentsByCourse.has(e.course_id)) enrollmentsByCourse.set(e.course_id, []);
+    enrollmentsByCourse.get(e.course_id)!.push(e);
+  });
 
   const attendanceByUserCourse = new Map<string, { total: number; present: number }>();
   attendance.forEach((a: any) => {
@@ -143,7 +143,6 @@ const AdminCompletion = () => {
     const progress = Number(e.progress) || 0;
     const minProgress = criteria ? Number(criteria.min_progress_pct) : 80;
     const minScore = criteria?.min_assessment_score != null ? Number(criteria.min_assessment_score) : null;
-
     if (progress < minProgress) return false;
     if (minScore != null) {
       const userScore = bestScoreByUser.get(e.user_id);
@@ -155,7 +154,7 @@ const AdminCompletion = () => {
 
   const getReqText = (courseId: string) => {
     const criteria = criteriaMap.get(courseId);
-    if (!criteria) return t("admin.progress80");
+    if (!criteria) return t("admin.progress80", "진도 80%");
     const parts = [`진도 ${criteria.min_progress_pct}%`];
     if (criteria.min_assessment_score != null) parts.push(`평가 ${criteria.min_assessment_score}점`);
     return parts.join(" + ");
@@ -168,10 +167,11 @@ const AdminCompletion = () => {
     setIssuingCert(key);
     try {
       const certNumber = `CERT-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      const course = courses.find((c: any) => c.id === enrollment.course_id);
       const template = templateMap.get(enrollment.course_id);
       const blob = await generateCertificateImage({
         studentName: profileMap.get(enrollment.user_id) || "-",
-        courseName: courseMap.get(enrollment.course_id)?.title || "-",
+        courseName: course?.title || "-",
         issuedDate: new Date().toLocaleDateString("ko-KR"),
         certificateNumber: certNumber,
         titleText: template?.title_text || "수료증",
@@ -179,15 +179,12 @@ const AdminCompletion = () => {
         issuerName: template?.issuer_name || "",
         backgroundImageUrl: template?.background_image_url || null,
       });
-
-      // Save record
       const { error } = await supabase.from("certificates").insert({
         user_id: enrollment.user_id,
         course_id: enrollment.course_id,
         certificate_number: certNumber,
       });
       if (error) throw error;
-
       downloadBlob(blob, `certificate_${certNumber}.png`);
       queryClient.invalidateQueries({ queryKey: ["admin-comp-certificates"] });
       toast.success(t("admin.certIssued", "이수증이 발급되었습니다"));
@@ -199,15 +196,16 @@ const AdminCompletion = () => {
   };
 
   const exportCSV = () => {
-    const header = [t("admin.nameColumn"), t("admin.courseLabel"), t("admin.attendanceRate"), t("admin.avgScore"), t("admin.completionReq"), t("admin.completionStatus")];
-    const rows = filtered.map((e: any) => {
+    const header = [t("admin.courseLabel"), t("admin.nameColumn"), t("admin.attendanceRate"), t("admin.avgScore"), t("admin.completionReq"), t("admin.completionStatus")];
+    const rows = enrollments.map((e: any) => {
       const attKey = `${e.user_id}_${e.course_id}`;
       const att = attendanceByUserCourse.get(attKey);
       const attRate = att ? Math.round((att.present / att.total) * 100) : 0;
       const sc = scoreByStudent.get(e.user_id);
       const avgScore = sc ? Math.round(sc.total / sc.count) : 0;
       const isComplete = getCompletionStatus(e);
-      return [profileMap.get(e.user_id) || "-", courseMap.get(e.course_id)?.title || "-", `${attRate}%`, `${avgScore}`, getReqText(e.course_id), isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")];
+      const course = courses.find((c: any) => c.id === e.course_id);
+      return [course?.title || "-", profileMap.get(e.user_id) || "-", `${attRate}%`, `${avgScore}`, getReqText(e.course_id), isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")];
     });
     const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -216,6 +214,14 @@ const AdminCompletion = () => {
     a.href = url;
     a.download = "completion_report.csv";
     a.click();
+  };
+
+  const getCourseStats = (courseId: string) => {
+    const courseEnrollments = enrollmentsByCourse.get(courseId) || [];
+    const total = courseEnrollments.length;
+    const completed = courseEnrollments.filter((e: any) => getCompletionStatus(e)).length;
+    const certCount = courseEnrollments.filter((e: any) => hasCert(e.user_id, e.course_id)).length;
+    return { total, completed, certCount };
   };
 
   return (
@@ -234,162 +240,177 @@ const AdminCompletion = () => {
           </Button>
         </div>
 
-        {/* Course criteria quick settings */}
-        <div className="stat-card !p-3 sm:!p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-            <Select value={courseFilter} onValueChange={setCourseFilter}>
-              <SelectTrigger className="w-full sm:w-48 h-9"><SelectValue placeholder={t("admin.allCourses")} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("admin.allCourses")}</SelectItem>
-                {courses.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            {courseFilter !== "all" && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  onClick={() => setCriteriaDialog({ open: true, courseId: courseFilter, courseName: courseMap.get(courseFilter)?.title || "" })}
-                >
-                  <Settings className="h-3.5 w-3.5" />
-                  {t("admin.completionReq")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  onClick={() => setTemplateDialog({ open: true, courseId: courseFilter, courseName: courseMap.get(courseFilter)?.title || "" })}
-                >
-                  <FileImage className="h-3.5 w-3.5" />
-                  {t("admin.certTemplateTitle", "이수증 템플릿")}
-                </Button>
-              </div>
-            )}
-          </div>
+        {/* Course list with inline settings */}
+        <div className="space-y-3">
+          {courses.length === 0 ? (
+            <div className="stat-card !p-8 text-center text-sm text-muted-foreground">
+              {t("admin.noCourses", "등록된 강좌가 없습니다")}
+            </div>
+          ) : (
+            courses.map((course: any) => {
+              const stats = getCourseStats(course.id);
+              const criteria = criteriaMap.get(course.id);
+              const isExpanded = expandedCourse === course.id;
 
-          {/* Mobile cards */}
-          <div className="sm:hidden space-y-3" aria-label={t("admin.completionManagement")}>
-            {visibleRows.length === 0 ? (
-              <div className="rounded-xl border border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
-                {t("admin.noStudentData")}
-              </div>
-            ) : (
-              visibleRows.map((e: any) => {
-                const attKey = `${e.user_id}_${e.course_id}`;
-                const att = attendanceByUserCourse.get(attKey);
-                const attRate = att ? Math.round((att.present / att.total) * 100) : 0;
-                const sc = scoreByStudent.get(e.user_id);
-                const avgScore = sc ? Math.round(sc.total / sc.count) : 0;
-                const isComplete = getCompletionStatus(e);
-                const certKey = `${e.user_id}_${e.course_id}`;
-                const issued = hasCert(e.user_id, e.course_id);
-                const criteria = criteriaMap.get(e.course_id);
-                const certEnabled = criteria?.certificate_enabled;
-
-                return (
-                  <article key={e.id} className="rounded-xl border border-border bg-background p-4">
-                    <div className="flex items-start justify-between gap-3">
+              return (
+                <div key={course.id} className="stat-card !p-0 overflow-hidden">
+                  {/* Course header row */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 sm:p-4">
+                    <button
+                      className="flex items-center gap-2 text-left min-w-0 flex-1"
+                      onClick={() => setExpandedCourse(isExpanded ? null : course.id)}
+                    >
+                      {isExpanded ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
                       <div className="min-w-0">
-                        <h3 className="text-sm font-semibold text-foreground break-words">{profileMap.get(e.user_id) || "-"}</h3>
-                        <p className="text-xs text-muted-foreground mt-1 break-words">{courseMap.get(e.course_id)?.title || "-"}</p>
+                        <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
+                        <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                          <span>수강 {stats.total}명</span>
+                          <span>이수 {stats.completed}명</span>
+                          <span>발급 {stats.certCount}건</span>
+                          <span className="hidden sm:inline">요건: {getReqText(course.id)}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <Badge variant={isComplete ? "default" : "destructive"} className="text-[10px]">
-                          {isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")}
-                        </Badge>
-                        {isComplete && certEnabled && !issued && (
-                          <Button size="sm" variant="outline" className="h-6 px-2 text-[10px] gap-1" onClick={() => handleIssueCert(e)} disabled={issuingCert === certKey}>
-                            <Award className="h-3 w-3" /> 발급
-                          </Button>
+                    </button>
+                    <div className="flex items-center gap-2 shrink-0 pl-6 sm:pl-0">
+                      <Badge variant={criteria ? "default" : "secondary"} className="text-[10px]">
+                        {criteria ? "설정됨" : "미설정"}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2 text-xs gap-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCriteriaDialog({ open: true, courseId: course.id, courseName: course.title });
+                        }}
+                      >
+                        <Settings className="h-3 w-3" /> {t("admin.completionReq", "수료요건")}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2 text-xs gap-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTemplateDialog({ open: true, courseId: course.id, courseName: course.title });
+                        }}
+                      >
+                        <FileImage className="h-3 w-3" /> {t("admin.certTemplateTitle", "이수증 템플릿")}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Expanded student list */}
+                  {isExpanded && (
+                    <div className="border-t border-border">
+                      {/* Mobile cards */}
+                      <div className="sm:hidden p-3 space-y-2">
+                        {(enrollmentsByCourse.get(course.id) || []).length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-4">{t("admin.noStudentData")}</p>
+                        ) : (
+                          (enrollmentsByCourse.get(course.id) || []).map((e: any) => {
+                            const attKey = `${e.user_id}_${e.course_id}`;
+                            const att = attendanceByUserCourse.get(attKey);
+                            const attRate = att ? Math.round((att.present / att.total) * 100) : 0;
+                            const sc = scoreByStudent.get(e.user_id);
+                            const avgScore = sc ? Math.round(sc.total / sc.count) : 0;
+                            const isComplete = getCompletionStatus(e);
+                            const certKey = `${e.user_id}_${e.course_id}`;
+                            const issued = hasCert(e.user_id, e.course_id);
+                            const certEnabled = criteria?.certificate_enabled;
+
+                            return (
+                              <div key={e.id} className="rounded-lg border border-border bg-background p-3">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-sm font-medium text-foreground">{profileMap.get(e.user_id) || "-"}</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <Badge variant={isComplete ? "default" : "destructive"} className="text-[10px]">
+                                      {isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")}
+                                    </Badge>
+                                    {issued && <Badge variant="secondary" className="text-[10px]">발급완료</Badge>}
+                                    {isComplete && certEnabled && !issued && (
+                                      <Button size="sm" variant="outline" className="h-6 px-2 text-[10px] gap-1" onClick={() => handleIssueCert(e)} disabled={issuingCert === certKey}>
+                                        <Award className="h-3 w-3" /> 발급
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
+                                  <span>출석 {attRate}%</span>
+                                  <span>점수 {avgScore}</span>
+                                  <span>진도 {Math.round(Number(e.progress) || 0)}%</span>
+                                </div>
+                              </div>
+                            );
+                          })
                         )}
-                        {issued && <Badge variant="secondary" className="text-[10px]">발급완료</Badge>}
+                      </div>
+
+                      {/* Desktop table */}
+                      <div className="hidden sm:block overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>{t("admin.nameColumn")}</TableHead>
+                              <TableHead>진도율</TableHead>
+                              <TableHead>{t("admin.attendanceRate")}</TableHead>
+                              <TableHead>{t("admin.avgScore")}</TableHead>
+                              <TableHead>{t("admin.completionStatus")}</TableHead>
+                              <TableHead>{t("admin.certColumn", "이수증")}</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {(enrollmentsByCourse.get(course.id) || []).length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-sm">{t("admin.noStudentData")}</TableCell>
+                              </TableRow>
+                            ) : (
+                              (enrollmentsByCourse.get(course.id) || []).map((e: any) => {
+                                const attKey = `${e.user_id}_${e.course_id}`;
+                                const att = attendanceByUserCourse.get(attKey);
+                                const attRate = att ? Math.round((att.present / att.total) * 100) : 0;
+                                const sc = scoreByStudent.get(e.user_id);
+                                const avgScore = sc ? Math.round(sc.total / sc.count) : 0;
+                                const isComplete = getCompletionStatus(e);
+                                const certKey = `${e.user_id}_${e.course_id}`;
+                                const issued = hasCert(e.user_id, e.course_id);
+                                const certEnabled = criteria?.certificate_enabled;
+
+                                return (
+                                  <TableRow key={e.id}>
+                                    <TableCell className="font-medium text-sm">{profileMap.get(e.user_id) || "-"}</TableCell>
+                                    <TableCell className="text-sm">{Math.round(Number(e.progress) || 0)}%</TableCell>
+                                    <TableCell className="text-sm">{attRate}%</TableCell>
+                                    <TableCell className="text-sm">{avgScore}</TableCell>
+                                    <TableCell>
+                                      <Badge variant={isComplete ? "default" : "destructive"} className="text-[10px]">
+                                        {isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      {issued ? (
+                                        <Badge variant="secondary" className="text-[10px]">발급완료</Badge>
+                                      ) : isComplete && certEnabled ? (
+                                        <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => handleIssueCert(e)} disabled={issuingCert === certKey}>
+                                          <Award className="h-3.5 w-3.5" /> 발급
+                                        </Button>
+                                      ) : (
+                                        <span className="text-xs text-muted-foreground">-</span>
+                                      )}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })
+                            )}
+                          </TableBody>
+                        </Table>
                       </div>
                     </div>
-                    <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <dt className="text-muted-foreground">{t("admin.attendanceRate")}</dt>
-                        <dd className="mt-1 text-foreground">{attRate}%</dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">{t("admin.avgScore")}</dt>
-                        <dd className="mt-1 text-foreground">{avgScore}</dd>
-                      </div>
-                      <div className="col-span-2">
-                        <dt className="text-muted-foreground">{t("admin.completionReq")}</dt>
-                        <dd className="mt-1 text-foreground">{getReqText(e.course_id)}</dd>
-                      </div>
-                    </dl>
-                  </article>
-                );
-              })
-            )}
-          </div>
-
-          {/* Desktop table */}
-          <div className="hidden sm:block overflow-x-auto -mx-3 sm:-mx-5">
-            <div className="min-w-[860px] px-3 sm:px-5">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("admin.nameColumn")}</TableHead>
-                    <TableHead>{t("admin.courseLabel")}</TableHead>
-                    <TableHead>{t("admin.attendanceRate")}</TableHead>
-                    <TableHead>{t("admin.avgScore")}</TableHead>
-                    <TableHead>{t("admin.completionReq")}</TableHead>
-                    <TableHead>{t("admin.completionStatus")}</TableHead>
-                    <TableHead>{t("admin.certColumn", "이수증")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleRows.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">{t("admin.noStudentData")}</TableCell>
-                    </TableRow>
-                  ) : (
-                    visibleRows.map((e: any) => {
-                      const attKey = `${e.user_id}_${e.course_id}`;
-                      const att = attendanceByUserCourse.get(attKey);
-                      const attRate = att ? Math.round((att.present / att.total) * 100) : 0;
-                      const sc = scoreByStudent.get(e.user_id);
-                      const avgScore = sc ? Math.round(sc.total / sc.count) : 0;
-                      const isComplete = getCompletionStatus(e);
-                      const certKey = `${e.user_id}_${e.course_id}`;
-                      const issued = hasCert(e.user_id, e.course_id);
-                      const criteria = criteriaMap.get(e.course_id);
-                      const certEnabled = criteria?.certificate_enabled;
-
-                      return (
-                        <TableRow key={e.id}>
-                          <TableCell className="font-medium text-sm">{profileMap.get(e.user_id) || "-"}</TableCell>
-                          <TableCell className="max-w-[240px] text-sm whitespace-normal break-words">{courseMap.get(e.course_id)?.title || "-"}</TableCell>
-                          <TableCell className="text-sm">{attRate}%</TableCell>
-                          <TableCell className="text-sm">{avgScore}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{getReqText(e.course_id)}</TableCell>
-                          <TableCell>
-                            <Badge variant={isComplete ? "default" : "destructive"} className="text-[10px]">
-                              {isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {issued ? (
-                              <Badge variant="secondary" className="text-[10px]">발급완료</Badge>
-                            ) : isComplete && certEnabled ? (
-                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => handleIssueCert(e)} disabled={issuingCert === certKey}>
-                                <Award className="h-3.5 w-3.5" /> 발급
-                              </Button>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
                   )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
