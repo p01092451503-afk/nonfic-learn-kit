@@ -433,6 +433,11 @@ const AdminCompletion = () => {
         open={templateDialog.open}
         onOpenChange={(open) => setTemplateDialog((prev) => ({ ...prev, open }))}
       />
+      <BulkCompletionSettingsDialog
+        open={bulkDialog}
+        onOpenChange={setBulkDialog}
+        courseIds={courses.map((c: any) => c.id)}
+      />
     </DashboardLayout>
   );
 };
