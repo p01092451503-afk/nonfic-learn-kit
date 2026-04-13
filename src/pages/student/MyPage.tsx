@@ -83,9 +83,58 @@ const MyPage = () => {
     }
   };
 
-  
+  // Certificates
+  const { data: certificates = [] } = useQuery({
+    queryKey: ["my-certificates", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("certificates")
+        .select("*, courses(title)")
+        .eq("user_id", user!.id)
+        .order("issued_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
-  // Stats for the header
+  const { data: certTemplates = [] } = useQuery({
+    queryKey: ["cert-templates-for-my-certs"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("certificate_templates").select("*");
+      if (error) throw error;
+      return data;
+    },
+    enabled: certificates.length > 0,
+  });
+
+  const [downloadingCertId, setDownloadingCertId] = useState<string | null>(null);
+
+  const handleDownloadCert = async (cert: any) => {
+    setDownloadingCertId(cert.id);
+    try {
+      const course = cert.courses;
+      const template = certTemplates.find((t: any) => t.course_id === cert.course_id);
+      const blob = await generateCertificateImage({
+        studentName: profile?.full_name || "-",
+        studentEmail: user?.email || "-",
+        courseName: course?.title || "-",
+        issuedDate: new Date(cert.issued_at).toLocaleDateString("ko-KR"),
+        certificateNumber: cert.certificate_number,
+        titleText: template?.title_text || "수료증",
+        descText: template?.description_text || "위 사람은 본 교육과정을 성실히 이수하였기에 이 증서를 수여합니다.",
+        issuerName: template?.issuer_name || "",
+        backgroundImageUrl: template?.background_image_url || null,
+      });
+      downloadBlob(blob, `certificate_${cert.certificate_number}.png`);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setDownloadingCertId(null);
+    }
+  };
+
+
   const { data: enrollmentStats } = useQuery({
     queryKey: ["mypage-enrollment-stats", user?.id],
     queryFn: async () => {
