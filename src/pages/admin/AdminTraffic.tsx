@@ -20,6 +20,7 @@ import CourseStatsCard from "@/components/admin/stats/CourseStatsCard";
 import LearningActivityCard from "@/components/admin/stats/LearningActivityCard";
 import HourlyAccessChart from "@/components/admin/stats/HourlyAccessChart";
 import SignupTrendChart from "@/components/admin/stats/SignupTrendChart";
+import RealtimeUsersCard from "@/components/admin/stats/RealtimeUsersCard";
 
 const formatBytes = (bytes: number) => {
   if (bytes === 0) return "0 B";
