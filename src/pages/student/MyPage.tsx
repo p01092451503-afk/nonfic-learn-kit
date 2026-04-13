@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, Lock, Camera, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp } from "lucide-react";
+import { User, Lock, Camera, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp, Award, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import AvatarTab from "@/components/mypage/AvatarTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import { generateCertificateImage, downloadBlob } from "@/lib/certificateGenerator";
 
 const MyPage = () => {
   const { user, profile, refreshProfile } = useUser();
@@ -82,9 +83,58 @@ const MyPage = () => {
     }
   };
 
-  
+  // Certificates
+  const { data: certificates = [] } = useQuery({
+    queryKey: ["my-certificates", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("certificates")
+        .select("*, courses(title)")
+        .eq("user_id", user!.id)
+        .order("issued_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
-  // Stats for the header
+  const { data: certTemplates = [] } = useQuery({
+    queryKey: ["cert-templates-for-my-certs"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("certificate_templates").select("*");
+      if (error) throw error;
+      return data;
+    },
+    enabled: certificates.length > 0,
+  });
+
+  const [downloadingCertId, setDownloadingCertId] = useState<string | null>(null);
+
+  const handleDownloadCert = async (cert: any) => {
+    setDownloadingCertId(cert.id);
+    try {
+      const course = cert.courses;
+      const template = certTemplates.find((t: any) => t.course_id === cert.course_id);
+      const blob = await generateCertificateImage({
+        studentName: profile?.full_name || "-",
+        studentEmail: user?.email || "-",
+        courseName: course?.title || "-",
+        issuedDate: new Date(cert.issued_at).toLocaleDateString("ko-KR"),
+        certificateNumber: cert.certificate_number,
+        titleText: template?.title_text || "수료증",
+        descText: template?.description_text || "위 사람은 본 교육과정을 성실히 이수하였기에 이 증서를 수여합니다.",
+        issuerName: template?.issuer_name || "",
+        backgroundImageUrl: template?.background_image_url || null,
+      });
+      downloadBlob(blob, `certificate_${cert.certificate_number}.png`);
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+    } finally {
+      setDownloadingCertId(null);
+    }
+  };
+
+
   const { data: enrollmentStats } = useQuery({
     queryKey: ["mypage-enrollment-stats", user?.id],
     queryFn: async () => {
@@ -234,6 +284,9 @@ const MyPage = () => {
             <TabsTrigger value="avatar" className="rounded-lg gap-1.5 text-sm">
               <Camera className="h-4 w-4" /> {t("mypage.avatarTab")}
             </TabsTrigger>
+            <TabsTrigger value="certificates" className="rounded-lg gap-1.5 text-sm">
+              <Award className="h-4 w-4" /> 이수증
+            </TabsTrigger>
             <TabsTrigger value="password" className="rounded-lg gap-1.5 text-sm">
               <Lock className="h-4 w-4" /> {t("mypage.passwordTab")}
             </TabsTrigger>
@@ -281,7 +334,48 @@ const MyPage = () => {
               <AvatarTab />
             </TabsContent>
 
-            {/* Password Tab */}
+            {/* Certificates Tab */}
+            <TabsContent value="certificates">
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <h2 className="text-lg font-semibold">이수증 관리</h2>
+                  <p className="text-sm text-muted-foreground">수료한 강좌의 이수증을 다운로드할 수 있습니다.</p>
+                </div>
+                {certificates.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 space-y-3">
+                    <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center">
+                      <Award className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">발급된 이수증이 없습니다.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {certificates.map((cert: any) => (
+                      <div key={cert.id} className="flex items-center justify-between gap-4 border border-border rounded-xl p-4">
+                        <div className="min-w-0 space-y-1">
+                          <h3 className="text-sm font-semibold text-foreground truncate">{(cert.courses as any)?.title || "-"}</h3>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>No. {cert.certificate_number}</span>
+                            <span>·</span>
+                            <span>{new Date(cert.issued_at).toLocaleDateString("ko-KR")}</span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-lg gap-1.5 shrink-0"
+                          onClick={() => handleDownloadCert(cert)}
+                          disabled={downloadingCertId === cert.id}
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          {downloadingCertId === cert.id ? "생성 중..." : "다운로드"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
             <TabsContent value="password">
               <div className="max-w-lg space-y-6">
                 <div className="space-y-1">
