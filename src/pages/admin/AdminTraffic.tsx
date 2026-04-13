@@ -20,6 +20,7 @@ import CourseStatsCard from "@/components/admin/stats/CourseStatsCard";
 import LearningActivityCard from "@/components/admin/stats/LearningActivityCard";
 import HourlyAccessChart from "@/components/admin/stats/HourlyAccessChart";
 import SignupTrendChart from "@/components/admin/stats/SignupTrendChart";
+import RealtimeUsersCard from "@/components/admin/stats/RealtimeUsersCard";
 
 const formatBytes = (bytes: number) => {
   if (bytes === 0) return "0 B";
@@ -132,7 +133,8 @@ const AdminTraffic = () => {
         </div>
 
         {/* Top row: Site Summary + Today Operations */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <RealtimeUsersCard />
           <SiteSummaryCard />
           <TodayOperationsCard />
         </div>
