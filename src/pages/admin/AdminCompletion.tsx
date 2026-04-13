@@ -20,6 +20,7 @@ const AdminCompletion = () => {
   const [criteriaDialog, setCriteriaDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: "", courseName: "" });
   const [templateDialog, setTemplateDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: "", courseName: "" });
   const [issuingCert, setIssuingCert] = useState<string | null>(null);
+  const [bulkDialog, setBulkDialog] = useState(false);
 
   const { data: courses = [] } = useQuery({
     queryKey: ["admin-comp-courses"],
