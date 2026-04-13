@@ -245,7 +245,6 @@ const AdminCompletion = () => {
               <Download className="h-4 w-4" aria-hidden="true" /> {t("admin.completionDownload")}
             </Button>
           </div>
-          </Button>
         </div>
 
         {/* Course list with inline settings */}
