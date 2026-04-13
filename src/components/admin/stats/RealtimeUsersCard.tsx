@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Wifi } from "lucide-react";
+import { Wifi } from "lucide-react";
 
 const RealtimeUsersCard = () => {
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { data: onlineCount = 0, refetch } = useQuery({
     queryKey: ["realtime-online-users"],
     queryFn: async () => {
-      // Users with active sessions (logged in within last 15 min, not logged out)
       const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
       const { count, error } = await supabase
         .from("user_sessions")
@@ -17,10 +18,11 @@ const RealtimeUsersCard = () => {
       if (error) throw error;
       return count || 0;
     },
-    refetchInterval: 30000, // Auto-refresh every 30s
+    staleTime: 20_000,         // 20s stale
+    refetchInterval: 60_000,   // Poll every 60s (realtime handles interim)
   });
 
-  // Subscribe to realtime changes on user_sessions
+  // Debounced refetch from realtime — avoids stampede when many sessions change at once
   useEffect(() => {
     const channel = supabase
       .channel("online-users-realtime")
@@ -28,12 +30,14 @@ const RealtimeUsersCard = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "user_sessions" },
         () => {
-          refetch();
+          if (debounceRef.current) clearTimeout(debounceRef.current);
+          debounceRef.current = setTimeout(() => refetch(), 3000);
         }
       )
       .subscribe();
 
     return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       supabase.removeChannel(channel);
     };
   }, [refetch]);
@@ -53,7 +57,7 @@ const RealtimeUsersCard = () => {
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-chart-2"></span>
           </span>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-0.5">30초마다 자동 갱신</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5">실시간 자동 갱신</p>
       </div>
     </div>
   );

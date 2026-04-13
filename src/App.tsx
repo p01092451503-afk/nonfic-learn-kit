@@ -49,7 +49,16 @@ import CourseRedirect from "./components/CourseRedirect";
 import ContentRedirect from "./components/ContentRedirect";
 
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,      // 5min — data considered fresh, no refetch
+      gcTime: 15 * 60 * 1000,         // 15min — keep in cache after unmount
+      refetchOnWindowFocus: false,     // prevent refetch storms with 9K users
+      retry: 1,                        // reduce retry pressure on DB
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

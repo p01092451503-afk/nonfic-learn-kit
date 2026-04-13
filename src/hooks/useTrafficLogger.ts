@@ -3,6 +3,60 @@ import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 
+/**
+ * Batched traffic logger — collects page views and flushes every 10s
+ * or on page unload, reducing DB write pressure from N inserts/nav
+ * to ~1 insert per 10 seconds per user.
+ */
+
+let buffer: Array<{
+  user_id: string;
+  tenant_id: string | null;
+  event_type: string;
+  page_path: string;
+  estimated_bytes: number;
+}> = [];
+
+let flushTimer: ReturnType<typeof setTimeout> | null = null;
+
+const FLUSH_INTERVAL = 10_000; // 10 seconds
+
+const flushBuffer = async () => {
+  if (buffer.length === 0) return;
+  const batch = [...buffer];
+  buffer = [];
+  try {
+    await supabase.from("traffic_logs").insert(batch);
+  } catch {
+    // On failure, don't re-add to buffer to avoid infinite retry loops
+  }
+};
+
+// Flush on page unload using sendBeacon as last resort
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", () => {
+    if (buffer.length === 0) return;
+    const batch = [...buffer];
+    buffer = [];
+    // Use sendBeacon for reliability during unload
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/traffic_logs`;
+    const headers = {
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    };
+    try {
+      navigator.sendBeacon(
+        url,
+        new Blob([JSON.stringify(batch)], { type: "application/json" })
+      );
+    } catch {
+      // silently fail
+    }
+  });
+}
+
 export const useTrafficLogger = () => {
   const { user, profile } = useUser();
   const location = useLocation();
@@ -12,25 +66,26 @@ export const useTrafficLogger = () => {
     if (!user?.id || location.pathname === lastPath.current) return;
     lastPath.current = location.pathname;
 
-    supabase
-      .from("traffic_logs")
-      .insert({
-        user_id: user.id,
-        tenant_id: profile?.tenant_id || null,
-        event_type: "page_view",
-        page_path: location.pathname,
-        estimated_bytes: 5000, // ~5KB avg page load
-      })
-      .then(() => {});
+    buffer.push({
+      user_id: user.id,
+      tenant_id: profile?.tenant_id || null,
+      event_type: "page_view",
+      page_path: location.pathname,
+      estimated_bytes: 5000,
+    });
+
+    // Start flush timer if not running
+    if (!flushTimer) {
+      flushTimer = setTimeout(() => {
+        flushTimer = null;
+        flushBuffer();
+      }, FLUSH_INTERVAL);
+    }
   }, [location.pathname, user?.id, profile?.tenant_id]);
 };
 
 /**
  * Log content access with accurate CDN byte estimation.
- *
- * - YouTube / Vimeo: CDN bytes = 0 (external platform handles streaming)
- * - Upload / Custom: estimated based on content type
- * - Document (mangoboard etc.): external iframe, CDN bytes = 0
  */
 export const logContentAccess = async (
   userId: string,
@@ -42,19 +97,18 @@ export const logContentAccess = async (
 ) => {
   const isExternalVideo =
     videoProvider === "youtube" || videoProvider === "vimeo";
-  const isExternalDoc = contentType === "document"; // mangoboard iframe
+  const isExternalDoc = contentType === "document";
 
   let byteEstimate = 0;
 
   if (isExternalVideo || isExternalDoc) {
-    // External platforms handle CDN — no cost to us
     byteEstimate = 0;
   } else if (contentType === "video" && videoProvider === "upload") {
-    byteEstimate = 50_000_000; // ~50MB self-hosted video
+    byteEstimate = 50_000_000;
   } else if (contentType === "video" && videoProvider === "custom") {
-    byteEstimate = 30_000_000; // ~30MB custom CDN video
+    byteEstimate = 30_000_000;
   } else {
-    byteEstimate = 500_000; // ~500KB other
+    byteEstimate = 500_000;
   }
 
   await supabase.from("traffic_logs").insert({

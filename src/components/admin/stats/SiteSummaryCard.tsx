@@ -1,65 +1,52 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, UserPlus, Globe, Monitor } from "lucide-react";
-import { format, startOfMonth, startOfDay } from "date-fns";
+import { startOfMonth, startOfDay } from "date-fns";
 
 const SiteSummaryCard = () => {
   const today = startOfDay(new Date()).toISOString();
   const monthStart = startOfMonth(new Date()).toISOString();
 
-  const { data: todayVisitors = 0 } = useQuery({
-    queryKey: ["stat-today-visitors"],
+  // Single combined query for all site summary stats
+  const { data } = useQuery({
+    queryKey: ["stat-site-summary", today, monthStart],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_sessions")
-        .select("user_id")
-        .gte("login_at", today);
-      if (error) throw error;
-      return new Set(data.map((s) => s.user_id)).size;
+      const [sessionsRes, monthMembersRes, totalMembersRes, pageViewsRes] = await Promise.all([
+        supabase
+          .from("user_sessions")
+          .select("user_id")
+          .gte("login_at", today),
+        supabase
+          .from("profiles")
+          .select("*", { count: "exact", head: true })
+          .gte("created_at", monthStart),
+        supabase
+          .from("profiles")
+          .select("*", { count: "exact", head: true }),
+        supabase
+          .from("traffic_logs")
+          .select("*", { count: "exact", head: true })
+          .eq("event_type", "page_view")
+          .gte("created_at", today),
+      ]);
+
+      return {
+        todayVisitors: sessionsRes.data ? new Set(sessionsRes.data.map((s) => s.user_id)).size : 0,
+        monthNewMembers: monthMembersRes.count || 0,
+        totalMembers: totalMembersRes.count || 0,
+        todayPageViews: pageViewsRes.count || 0,
+      };
     },
+    staleTime: 3 * 60 * 1000, // 3min — admin stats don't need instant freshness
   });
 
-  const { data: monthNewMembers = 0 } = useQuery({
-    queryKey: ["stat-month-new-members"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", monthStart);
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: totalMembers = 0 } = useQuery({
-    queryKey: ["stat-total-members"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true });
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: todayPageViews = 0 } = useQuery({
-    queryKey: ["stat-today-pageviews"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("traffic_logs")
-        .select("*", { count: "exact", head: true })
-        .eq("event_type", "page_view")
-        .gte("created_at", today);
-      if (error) throw error;
-      return count || 0;
-    },
-  });
+  const stats = data || { todayVisitors: 0, monthNewMembers: 0, totalMembers: 0, todayPageViews: 0 };
 
   const items = [
-    { label: "오늘 방문자 수", value: `${todayVisitors.toLocaleString()}명`, icon: Globe, color: "text-primary" },
-    { label: "이번 달 신규 가입", value: `${monthNewMembers.toLocaleString()}명`, icon: UserPlus, color: "text-chart-2" },
-    { label: "전체 회원 수", value: `${totalMembers.toLocaleString()}명`, icon: Users, color: "text-chart-3" },
-    { label: "오늘 페이지뷰", value: `${todayPageViews.toLocaleString()}건`, icon: Monitor, color: "text-chart-4" },
+    { label: "오늘 방문자 수", value: `${stats.todayVisitors.toLocaleString()}명`, icon: Globe, color: "text-primary" },
+    { label: "이번 달 신규 가입", value: `${stats.monthNewMembers.toLocaleString()}명`, icon: UserPlus, color: "text-chart-2" },
+    { label: "전체 회원 수", value: `${stats.totalMembers.toLocaleString()}명`, icon: Users, color: "text-chart-3" },
+    { label: "오늘 페이지뷰", value: `${stats.todayPageViews.toLocaleString()}건`, icon: Monitor, color: "text-chart-4" },
   ];
 
   return (
