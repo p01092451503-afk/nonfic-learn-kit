@@ -1,6 +1,5 @@
 /**
- * Generate a certificate PDF using Canvas API and convert to downloadable PDF-like image.
- * For simplicity, generates a high-quality image (PNG) that can be printed as a certificate.
+ * Generate a refined certificate image using Canvas API.
  */
 
 interface CertificateData {
@@ -17,13 +16,12 @@ interface CertificateData {
 
 export const generateCertificateImage = async (data: CertificateData): Promise<Blob> => {
   const canvas = document.createElement("canvas");
-  const W = 1754; // A4 landscape 150dpi
+  const W = 1754;
   const H = 1240;
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  // Draw background
   if (data.backgroundImageUrl) {
     try {
       const img = await loadImage(data.backgroundImageUrl);
@@ -35,62 +33,89 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
     drawDefaultBackground(ctx, W, H);
   }
 
-  // Title
-  ctx.textAlign = "center";
-  ctx.fillStyle = "#1a1a2e";
-  ctx.font = "bold 72px 'Noto Sans KR', sans-serif";
-  ctx.fillText(data.titleText, W / 2, 260);
+  const cx = W / 2;
 
-  // Decorative line
-  ctx.strokeStyle = "#c9a96e";
-  ctx.lineWidth = 3;
+  // === Title ===
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#1a1a1a";
+  ctx.font = "300 64px 'Playfair Display', 'Noto Serif KR', serif";
+  ctx.letterSpacing = "12px";
+  ctx.fillText(data.titleText, cx, 240);
+  ctx.letterSpacing = "0px";
+
+  // Thin gold divider
+  const grad = ctx.createLinearGradient(cx - 160, 0, cx + 160, 0);
+  grad.addColorStop(0, "transparent");
+  grad.addColorStop(0.2, "#b8975a");
+  grad.addColorStop(0.5, "#d4af6a");
+  grad.addColorStop(0.8, "#b8975a");
+  grad.addColorStop(1, "transparent");
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 200, 295);
-  ctx.lineTo(W / 2 + 200, 295);
+  ctx.moveTo(cx - 160, 275);
+  ctx.lineTo(cx + 160, 275);
   ctx.stroke();
 
-  // Student name
-  ctx.font = "bold 52px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#1a1a2e";
-  ctx.fillText(data.studentName, W / 2, 400);
+  // === Student Name ===
+  ctx.fillStyle = "#111111";
+  ctx.font = "600 48px 'Noto Sans KR', sans-serif";
+  ctx.fillText(data.studentName, cx, 380);
 
-  // Student email (ID)
-  ctx.font = "24px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#555";
-  ctx.fillText(`(${data.studentEmail})`, W / 2, 445);
+  // Email / ID
+  ctx.font = "300 20px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = "#888888";
+  ctx.fillText(data.studentEmail, cx, 420);
 
-  // Description
-  ctx.font = "28px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#333";
-  wrapText(ctx, data.descText, W / 2, 530, W - 300, 40);
+  // === Description ===
+  ctx.font = "300 24px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = "#555555";
+  wrapText(ctx, data.descText, cx, 510, W - 400, 36);
 
-  // Course name
-  ctx.font = "bold 36px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#1a1a2e";
-  ctx.fillText(`[ ${data.courseName} ]`, W / 2, 670);
+  // === Course Name ===
+  // Subtle background pill for course name
+  const courseText = data.courseName;
+  ctx.font = "500 30px 'Noto Sans KR', sans-serif";
+  const courseWidth = ctx.measureText(courseText).width;
+  const pillPadX = 40;
+  const pillPadY = 14;
+  const pillY = 640;
 
-  // Date
-  ctx.font = "24px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#555";
-  ctx.fillText(data.issuedDate, W / 2, 770);
+  ctx.fillStyle = "#f5f0e8";
+  roundRect(ctx, cx - courseWidth / 2 - pillPadX, pillY - 24 - pillPadY, courseWidth + pillPadX * 2, 24 + pillPadY * 2, 8);
+  ctx.fill();
 
-  // Certificate number
-  ctx.font = "18px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#888";
-  ctx.fillText(`No. ${data.certificateNumber}`, W / 2, 820);
+  ctx.fillStyle = "#1a1a1a";
+  ctx.fillText(courseText, cx, pillY);
 
-  // Issuer
+  // === Date ===
+  ctx.font = "300 20px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = "#999999";
+  ctx.fillText(data.issuedDate, cx, 740);
+
+  // === Certificate Number ===
+  ctx.font = "300 16px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = "#bbbbbb";
+  ctx.fillText(`No. ${data.certificateNumber}`, cx, 780);
+
+  // === Issuer ===
   if (data.issuerName) {
-    ctx.font = "30px 'Noto Sans KR', sans-serif";
-    ctx.fillStyle = "#1a1a2e";
-    ctx.fillText(data.issuerName, W / 2, 950);
-    // Signature line
-    ctx.strokeStyle = "#333";
+    // Signature line first
+    const lineGrad = ctx.createLinearGradient(cx - 100, 0, cx + 100, 0);
+    lineGrad.addColorStop(0, "transparent");
+    lineGrad.addColorStop(0.3, "#cccccc");
+    lineGrad.addColorStop(0.7, "#cccccc");
+    lineGrad.addColorStop(1, "transparent");
+    ctx.strokeStyle = lineGrad;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(W / 2 - 120, 970);
-    ctx.lineTo(W / 2 + 120, 970);
+    ctx.moveTo(cx - 100, 940);
+    ctx.lineTo(cx + 100, 940);
     ctx.stroke();
+
+    ctx.font = "400 26px 'Noto Sans KR', sans-serif";
+    ctx.fillStyle = "#1a1a1a";
+    ctx.fillText(data.issuerName, cx, 925);
   }
 
   return new Promise((resolve) => {
@@ -99,31 +124,66 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
 };
 
 function drawDefaultBackground(ctx: CanvasRenderingContext2D, W: number, H: number) {
-  // Cream background
-  ctx.fillStyle = "#fdf8f0";
+  // Clean white/cream background
+  ctx.fillStyle = "#fefcf8";
   ctx.fillRect(0, 0, W, H);
 
-  // Border
-  ctx.strokeStyle = "#c9a96e";
-  ctx.lineWidth = 8;
-  ctx.strokeRect(40, 40, W - 80, H - 80);
-  ctx.strokeStyle = "#e8d5b0";
+  // Outer border - thin dark line
+  ctx.strokeStyle = "#1a1a1a";
   ctx.lineWidth = 2;
-  ctx.strokeRect(55, 55, W - 110, H - 110);
+  ctx.strokeRect(50, 50, W - 100, H - 100);
 
-  // Corner decorations
-  const corners = [
-    [70, 70],
-    [W - 70, 70],
-    [70, H - 70],
-    [W - 70, H - 70],
-  ];
-  ctx.fillStyle = "#c9a96e";
-  corners.forEach(([x, y]) => {
+  // Inner border - subtle gold
+  ctx.strokeStyle = "#d4c5a0";
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(65, 65, W - 130, H - 130);
+
+  // Corner accents - small L-shapes
+  const cornerSize = 30;
+  const offset = 50;
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = 2;
+
+  // Top-left
+  drawCorner(ctx, offset, offset, cornerSize, 1, 1);
+  // Top-right
+  drawCorner(ctx, W - offset, offset, cornerSize, -1, 1);
+  // Bottom-left
+  drawCorner(ctx, offset, H - offset, cornerSize, 1, -1);
+  // Bottom-right
+  drawCorner(ctx, W - offset, H - offset, cornerSize, -1, -1);
+
+  // Subtle watermark pattern - very light diagonal lines
+  ctx.strokeStyle = "rgba(212, 197, 160, 0.08)";
+  ctx.lineWidth = 1;
+  for (let i = -H; i < W; i += 40) {
     ctx.beginPath();
-    ctx.arc(x, y, 8, 0, Math.PI * 2);
-    ctx.fill();
-  });
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i + H, H);
+    ctx.stroke();
+  }
+}
+
+function drawCorner(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, dx: number, dy: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + dx * size, y);
+  ctx.lineTo(x, y);
+  ctx.lineTo(x, y + dy * size);
+  ctx.stroke();
+}
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
 }
 
 function loadImage(url: string): Promise<HTMLImageElement> {
