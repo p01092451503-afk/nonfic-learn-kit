@@ -302,7 +302,8 @@ const ContentPlayer = () => {
     if ((provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) && resolvedYouTubeId) {
       const params = new URLSearchParams({
         enablejsapi: "1",
-        origin: window.location.origin,
+        rel: "0",
+        modestbranding: "1",
         ...(videoProgress.resumePosition > 0 && !currentProgress?.completed ? { start: String(videoProgress.resumePosition) } : {}),
       });
       return `https://www.youtube.com/embed/${resolvedYouTubeId}?${params.toString()}`;
