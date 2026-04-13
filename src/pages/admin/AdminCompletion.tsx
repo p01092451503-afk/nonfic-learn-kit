@@ -1,4 +1,4 @@
-import { Trophy, Download, Settings, FileImage, Award, ChevronDown, ChevronUp } from "lucide-react";
+import { Trophy, Download, Settings, FileImage, Award, ChevronDown, ChevronUp, Layers } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import CompletionCriteriaDialog from "@/components/admin/CompletionCriteriaDialog";
 import CertificateTemplateDialog from "@/components/admin/CertificateTemplateDialog";
+import BulkCompletionSettingsDialog from "@/components/admin/BulkCompletionSettingsDialog";
 import { generateCertificateImage, downloadBlob } from "@/lib/certificateGenerator";
 
 const AdminCompletion = () => {
@@ -19,6 +20,7 @@ const AdminCompletion = () => {
   const [criteriaDialog, setCriteriaDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: "", courseName: "" });
   const [templateDialog, setTemplateDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: "", courseName: "" });
   const [issuingCert, setIssuingCert] = useState<string | null>(null);
+  const [bulkDialog, setBulkDialog] = useState(false);
 
   const { data: courses = [] } = useQuery({
     queryKey: ["admin-comp-courses"],
@@ -235,9 +237,14 @@ const AdminCompletion = () => {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.completionManagementDesc")}</p>
           </div>
-          <Button onClick={exportCSV} variant="outline" className="rounded-xl gap-2 text-sm w-full sm:w-auto justify-center sm:justify-start">
-            <Download className="h-4 w-4" aria-hidden="true" /> {t("admin.completionDownload")}
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button onClick={() => setBulkDialog(true)} variant="default" className="rounded-xl gap-2 text-sm flex-1 sm:flex-initial justify-center">
+              <Layers className="h-4 w-4" aria-hidden="true" /> 전체 일괄 설정
+            </Button>
+            <Button onClick={exportCSV} variant="outline" className="rounded-xl gap-2 text-sm flex-1 sm:flex-initial justify-center">
+              <Download className="h-4 w-4" aria-hidden="true" /> {t("admin.completionDownload")}
+            </Button>
+          </div>
         </div>
 
         {/* Course list with inline settings */}
@@ -425,6 +432,11 @@ const AdminCompletion = () => {
         courseName={templateDialog.courseName}
         open={templateDialog.open}
         onOpenChange={(open) => setTemplateDialog((prev) => ({ ...prev, open }))}
+      />
+      <BulkCompletionSettingsDialog
+        open={bulkDialog}
+        onOpenChange={setBulkDialog}
+        courseIds={courses.map((c: any) => c.id)}
       />
     </DashboardLayout>
   );
