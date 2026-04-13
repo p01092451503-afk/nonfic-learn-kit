@@ -302,7 +302,8 @@ const ContentPlayer = () => {
     if ((provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) && resolvedYouTubeId) {
       const params = new URLSearchParams({
         enablejsapi: "1",
-        origin: window.location.origin,
+        rel: "0",
+        modestbranding: "1",
         ...(videoProgress.resumePosition > 0 && !currentProgress?.completed ? { start: String(videoProgress.resumePosition) } : {}),
       });
       return `https://www.youtube.com/embed/${resolvedYouTubeId}?${params.toString()}`;
@@ -440,6 +441,7 @@ const ContentPlayer = () => {
                 <div className="relative">
                   <div className="aspect-video w-full">
                     <iframe
+                      key={`video-${contentId}`}
                       ref={isTrackableVideo ? videoIframeCallback : undefined}
                       id={`video-player-${contentId}`}
                       src={embedUrl}
