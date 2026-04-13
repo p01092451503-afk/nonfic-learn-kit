@@ -237,8 +237,14 @@ const AdminCompletion = () => {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.completionManagementDesc")}</p>
           </div>
-          <Button onClick={exportCSV} variant="outline" className="rounded-xl gap-2 text-sm w-full sm:w-auto justify-center sm:justify-start">
-            <Download className="h-4 w-4" aria-hidden="true" /> {t("admin.completionDownload")}
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button onClick={() => setBulkDialog(true)} variant="default" className="rounded-xl gap-2 text-sm flex-1 sm:flex-initial justify-center">
+              <Layers className="h-4 w-4" aria-hidden="true" /> 전체 일괄 설정
+            </Button>
+            <Button onClick={exportCSV} variant="outline" className="rounded-xl gap-2 text-sm flex-1 sm:flex-initial justify-center">
+              <Download className="h-4 w-4" aria-hidden="true" /> {t("admin.completionDownload")}
+            </Button>
+          </div>
           </Button>
         </div>
 
