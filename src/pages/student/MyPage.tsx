@@ -334,7 +334,48 @@ const MyPage = () => {
               <AvatarTab />
             </TabsContent>
 
-            {/* Password Tab */}
+            {/* Certificates Tab */}
+            <TabsContent value="certificates">
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <h2 className="text-lg font-semibold">이수증 관리</h2>
+                  <p className="text-sm text-muted-foreground">수료한 강좌의 이수증을 다운로드할 수 있습니다.</p>
+                </div>
+                {certificates.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 space-y-3">
+                    <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center">
+                      <Award className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">발급된 이수증이 없습니다.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {certificates.map((cert: any) => (
+                      <div key={cert.id} className="flex items-center justify-between gap-4 border border-border rounded-xl p-4">
+                        <div className="min-w-0 space-y-1">
+                          <h3 className="text-sm font-semibold text-foreground truncate">{(cert.courses as any)?.title || "-"}</h3>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>No. {cert.certificate_number}</span>
+                            <span>·</span>
+                            <span>{new Date(cert.issued_at).toLocaleDateString("ko-KR")}</span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-lg gap-1.5 shrink-0"
+                          onClick={() => handleDownloadCert(cert)}
+                          disabled={downloadingCertId === cert.id}
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          {downloadingCertId === cert.id ? "생성 중..." : "다운로드"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
             <TabsContent value="password">
               <div className="max-w-lg space-y-6">
                 <div className="space-y-1">
