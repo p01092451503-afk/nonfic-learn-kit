@@ -5,6 +5,7 @@
 
 interface CertificateData {
   studentName: string;
+  studentEmail: string;
   courseName: string;
   issuedDate: string;
   certificateNumber: string;
@@ -51,27 +52,32 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
   // Student name
   ctx.font = "bold 52px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = "#1a1a2e";
-  ctx.fillText(data.studentName, W / 2, 420);
+  ctx.fillText(data.studentName, W / 2, 400);
+
+  // Student email (ID)
+  ctx.font = "24px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = "#555";
+  ctx.fillText(`(${data.studentEmail})`, W / 2, 445);
 
   // Description
   ctx.font = "28px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = "#333";
-  wrapText(ctx, data.descText, W / 2, 510, W - 300, 40);
+  wrapText(ctx, data.descText, W / 2, 530, W - 300, 40);
 
   // Course name
   ctx.font = "bold 36px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = "#1a1a2e";
-  ctx.fillText(`[ ${data.courseName} ]`, W / 2, 650);
+  ctx.fillText(`[ ${data.courseName} ]`, W / 2, 670);
 
   // Date
   ctx.font = "24px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = "#555";
-  ctx.fillText(data.issuedDate, W / 2, 780);
+  ctx.fillText(data.issuedDate, W / 2, 770);
 
   // Certificate number
   ctx.font = "18px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = "#888";
-  ctx.fillText(`No. ${data.certificateNumber}`, W / 2, 830);
+  ctx.fillText(`No. ${data.certificateNumber}`, W / 2, 820);
 
   // Issuer
   if (data.issuerName) {
