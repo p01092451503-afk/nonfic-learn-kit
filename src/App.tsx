@@ -37,6 +37,7 @@ import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 import StudentAnnouncements from "./pages/student/StudentAnnouncements";
 import AdminBoard from "./pages/admin/AdminBoard";
 import AdminSurveys from "./pages/admin/AdminSurveys";
+import AdminVideos from "./pages/admin/AdminVideos";
 import StudentBoard from "./pages/student/StudentBoard";
 import DeptAdminDashboard from "./pages/DeptAdminDashboard";
 import CourseDetail from "./pages/CourseDetail";
@@ -113,6 +114,7 @@ const App = () => (
             <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
             <Route path="/admin/board" element={<AdminRoute><AdminBoard role="admin" /></AdminRoute>} />
             <Route path="/admin/surveys" element={<AdminRoute><AdminSurveys /></AdminRoute>} />
+            <Route path="/admin/videos" element={<AdminRoute><AdminVideos /></AdminRoute>} />
 
             {/* Dept Admin */}
             <Route path="/dept-admin" element={<ProtectedRoute><DeptAdminDashboard /></ProtectedRoute>} />
