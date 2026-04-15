@@ -143,13 +143,14 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
           </span>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
+        <nav className="flex-1 px-3 py-4 space-y-1" data-tour="sidebar-nav" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
               <Link key={item.href} to={item.href} onClick={() => setSidebarOpen(false)}
                 className={`nav-item ${isActive ? "nav-item-active" : ""}`}
-                aria-current={isActive ? "page" : undefined}>
+                aria-current={isActive ? "page" : undefined}
+                {...(item.tourId ? { "data-tour": item.tourId } : {})}>
                 <item.icon className="h-[18px] w-[18px]" aria-hidden="true" />
                 <span>{item.label}</span>
                 {item.showNew && (
@@ -177,10 +178,11 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
           <div className="flex-1" />
-          <LanguageToggle />
+          <GuidedTourButton role={activeRole as "student" | "teacher" | "admin"} />
+          <div data-tour="language-toggle"><LanguageToggle /></div>
           <RoleSwitcher />
-          <NotificationBell />
-          <div className="flex items-center gap-3 pl-3 border-l border-border">
+          <div data-tour="notification-bell"><NotificationBell /></div>
+          <div className="flex items-center gap-3 pl-3 border-l border-border" data-tour="user-profile">
             <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-accent-foreground overflow-hidden" role="img" aria-label={profile?.full_name || t("common.user")}>
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt={profile?.full_name || t("common.user")} className="h-full w-full object-cover" fetchPriority="high" decoding="async" />
