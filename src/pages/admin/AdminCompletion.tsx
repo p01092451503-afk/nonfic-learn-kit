@@ -157,9 +157,9 @@ const AdminCompletion = () => {
 
   const getReqText = (courseId: string) => {
     const criteria = criteriaMap.get(courseId);
-    if (!criteria) return t("admin.progress80", "진도 80%");
-    const parts = [`진도 ${criteria.min_progress_pct}%`];
-    if (criteria.min_assessment_score != null) parts.push(`평가 ${criteria.min_assessment_score}점`);
+    if (!criteria) return t("admin.progress80");
+    const parts = [t("admin.progressReq", { pct: criteria.min_progress_pct })];
+    if (criteria.min_assessment_score != null) parts.push(t("admin.assessmentReq", { score: criteria.min_assessment_score }));
     return parts.join(" + ");
   };
 
@@ -241,7 +241,7 @@ const AdminCompletion = () => {
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             <Button onClick={() => setBulkDialog(true)} variant="default" className="rounded-xl gap-2 text-sm flex-1 sm:flex-initial justify-center">
-              <Layers className="h-4 w-4" aria-hidden="true" /> 전체 일괄 설정
+              <Layers className="h-4 w-4" aria-hidden="true" /> {t("admin.bulkSettings")}
             </Button>
             <Button onClick={exportCSV} variant="outline" className="rounded-xl gap-2 text-sm flex-1 sm:flex-initial justify-center">
               <Download className="h-4 w-4" aria-hidden="true" /> {t("admin.completionDownload")}
@@ -273,16 +273,16 @@ const AdminCompletion = () => {
                       <div className="min-w-0">
                         <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
                         <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
-                          <span>수강 {stats.total}명</span>
-                          <span>이수 {stats.completed}명</span>
-                          <span>발급 {stats.certCount}건</span>
-                          <span className="hidden sm:inline">요건: {getReqText(course.id)}</span>
+                          <span>{t("admin.enrolledCount", { count: stats.total })}</span>
+                          <span>{t("admin.completedCount", { count: stats.completed })}</span>
+                          <span>{t("admin.issuedCount", { count: stats.certCount })}</span>
+                          <span className="hidden sm:inline">{t("admin.reqLabel")} {getReqText(course.id)}</span>
                         </div>
                       </div>
                     </button>
                     <div className="flex items-center gap-2 shrink-0 pl-6 sm:pl-0">
                       <Badge variant={criteria ? "default" : "secondary"} className="text-[10px]">
-                        {criteria ? "설정됨" : "미설정"}
+                        {criteria ? t("admin.configured") : t("admin.notConfigured")}
                       </Badge>
                       <Button
                         variant="outline"
@@ -293,7 +293,7 @@ const AdminCompletion = () => {
                           setCriteriaDialog({ open: true, courseId: course.id, courseName: course.title });
                         }}
                       >
-                        <Settings className="h-3 w-3" /> {t("admin.completionReq", "수료요건")}
+                        <Settings className="h-3 w-3" /> {t("admin.completionReq")}
                       </Button>
                       <Button
                         variant="outline"
@@ -304,7 +304,7 @@ const AdminCompletion = () => {
                           setTemplateDialog({ open: true, courseId: course.id, courseName: course.title });
                         }}
                       >
-                        <FileImage className="h-3 w-3" /> {t("admin.certTemplateTitle", "이수증 템플릿")}
+                        <FileImage className="h-3 w-3" /> {t("admin.certTemplateTitle")}
                       </Button>
                     </div>
                   </div>
@@ -336,18 +336,18 @@ const AdminCompletion = () => {
                                     <Badge variant={isComplete ? "default" : "destructive"} className="text-[10px]">
                                       {isComplete ? t("admin.completedLabel") : t("admin.incompletedLabel")}
                                     </Badge>
-                                    {issued && <Badge variant="secondary" className="text-[10px]">발급완료</Badge>}
+                                    {issued && <Badge variant="secondary" className="text-[10px]">{t("admin.certIssuedLabel")}</Badge>}
                                     {isComplete && certEnabled && !issued && (
                                       <Button size="sm" variant="outline" className="h-6 px-2 text-[10px] gap-1" onClick={() => handleIssueCert(e)} disabled={issuingCert === certKey}>
-                                        <Award className="h-3 w-3" /> 발급
+                                        <Award className="h-3 w-3" /> {t("admin.issueCert")}
                                       </Button>
                                     )}
                                   </div>
                                 </div>
                                 <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
-                                  <span>출석 {attRate}%</span>
-                                  <span>점수 {avgScore}</span>
-                                  <span>진도 {Math.round(Number(e.progress) || 0)}%</span>
+                                   <span>{t("admin.attendanceLabel")} {attRate}%</span>
+                                   <span>{t("admin.scoreLabel")} {avgScore}</span>
+                                   <span>{t("admin.progressColumn")} {Math.round(Number(e.progress) || 0)}%</span>
                                 </div>
                               </div>
                             );
@@ -361,11 +361,11 @@ const AdminCompletion = () => {
                           <TableHeader>
                             <TableRow>
                               <TableHead>{t("admin.nameColumn")}</TableHead>
-                              <TableHead>진도율</TableHead>
+                              <TableHead>{t("admin.progressColumn")}</TableHead>
                               <TableHead>{t("admin.attendanceRate")}</TableHead>
                               <TableHead>{t("admin.avgScore")}</TableHead>
                               <TableHead>{t("admin.completionStatus")}</TableHead>
-                              <TableHead>{t("admin.certColumn", "이수증")}</TableHead>
+                              <TableHead>{t("admin.certColumn")}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -398,10 +398,10 @@ const AdminCompletion = () => {
                                     </TableCell>
                                     <TableCell>
                                       {issued ? (
-                                        <Badge variant="secondary" className="text-[10px]">발급완료</Badge>
+                                        <Badge variant="secondary" className="text-[10px]">{t("admin.certIssuedLabel")}</Badge>
                                       ) : isComplete && certEnabled ? (
                                         <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => handleIssueCert(e)} disabled={issuingCert === certKey}>
-                                          <Award className="h-3.5 w-3.5" /> 발급
+                                          <Award className="h-3.5 w-3.5" /> {t("admin.issueCert")}
                                         </Button>
                                       ) : (
                                         <span className="text-xs text-muted-foreground">-</span>
