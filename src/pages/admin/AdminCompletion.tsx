@@ -157,9 +157,9 @@ const AdminCompletion = () => {
 
   const getReqText = (courseId: string) => {
     const criteria = criteriaMap.get(courseId);
-    if (!criteria) return t("admin.progress80", "진도 80%");
-    const parts = [`진도 ${criteria.min_progress_pct}%`];
-    if (criteria.min_assessment_score != null) parts.push(`평가 ${criteria.min_assessment_score}점`);
+    if (!criteria) return t("admin.progress80");
+    const parts = [t("admin.progressReq", { pct: criteria.min_progress_pct })];
+    if (criteria.min_assessment_score != null) parts.push(t("admin.assessmentReq", { score: criteria.min_assessment_score }));
     return parts.join(" + ");
   };
 
