@@ -1216,6 +1216,8 @@
     "avgProgressChart": "평균진도",
     "enrollCount": "수강 건수",
     "completionCount2": "이수 완료",
-    "lessonCompletions": "차시 이수"
+    "lessonCompletions": "차시 이수",
+    "realtimeUsers": "현재 동시접속자",
+    "autoRefresh": "실시간 자동 갱신"
   }
 }

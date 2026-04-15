@@ -1216,6 +1216,8 @@
     "avgProgressChart": "Avg. Progress",
     "enrollCount": "Enrollments",
     "completionCount2": "Completions",
-    "lessonCompletions": "Lesson Completions"
+    "lessonCompletions": "Lesson Completions",
+    "realtimeUsers": "Current Online Users",
+    "autoRefresh": "Auto-refreshing"
   }
 }
