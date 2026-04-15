@@ -143,7 +143,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
           </span>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1" data-tour="sidebar-nav" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1" data-tour="sidebar-nav" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
