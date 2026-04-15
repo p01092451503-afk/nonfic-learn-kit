@@ -1104,7 +1104,7 @@ const ContentDialog = ({
 
 // --- Course Edit Dialog with i18n tabs + thumbnail + extended fields ---
 const CourseEditDialog = ({
-  open, onOpenChange, form, setForm, enForm, setEnForm, onSubmit, isPending, t,
+  open, onOpenChange, form, setForm, enForm, setEnForm, courseId, onSubmit, isPending, t,
   thumbnailPreview, onThumbnailChange, onThumbnailRemove, categories,
 }: {
   open: boolean;
@@ -1113,6 +1113,7 @@ const CourseEditDialog = ({
   setForm: React.Dispatch<React.SetStateAction<typeof form>>;
   enForm: { title: string; description: string };
   setEnForm: React.Dispatch<React.SetStateAction<{ title: string; description: string }>>;
+  courseId: string;
   onSubmit: () => void;
   isPending: boolean;
   t: any;
