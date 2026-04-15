@@ -113,49 +113,87 @@
   }
 }
 
-/* Guided Tour (driver.js) */
-.nf-tour-popover {
-  --djs-theme-bg: hsl(var(--background));
-  --djs-theme-fg: hsl(var(--foreground));
-  --djs-theme-border: hsl(var(--border));
-}
+/* Guided Tour (driver.js) — Apple-inspired glassmorphism */
 .nf-tour-popover .driver-popover {
-  background: hsl(var(--background));
+  background: hsl(var(--background) / 0.72);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
   color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 40px -10px hsl(var(--foreground) / 0.15);
+  border: 1px solid hsl(var(--foreground) / 0.08);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 8px 32px hsl(var(--foreground) / 0.08),
+    0 1px 3px hsl(var(--foreground) / 0.04),
+    inset 0 0.5px 0 hsl(var(--background) / 0.6);
+  padding: 1.5rem;
+}
+.nf-tour-popover .driver-popover-arrow-side-top {
+  border-color: hsl(var(--background) / 0.72) transparent transparent transparent;
+}
+.nf-tour-popover .driver-popover-arrow-side-bottom {
+  border-color: transparent transparent hsl(var(--background) / 0.72) transparent;
+}
+.nf-tour-popover .driver-popover-arrow-side-left {
+  border-color: transparent transparent transparent hsl(var(--background) / 0.72);
+}
+.nf-tour-popover .driver-popover-arrow-side-right {
+  border-color: transparent hsl(var(--background) / 0.72) transparent transparent;
 }
 .nf-tour-popover .driver-popover-title {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: hsl(var(--foreground));
+  margin-bottom: 0.35rem;
 }
 .nf-tour-popover .driver-popover-description {
   font-size: 0.875rem;
   color: hsl(var(--muted-foreground));
-  line-height: 1.5;
+  line-height: 1.6;
 }
 .nf-tour-popover .driver-popover-progress-text {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground) / 0.7);
+  letter-spacing: 0.02em;
+}
+.nf-tour-popover .driver-popover-close-btn {
   color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+.nf-tour-popover .driver-popover-close-btn:hover {
+  opacity: 1;
+}
+.nf-tour-popover .driver-popover-navigation-btns {
+  gap: 0.5rem;
 }
 .nf-tour-popover .driver-popover-navigation-btns button {
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
-  border-radius: 0.5rem;
+  border-radius: 9999px;
   font-size: 0.8125rem;
-  padding: 0.4rem 1rem;
+  font-weight: 500;
+  padding: 0.45rem 1.25rem;
   border: none;
   text-shadow: none;
+  transition: all 0.2s ease;
 }
 .nf-tour-popover .driver-popover-navigation-btns button:hover {
-  background: hsl(var(--primary) / 0.9);
+  background: hsl(var(--primary) / 0.85);
+  transform: scale(1.02);
 }
 .nf-tour-popover .driver-popover-prev-btn {
-  background: hsl(var(--secondary)) !important;
-  color: hsl(var(--secondary-foreground)) !important;
+  background: hsl(var(--foreground) / 0.06) !important;
+  color: hsl(var(--foreground) / 0.7) !important;
+  backdrop-filter: blur(8px);
 }
 .nf-tour-popover .driver-popover-prev-btn:hover {
-  background: hsl(var(--secondary) / 0.8) !important;
+  background: hsl(var(--foreground) / 0.1) !important;
+  color: hsl(var(--foreground)) !important;
+}
+.driver-overlay {
+  background: hsl(var(--foreground) / 0.3) !important;
+  backdrop-filter: blur(2px);
+}
 }
