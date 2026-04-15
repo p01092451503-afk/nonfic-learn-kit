@@ -397,6 +397,7 @@ const CourseDetail = () => {
       difficulty_level: course.difficulty_level || "beginner",
       estimated_duration_hours: course.estimated_duration_hours ? String(course.estimated_duration_hours) : "",
       max_students: course.max_students ? String(course.max_students) : "",
+      is_sequential: (course as any).is_sequential || false,
     });
     const enCourse = courseI18n?.find((i: any) => i.language_code === "en");
     setCourseEnForm({ title: enCourse?.title || "", description: enCourse?.description || "" });
