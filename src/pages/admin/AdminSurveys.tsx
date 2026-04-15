@@ -351,7 +351,7 @@ const AdminSurveys = () => {
             <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
               <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" /> 설문 관리
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">강좌별 설문을 생성하고 관리합니다.</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">강의별 설문을 생성하고 관리합니다.</p>
           </div>
           <Button onClick={openCreate} className="rounded-xl gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" aria-hidden="true" /> 설문 만들기

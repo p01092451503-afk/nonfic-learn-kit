@@ -115,7 +115,7 @@ const CreateCourse = () => {
         .eq("id", editCourseId)
         .single();
       if (error || !course) {
-        toast({ title: t("common.error"), description: "강좌를 찾을 수 없습니다.", variant: "destructive" });
+        toast({ title: t("common.error"), description: "강의를 찾을 수 없습니다.", variant: "destructive" });
         navigate(-1);
         return;
       }
@@ -461,7 +461,7 @@ const CreateCourse = () => {
     onSuccess: (course) => {
       queryClient.invalidateQueries({ queryKey: ["teacher-courses"] });
       queryClient.invalidateQueries({ queryKey: ["course", editCourseId] });
-      toast({ title: t("createCourse.courseUpdated", "강좌가 수정되었습니다"), description: title });
+      toast({ title: t("createCourse.courseUpdated", "강의가 수정되었습니다"), description: title });
       navigate(-1);
     },
     onError: (error: any) => {
@@ -591,10 +591,10 @@ const CreateCourse = () => {
 
         <div>
           <h1 className="text-2xl font-semibold text-foreground">
-            {isEditMode ? t("createCourse.editTitle", "강좌 수정") : t("createCourse.title")}
+            {isEditMode ? t("createCourse.editTitle", "강의 수정") : t("createCourse.title")}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {isEditMode ? t("createCourse.editSubtitle", "강좌 정보와 콘텐츠를 수정할 수 있습니다.") : t("createCourse.subtitle")}
+            {isEditMode ? t("createCourse.editSubtitle", "강의 정보와 차시를 수정할 수 있습니다.") : t("createCourse.subtitle")}
           </p>
         </div>
 

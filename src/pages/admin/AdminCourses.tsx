@@ -245,13 +245,13 @@ const AdminCourses = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-secondary/30">
-                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("course.course") || "강좌"}</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("course.course") || "강의"}</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden md:table-cell">{t("course.category") || "카테고리"}</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("course.instructor") || "강사"}</th>
                   <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("teacher.status") || "상태"}</th>
                   <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden lg:table-cell">{t("common.required") || "필수"}</th>
                   <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("admin.totalStudents") || "수강생"}</th>
-                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("course.content") || "콘텐츠"}</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground px-4 py-3 hidden sm:table-cell">{t("course.content") || "차시"}</th>
                   <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("common.manage") || "관리"}</th>
                 </tr>
               </thead>
