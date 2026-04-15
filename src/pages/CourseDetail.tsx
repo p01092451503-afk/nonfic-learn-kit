@@ -454,7 +454,7 @@ const CourseDetail = () => {
               <div
                 className="ml-auto flex flex-wrap items-center justify-end gap-2"
                 role="toolbar"
-                aria-label={isEn ? "Course actions" : "강좌 작업"}
+                aria-label={isEn ? "Course actions" : "강의 작업"}
               >
                 <Button
                   variant="outline"
@@ -505,7 +505,7 @@ const CourseDetail = () => {
                 {getCourseDesc() && <p className="line-clamp-2 text-xs text-muted-foreground">{getCourseDesc()}</p>}
               </div>
             </div>
-            <ul className="mt-3 flex flex-wrap items-center gap-5 border-t border-border pt-3" aria-label={isEn ? "Course summary" : "강좌 요약 정보"}>
+            <ul className="mt-3 flex flex-wrap items-center gap-5 border-t border-border pt-3" aria-label={isEn ? "Course summary" : "강의 요약 정보"}>
               <li className="flex items-center gap-1 text-xs text-muted-foreground">
                 <BookOpen className="h-3 w-3" aria-hidden="true" />
                 {t("course.content")} <span className="font-semibold text-foreground">{contents.length}</span> | {t("course.publishedStatus")} <span className="font-semibold text-foreground">{publishedCount}</span>
@@ -734,7 +734,7 @@ const CourseDetail = () => {
             </div>
           </div>
 
-          <ul className="flex flex-wrap items-center gap-4 border-t border-border pt-2 text-xs text-muted-foreground" aria-label={isEn ? "Course details" : "강좌 정보"}>
+          <ul className="flex flex-wrap items-center gap-4 border-t border-border pt-2 text-xs text-muted-foreground" aria-label={isEn ? "Course details" : "강의 정보"}>
             <li className="flex items-center gap-1">
               <Video className="h-3 w-3" aria-hidden="true" />
               {t("course.courseContentCount", { count: contents.length })}

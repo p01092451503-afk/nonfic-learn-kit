@@ -114,7 +114,7 @@ const AdminTraffic = () => {
     { label: "웹 트래픽 (전송량)", value: formatBytes(webBytes), icon: Globe },
     { label: "자체 CDN 전송량", value: formatBytes(cdnBytes), icon: Play },
     { label: "총 전송량 (자체)", value: formatBytes(webBytes + cdnBytes), icon: TrendingUp },
-    { label: "저장 콘텐츠", value: `${totalContents}개`, icon: HardDrive },
+    { label: "저장 차시", value: `${totalContents}개`, icon: HardDrive },
   ];
 
   return (
@@ -199,7 +199,7 @@ const AdminTraffic = () => {
                 <p className="text-lg font-semibold text-foreground">{totalPageViews.toLocaleString()}</p>
               </div>
               <div className="stat-card !p-3 sm:!p-4">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">콘텐츠 재생</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">차시 재생</p>
                 <p className="text-lg font-semibold text-foreground">{totalContentAccess.toLocaleString()}</p>
               </div>
               <div className="stat-card !p-3 sm:!p-4">
@@ -227,7 +227,7 @@ const AdminTraffic = () => {
                         <YAxis tick={{ fontSize: 10 }} width={35} hide={isMobile} />
                         <Tooltip />
                         <Line type="monotone" dataKey="views" name="페이지 조회" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="access" name="콘텐츠 접근" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="access" name="차시 접근" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -261,7 +261,7 @@ const AdminTraffic = () => {
               <CardContent className="px-3 sm:px-6">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    { label: "영상 콘텐츠", count: videoContents },
+                    { label: "영상 차시", count: videoContents },
                     { label: "문서/플립러닝", count: docContents },
                     { label: "기타", count: totalContents - videoContents - docContents },
                   ].map((item) => (

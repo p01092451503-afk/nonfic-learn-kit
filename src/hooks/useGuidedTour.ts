@@ -47,13 +47,13 @@ export const useGuidedTour = (role: "student" | "teacher" | "admin") => {
       },
       {
         element: '[data-tour="nav-catalog"]',
-        title: t("tour.catalog", "강좌 카탈로그"),
-        description: t("tour.catalogDesc", "수강 가능한 모든 강좌를 탐색하고 수강 신청할 수 있습니다."),
+        title: t("tour.catalog", "강의 카탈로그"),
+        description: t("tour.catalogDesc", "수강 가능한 모든 강의를 탐색하고 수강 신청할 수 있습니다."),
       },
       {
         element: '[data-tour="nav-courses"]',
-        title: t("tour.myCourses", "내 강좌"),
-        description: t("tour.myCoursesDesc", "현재 수강 중인 강좌 목록과 진도율을 확인할 수 있습니다."),
+        title: t("tour.myCourses", "내 강의"),
+        description: t("tour.myCoursesDesc", "현재 수강 중인 강의 목록과 진도율을 확인할 수 있습니다."),
       },
       {
         element: '[data-tour="nav-assignments"]',
@@ -71,12 +71,12 @@ export const useGuidedTour = (role: "student" | "teacher" | "admin") => {
       {
         element: '[data-tour="nav-dashboard"]',
         title: t("tour.teacherDashboard", "강사 대시보드"),
-        description: t("tour.teacherDashboardDesc", "담당 강좌 현황과 학습자 통계를 한눈에 확인할 수 있습니다."),
+        description: t("tour.teacherDashboardDesc", "담당 강의 현황과 학습자 통계를 한눈에 확인할 수 있습니다."),
       },
       {
         element: '[data-tour="nav-course-mgmt"]',
-        title: t("tour.courseManagement", "강좌 관리"),
-        description: t("tour.courseManagementDesc", "강좌를 생성·편집하고 콘텐츠를 관리할 수 있습니다."),
+        title: t("tour.courseManagement", "강의 관리"),
+        description: t("tour.courseManagementDesc", "강의를 생성·편집하고 차시를 관리할 수 있습니다."),
       },
       {
         element: '[data-tour="nav-assignment-mgmt"]',
@@ -108,8 +108,8 @@ export const useGuidedTour = (role: "student" | "teacher" | "admin") => {
       },
       {
         element: '[data-tour="nav-course-mgmt"]',
-        title: t("tour.adminCourseMgmt", "강좌 관리"),
-        description: t("tour.adminCourseMgmtDesc", "모든 강좌를 관리하고 새 강좌를 생성할 수 있습니다."),
+        title: t("tour.adminCourseMgmt", "강의 관리"),
+        description: t("tour.adminCourseMgmtDesc", "모든 강의를 관리하고 새 강의를 생성할 수 있습니다."),
       },
       {
         element: '[data-tour="nav-enrollment-mgmt"]',

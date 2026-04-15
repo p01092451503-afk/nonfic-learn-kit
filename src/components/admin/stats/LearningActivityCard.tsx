@@ -36,7 +36,7 @@ const LearningActivityCard = () => {
   };
 
   const items = [
-    { label: "콘텐츠 이수", value: stats.contentCompletions, icon: BookOpen, color: "text-primary bg-primary/10" },
+    { label: "차시 이수", value: stats.contentCompletions, icon: BookOpen, color: "text-primary bg-primary/10" },
     { label: "평가 응시", value: stats.assessmentAttempts, sub: `합격 ${stats.assessmentPassed}건`, icon: ClipboardCheck, color: "text-chart-2 bg-chart-2/10" },
     { label: "과제 제출", value: stats.submissionCount, sub: `채점 ${stats.gradedCount}건`, icon: FileCheck, color: "text-chart-3 bg-chart-3/10" },
     { label: "게시판 글", value: stats.boardPostCount, icon: MessageSquare, color: "text-chart-4 bg-chart-4/10" },

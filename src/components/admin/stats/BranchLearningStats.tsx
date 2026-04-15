@@ -148,7 +148,7 @@ const BranchLearningStats = () => {
                       <p className="text-sm font-bold text-foreground">{b.completed}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">콘텐츠</p>
+                      <p className="text-xs text-muted-foreground">차시</p>
                       <p className="text-sm font-bold text-foreground">{b.contentCompletions}</p>
                     </div>
                   </div>
@@ -179,7 +179,7 @@ const BranchLearningStats = () => {
                     <TableHead className="text-right">인원</TableHead>
                     <TableHead className="text-right">수강 건수</TableHead>
                     <TableHead className="text-right">이수 완료</TableHead>
-                    <TableHead className="text-right">콘텐츠 이수</TableHead>
+                    <TableHead className="text-right">차시 이수</TableHead>
                     <TableHead className="text-right">평균 진도율</TableHead>
                     <TableHead className="text-right w-[140px]">이수율</TableHead>
                   </TableRow>

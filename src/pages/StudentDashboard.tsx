@@ -51,7 +51,7 @@ const StudentDashboard = () => {
   });
   const instructorMap = new Map(instructorProfiles.map((p: any) => [p.user_id, p.full_name]));
 
-  // 각 강좌의 다음 콘텐츠 조회
+  // 각 강좌의 다음 차시 조회
   const courseIds = enrollments.map((e: any) => e.course_id);
   const { data: courseContents = [] } = useQuery({
     queryKey: ["dash-course-contents", courseIds],
