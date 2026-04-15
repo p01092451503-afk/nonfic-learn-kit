@@ -184,6 +184,29 @@ const CourseDetail = () => {
     enabled: !!user?.id && contents.length > 0 && !isTeacherOrAdmin,
   });
 
+  // Assessments for this course (for inline display in student curriculum)
+  const { data: assessments = [] } = useQuery({
+    queryKey: ["course-assessments", courseId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("assessments").select("*").eq("course_id", courseId!).eq("is_published", true).order("order_index", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!courseId,
+  });
+
+  const { data: assessmentAttempts = [] } = useQuery({
+    queryKey: ["assessment-attempts-all", courseId, user?.id],
+    queryFn: async () => {
+      const assessmentIds = assessments.map(a => a.id);
+      if (assessmentIds.length === 0) return [];
+      const { data, error } = await supabase.from("assessment_attempts").select("*").eq("user_id", user!.id).in("assessment_id", assessmentIds).order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && assessments.length > 0,
+  });
+
   // i18n helpers
   const getContentI18n = (contentId: string, lang: string) =>
     contentI18nData.find((i: any) => i.content_id === contentId && i.language_code === lang);
