@@ -296,6 +296,7 @@ export type Database = {
           id: string
           is_published: boolean
           max_attempts: number
+          order_index: number
           passing_score: number
           randomize_questions: boolean
           require_assessment_for_completion: boolean
@@ -312,6 +313,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           max_attempts?: number
+          order_index?: number
           passing_score?: number
           randomize_questions?: boolean
           require_assessment_for_completion?: boolean
@@ -328,6 +330,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           max_attempts?: number
+          order_index?: number
           passing_score?: number
           randomize_questions?: boolean
           require_assessment_for_completion?: boolean
@@ -1004,6 +1007,7 @@ export type Database = {
           id: string
           instructor_id: string | null
           is_mandatory: boolean | null
+          is_sequential: boolean
           max_students: number | null
           status: string | null
           target_departments: string[] | null
@@ -1022,6 +1026,7 @@ export type Database = {
           id?: string
           instructor_id?: string | null
           is_mandatory?: boolean | null
+          is_sequential?: boolean
           max_students?: number | null
           status?: string | null
           target_departments?: string[] | null
@@ -1040,6 +1045,7 @@ export type Database = {
           id?: string
           instructor_id?: string | null
           is_mandatory?: boolean | null
+          is_sequential?: boolean
           max_students?: number | null
           status?: string | null
           target_departments?: string[] | null

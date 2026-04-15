@@ -91,6 +91,7 @@ const CreateCourse = () => {
   const [enDescManual, setEnDescManual] = useState(false);
   const [maxStudents, setMaxStudents] = useState("");
   const [isMandatory, setIsMandatory] = useState(false);
+  const [isSequential, setIsSequential] = useState(false);
   const [deadline, setDeadline] = useState("");
   const [status, setStatus] = useState("draft");
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -126,6 +127,7 @@ const CreateCourse = () => {
       setEstimatedHours(course.estimated_duration_hours ? String(course.estimated_duration_hours) : "");
       setMaxStudents(course.max_students ? String(course.max_students) : "");
       setIsMandatory(course.is_mandatory || false);
+      setIsSequential((course as any).is_sequential || false);
       setDeadline(course.deadline || "");
       setStatus(course.status || "draft");
       if (course.thumbnail_url) {
@@ -399,11 +401,12 @@ const CreateCourse = () => {
           estimated_duration_hours: estimatedHours ? parseInt(estimatedHours) : null,
           max_students: maxStudents ? parseInt(maxStudents) : null,
           is_mandatory: isMandatory,
+          is_sequential: isSequential,
           deadline: deadline || null,
           status,
           thumbnail_url: thumbnailUrl,
           updated_at: new Date().toISOString(),
-        })
+        } as any)
         .eq("id", editCourseId!);
       if (courseError) throw courseError;
 
@@ -482,9 +485,10 @@ const CreateCourse = () => {
           estimated_duration_hours: estimatedHours ? parseInt(estimatedHours) : null,
           max_students: maxStudents ? parseInt(maxStudents) : null,
           is_mandatory: isMandatory,
+          is_sequential: isSequential,
           deadline: deadline || null,
           status,
-        })
+        } as any)
         .select()
         .single();
       if (courseError) throw courseError;
@@ -720,6 +724,13 @@ const CreateCourse = () => {
               <p className="text-xs text-muted-foreground">{t("createCourse.mandatoryDesc2")}</p>
             </div>
             <Switch checked={isMandatory} onCheckedChange={setIsMandatory} />
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium text-foreground">{t("course.sequentialToggle")}</p>
+              <p className="text-xs text-muted-foreground">{t("course.sequentialToggleDesc")}</p>
+            </div>
+            <Switch checked={isSequential} onCheckedChange={setIsSequential} />
           </div>
         </div>
 
