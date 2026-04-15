@@ -1340,6 +1340,8 @@ const CourseEditDialog = ({
             </div>
           </div>
         </TabsContent>
+
+        <TabsContent value="en" className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
             <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleAutoTranslate} disabled={translating || (!form.title && !form.description)}>
