@@ -903,7 +903,7 @@ const StudentAssessmentSection = ({
 
 // --- Content Dialog with i18n tabs ---
 const ContentDialog = ({
-  open, onOpenChange, form, setForm, enForm, setEnForm, editingId, onSubmit, isPending, t,
+  open, onOpenChange, form, setForm, enForm, setEnForm, editingId, courseId, onSubmit, isPending, t,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -912,6 +912,7 @@ const ContentDialog = ({
   enForm: ContentI18nData;
   setEnForm: React.Dispatch<React.SetStateAction<ContentI18nData>>;
   editingId: string | null;
+  courseId: string;
   onSubmit: () => void;
   isPending: boolean;
   t: any;
