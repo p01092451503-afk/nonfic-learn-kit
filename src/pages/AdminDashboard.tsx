@@ -6,7 +6,6 @@ import {
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useUser } from "@/contexts/UserContext";
@@ -16,7 +15,6 @@ import { useTranslation } from "react-i18next";
 const AdminDashboard = () => {
   const { profile } = useUser();
   const { t, i18n } = useTranslation();
-  const displayName = profile?.full_name || t("roles.adminLabel");
   const [branchFilter, setBranchFilter] = useState<string>("all");
 
   const { data: profileCount = 0 } = useQuery({
@@ -75,7 +73,6 @@ const AdminDashboard = () => {
     },
   });
 
-  // Filter profiles by branch
   const branchUserIds = branchFilter === "all"
     ? null
     : new Set(allProfiles.filter((p: any) => p.department_id === branchFilter).map((p: any) => p.user_id));
@@ -91,7 +88,6 @@ const AdminDashboard = () => {
 
   const filteredProfileCount = branchFilter === "all" ? profileCount : (branchUserIds?.size || 0);
 
-
   const activeCourses = courses.filter((c: any) => c.status === "published").length;
   const draftCourses = courses.filter((c: any) => c.status === "draft").length;
   const pendingCourses = courses.filter((c: any) => c.status !== "published" && c.status !== "draft").length;
@@ -99,44 +95,20 @@ const AdminDashboard = () => {
     ? Math.round(filteredEnrollments.reduce((s: number, e: any) => s + (Number(e.progress) || 0), 0) / filteredEnrollments.length)
     : 0;
 
-  const enrollmentCountMap = new Map<string, { count: number; avgProgress: number }>();
-  const grouped: Record<string, { total: number; progress: number }> = {};
-  filteredEnrollments.forEach((e: any) => {
-    if (!grouped[e.course_id]) grouped[e.course_id] = { total: 0, progress: 0 };
-    grouped[e.course_id].total++;
-    grouped[e.course_id].progress += Number(e.progress) || 0;
-  });
-  Object.entries(grouped).forEach(([id, v]) => {
-    enrollmentCountMap.set(id, { count: v.total, avgProgress: Math.round(v.progress / v.total) });
-  });
-
-  const topCourses = courses
-    .filter((c: any) => c.status === "published")
-    .map((c: any) => ({ ...c, enrollment: enrollmentCountMap.get(c.id) }))
-    .sort((a: any, b: any) => (b.enrollment?.count || 0) - (a.enrollment?.count || 0))
-    .slice(0, 4);
-
-  // Alerts
   const mandatoryCourses = courses.filter((c: any) => c.is_mandatory && c.status === "published");
   const overdueMandatory = mandatoryCourses.filter((c: any) => c.deadline && new Date(c.deadline) < new Date());
-
-  const stats = [
-    { label: t("admin.totalUsers"), value: String(filteredProfileCount), sub: t("admin.studentCount2", { count: roleCounts.student }), icon: Users },
-    { label: t("admin.activeCourses"), value: String(activeCourses), sub: t("admin.draftCount", { count: draftCourses }), icon: BookOpen },
-    { label: t("admin.totalEnrollments"), value: String(filteredEnrollments.length), sub: t("admin.enrolledLabel"), icon: Activity },
-    { label: t("admin.pendingReview"), value: String(pendingCourses), sub: t("admin.reviewNeeded"), icon: Clock },
-  ];
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return i18n.language?.startsWith("en")
-      ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-      : d.toLocaleDateString("ko-KR");
+      ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      : d.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
   };
 
   return (
     <DashboardLayout role="admin">
-      <div className="space-y-8">
+      <div className="space-y-5">
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
@@ -145,152 +117,134 @@ const AdminDashboard = () => {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.platformOverview")}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Select value={branchFilter} onValueChange={setBranchFilter}>
-              <SelectTrigger className="w-44 h-9 text-xs">
-                <Building2 className="h-3.5 w-3.5 mr-1" />
-                <SelectValue placeholder={t("branches.allBranches")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("branches.allBranches")}</SelectItem>
-                {branches.map((b: any) => (
-                  <SelectItem key={b.id} value={b.id}>{i18n.language?.startsWith("en") ? b.name_en || b.name : b.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Admin</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="stat-card !p-4 sm:!p-6">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight">{stat.label}</span>
-                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 ml-1" />
-              </div>
-              <span className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</span>
-              <p className="text-[10px] sm:text-xs text-primary mt-1">{stat.sub}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Middle Row: User Stats + Course Status + Summary */}
-        <div className="grid lg:grid-cols-3 gap-4">
-          <div className="stat-card">
-            <h3 className="text-sm font-semibold text-foreground mb-4">{t("admin.userStats")}</h3>
-            <div className="space-y-3">
-              {[
-                { label: t("roles.studentLabel"), count: roleCounts.student },
-                { label: t("roles.teacherLabel"), count: roleCounts.teacher },
-                { label: t("roles.adminLabel"), count: roleCounts.admin },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <span className="text-sm text-muted-foreground">{item.label}</span>
-                  <span className="text-sm font-semibold text-foreground">{item.count}</span>
-                </div>
+          <Select value={branchFilter} onValueChange={setBranchFilter}>
+            <SelectTrigger className="w-40 h-8 text-xs">
+              <Building2 className="h-3.5 w-3.5 mr-1" />
+              <SelectValue placeholder={t("branches.allBranches")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("branches.allBranches")}</SelectItem>
+              {branches.map((b: any) => (
+                <SelectItem key={b.id} value={b.id}>{i18n.language?.startsWith("en") ? b.name_en || b.name : b.name}</SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Compact Stats Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-2.5">
+          {/* Main KPIs - larger */}
+          <div className="stat-card !p-3.5 col-span-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-muted-foreground">{t("admin.totalUsers")}</span>
+              <Users className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
+            <span className="text-xl font-bold text-foreground">{filteredProfileCount}</span>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {t("roles.studentLabel")} {roleCounts.student} · {t("roles.teacherLabel")} {roleCounts.teacher} · {t("roles.adminLabel")} {roleCounts.admin}
+            </p>
           </div>
 
-          <div className="stat-card">
-            <h3 className="text-sm font-semibold text-foreground mb-4">{t("admin.courseOverview")}</h3>
-            <div className="space-y-3">
-              {[
-                { label: t("admin.activeCoursesLabel"), count: activeCourses },
-                { label: t("admin.pendingReview"), count: pendingCourses },
-                { label: t("admin.archivedLabel"), count: draftCourses },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <span className="text-sm text-muted-foreground">{item.label}</span>
-                  <span className="text-sm font-semibold text-foreground">{item.count}</span>
-                </div>
-              ))}
+          <div className="stat-card !p-3.5 col-span-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-muted-foreground">{t("admin.activeCourses")}</span>
+              <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
+            <span className="text-xl font-bold text-foreground">{activeCourses}</span>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {t("admin.pendingReview")} {pendingCourses} · {t("admin.archivedLabel")} {draftCourses}
+            </p>
           </div>
 
-          <div className="stat-card">
-            <h3 className="text-sm font-semibold text-foreground mb-4">{t("admin.overallSummary")}</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">{t("admin.avgCompletionRate")}</span>
-                <span className="text-sm font-semibold text-foreground">{avgCompletion}%</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <span className="text-sm text-muted-foreground">{t("admin.totalUsers")}</span>
-                <span className="text-sm font-semibold text-foreground">{profileCount}{t("common.people")}</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">{t("admin.totalEnrollments")}</span>
-                <span className="text-sm font-semibold text-foreground">{enrollments.length}{t("common.cases")}</span>
-              </div>
+          <div className="stat-card !p-3.5 col-span-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-muted-foreground">{t("admin.totalEnrollments")}</span>
+              <Activity className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
+            <span className="text-xl font-bold text-foreground">{filteredEnrollments.length}</span>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("admin.enrolledLabel")}</p>
+          </div>
+
+          <div className="stat-card !p-3.5 col-span-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-muted-foreground">{t("admin.avgCompletionRate")}</span>
+              <GraduationCap className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+            <span className="text-xl font-bold text-foreground">{avgCompletion}%</span>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("admin.totalEnrollments")} {filteredEnrollments.length}{t("common.cases")}</p>
+          </div>
+
+          <div className="stat-card !p-3.5 col-span-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-muted-foreground">{t("admin.pendingReview")}</span>
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+            <span className="text-xl font-bold text-foreground">{pendingCourses}</span>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("admin.reviewNeeded")}</p>
+          </div>
+
+          <div className="stat-card !p-3.5 col-span-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-muted-foreground">{t("admin.alertsTitle")}</span>
+              <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+            <span className="text-xl font-bold text-foreground">{overdueMandatory.length}</span>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{t("admin.overdueMandatory")}</p>
           </div>
         </div>
 
-        {/* Bottom: Recent Signups + Alerts */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">{t("admin.recentSignups")}</h2>
+        {/* Bottom: Recent Signups + Quick Links */}
+        <div className="grid lg:grid-cols-2 gap-4">
+          {/* Recent Signups - compact */}
+          <div className="stat-card !p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">{t("admin.recentSignups")}</h3>
               <Link to="/admin/users">
-                <Button variant="ghost" size="sm" className="text-muted-foreground">
-                  <UserPlus className="h-3.5 w-3.5" />
+                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground">
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </div>
-            <p className="text-xs text-muted-foreground -mt-2">{t("admin.recentSignupsDesc")}</p>
             {recentProfiles.length === 0 ? (
-              <div className="stat-card text-center py-6">
-                <p className="text-sm text-muted-foreground">{t("admin.noRecentSignups")}</p>
-              </div>
+              <p className="text-xs text-muted-foreground text-center py-4">{t("admin.noRecentSignups")}</p>
             ) : (
-              <div className="stat-card !p-0 divide-y divide-border">
+              <div className="space-y-0 divide-y divide-border">
                 {recentProfiles.map((rp: any) => (
-                  <div key={rp.user_id} className="p-4 flex items-center gap-3">
-                    <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{t("admin.newSignup")}: {rp.full_name || "-"}</p>
-                      <p className="text-xs text-muted-foreground">{rp.created_at ? formatDate(rp.created_at) : ""}</p>
+                  <div key={rp.user_id} className="flex items-center justify-between py-2 first:pt-0 last:pb-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      <span className="text-xs font-medium text-foreground truncate">{rp.full_name || "-"}</span>
                     </div>
+                    <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{rp.created_at ? formatDate(rp.created_at) : ""}</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                {t("admin.alertsTitle")}
-              </h2>
-            </div>
-            <p className="text-xs text-muted-foreground -mt-2">{t("admin.alertsDesc")}</p>
-            <div className="stat-card space-y-4">
+          {/* Quick Actions */}
+          <div className="stat-card !p-4">
+            <h3 className="text-sm font-semibold text-foreground mb-3">{t("admin.alertsTitle")}</h3>
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{t("admin.recentCoursesAlert")}</p>
-                  <p className="text-xs text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-foreground">{t("admin.recentCoursesAlert")}</p>
+                  <p className="text-[10px] text-muted-foreground">
                     {activeCourses > 0 ? t("admin.coursesRegistered", { count: activeCourses }) : t("admin.noCoursesRegistered")}
                   </p>
                 </div>
                 <Link to="/admin/courses">
-                  <Button size="sm" variant="outline" className="rounded-xl text-xs">{t("nav.courseManagement")}</Button>
+                  <Button size="sm" variant="outline" className="rounded-xl text-[10px] h-7 px-2.5">{t("nav.courseManagement")}</Button>
                 </Link>
               </div>
               {overdueMandatory.length > 0 && (
-                <div className="flex items-center justify-between pt-3 border-t border-border">
-                  <div>
-                    <p className="text-sm font-medium text-destructive">{t("admin.overdueMandatory")}</p>
-                    <p className="text-xs text-muted-foreground">{t("admin.overdueMandatoryDesc", { count: overdueMandatory.length })}</p>
+                <div className="flex items-center justify-between pt-2.5 border-t border-border">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-destructive">{t("admin.overdueMandatory")}</p>
+                    <p className="text-[10px] text-muted-foreground">{t("admin.overdueMandatoryDesc", { count: overdueMandatory.length })}</p>
                   </div>
                   <Link to="/admin/learning">
-                    <Button size="sm" variant="outline" className="rounded-xl text-xs">{t("admin.learningManagement")}</Button>
+                    <Button size="sm" variant="outline" className="rounded-xl text-[10px] h-7 px-2.5">{t("admin.learningManagement")}</Button>
                   </Link>
                 </div>
               )}
