@@ -217,13 +217,13 @@ const AdminDashboard = () => {
             { label: t("admin.avgCompletionRate"), value: `${avgCompletion}%`, icon: GraduationCap, sub: `${completedEnrollments} ${t("admin.completedLabel", "수료")}` },
             { label: t("admin.alertsTitle"), value: overdueMandatory.length, icon: AlertTriangle, sub: t("admin.overdueMandatory"), isDanger: overdueMandatory.length > 0 },
           ].map((s) => (
-            <div key={s.label} className="stat-card !p-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] text-muted-foreground">{s.label}</span>
-                <s.icon className={`h-3.5 w-3.5 ${s.isDanger ? "text-destructive" : "text-muted-foreground"}`} />
+            <div key={s.label} className="stat-card !p-4">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs text-muted-foreground">{s.label}</span>
+                <s.icon className={`h-4 w-4 ${s.isDanger ? "text-destructive" : "text-muted-foreground"}`} />
               </div>
-              <span className={`text-xl font-bold ${s.isDanger ? "text-destructive" : "text-foreground"}`}>{s.value}</span>
-              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{s.sub}</p>
+              <span className={`text-2xl font-bold ${s.isDanger ? "text-destructive" : "text-foreground"}`}>{s.value}</span>
+              <p className="text-xs text-muted-foreground mt-1 truncate">{s.sub}</p>
             </div>
           ))}
         </div>
