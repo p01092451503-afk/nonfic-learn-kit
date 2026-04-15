@@ -83,6 +83,7 @@ const CourseDetail = () => {
   const [courseForm, setCourseForm] = useState({
     title: "", description: "", status: "draft", is_mandatory: false, deadline: "",
     category_id: "", difficulty_level: "beginner", estimated_duration_hours: "", max_students: "",
+    is_sequential: false,
   });
   const [courseEnForm, setCourseEnForm] = useState({ title: "", description: "" });
   const [courseThumbnailFile, setCourseThumbnailFile] = useState<File | null>(null);
