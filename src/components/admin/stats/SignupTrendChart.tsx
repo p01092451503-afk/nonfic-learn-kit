@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { format, subDays } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   period: number;
@@ -11,7 +12,10 @@ interface Props {
 
 const SignupTrendChart = ({ period }: Props) => {
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
   const fromDate = subDays(new Date(), period).toISOString();
+
+  const signupLabel = t("stats.newSignups");
 
   const { data: chartData = [] } = useQuery({
     queryKey: ["stat-signup-trend", period],
@@ -32,18 +36,17 @@ const SignupTrendChart = ({ period }: Props) => {
         if (dayMap.has(day)) dayMap.set(day, (dayMap.get(day) || 0) + 1);
       });
 
-      let cumulative = 0;
-      return Array.from(dayMap.entries()).map(([date, count]) => {
-        cumulative += count;
-        return { date, 신규가입: count, 누적: cumulative };
-      });
+      return Array.from(dayMap.entries()).map(([date, count]) => ({
+        date,
+        [signupLabel]: count,
+      }));
     },
   });
 
   return (
     <Card>
       <CardHeader className="pb-2 px-3 sm:px-6">
-        <CardTitle className="text-sm font-medium">신규 가입 추이 (최근 {period}일)</CardTitle>
+        <CardTitle className="text-sm font-medium">{t("stats.signupTrend", { period })}</CardTitle>
       </CardHeader>
       <CardContent className="px-2 sm:px-6">
         <div className="h-[180px] sm:h-[220px]">
@@ -53,7 +56,7 @@ const SignupTrendChart = ({ period }: Props) => {
               <XAxis dataKey="date" tick={{ fontSize: 9 }} tickMargin={6} minTickGap={isMobile ? 24 : 12} />
               <YAxis tick={{ fontSize: 10 }} width={30} hide={isMobile} />
               <Tooltip />
-              <Area type="monotone" dataKey="신규가입" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} />
+              <Area type="monotone" dataKey={signupLabel} stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

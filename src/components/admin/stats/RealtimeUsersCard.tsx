@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Wifi } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const RealtimeUsersCard = () => {
+  const { t } = useTranslation();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: onlineCount = 0, refetch } = useQuery({
@@ -18,11 +20,10 @@ const RealtimeUsersCard = () => {
       if (error) throw error;
       return count || 0;
     },
-    staleTime: 20_000,         // 20s stale
-    refetchInterval: 60_000,   // Poll every 60s (realtime handles interim)
+    staleTime: 20_000,
+    refetchInterval: 60_000,
   });
 
-  // Debounced refetch from realtime — avoids stampede when many sessions change at once
   useEffect(() => {
     const channel = supabase
       .channel("online-users-realtime")
@@ -48,16 +49,16 @@ const RealtimeUsersCard = () => {
         <Wifi className="h-6 w-6 text-primary" />
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">현재 동시접속자</p>
+        <p className="text-xs text-muted-foreground">{t("stats.realtimeUsers", "현재 동시접속자")}</p>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-2xl font-bold text-foreground">{onlineCount.toLocaleString()}</span>
-          <span className="text-xs text-muted-foreground">명</span>
+          <span className="text-xs text-muted-foreground">{t("common.people")}</span>
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-chart-2 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-chart-2"></span>
           </span>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-0.5">실시간 자동 갱신</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5">{t("stats.autoRefresh", "실시간 자동 갱신")}</p>
       </div>
     </div>
   );

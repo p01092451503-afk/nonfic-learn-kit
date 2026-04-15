@@ -4,9 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { startOfDay } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
 
 const HourlyAccessChart = () => {
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
   const todayStart = startOfDay(new Date()).toISOString();
 
   const { data: hourlyData = [] } = useQuery({
@@ -20,7 +22,7 @@ const HourlyAccessChart = () => {
       if (error) throw error;
 
       const hours = Array.from({ length: 24 }, (_, i) => ({
-        hour: `${String(i).padStart(2, "0")}시`,
+        hour: `${String(i).padStart(2, "0")}${t("common.hours")}`,
         count: 0,
       }));
 
@@ -36,7 +38,7 @@ const HourlyAccessChart = () => {
   return (
     <Card>
       <CardHeader className="pb-2 px-3 sm:px-6">
-        <CardTitle className="text-sm font-medium">오늘 시간대별 접속 현황</CardTitle>
+        <CardTitle className="text-sm font-medium">{t("stats.hourlyAccess")}</CardTitle>
       </CardHeader>
       <CardContent className="px-2 sm:px-6">
         <div className="h-[180px] sm:h-[220px]">
@@ -45,8 +47,8 @@ const HourlyAccessChart = () => {
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="hour" tick={{ fontSize: 9 }} tickMargin={6} interval={isMobile ? 3 : 1} />
               <YAxis tick={{ fontSize: 10 }} width={30} hide={isMobile} />
-              <Tooltip formatter={(value: number) => [`${value}건`, "접속"]} />
-              <Bar dataKey="count" name="접속" fill="hsl(var(--chart-2))" radius={[3, 3, 0, 0]} />
+              <Tooltip formatter={(value: number) => [t("stats.accessCount", { count: value }), t("stats.accessLabel")]} />
+              <Bar dataKey="count" name={t("stats.accessLabel")} fill="hsl(var(--chart-2))" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

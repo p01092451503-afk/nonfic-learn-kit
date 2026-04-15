@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfDay } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const TodayOperationsCard = () => {
+  const { t } = useTranslation();
   const today = startOfDay(new Date()).toISOString();
 
-  // Single combined query — 6 individual queries → 1 parallel batch
   const { data } = useQuery({
     queryKey: ["stat-today-operations", today],
     queryFn: async () => {
@@ -35,17 +36,17 @@ const TodayOperationsCard = () => {
   };
 
   const items = [
-    { label: "신규 수강", value: stats.todayEnrollments, color: "text-primary" },
-    { label: "이수 완료", value: stats.todayCompletions, color: "text-chart-2" },
-    { label: "과제 제출", value: stats.todaySubmissions, color: "text-chart-3" },
-    { label: "평가 응시", value: stats.todayAssessments, color: "text-chart-4" },
-    { label: "채점 대기", value: stats.pendingSubmissions, color: "text-destructive" },
-    { label: "미확인 알림", value: stats.unreadNotifications, color: "text-chart-5" },
+    { label: t("stats.newEnroll"), value: stats.todayEnrollments, color: "text-primary" },
+    { label: t("stats.completionToday"), value: stats.todayCompletions, color: "text-chart-2" },
+    { label: t("stats.submissionToday"), value: stats.todaySubmissions, color: "text-chart-3" },
+    { label: t("stats.assessmentToday"), value: stats.todayAssessments, color: "text-chart-4" },
+    { label: t("stats.pendingGrade"), value: stats.pendingSubmissions, color: "text-destructive" },
+    { label: t("stats.unreadNotif"), value: stats.unreadNotifications, color: "text-chart-5" },
   ];
 
   return (
     <div className="stat-card !p-4 sm:!p-5 space-y-3">
-      <h3 className="text-sm font-semibold text-foreground">오늘 운영 현황</h3>
+      <h3 className="text-sm font-semibold text-foreground">{t("stats.todayOps")}</h3>
       <div className="grid grid-cols-3 gap-2">
         {items.map((item) => (
           <div key={item.label} className="text-center p-2 rounded-lg border border-border">
