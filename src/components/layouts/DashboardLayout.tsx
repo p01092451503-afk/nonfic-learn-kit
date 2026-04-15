@@ -97,6 +97,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.userManagement"), href: "/admin/users", icon: Users, tourId: "nav-user-mgmt" },
     { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2, tourId: "nav-branch-mgmt" },
     { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen, tourId: "nav-course-mgmt" },
+    { label: t("nav.videoManagement", "동영상 관리"), href: "/admin/videos", icon: Video },
     { label: t("nav.enrollmentManagement"), href: "/admin/enrollments", icon: ClipboardCheck, tourId: "nav-enrollment-mgmt" },
     { label: t("nav.learningManagement"), href: "/admin/learning", icon: GraduationCap },
     { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
@@ -105,7 +106,6 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.announcementManagement", "공지사항 관리"), href: "/admin/announcements", icon: Megaphone },
     { label: t("nav.boardManagement", "게시판 관리"), href: "/admin/board", icon: FileText },
     { label: t("nav.surveyManagement", "설문 관리"), href: "/admin/surveys", icon: ClipboardList },
-    { label: t("nav.videoManagement", "동영상 관리"), href: "/admin/videos", icon: Video },
     { label: t("nav.trafficMonitoring", "통계 현황"), href: "/admin/traffic", icon: BarChart3, tourId: "nav-traffic" },
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
   ];
