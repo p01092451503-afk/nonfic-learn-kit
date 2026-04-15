@@ -43,6 +43,7 @@ const providerLabels: Record<string, string> = {
   upload: "업로드(CDN)",
   bunny: "Bunny CDN",
   cloudflare: "Cloudflare Stream",
+  kollus: "Kollus (카테노이드)",
 };
 
 const AdminVideos = () => {

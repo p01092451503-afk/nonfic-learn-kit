@@ -156,6 +156,8 @@ const ContentPlayer = () => {
   };
 
   const [cardIndex, setCardIndex] = useState(0);
+  const [kollusEmbedUrl, setKollusEmbedUrl] = useState<string | null>(null);
+  const [kollusLoading, setKollusLoading] = useState(false);
 
   const currentContent = contents.find((c) => c.id === contentId);
 
@@ -294,9 +296,40 @@ const ContentPlayer = () => {
     return normalized;
   };
 
+  const isKollus = (provider: string | null) => provider === "kollus";
+
+  // Fetch Kollus embed URL when content changes
+  useEffect(() => {
+    if (!currentContent || !user?.id) return;
+    const provider = getVideoProvider(currentContent);
+    const videoUrl = getVideoUrl(currentContent);
+    if (!isKollus(provider) || !videoUrl) {
+      setKollusEmbedUrl(null);
+      return;
+    }
+    let cancelled = false;
+    setKollusLoading(true);
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("kollus-token", {
+          body: { media_content_key: videoUrl },
+        });
+        if (!cancelled && !error && data?.embed_url) {
+          setKollusEmbedUrl(data.embed_url);
+        }
+      } catch (e) {
+        console.error("Kollus token error:", e);
+      } finally {
+        if (!cancelled) setKollusLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [currentContent?.id, user?.id]);
+
   const getVideoEmbed = (url: string | null, provider: string | null) => {
     if (!url) return null;
     if (isMangoboard(url)) return normalizeMangoboardUrl(url);
+    if (isKollus(provider)) return kollusEmbedUrl;
 
     const resolvedYouTubeId = getYouTubeVideoId(url);
     if ((provider === "youtube" || url.includes("youtube.com") || url.includes("youtu.be")) && resolvedYouTubeId) {
