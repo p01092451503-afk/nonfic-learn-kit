@@ -907,7 +907,13 @@
     "confirmPasswordPlaceholder": "Re-enter your password",
     "passwordChanged": "Password changed successfully.",
     "passwordMinLength": "Password must be at least 6 characters.",
-    "passwordMismatch": "Passwords do not match."
+    "passwordMismatch": "Passwords do not match.",
+    "certificatesTab": "Certificates",
+    "certificateManagement": "Certificate Management",
+    "certificateManagementDesc": "Download certificates for completed courses.",
+    "noCertificates": "No certificates issued yet.",
+    "generating": "Generating...",
+    "downloadCert": "Download"
   },
   "assessment": {
     "title": "Assessment",

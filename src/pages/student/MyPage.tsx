@@ -285,7 +285,7 @@ const MyPage = () => {
               <Camera className="h-4 w-4" /> {t("mypage.avatarTab")}
             </TabsTrigger>
             <TabsTrigger value="certificates" className="rounded-lg gap-1.5 text-sm">
-              <Award className="h-4 w-4" /> 이수증
+              <Award className="h-4 w-4" /> {t("mypage.certificatesTab")}
             </TabsTrigger>
             <TabsTrigger value="password" className="rounded-lg gap-1.5 text-sm">
               <Lock className="h-4 w-4" /> {t("mypage.passwordTab")}
@@ -338,15 +338,15 @@ const MyPage = () => {
             <TabsContent value="certificates">
               <div className="space-y-6">
                 <div className="space-y-1">
-                  <h2 className="text-lg font-semibold">이수증 관리</h2>
-                  <p className="text-sm text-muted-foreground">수료한 강좌의 이수증을 다운로드할 수 있습니다.</p>
+                  <h2 className="text-lg font-semibold">{t("mypage.certificateManagement")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("mypage.certificateManagementDesc")}</p>
                 </div>
                 {certificates.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 space-y-3">
                     <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center">
                       <Award className="h-6 w-6 text-muted-foreground" />
                     </div>
-                    <p className="text-sm text-muted-foreground">발급된 이수증이 없습니다.</p>
+                    <p className="text-sm text-muted-foreground">{t("mypage.noCertificates")}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -368,7 +368,7 @@ const MyPage = () => {
                           disabled={downloadingCertId === cert.id}
                         >
                           <Download className="h-3.5 w-3.5" />
-                          {downloadingCertId === cert.id ? "생성 중..." : "다운로드"}
+                          {downloadingCertId === cert.id ? t("mypage.generating") : t("mypage.downloadCert")}
                         </Button>
                       </div>
                     ))}
