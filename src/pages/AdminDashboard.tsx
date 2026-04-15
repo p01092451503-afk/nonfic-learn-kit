@@ -170,11 +170,11 @@ const AdminDashboard = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     return (
-      <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg">
-        <p className="text-xs font-medium text-foreground mb-1">{label}</p>
+      <div className="bg-background border border-border rounded-lg px-3 py-2.5 shadow-lg">
+        <p className="text-sm font-medium text-foreground mb-1">{label}</p>
         {payload.map((p: any, i: number) => (
-          <p key={i} className="text-[11px] text-muted-foreground">
-            <span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ backgroundColor: p.color }} />
+          <p key={i} className="text-xs text-muted-foreground">
+            <span className="inline-block w-2.5 h-2.5 rounded-full mr-1.5" style={{ backgroundColor: p.color }} />
             {p.name}: <span className="font-semibold text-foreground">{p.value}</span>
           </p>
         ))}
@@ -232,15 +232,15 @@ const AdminDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-4">
           {/* 7-day Enrollment/Completion Trend */}
           <div className="stat-card !p-4 lg:col-span-2">
-            <h3 className="text-sm font-semibold text-foreground mb-3">
-              {t("admin.enrollmentTrend", "수강/수료 추이")} <span className="text-[10px] font-normal text-muted-foreground ml-1">{t("admin.last7Days", "최근 7일")}</span>
+            <h3 className="text-base font-semibold text-foreground mb-3">
+              {t("admin.enrollmentTrend", "수강/수료 추이")} <span className="text-xs font-normal text-muted-foreground ml-1">{t("admin.last7Days", "최근 7일")}</span>
             </h3>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={trendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10 }} className="text-muted-foreground" />
-                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} className="text-muted-foreground" />
+                  <XAxis dataKey="date" tick={{ fontSize: 12 }} className="text-muted-foreground" />
+                  <YAxis tick={{ fontSize: 12 }} allowDecimals={false} className="text-muted-foreground" />
                   <Tooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="enrolled" name={t("admin.newEnrollments", "신규 수강")} stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} />
                   <Area type="monotone" dataKey="completed" name={t("admin.completions", "수료")} stroke="hsl(var(--muted-foreground))" fill="hsl(var(--muted-foreground))" fillOpacity={0.08} strokeWidth={2} strokeDasharray="4 2" />
@@ -251,7 +251,7 @@ const AdminDashboard = () => {
 
           {/* Role Distribution Donut */}
           <div className="stat-card !p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3">{t("admin.userStats")}</h3>
+            <h3 className="text-base font-semibold text-foreground mb-3">{t("admin.userStats")}</h3>
             <div className="h-48 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -272,7 +272,7 @@ const AdminDashboard = () => {
                     iconType="circle"
                     iconSize={8}
                     formatter={(value: string, entry: any) => (
-                      <span className="text-[11px] text-muted-foreground">{value} <span className="font-semibold text-foreground">{entry.payload.value}</span></span>
+                      <span className="text-xs text-muted-foreground">{value} <span className="font-semibold text-foreground">{entry.payload.value}</span></span>
                     )}
                   />
                   <Tooltip
@@ -281,7 +281,7 @@ const AdminDashboard = () => {
                       const d = payload[0];
                       return (
                         <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg">
-                          <p className="text-xs font-medium text-foreground">{d.name}: {d.value}{t("common.people")}</p>
+                          <p className="text-sm font-medium text-foreground">{d.name}: {d.value}{t("common.people")}</p>
                         </div>
                       );
                     }}
@@ -296,24 +296,24 @@ const AdminDashboard = () => {
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Top Courses by Enrollment with Progress */}
           <div className="stat-card !p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3">{t("admin.topCourses", "인기 강의 진도 현황")}</h3>
+            <h3 className="text-base font-semibold text-foreground mb-3">{t("admin.topCourses", "인기 강의 진도 현황")}</h3>
             {topCourseData.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-8">{t("common.noData")}</p>
+              <p className="text-sm text-muted-foreground text-center py-8">{t("common.noData")}</p>
             ) : (
               <div className="h-52">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={topCourseData} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
-                    <XAxis type="number" tick={{ fontSize: 10 }} domain={[0, 100]} className="text-muted-foreground" />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={90} className="text-muted-foreground" />
+                    <XAxis type="number" tick={{ fontSize: 12 }} domain={[0, 100]} className="text-muted-foreground" />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={100} className="text-muted-foreground" />
                     <Tooltip
                       content={({ active, payload }) => {
                         if (!active || !payload?.length) return null;
                         const d = payload[0].payload;
                         return (
                           <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg">
-                            <p className="text-xs font-medium text-foreground mb-1">{d.fullName}</p>
-                            <p className="text-[11px] text-muted-foreground">{t("admin.enrolledLabel")}: {d.enrolled}{t("common.people")}</p>
-                            <p className="text-[11px] text-muted-foreground">{t("admin.avgProgressLabel")}: {d.avgProgress}%</p>
+                            <p className="text-sm font-medium text-foreground mb-1">{d.fullName}</p>
+                            <p className="text-xs text-muted-foreground">{t("admin.enrolledLabel")}: {d.enrolled}{t("common.people")}</p>
+                            <p className="text-xs text-muted-foreground">{t("admin.avgProgressLabel")}: {d.avgProgress}%</p>
                           </div>
                         );
                       }}
@@ -328,13 +328,13 @@ const AdminDashboard = () => {
           {/* Mandatory Training Timeline */}
           <div className="stat-card !p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-foreground">{t("admin.mandatoryTimeline", "필수교육 마감 현황")}</h3>
+              <h3 className="text-base font-semibold text-foreground">{t("admin.mandatoryTimeline", "필수교육 마감 현황")}</h3>
               <Link to="/admin/learning">
-                <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-muted-foreground">{t("common.viewAll")}</Button>
+                <Button variant="ghost" size="sm" className="h-7 px-2.5 text-xs text-muted-foreground">{t("common.viewAll")}</Button>
               </Link>
             </div>
             {mandatoryTimeline.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-8">{t("admin.noMandatory", "필수교육 없음")}</p>
+              <p className="text-sm text-muted-foreground text-center py-8">{t("admin.noMandatory", "필수교육 없음")}</p>
             ) : (
               <div className="space-y-3">
                 {mandatoryTimeline.map((item) => {
@@ -343,12 +343,12 @@ const AdminDashboard = () => {
                   const progressPct = isOverdue ? 100 : Math.max(0, Math.min(100, 100 - (item.daysLeft / 30) * 100));
 
                   return (
-                    <div key={item.id} className="space-y-1">
+                    <div key={item.id} className="space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs text-foreground font-medium truncate flex-1">{item.title}</span>
+                        <span className="text-sm text-foreground font-medium truncate flex-1">{item.title}</span>
                         <Badge
                           variant={isOverdue ? "destructive" : isUrgent ? "secondary" : "outline"}
-                          className="text-[10px] shrink-0 whitespace-nowrap"
+                          className="text-xs shrink-0 whitespace-nowrap"
                         >
                           {isOverdue
                             ? t("admin.overdue", "기한 초과")
@@ -362,7 +362,7 @@ const AdminDashboard = () => {
                         value={progressPct}
                         className={`h-1.5 ${isOverdue ? "[&>div]:bg-destructive" : isUrgent ? "[&>div]:bg-amber-500" : ""}`}
                       />
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {i18n.language?.startsWith("en")
                           ? new Date(item.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
                           : new Date(item.deadline).toLocaleDateString("ko-KR")
