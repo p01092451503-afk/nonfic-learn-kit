@@ -796,38 +796,122 @@ const CourseDetail = () => {
             {t("course.courseContents")}
           </h2>
           <ol className="space-y-1.5">
-            {contents.filter(c => c.is_published).map((content, idx) => {
-              const progress = progressMap.get(content.id);
-              const isCompleted = progress?.completed;
-              const isAccessible = !!enrollment || content.is_preview;
-              const Icon = contentTypeIcon[content.content_type || "video"] || Video;
-              const localizedTitle = getLocalizedContentTitle(content);
-              const providerLabel = content.video_provider === "custom" ? t("course.flip") : t("course.video");
-              const accessibilityLabel = `${idx + 1}. ${localizedTitle}. ${providerLabel}. ${content.duration_minutes ? `${content.duration_minutes}${t("common.minutes")}. ` : ""}${content.is_preview ? `${t("course.allowPreview")}. ` : ""}${isCompleted ? `${t("course.completed")}. ` : ""}${!isAccessible ? (isEn ? "Locked" : "잠김") : ""}`;
-
-              return (
-                <li key={content.id}>
-                  <button
-                    type="button"
-                    className={`flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${!isAccessible ? "opacity-50" : "cursor-pointer hover:bg-accent/30"}`}
-                    onClick={() => isAccessible && navigate(`${routePrefix}/courses/${courseId}/content/${content.id}${viewParam}`)}
-                    aria-label={accessibilityLabel}
-                    aria-disabled={!isAccessible}
-                  >
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${isCompleted ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : "bg-accent text-accent-foreground"}`} aria-hidden="true">
-                      {isCompleted ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : !isAccessible ? <Lock className="h-3.5 w-3.5" aria-hidden="true" /> : <Icon className="h-4 w-4" aria-hidden="true" />}
-                    </div>
-                    <span className="font-mono text-xs text-muted-foreground">{String(idx + 1).padStart(2, "0")}</span>
-                    <span className="flex-1 truncate text-sm font-medium text-foreground">{localizedTitle}</span>
-                    <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium ${content.video_provider === "custom" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`}>
-                      {providerLabel}
-                    </span>
-                    {content.duration_minutes && <span className="shrink-0 text-[10px] text-muted-foreground">{content.duration_minutes}{t("common.minutes")}</span>}
-                    {isAccessible && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />}
-                  </button>
-                </li>
-              );
-            })}
+            {(() => {
+              const isSequential = (course as any)?.is_sequential || false;
+              const publishedContents = contents.filter(c => c.is_published);
+              
+              // Build assessment gate map: assessmentOrderIndex -> assessment
+              // An assessment with order_index N acts as a gate AFTER content at position N
+              const assessmentGateMap = new Map<number, typeof assessments[0]>();
+              assessments.forEach(a => {
+                if ((a as any).order_index != null) {
+                  assessmentGateMap.set((a as any).order_index, a);
+                }
+              });
+              
+              // Check if assessment is passed
+              const isAssessmentPassed = (assessmentId: string) => {
+                const attempts = assessmentAttempts.filter(a => a.assessment_id === assessmentId && a.completed_at);
+                return attempts.some(a => a.passed);
+              };
+              
+              // Calculate sequential accessibility
+              // For each content, check if all previous contents are completed
+              // AND if there's a gate assessment before it, check if it's passed
+              const getSequentialAccessibility = (contentIdx: number) => {
+                if (!isSequential || !enrollment) return { accessible: !!enrollment || publishedContents[contentIdx]?.is_preview, reason: "" };
+                if (contentIdx === 0) return { accessible: true, reason: "" };
+                
+                // Check all previous contents are completed
+                for (let i = 0; i < contentIdx; i++) {
+                  const prevContent = publishedContents[i];
+                  const prevProgress = progressMap.get(prevContent.id);
+                  if (!prevProgress?.completed) {
+                    return { accessible: false, reason: t("course.sequentialLocked") };
+                  }
+                  // Check if there's a gate assessment after this content position
+                  const gate = assessmentGateMap.get(i);
+                  if (gate && !isAssessmentPassed(gate.id)) {
+                    return { accessible: false, reason: t("course.sequentialAssessmentRequired") };
+                  }
+                }
+                return { accessible: true, reason: "" };
+              };
+              
+              const elements: React.ReactNode[] = [];
+              
+              publishedContents.forEach((content, idx) => {
+                const progress = progressMap.get(content.id);
+                const isCompleted = progress?.completed;
+                const seqAccess = getSequentialAccessibility(idx);
+                const isAccessible = isSequential ? (seqAccess.accessible && !!enrollment) : (!!enrollment || content.is_preview);
+                const Icon = contentTypeIcon[content.content_type || "video"] || Video;
+                const localizedTitle = getLocalizedContentTitle(content);
+                const providerLabel = content.video_provider === "custom" ? t("course.flip") : t("course.video");
+                
+                elements.push(
+                  <li key={content.id}>
+                    <button
+                      type="button"
+                      className={`flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${!isAccessible ? "opacity-50" : "cursor-pointer hover:bg-accent/30"}`}
+                      onClick={() => isAccessible && navigate(`${routePrefix}/courses/${courseId}/content/${content.id}${viewParam}`)}
+                      aria-disabled={!isAccessible}
+                    >
+                      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${isCompleted ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : !isAccessible ? "bg-muted" : "bg-accent text-accent-foreground"}`} aria-hidden="true">
+                        {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : !isAccessible ? <Lock className="h-3.5 w-3.5 text-muted-foreground" /> : <Icon className="h-4 w-4" />}
+                      </div>
+                      <span className="font-mono text-xs text-muted-foreground">{String(idx + 1).padStart(2, "0")}</span>
+                      <span className="flex-1 truncate text-sm font-medium text-foreground">{localizedTitle}</span>
+                      {!isAccessible && seqAccess.reason && (
+                        <span className="text-[9px] text-muted-foreground shrink-0">{t("course.sequentialLockedShort")}</span>
+                      )}
+                      <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium ${content.video_provider === "custom" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`}>
+                        {providerLabel}
+                      </span>
+                      {content.duration_minutes && <span className="shrink-0 text-[10px] text-muted-foreground">{content.duration_minutes}{t("common.minutes")}</span>}
+                      {isAccessible && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />}
+                    </button>
+                  </li>
+                );
+                
+                // Insert inline assessment gate after this content if one exists
+                const gateAssessment = assessmentGateMap.get(idx);
+                if (gateAssessment && enrollment) {
+                  const passed = isAssessmentPassed(gateAssessment.id);
+                  const completedAttempts = assessmentAttempts.filter(a => a.assessment_id === gateAssessment.id && a.completed_at);
+                  const bestScore = completedAttempts.length > 0 ? Math.max(...completedAttempts.map(a => Number(a.score) || 0)) : null;
+                  const canAccess = isCompleted; // Can only access gate if current content is completed
+                  
+                  elements.push(
+                    <li key={`gate-${gateAssessment.id}`}>
+                      <div className={`flex w-full items-center gap-3 rounded-xl border-2 px-3 py-3 transition-all ${passed ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-900/10" : "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/10"}`}>
+                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${passed ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" : "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"}`}>
+                          {passed ? <CheckCircle2 className="h-4 w-4" /> : <ClipboardCheck className="h-4 w-4" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground">{t("course.sequentialAssessmentGate")}: {gateAssessment.title}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {passed ? t("course.sequentialAssessmentPass") : bestScore !== null ? `${t("course.sequentialAssessmentFail")} (${bestScore}${t("common.points")})` : t("course.sequentialAssessmentNotTaken")}
+                          </p>
+                        </div>
+                        {canAccess && !passed && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs shrink-0"
+                            onClick={() => navigate(`${routePrefix}/courses/${courseId}/assessment/${gateAssessment.id}${routePrefix === "/student" ? "?view=learn" : ""}`)}
+                          >
+                            {t("course.sequentialAssessmentTakeNow")}
+                          </Button>
+                        )}
+                      </div>
+                    </li>
+                  );
+                }
+              });
+              
+              return elements;
+            })()}
           </ol>
         </section>
 
