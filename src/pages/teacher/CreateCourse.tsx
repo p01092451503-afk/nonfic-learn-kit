@@ -91,6 +91,7 @@ const CreateCourse = () => {
   const [enDescManual, setEnDescManual] = useState(false);
   const [maxStudents, setMaxStudents] = useState("");
   const [isMandatory, setIsMandatory] = useState(false);
+  const [isSequential, setIsSequential] = useState(false);
   const [deadline, setDeadline] = useState("");
   const [status, setStatus] = useState("draft");
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -126,6 +127,7 @@ const CreateCourse = () => {
       setEstimatedHours(course.estimated_duration_hours ? String(course.estimated_duration_hours) : "");
       setMaxStudents(course.max_students ? String(course.max_students) : "");
       setIsMandatory(course.is_mandatory || false);
+      setIsSequential((course as any).is_sequential || false);
       setDeadline(course.deadline || "");
       setStatus(course.status || "draft");
       if (course.thumbnail_url) {
