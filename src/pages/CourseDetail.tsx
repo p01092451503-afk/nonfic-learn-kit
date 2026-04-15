@@ -664,6 +664,7 @@ const CourseDetail = () => {
           enForm={contentEnForm}
           setEnForm={setContentEnForm}
           editingId={editingContentId}
+          courseId={courseId!}
           onSubmit={() => upsertContentMutation.mutate()}
           isPending={upsertContentMutation.isPending}
           t={t}
@@ -676,6 +677,7 @@ const CourseDetail = () => {
           setForm={setCourseForm}
           enForm={courseEnForm}
           setEnForm={setCourseEnForm}
+          courseId={courseId!}
           onSubmit={() => updateCourseMutation.mutate(courseForm)}
           isPending={updateCourseMutation.isPending}
           t={t}
