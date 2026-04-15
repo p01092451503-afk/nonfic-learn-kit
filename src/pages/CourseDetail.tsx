@@ -1327,10 +1327,19 @@ const CourseEditDialog = ({
                 <p className="text-[10px] text-muted-foreground">{t("course.deadlineHelp")}</p>
               </div>
             )}
+            {/* Sequential Learning Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-xs font-semibold">{t("course.sequentialToggle")}</Label>
+                <p className="text-[11px] text-muted-foreground">{t("course.sequentialToggleDesc")}</p>
+              </div>
+              <Switch
+                checked={form.is_sequential}
+                onCheckedChange={(v) => setForm(f => ({ ...f, is_sequential: v }))}
+              />
+            </div>
           </div>
         </TabsContent>
-
-        <TabsContent value="en" className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
             <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleAutoTranslate} disabled={translating || (!form.title && !form.description)}>
