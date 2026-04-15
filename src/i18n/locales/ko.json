@@ -907,7 +907,13 @@
     "confirmPasswordPlaceholder": "비밀번호를 다시 입력하세요",
     "passwordChanged": "비밀번호가 변경되었습니다.",
     "passwordMinLength": "비밀번호는 6자 이상이어야 합니다.",
-    "passwordMismatch": "비밀번호가 일치하지 않습니다."
+    "passwordMismatch": "비밀번호가 일치하지 않습니다.",
+    "certificatesTab": "이수증",
+    "certificateManagement": "이수증 관리",
+    "certificateManagementDesc": "수료한 강좌의 이수증을 다운로드할 수 있습니다.",
+    "noCertificates": "발급된 이수증이 없습니다.",
+    "generating": "생성 중...",
+    "downloadCert": "다운로드"
   },
   "assessment": {
     "title": "평가",
