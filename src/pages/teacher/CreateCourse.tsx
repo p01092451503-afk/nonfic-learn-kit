@@ -725,6 +725,13 @@ const CreateCourse = () => {
             </div>
             <Switch checked={isMandatory} onCheckedChange={setIsMandatory} />
           </div>
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium text-foreground">{t("course.sequentialToggle")}</p>
+              <p className="text-xs text-muted-foreground">{t("course.sequentialToggleDesc")}</p>
+            </div>
+            <Switch checked={isSequential} onCheckedChange={setIsSequential} />
+          </div>
         </div>
 
         {/* Contents */}
