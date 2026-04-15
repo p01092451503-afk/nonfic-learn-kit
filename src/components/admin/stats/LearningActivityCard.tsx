@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, FileCheck, ClipboardCheck, MessageSquare } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const LearningActivityCard = () => {
-  // Single combined query — 6 individual queries → 1 parallel batch
+  const { t } = useTranslation();
+
   const { data } = useQuery({
     queryKey: ["stat-learning-activity"],
     queryFn: async () => {
@@ -36,17 +38,17 @@ const LearningActivityCard = () => {
   };
 
   const items = [
-    { label: "차시 이수", value: stats.contentCompletions, icon: BookOpen, color: "text-primary bg-primary/10" },
-    { label: "평가 응시", value: stats.assessmentAttempts, sub: `합격 ${stats.assessmentPassed}건`, icon: ClipboardCheck, color: "text-chart-2 bg-chart-2/10" },
-    { label: "과제 제출", value: stats.submissionCount, sub: `채점 ${stats.gradedCount}건`, icon: FileCheck, color: "text-chart-3 bg-chart-3/10" },
-    { label: "게시판 글", value: stats.boardPostCount, icon: MessageSquare, color: "text-chart-4 bg-chart-4/10" },
-    { label: "설문 응답", value: stats.surveyResponseCount, icon: ClipboardCheck, color: "text-chart-5 bg-chart-5/10" },
+    { label: t("stats.lessonCompletion"), value: stats.contentCompletions, icon: BookOpen, color: "text-primary bg-primary/10" },
+    { label: t("stats.assessmentAttempt"), value: stats.assessmentAttempts, sub: t("stats.passedCount", { count: stats.assessmentPassed }), icon: ClipboardCheck, color: "text-chart-2 bg-chart-2/10" },
+    { label: t("stats.assignmentSubmit"), value: stats.submissionCount, sub: t("stats.gradedCount", { count: stats.gradedCount }), icon: FileCheck, color: "text-chart-3 bg-chart-3/10" },
+    { label: t("stats.boardPosts"), value: stats.boardPostCount, icon: MessageSquare, color: "text-chart-4 bg-chart-4/10" },
+    { label: t("stats.surveyResponses"), value: stats.surveyResponseCount, icon: ClipboardCheck, color: "text-chart-5 bg-chart-5/10" },
   ];
 
   return (
     <Card>
       <CardHeader className="pb-2 px-3 sm:px-6">
-        <CardTitle className="text-sm font-medium">학습 활동 통계</CardTitle>
+        <CardTitle className="text-sm font-medium">{t("stats.learningActivity")}</CardTitle>
       </CardHeader>
       <CardContent className="px-3 sm:px-6">
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">

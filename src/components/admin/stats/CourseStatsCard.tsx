@@ -2,14 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useTranslation } from "react-i18next";
 
 const CourseStatsCard = () => {
+  const { t } = useTranslation();
+
   const { data: courses = [] } = useQuery({
     queryKey: ["stat-courses-overview"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("courses")
-        .select("id, title, status, is_mandatory, deadline");
+      const { data, error } = await supabase.from("courses").select("id, title, status, is_mandatory, deadline");
       if (error) throw error;
       return data;
     },
@@ -18,9 +19,7 @@ const CourseStatsCard = () => {
   const { data: enrollments = [] } = useQuery({
     queryKey: ["stat-enrollments-overview"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("enrollments")
-        .select("course_id, progress, completed_at, status");
+      const { data, error } = await supabase.from("enrollments").select("course_id, progress, completed_at, status");
       if (error) throw error;
       return data;
     },
@@ -41,7 +40,6 @@ const CourseStatsCard = () => {
   const pendingEnrollments = enrollments.filter((e: any) => e.status === "pending").length;
   const approvedEnrollments = enrollments.filter((e: any) => e.status === "approved").length;
 
-  // Top courses by enrollment
   const courseEnrollMap = new Map<string, { count: number; completions: number }>();
   enrollments.forEach((e: any) => {
     const entry = courseEnrollMap.get(e.course_id) || { count: 0, completions: 0 };
@@ -61,15 +59,15 @@ const CourseStatsCard = () => {
   return (
     <Card>
       <CardHeader className="pb-2 px-3 sm:px-6">
-        <CardTitle className="text-sm font-medium">강의 현황</CardTitle>
+        <CardTitle className="text-sm font-medium">{t("stats.courseStats")}</CardTitle>
       </CardHeader>
       <CardContent className="px-3 sm:px-6 space-y-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "총 강의 수", value: `${totalCourses}개` },
-            { label: "게시된 강의", value: `${published}개` },
-            { label: "필수 교육", value: `${mandatory}개` },
-            { label: "임시저장", value: `${draft}개` },
+            { label: t("stats.totalCoursesCount"), value: t("stats.itemCount", { count: totalCourses }) },
+            { label: t("stats.publishedCoursesCount"), value: t("stats.itemCount", { count: published }) },
+            { label: t("stats.mandatoryCoursesCount"), value: t("stats.itemCount", { count: mandatory }) },
+            { label: t("stats.draftCoursesCount"), value: t("stats.itemCount", { count: draft }) },
           ].map((item) => (
             <div key={item.label} className="text-center p-2 rounded-lg bg-muted/50">
               <p className="text-[10px] text-muted-foreground">{item.label}</p>
@@ -80,10 +78,10 @@ const CourseStatsCard = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "총 수강생", value: `${totalEnrollments}명` },
-            { label: "이수 완료", value: `${completed}명` },
-            { label: "평균 진도율", value: `${avgProgress}%` },
-            { label: "이수율", value: `${completionRate}%` },
+            { label: t("stats.totalStudentsCount"), value: `${totalEnrollments}${t("common.people")}` },
+            { label: t("stats.completedStudents"), value: `${completed}${t("common.people")}` },
+            { label: t("stats.avgProgressRate"), value: `${avgProgress}%` },
+            { label: t("stats.completionRateValue"), value: `${completionRate}%` },
           ].map((item) => (
             <div key={item.label} className="text-center p-2 rounded-lg bg-muted/50">
               <p className="text-[10px] text-muted-foreground">{item.label}</p>
@@ -93,7 +91,7 @@ const CourseStatsCard = () => {
         </div>
 
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">수강생 기준 인기 강의 TOP 5</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">TOP 5</p>
           <div className="space-y-2">
             {topCourses.map((c, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -102,7 +100,7 @@ const CourseStatsCard = () => {
                   <p className="text-xs text-foreground truncate">{c.title}</p>
                   <Progress value={topCourses[0]?.count > 0 ? (c.count / topCourses[0].count) * 100 : 0} className="h-1.5 mt-1" />
                 </div>
-                <span className="text-xs font-semibold text-foreground shrink-0">{c.count}명</span>
+                <span className="text-xs font-semibold text-foreground shrink-0">{c.count}{t("common.people")}</span>
               </div>
             ))}
           </div>
@@ -110,11 +108,11 @@ const CourseStatsCard = () => {
 
         <div className="flex items-center gap-4 pt-2 border-t border-border">
           <div className="text-center flex-1">
-            <p className="text-[10px] text-muted-foreground">수강 대기</p>
+            <p className="text-[10px] text-muted-foreground">{t("enrollment.pending")}</p>
             <p className="text-sm font-bold text-foreground">{pendingEnrollments}</p>
           </div>
           <div className="text-center flex-1">
-            <p className="text-[10px] text-muted-foreground">수강 승인</p>
+            <p className="text-[10px] text-muted-foreground">{t("enrollment.approvedStatus")}</p>
             <p className="text-sm font-bold text-foreground">{approvedEnrollments}</p>
           </div>
         </div>

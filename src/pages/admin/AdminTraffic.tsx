@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { format, subDays } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
 
 import SiteSummaryCard from "@/components/admin/stats/SiteSummaryCard";
 import TodayOperationsCard from "@/components/admin/stats/TodayOperationsCard";
@@ -32,6 +33,7 @@ const formatBytes = (bytes: number) => {
 
 const AdminTraffic = () => {
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
   const [period, setPeriod] = useState("30");
 
   const fromDate = subDays(new Date(), parseInt(period)).toISOString();
@@ -111,10 +113,10 @@ const AdminTraffic = () => {
     .slice(0, 10);
 
   const trafficStats = [
-    { label: "웹 트래픽 (전송량)", value: formatBytes(webBytes), icon: Globe },
-    { label: "자체 CDN 전송량", value: formatBytes(cdnBytes), icon: Play },
-    { label: "총 전송량 (자체)", value: formatBytes(webBytes + cdnBytes), icon: TrendingUp },
-    { label: "저장 차시", value: `${totalContents}개`, icon: HardDrive },
+    { label: t("stats.webTraffic"), value: formatBytes(webBytes), icon: Globe },
+    { label: t("stats.cdnTraffic"), value: formatBytes(cdnBytes), icon: Play },
+    { label: t("stats.totalTraffic"), value: formatBytes(webBytes + cdnBytes), icon: TrendingUp },
+    { label: t("stats.storedLessons"), value: t("stats.itemCount", { count: totalContents }), icon: HardDrive },
   ];
 
   return (
@@ -124,31 +126,28 @@ const AdminTraffic = () => {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
               <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              통계 현황
+              {t("stats.statsTitle")}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              사이트 종합 통계 및 트래픽 현황을 확인합니다
+              {t("stats.statsDesc")}
             </p>
           </div>
         </div>
 
-        {/* Top row: Site Summary + Today Operations */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <RealtimeUsersCard />
           <SiteSummaryCard />
           <TodayOperationsCard />
         </div>
 
-        {/* Tabs for different stat sections */}
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="overview" className="text-xs">종합 통계</TabsTrigger>
-            <TabsTrigger value="branch" className="text-xs">지점별 학습</TabsTrigger>
-            <TabsTrigger value="traffic" className="text-xs">트래픽</TabsTrigger>
-            <TabsTrigger value="learning" className="text-xs">학습 활동</TabsTrigger>
+            <TabsTrigger value="overview" className="text-xs">{t("stats.tabOverview")}</TabsTrigger>
+            <TabsTrigger value="branch" className="text-xs">{t("stats.tabBranch")}</TabsTrigger>
+            <TabsTrigger value="traffic" className="text-xs">{t("stats.tabTraffic")}</TabsTrigger>
+            <TabsTrigger value="learning" className="text-xs">{t("stats.tabLearning")}</TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <SignupTrendChart period={parseInt(period)} />
@@ -158,12 +157,10 @@ const AdminTraffic = () => {
             <CourseStatsCard />
           </TabsContent>
 
-          {/* Branch Learning Tab */}
           <TabsContent value="branch" className="space-y-4">
             <BranchLearningStats />
           </TabsContent>
 
-          {/* Traffic Tab */}
           <TabsContent value="traffic" className="space-y-4">
             <div className="flex w-full sm:w-auto items-center gap-2 self-start">
               <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -172,9 +169,9 @@ const AdminTraffic = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="7">최근 7일</SelectItem>
-                  <SelectItem value="30">최근 30일</SelectItem>
-                  <SelectItem value="90">최근 90일</SelectItem>
+                  <SelectItem value="7">{t("stats.last7days")}</SelectItem>
+                  <SelectItem value="30">{t("stats.last30days")}</SelectItem>
+                  <SelectItem value="90">{t("stats.last90days")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -195,28 +192,28 @@ const AdminTraffic = () => {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
               <div className="stat-card !p-3 sm:!p-4">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">페이지 조회수</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">{t("stats.pageViews")}</p>
                 <p className="text-lg font-semibold text-foreground">{totalPageViews.toLocaleString()}</p>
               </div>
               <div className="stat-card !p-3 sm:!p-4">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">차시 재생</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">{t("stats.lessonPlays")}</p>
                 <p className="text-lg font-semibold text-foreground">{totalContentAccess.toLocaleString()}</p>
               </div>
               <div className="stat-card !p-3 sm:!p-4">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">활성 사용자</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">{t("stats.activeUsers")}</p>
                 <p className="text-lg font-semibold text-foreground">{uniqueUsers}</p>
               </div>
               <div className="stat-card !p-3 sm:!p-4">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">외부 / 자체 호스팅</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">{t("stats.extVsSelf")}</p>
                 <p className="text-lg font-semibold text-foreground">{externalAccess} / {selfHostedAccess}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">YouTube·Vimeo·망고보드 = 비용 없음</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t("stats.extFreeNote")}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card>
                 <CardHeader className="pb-2 px-3 sm:px-6">
-                  <CardTitle className="text-sm font-medium">일별 트래픽 추이</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("stats.dailyTraffic")}</CardTitle>
                 </CardHeader>
                 <CardContent className="px-2 sm:px-6">
                   <div className="h-[200px] sm:h-[250px]">
@@ -226,8 +223,8 @@ const AdminTraffic = () => {
                         <XAxis dataKey="date" tick={{ fontSize: 10 }} tickMargin={8} minTickGap={isMobile ? 24 : 12} />
                         <YAxis tick={{ fontSize: 10 }} width={35} hide={isMobile} />
                         <Tooltip />
-                        <Line type="monotone" dataKey="views" name="페이지 조회" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="access" name="차시 접근" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="views" name={t("stats.pageViewLabel")} stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="access" name={t("stats.lessonAccess")} stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -236,7 +233,7 @@ const AdminTraffic = () => {
 
               <Card>
                 <CardHeader className="pb-2 px-3 sm:px-6">
-                  <CardTitle className="text-sm font-medium">일별 전송량 (GB)</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("stats.dailyTransfer")}</CardTitle>
                 </CardHeader>
                 <CardContent className="px-2 sm:px-6">
                   <div className="h-[200px] sm:h-[250px]">
@@ -246,7 +243,7 @@ const AdminTraffic = () => {
                         <XAxis dataKey="date" tick={{ fontSize: 10 }} tickMargin={8} minTickGap={isMobile ? 24 : 12} />
                         <YAxis tick={{ fontSize: 10 }} width={35} hide={isMobile} />
                         <Tooltip formatter={(value: number) => `${value} GB`} />
-                        <Bar dataKey="bytesGB" name="전송량" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="bytesGB" name={t("stats.transferLabel")} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -256,19 +253,19 @@ const AdminTraffic = () => {
 
             <Card>
               <CardHeader className="pb-2 px-3 sm:px-6">
-                <CardTitle className="text-sm font-medium">저장공간 현황</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("stats.storageStatus")}</CardTitle>
               </CardHeader>
               <CardContent className="px-3 sm:px-6">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    { label: "영상 차시", count: videoContents },
-                    { label: "문서/플립러닝", count: docContents },
-                    { label: "기타", count: totalContents - videoContents - docContents },
+                    { label: t("stats.videoLessons"), count: videoContents },
+                    { label: t("stats.docFlip"), count: docContents },
+                    { label: t("stats.other"), count: totalContents - videoContents - docContents },
                   ].map((item) => (
                     <div key={item.label} className="space-y-2">
                       <div className="flex justify-between text-sm gap-3">
                         <span className="text-muted-foreground">{item.label}</span>
-                        <span className="font-medium shrink-0">{item.count}개</span>
+                        <span className="font-medium shrink-0">{t("stats.itemCount", { count: item.count })}</span>
                       </div>
                       <Progress value={totalContents > 0 ? (item.count / totalContents) * 100 : 0} className="h-2" />
                     </div>
@@ -279,11 +276,11 @@ const AdminTraffic = () => {
 
             <Card>
               <CardHeader className="pb-2 px-3 sm:px-6">
-                <CardTitle className="text-sm font-medium">인기 페이지 TOP 10</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("stats.topPages")}</CardTitle>
               </CardHeader>
               <CardContent className="px-3 sm:px-6">
                 {topPages.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-6">아직 트래픽 데이터가 없습니다.</p>
+                  <p className="text-sm text-muted-foreground text-center py-6">{t("stats.noTrafficData")}</p>
                 ) : (
                   <>
                     <div className="sm:hidden space-y-3">
@@ -313,9 +310,9 @@ const AdminTraffic = () => {
                           <TableHeader>
                             <TableRow>
                               <TableHead className="w-10">#</TableHead>
-                              <TableHead>페이지 경로</TableHead>
-                              <TableHead className="text-right">조회수</TableHead>
-                              <TableHead className="text-right w-[120px]">비율</TableHead>
+                              <TableHead>{t("stats.pagePath")}</TableHead>
+                              <TableHead className="text-right">{t("stats.viewCount")}</TableHead>
+                              <TableHead className="text-right w-[120px]">{t("stats.ratio")}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -345,7 +342,6 @@ const AdminTraffic = () => {
             </Card>
           </TabsContent>
 
-          {/* Learning Activity Tab */}
           <TabsContent value="learning" className="space-y-4">
             <LearningActivityCard />
             <CourseStatsCard />
