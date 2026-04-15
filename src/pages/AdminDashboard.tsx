@@ -1,142 +1,151 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import {
-  Users, BookOpen, Activity, BarChart3, Building2, GraduationCap, Clock, AlertTriangle,
+  Users, BookOpen, Activity, LayoutDashboard, Building2, GraduationCap,
+  AlertTriangle, ClipboardCheck, Bell, Megaphone, Clock, ChevronRight,
+  UserPlus, CheckCircle2, FileText, ArrowRight,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
-  AreaChart, Area, CartesianGrid,
-} from "recharts";
-
-const CHART_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--muted-foreground))",
-  "hsl(var(--accent-foreground))",
-  "hsl(var(--destructive))",
-];
-const PIE_COLORS = ["#3b82f6", "#64748b", "#f59e0b"];
+import { formatDistanceToNow } from "date-fns";
+import { ko, enUS } from "date-fns/locale";
 
 const AdminDashboard = () => {
   const { profile } = useUser();
   const { t, i18n } = useTranslation();
-  const [branchFilter, setBranchFilter] = useState<string>("all");
+  const navigate = useNavigate();
+  const isEn = i18n.language?.startsWith("en");
+  const locale = isEn ? enUS : ko;
 
   // ── Data Queries ──
-  const { data: profileCount = 0 } = useQuery({
-    queryKey: ["admin-dash-profile-count"],
+  const { data: realtimeSessions = [] } = useQuery({
+    queryKey: ["dash-realtime-sessions"],
     queryFn: async () => {
-      const { count, error } = await supabase.from("profiles").select("*", { count: "exact", head: true });
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data, error } = await supabase.from("user_sessions").select("user_id").gte("login_at", fiveMinAgo);
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: 30000,
+  });
+
+  const { data: todayStats } = useQuery({
+    queryKey: ["dash-today-stats"],
+    queryFn: async () => {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayISO = todayStart.toISOString();
+
+      const [signupsRes, completionsRes] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", todayISO),
+        supabase.from("enrollments").select("*", { count: "exact", head: true }).gte("completed_at", todayISO),
+      ]);
+      return {
+        todaySignups: signupsRes.count || 0,
+        todayCompletions: completionsRes.count || 0,
+      };
+    },
+    staleTime: 60000,
+  });
+
+  const { data: pendingEnrollments = 0 } = useQuery({
+    queryKey: ["dash-pending-enrollments"],
+    queryFn: async () => {
+      const { count, error } = await supabase.from("enrollments").select("*", { count: "exact", head: true }).eq("status", "pending");
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  const { data: ungradedSubmissions = 0 } = useQuery({
+    queryKey: ["dash-ungraded-submissions"],
+    queryFn: async () => {
+      const { count, error } = await supabase.from("assignment_submissions").select("*", { count: "exact", head: true }).eq("status", "submitted");
       if (error) throw error;
       return count || 0;
     },
   });
 
   const { data: courses = [] } = useQuery({
-    queryKey: ["admin-dash-courses"],
+    queryKey: ["dash-courses"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("courses").select("id, title, status, instructor_id, is_mandatory, deadline").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("courses").select("id, title, status, is_mandatory, deadline").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: recentAnnouncements = [] } = useQuery({
+    queryKey: ["dash-recent-announcements"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("announcements").select("id, title, created_at, is_published").eq("is_published", true).order("created_at", { ascending: false }).limit(3);
       if (error) throw error;
       return data;
     },
   });
 
   const { data: enrollments = [] } = useQuery({
-    queryKey: ["admin-dash-enrollments"],
+    queryKey: ["dash-enrollments"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("enrollments").select("course_id, user_id, progress, completed_at, enrolled_at");
+      const { data, error } = await supabase.from("enrollments").select("course_id, user_id, progress, completed_at, enrolled_at").order("enrolled_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
 
-  const { data: branches = [] } = useQuery({
-    queryKey: ["admin-dash-branches"],
+  const { data: recentActivity = [] } = useQuery({
+    queryKey: ["dash-recent-activity"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("departments").select("id, name, name_en").eq("is_active", true).order("display_order").order("name");
-      if (error) throw error;
-      return data;
-    },
-  });
+      const [recentEnrollRes, recentCompleteRes, recentSignupRes] = await Promise.all([
+        supabase.from("enrollments").select("user_id, course_id, enrolled_at").order("enrolled_at", { ascending: false }).limit(5),
+        supabase.from("enrollments").select("user_id, course_id, completed_at").not("completed_at", "is", null).order("completed_at", { ascending: false }).limit(5),
+        supabase.from("profiles").select("user_id, full_name, created_at").order("created_at", { ascending: false }).limit(5),
+      ]);
 
-  const { data: allProfiles = [] } = useQuery({
-    queryKey: ["admin-dash-all-profiles"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("user_id, full_name, department_id, created_at").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
+      const activities: { type: string; userId: string; name?: string; courseId?: string; time: string }[] = [];
 
-  const { data: roleCounts = { student: 0, teacher: 0, admin: 0 } } = useQuery({
-    queryKey: ["admin-dash-role-counts"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("user_roles").select("role");
-      if (error) throw error;
-      const counts = { student: 0, teacher: 0, admin: 0 };
-      data?.forEach((r: any) => { if (counts[r.role as keyof typeof counts] !== undefined) counts[r.role as keyof typeof counts]++; });
-      return counts;
-    },
-  });
-
-  // ── Derived Data ──
-  const branchUserIds = branchFilter === "all"
-    ? null
-    : new Set(allProfiles.filter((p: any) => p.department_id === branchFilter).map((p: any) => p.user_id));
-
-  const filteredEnrollments = branchUserIds
-    ? enrollments.filter((e: any) => branchUserIds.has(e.user_id))
-    : enrollments;
-
-  const filteredProfileCount = branchFilter === "all" ? profileCount : (branchUserIds?.size || 0);
-  const activeCourses = courses.filter((c: any) => c.status === "published").length;
-  const completedEnrollments = filteredEnrollments.filter((e: any) => e.completed_at).length;
-  const avgCompletion = filteredEnrollments.length > 0
-    ? Math.round(filteredEnrollments.reduce((s: number, e: any) => s + (Number(e.progress) || 0), 0) / filteredEnrollments.length)
-    : 0;
-
-  const mandatoryCourses = courses.filter((c: any) => c.is_mandatory && c.status === "published");
-  const overdueMandatory = mandatoryCourses.filter((c: any) => c.deadline && new Date(c.deadline) < new Date());
-
-  // ── Chart Data: 7-day enrollment/completion trend ──
-  const trendData = useMemo(() => {
-    const days: { date: string; enrolled: number; completed: number }[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
-      const label = i18n.language?.startsWith("en")
-        ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-        : `${d.getMonth() + 1}/${d.getDate()}`;
-      days.push({ date: label, enrolled: 0, completed: 0 });
-      filteredEnrollments.forEach((e: any) => {
-        if (e.enrolled_at?.slice(0, 10) === key) days[days.length - 1].enrolled++;
-        if (e.completed_at?.slice(0, 10) === key) days[days.length - 1].completed++;
+      recentSignupRes.data?.forEach((p: any) => {
+        activities.push({ type: "signup", userId: p.user_id, name: p.full_name, time: p.created_at });
       });
-    }
-    return days;
-  }, [filteredEnrollments, i18n.language]);
+      recentCompleteRes.data?.forEach((e: any) => {
+        activities.push({ type: "complete", userId: e.user_id, courseId: e.course_id, time: e.completed_at });
+      });
+      recentEnrollRes.data?.forEach((e: any) => {
+        activities.push({ type: "enroll", userId: e.user_id, courseId: e.course_id, time: e.enrolled_at });
+      });
 
-  // ── Chart Data: Role distribution ──
-  const roleData = useMemo(() => [
-    { name: t("roles.studentLabel"), value: roleCounts.student },
-    { name: t("roles.teacherLabel"), value: roleCounts.teacher },
-    { name: t("roles.adminLabel"), value: roleCounts.admin },
-  ], [roleCounts, t]);
+      return activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10);
+    },
+  });
 
-  // ── Chart Data: Top courses by enrollment with progress ──
-  const topCourseData = useMemo(() => {
+  const { data: profileMap = {} } = useQuery({
+    queryKey: ["dash-profile-map"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("user_id, full_name");
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      data?.forEach((p: any) => { map[p.user_id] = p.full_name || ""; });
+      return map;
+    },
+  });
+
+  // ── Derived ──
+  const onlineUsers = new Set(realtimeSessions.map((s: any) => s.user_id)).size;
+  const mandatoryCourses = courses.filter((c: any) => c.is_mandatory && c.status === "published");
+  const urgentMandatory = mandatoryCourses.filter((c: any) => {
+    if (!c.deadline) return false;
+    const daysLeft = Math.ceil((new Date(c.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return daysLeft <= 3;
+  });
+
+  const topCourses = useMemo(() => {
     const grouped: Record<string, { count: number; progress: number }> = {};
-    filteredEnrollments.forEach((e: any) => {
+    enrollments.forEach((e: any) => {
       if (!grouped[e.course_id]) grouped[e.course_id] = { count: 0, progress: 0 };
       grouped[e.course_id].count++;
       grouped[e.course_id].progress += Number(e.progress) || 0;
@@ -144,235 +153,309 @@ const AdminDashboard = () => {
     return courses
       .filter((c: any) => c.status === "published" && grouped[c.id])
       .map((c: any) => ({
-        name: c.title.length > 12 ? c.title.slice(0, 12) + "…" : c.title,
-        fullName: c.title,
+        title: c.title,
         enrolled: grouped[c.id].count,
         avgProgress: Math.round(grouped[c.id].progress / grouped[c.id].count),
       }))
       .sort((a, b) => b.enrolled - a.enrolled)
-      .slice(0, 5);
-  }, [courses, filteredEnrollments]);
+      .slice(0, 3);
+  }, [courses, enrollments]);
 
-  // ── Chart Data: Mandatory deadline timeline ──
-  const mandatoryTimeline = useMemo(() => {
-    const now = new Date();
-    return mandatoryCourses
-      .filter((c: any) => c.deadline)
-      .map((c: any) => {
-        const deadline = new Date(c.deadline);
-        const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        return { title: c.title, deadline: c.deadline, daysLeft, id: c.id };
-      })
-      .sort((a, b) => a.daysLeft - b.daysLeft)
-      .slice(0, 5);
-  }, [mandatoryCourses]);
+  const courseMap = useMemo(() => {
+    const m: Record<string, string> = {};
+    courses.forEach((c: any) => { m[c.id] = c.title; });
+    return m;
+  }, [courses]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null;
-    return (
-      <div className="bg-background border border-border rounded-lg px-3 py-2.5 shadow-lg">
-        <p className="text-sm font-medium text-foreground mb-1">{label}</p>
-        {payload.map((p: any, i: number) => (
-          <p key={i} className="text-xs text-muted-foreground">
-            <span className="inline-block w-2.5 h-2.5 rounded-full mr-1.5" style={{ backgroundColor: p.color }} />
-            {p.name}: <span className="font-semibold text-foreground">{p.value}</span>
-          </p>
-        ))}
-      </div>
-    );
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "signup": return <UserPlus className="h-4 w-4 text-chart-2" />;
+      case "complete": return <CheckCircle2 className="h-4 w-4 text-chart-3" />;
+      case "enroll": return <BookOpen className="h-4 w-4 text-primary" />;
+      default: return <Activity className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getActivityText = (item: any) => {
+    const name = item.name || profileMap[item.userId] || t("common.user");
+    const course = item.courseId ? courseMap[item.courseId] : "";
+    switch (item.type) {
+      case "signup": return isEn ? `${name} joined the platform` : `${name}님이 가입했습니다`;
+      case "complete": return isEn ? `${name} completed "${course}"` : `${name}님이 "${course}" 수료`;
+      case "enroll": return isEn ? `${name} enrolled in "${course}"` : `${name}님이 "${course}" 수강 신청`;
+      default: return "";
+    }
   };
 
   return (
     <DashboardLayout role="admin">
       <div className="space-y-5">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6" />
-              {t("admin.adminDashboard")}
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("admin.platformOverview")}</p>
-          </div>
-          <Select value={branchFilter} onValueChange={setBranchFilter}>
-            <SelectTrigger className="w-40 h-8 text-xs">
-              <Building2 className="h-3.5 w-3.5 mr-1" />
-              <SelectValue placeholder={t("branches.allBranches")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("branches.allBranches")}</SelectItem>
-              {branches.map((b: any) => (
-                <SelectItem key={b.id} value={b.id}>{i18n.language?.startsWith("en") ? b.name_en || b.name : b.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+            <LayoutDashboard className="h-5 w-5 sm:h-6 sm:w-6" />
+            {t("admin.adminDashboard")}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("admin.platformOverview")}</p>
         </div>
 
-        {/* KPI Cards - compact row */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
-          {[
-            { label: t("admin.totalUsers"), value: filteredProfileCount, icon: Users, sub: `${t("roles.studentLabel")} ${roleCounts.student}` },
-            { label: t("admin.activeCourses"), value: activeCourses, icon: BookOpen, sub: `${courses.length} ${t("admin.totalLabel", "전체")}` },
-            { label: t("admin.totalEnrollments"), value: filteredEnrollments.length, icon: Activity, sub: t("admin.enrolledLabel") },
-            { label: t("admin.avgCompletionRate"), value: `${avgCompletion}%`, icon: GraduationCap, sub: `${completedEnrollments} ${t("admin.completedLabel", "수료")}` },
-            { label: t("admin.alertsTitle"), value: overdueMandatory.length, icon: AlertTriangle, sub: t("admin.overdueMandatory"), isDanger: overdueMandatory.length > 0 },
-          ].map((s) => (
-            <div key={s.label} className="stat-card !p-4">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs text-muted-foreground">{s.label}</span>
-                <s.icon className={`h-4 w-4 ${s.isDanger ? "text-destructive" : "text-muted-foreground"}`} />
+        {/* ① Live Status Banner */}
+        <div className="stat-card !p-0 overflow-hidden">
+          <div className="flex items-center divide-x divide-border">
+            <div className="flex-1 flex items-center gap-3 px-5 py-4">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-chart-3 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-chart-3" />
+              </span>
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {isEn ? "Online Now" : "현재 접속"}
+                </p>
+                <p className="text-2xl font-bold text-foreground">{onlineUsers}<span className="text-sm font-normal text-muted-foreground ml-1">{t("common.people")}</span></p>
               </div>
-              <span className={`text-2xl font-bold ${s.isDanger ? "text-destructive" : "text-foreground"}`}>{s.value}</span>
-              <p className="text-xs text-muted-foreground mt-1 truncate">{s.sub}</p>
             </div>
-          ))}
-        </div>
-
-        {/* Charts Row 1: Trend + Role Donut */}
-        <div className="grid lg:grid-cols-3 gap-4">
-          {/* 7-day Enrollment/Completion Trend */}
-          <div className="stat-card !p-4 lg:col-span-2">
-            <h3 className="text-base font-semibold text-foreground mb-3">
-              {t("admin.enrollmentTrend", "수강/수료 추이")} <span className="text-xs font-normal text-muted-foreground ml-1">{t("admin.last7Days", "최근 7일")}</span>
-            </h3>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="date" tick={{ fontSize: 12 }} className="text-muted-foreground" />
-                  <YAxis tick={{ fontSize: 12 }} allowDecimals={false} className="text-muted-foreground" />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="enrolled" name={t("admin.newEnrollments", "신규 수강")} stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} />
-                  <Area type="monotone" dataKey="completed" name={t("admin.completions", "수료")} stroke="hsl(var(--muted-foreground))" fill="hsl(var(--muted-foreground))" fillOpacity={0.08} strokeWidth={2} strokeDasharray="4 2" />
-                </AreaChart>
-              </ResponsiveContainer>
+            <div className="flex-1 flex items-center gap-3 px-5 py-4">
+              <UserPlus className="h-5 w-5 text-chart-2" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {isEn ? "Today Signups" : "오늘 가입"}
+                </p>
+                <p className="text-2xl font-bold text-foreground">{todayStats?.todaySignups || 0}<span className="text-sm font-normal text-muted-foreground ml-1">{t("common.people")}</span></p>
+              </div>
             </div>
-          </div>
-
-          {/* Role Distribution Donut */}
-          <div className="stat-card !p-4">
-            <h3 className="text-base font-semibold text-foreground mb-3">{t("admin.userStats")}</h3>
-            <div className="h-48 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={roleData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={40}
-                    outerRadius={65}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {roleData.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Legend
-                    iconType="circle"
-                    iconSize={8}
-                    formatter={(value: string, entry: any) => (
-                      <span className="text-xs text-muted-foreground">{value} <span className="font-semibold text-foreground">{entry.payload.value}</span></span>
-                    )}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (!active || !payload?.length) return null;
-                      const d = payload[0];
-                      return (
-                        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg">
-                          <p className="text-sm font-medium text-foreground">{d.name}: {d.value}{t("common.people")}</p>
-                        </div>
-                      );
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="flex-1 flex items-center gap-3 px-5 py-4">
+              <GraduationCap className="h-5 w-5 text-chart-4" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {isEn ? "Today Completions" : "오늘 수료"}
+                </p>
+                <p className="text-2xl font-bold text-foreground">{todayStats?.todayCompletions || 0}<span className="text-sm font-normal text-muted-foreground ml-1">{t("common.people")}</span></p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Charts Row 2: Top Courses Progress + Mandatory Timeline */}
-        <div className="grid lg:grid-cols-2 gap-4">
-          {/* Top Courses by Enrollment with Progress */}
-          <div className="stat-card !p-4">
-            <h3 className="text-base font-semibold text-foreground mb-3">{t("admin.topCourses", "인기 강의 진도 현황")}</h3>
-            {topCourseData.length === 0 ? (
+        {/* ② Action Required Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Pending Enrollments */}
+          <button
+            onClick={() => navigate("/admin/enrollments")}
+            className="stat-card !p-4 text-left hover:border-primary/30 transition-colors group cursor-pointer"
+          >
+            <div className="flex items-start justify-between">
+              <div className="rounded-lg bg-primary/10 p-2.5">
+                <ClipboardCheck className="h-5 w-5 text-primary" />
+              </div>
+              {pendingEnrollments > 0 && (
+                <Badge variant="destructive" className="text-xs animate-pulse">
+                  {pendingEnrollments}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm font-medium text-foreground mt-3">
+              {isEn ? "Pending Enrollments" : "승인 대기 수강신청"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {pendingEnrollments > 0
+                ? (isEn ? `${pendingEnrollments} requests waiting` : `${pendingEnrollments}건 처리 필요`)
+                : (isEn ? "All caught up!" : "처리할 항목 없음")
+              }
+            </p>
+            <div className="flex items-center text-xs text-primary mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {isEn ? "Go to review" : "바로가기"} <ChevronRight className="h-3 w-3 ml-0.5" />
+            </div>
+          </button>
+
+          {/* Urgent Mandatory Training */}
+          <button
+            onClick={() => navigate("/admin/learning")}
+            className="stat-card !p-4 text-left hover:border-destructive/30 transition-colors group cursor-pointer"
+          >
+            <div className="flex items-start justify-between">
+              <div className={`rounded-lg p-2.5 ${urgentMandatory.length > 0 ? "bg-destructive/10" : "bg-muted"}`}>
+                <AlertTriangle className={`h-5 w-5 ${urgentMandatory.length > 0 ? "text-destructive" : "text-muted-foreground"}`} />
+              </div>
+              {urgentMandatory.length > 0 && (
+                <Badge variant="destructive" className="text-xs">
+                  {urgentMandatory.length}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm font-medium text-foreground mt-3">
+              {isEn ? "Urgent Mandatory" : "긴급 필수교육"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {urgentMandatory.length > 0
+                ? (isEn ? `${urgentMandatory.length} courses within D-3` : `D-3 이내 ${urgentMandatory.length}개 강의`)
+                : (isEn ? "No urgent items" : "긴급 항목 없음")
+              }
+            </p>
+            <div className="flex items-center text-xs text-primary mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {isEn ? "View details" : "바로가기"} <ChevronRight className="h-3 w-3 ml-0.5" />
+            </div>
+          </button>
+
+          {/* Ungraded Assignments */}
+          <button
+            onClick={() => navigate("/admin/courses")}
+            className="stat-card !p-4 text-left hover:border-chart-2/30 transition-colors group cursor-pointer"
+          >
+            <div className="flex items-start justify-between">
+              <div className={`rounded-lg p-2.5 ${ungradedSubmissions > 0 ? "bg-chart-2/10" : "bg-muted"}`}>
+                <FileText className={`h-5 w-5 ${ungradedSubmissions > 0 ? "text-chart-2" : "text-muted-foreground"}`} />
+              </div>
+              {ungradedSubmissions > 0 && (
+                <Badge className="text-xs bg-chart-2 text-white">
+                  {ungradedSubmissions}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm font-medium text-foreground mt-3">
+              {isEn ? "Ungraded Submissions" : "미채점 과제"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {ungradedSubmissions > 0
+                ? (isEn ? `${ungradedSubmissions} submissions pending` : `${ungradedSubmissions}건 채점 대기`)
+                : (isEn ? "All graded!" : "채점 완료")
+              }
+            </p>
+            <div className="flex items-center text-xs text-primary mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {isEn ? "Go to grade" : "바로가기"} <ChevronRight className="h-3 w-3 ml-0.5" />
+            </div>
+          </button>
+
+          {/* Recent Announcements */}
+          <button
+            onClick={() => navigate("/admin/announcements")}
+            className="stat-card !p-4 text-left hover:border-chart-4/30 transition-colors group cursor-pointer"
+          >
+            <div className="flex items-start justify-between">
+              <div className="rounded-lg bg-chart-4/10 p-2.5">
+                <Megaphone className="h-5 w-5 text-chart-4" />
+              </div>
+            </div>
+            <p className="text-sm font-medium text-foreground mt-3">
+              {isEn ? "Announcements" : "공지사항"}
+            </p>
+            {recentAnnouncements.length > 0 ? (
+              <p className="text-xs text-muted-foreground mt-1 truncate">
+                {recentAnnouncements[0]?.title}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground mt-1">
+                {isEn ? "No announcements" : "공지 없음"}
+              </p>
+            )}
+            <div className="flex items-center text-xs text-primary mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {isEn ? "View all" : "바로가기"} <ChevronRight className="h-3 w-3 ml-0.5" />
+            </div>
+          </button>
+        </div>
+
+        {/* ③ Bottom Row: Activity Feed + Quick Summary */}
+        <div className="grid lg:grid-cols-5 gap-4">
+          {/* Recent Activity Feed */}
+          <div className="stat-card !p-5 lg:col-span-3">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                {isEn ? "Recent Activity" : "최근 활동"}
+              </h3>
+            </div>
+            {recentActivity.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">{t("common.noData")}</p>
             ) : (
-              <div className="h-52">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={topCourseData} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
-                    <XAxis type="number" tick={{ fontSize: 12 }} domain={[0, 100]} className="text-muted-foreground" />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={100} className="text-muted-foreground" />
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.length) return null;
-                        const d = payload[0].payload;
-                        return (
-                          <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg">
-                            <p className="text-sm font-medium text-foreground mb-1">{d.fullName}</p>
-                            <p className="text-xs text-muted-foreground">{t("admin.enrolledLabel")}: {d.enrolled}{t("common.people")}</p>
-                            <p className="text-xs text-muted-foreground">{t("admin.avgProgressLabel")}: {d.avgProgress}%</p>
-                          </div>
-                        );
-                      }}
-                    />
-                    <Bar dataKey="avgProgress" name={t("admin.avgProgressLabel")} fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={16} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="space-y-1">
+                {recentActivity.map((item: any, idx: number) => (
+                  <div key={idx} className="flex items-start gap-3 py-2.5 border-b border-border/50 last:border-0">
+                    <div className="mt-0.5 shrink-0">
+                      {getActivityIcon(item.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground leading-snug">
+                        {getActivityText(item)}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {formatDistanceToNow(new Date(item.time), { addSuffix: true, locale })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Mandatory Training Timeline */}
-          <div className="stat-card !p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-semibold text-foreground">{t("admin.mandatoryTimeline", "필수교육 마감 현황")}</h3>
-              <Link to="/admin/learning">
-                <Button variant="ghost" size="sm" className="h-7 px-2.5 text-xs text-muted-foreground">{t("common.viewAll")}</Button>
-              </Link>
-            </div>
-            {mandatoryTimeline.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">{t("admin.noMandatory", "필수교육 없음")}</p>
-            ) : (
+          {/* Quick Summary */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Weekly Summary */}
+            <div className="stat-card !p-5">
+              <h3 className="text-base font-semibold text-foreground mb-3">
+                {isEn ? "Quick Summary" : "빠른 요약"}
+              </h3>
               <div className="space-y-3">
-                {mandatoryTimeline.map((item) => {
-                  const isOverdue = item.daysLeft < 0;
-                  const isUrgent = item.daysLeft >= 0 && item.daysLeft <= 3;
-                  const progressPct = isOverdue ? 100 : Math.max(0, Math.min(100, 100 - (item.daysLeft / 30) * 100));
-
-                  return (
-                    <div key={item.id} className="space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm text-foreground font-medium truncate flex-1">{item.title}</span>
-                        <Badge
-                          variant={isOverdue ? "destructive" : isUrgent ? "secondary" : "outline"}
-                          className="text-xs shrink-0 whitespace-nowrap"
-                        >
-                          {isOverdue
-                            ? t("admin.overdue", "기한 초과")
-                            : item.daysLeft === 0
-                              ? t("admin.dDay", "D-Day")
-                              : `D-${item.daysLeft}`
-                          }
-                        </Badge>
-                      </div>
-                      <Progress
-                        value={progressPct}
-                        className={`h-1.5 ${isOverdue ? "[&>div]:bg-destructive" : isUrgent ? "[&>div]:bg-amber-500" : ""}`}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        {i18n.language?.startsWith("en")
-                          ? new Date(item.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                          : new Date(item.deadline).toLocaleDateString("ko-KR")
-                        }
-                      </p>
-                    </div>
-                  );
-                })}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    {isEn ? "Total Enrollments" : "전체 수강"}
+                  </span>
+                  <span className="text-sm font-bold text-foreground">{enrollments.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    {isEn ? "Completions" : "수료 완료"}
+                  </span>
+                  <span className="text-sm font-bold text-foreground">{enrollments.filter((e: any) => e.completed_at).length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    {isEn ? "Active Courses" : "활성 강의"}
+                  </span>
+                  <span className="text-sm font-bold text-foreground">{courses.filter((c: any) => c.status === "published").length}</span>
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Top Courses */}
+            <div className="stat-card !p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-semibold text-foreground">
+                  {isEn ? "Popular Courses" : "인기 강의 TOP 3"}
+                </h3>
+                <Link to="/admin/courses">
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground">
+                    {t("common.viewAll")} <ArrowRight className="h-3 w-3 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+              {topCourses.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">{t("common.noData")}</p>
+              ) : (
+                <div className="space-y-3">
+                  {topCourses.map((course, idx) => (
+                    <div key={idx} className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm text-foreground font-medium truncate flex-1">
+                          <span className="text-xs text-muted-foreground mr-1.5">{idx + 1}.</span>
+                          {course.title}
+                        </span>
+                        <span className="text-xs text-muted-foreground shrink-0">{course.enrolled}{t("common.people")}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${course.avgProgress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground w-10 text-right">{course.avgProgress}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
