@@ -204,6 +204,7 @@ const AdminVideos = () => {
               <SelectItem value="vimeo">Vimeo</SelectItem>
               <SelectItem value="bunny">Bunny CDN</SelectItem>
               <SelectItem value="cloudflare">Cloudflare Stream</SelectItem>
+              <SelectItem value="kollus">Kollus (카테노이드)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -297,6 +298,7 @@ const AdminVideos = () => {
                     <SelectItem value="vimeo">Vimeo</SelectItem>
                     <SelectItem value="bunny">Bunny CDN</SelectItem>
                     <SelectItem value="cloudflare">Cloudflare Stream</SelectItem>
+                    <SelectItem value="kollus">Kollus (카테노이드)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
