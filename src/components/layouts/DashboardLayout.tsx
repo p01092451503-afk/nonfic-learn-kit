@@ -94,6 +94,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   ];
   const adminNav: NavItem[] = [
     { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard, tourId: "nav-dashboard" },
+    { label: t("nav.trafficMonitoring", "통계 현황"), href: "/admin/traffic", icon: BarChart3, tourId: "nav-traffic" },
     { label: t("nav.userManagement"), href: "/admin/users", icon: Users, tourId: "nav-user-mgmt" },
     { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2, tourId: "nav-branch-mgmt" },
     { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen, tourId: "nav-course-mgmt" },
@@ -106,7 +107,6 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.announcementManagement", "공지사항 관리"), href: "/admin/announcements", icon: Megaphone },
     { label: t("nav.boardManagement", "게시판 관리"), href: "/admin/board", icon: FileText },
     { label: t("nav.surveyManagement", "설문 관리"), href: "/admin/surveys", icon: ClipboardList },
-    { label: t("nav.trafficMonitoring", "통계 현황"), href: "/admin/traffic", icon: BarChart3, tourId: "nav-traffic" },
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
   ];
 
