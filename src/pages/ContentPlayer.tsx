@@ -609,7 +609,7 @@ const ContentPlayer = () => {
                     return (
                       <Button variant="outline" className="rounded-xl gap-2" onClick={() => !locked && navigate(`${routePrefix}/courses/${courseId}/content/${nextContent.id}`)} disabled={locked}>
                         <span className="text-sm">{locked ? t("course.sequentialLockedShort") : t("common.next")}</span>
-                        {locked ? <Lock className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        {locked ? <LockIcon className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       </Button>
                     );
                   })() : <div />}
