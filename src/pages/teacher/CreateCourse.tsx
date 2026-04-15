@@ -401,11 +401,12 @@ const CreateCourse = () => {
           estimated_duration_hours: estimatedHours ? parseInt(estimatedHours) : null,
           max_students: maxStudents ? parseInt(maxStudents) : null,
           is_mandatory: isMandatory,
+          is_sequential: isSequential,
           deadline: deadline || null,
           status,
           thumbnail_url: thumbnailUrl,
           updated_at: new Date().toISOString(),
-        })
+        } as any)
         .eq("id", editCourseId!);
       if (courseError) throw courseError;
 
@@ -484,9 +485,10 @@ const CreateCourse = () => {
           estimated_duration_hours: estimatedHours ? parseInt(estimatedHours) : null,
           max_students: maxStudents ? parseInt(maxStudents) : null,
           is_mandatory: isMandatory,
+          is_sequential: isSequential,
           deadline: deadline || null,
           status,
-        })
+        } as any)
         .select()
         .single();
       if (courseError) throw courseError;
