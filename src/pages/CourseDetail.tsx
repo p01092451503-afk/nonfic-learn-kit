@@ -260,7 +260,8 @@ const CourseDetail = () => {
         estimated_duration_hours: vals.estimated_duration_hours ? parseInt(vals.estimated_duration_hours) : 0,
         max_students: vals.max_students ? parseInt(vals.max_students) : null,
         thumbnail_url: thumbnailUrl,
-      }).eq("id", courseId!);
+        is_sequential: vals.is_sequential,
+      } as any).eq("id", courseId!);
       if (error) throw error;
       // Upsert English i18n
       if (courseEnForm.title.trim()) {
@@ -1125,7 +1126,7 @@ const CourseEditDialog = ({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  form: { title: string; description: string; status: string; is_mandatory: boolean; deadline: string; category_id: string; difficulty_level: string; estimated_duration_hours: string; max_students: string };
+  form: { title: string; description: string; status: string; is_mandatory: boolean; deadline: string; category_id: string; difficulty_level: string; estimated_duration_hours: string; max_students: string; is_sequential: boolean };
   setForm: React.Dispatch<React.SetStateAction<typeof form>>;
   enForm: { title: string; description: string };
   setEnForm: React.Dispatch<React.SetStateAction<{ title: string; description: string }>>;
