@@ -12,12 +12,14 @@ import { supabase } from "@/integrations/supabase/client";
 import LanguageToggle from "@/components/LanguageToggle";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationBell from "@/components/NotificationBell";
+import GuidedTourButton from "@/components/GuidedTourButton";
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
   showNew?: boolean;
+  tourId?: string;
 }
 
 interface DashboardLayoutProps {
@@ -70,42 +72,42 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   }, [profile?.avatar_url]);
 
   const studentNav: NavItem[] = [
-    { label: t("nav.dashboard"), href: "/student", icon: LayoutDashboard },
-    { label: t("nav.courseCatalog"), href: "/catalog", icon: Compass },
-    { label: t("nav.myCourses"), href: "/dashboard/courses", icon: BookOpen },
-    { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList },
-    { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy },
+    { label: t("nav.dashboard"), href: "/student", icon: LayoutDashboard, tourId: "nav-dashboard" },
+    { label: t("nav.courseCatalog"), href: "/catalog", icon: Compass, tourId: "nav-catalog" },
+    { label: t("nav.myCourses"), href: "/dashboard/courses", icon: BookOpen, tourId: "nav-courses" },
+    { label: t("nav.assignments"), href: "/dashboard/assignments", icon: ClipboardList, tourId: "nav-assignments" },
+    { label: t("nav.achievements"), href: "/dashboard/achievements", icon: Trophy, tourId: "nav-achievements" },
     { label: t("nav.announcements", "공지사항"), href: "/student/announcements", icon: Megaphone, showNew: hasNewAnnouncement },
     { label: t("nav.board", "게시판"), href: "/student/board", icon: FileText, showNew: hasNewBoardPost },
     { label: t("nav.myPage"), href: "/mypage", icon: UserCircle },
   ];
 
   const teacherNav: NavItem[] = [
-    { label: t("nav.dashboard"), href: "/teacher", icon: LayoutDashboard },
-    { label: t("nav.courseManagement"), href: "/teacher/courses", icon: BookOpen },
-    { label: t("nav.assignmentManagement"), href: "/teacher/assignments", icon: ClipboardList },
-    { label: t("nav.studentManagement"), href: "/teacher/students", icon: Users },
+    { label: t("nav.dashboard"), href: "/teacher", icon: LayoutDashboard, tourId: "nav-dashboard" },
+    { label: t("nav.courseManagement"), href: "/teacher/courses", icon: BookOpen, tourId: "nav-course-mgmt" },
+    { label: t("nav.assignmentManagement"), href: "/teacher/assignments", icon: ClipboardList, tourId: "nav-assignment-mgmt" },
+    { label: t("nav.studentManagement"), href: "/teacher/students", icon: Users, tourId: "nav-student-mgmt" },
     { label: t("nav.notificationManagement", "알림 관리"), href: "/teacher/notifications", icon: Bell },
     { label: t("nav.announcementManagement", "공지사항 관리"), href: "/teacher/announcements", icon: Megaphone },
     { label: t("nav.boardManagement", "게시판 관리"), href: "/teacher/board", icon: FileText },
     { label: t("nav.attendanceManagement"), href: "/teacher/attendance", icon: CalendarCheck },
   ];
   const adminNav: NavItem[] = [
-    { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard },
-    { label: t("nav.userManagement"), href: "/admin/users", icon: Users },
-    { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2 },
-    { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen },
-    { label: t("nav.enrollmentManagement"), href: "/admin/enrollments", icon: ClipboardCheck },
+    { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard, tourId: "nav-dashboard" },
+    { label: t("nav.userManagement"), href: "/admin/users", icon: Users, tourId: "nav-user-mgmt" },
+    { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2, tourId: "nav-branch-mgmt" },
+    { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen, tourId: "nav-course-mgmt" },
+    { label: t("nav.enrollmentManagement"), href: "/admin/enrollments", icon: ClipboardCheck, tourId: "nav-enrollment-mgmt" },
     { label: t("nav.learningManagement"), href: "/admin/learning", icon: GraduationCap },
     { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
-    { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy },
+    { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy, tourId: "nav-completion-mgmt" },
     { label: t("nav.notificationManagement", "알림 관리"), href: "/admin/notifications", icon: Bell },
     { label: t("nav.announcementManagement", "공지사항 관리"), href: "/admin/announcements", icon: Megaphone },
     { label: t("nav.boardManagement", "게시판 관리"), href: "/admin/board", icon: FileText },
     { label: t("nav.surveyManagement", "설문 관리"), href: "/admin/surveys", icon: ClipboardList },
     { label: t("nav.videoManagement", "동영상 관리"), href: "/admin/videos", icon: Video },
-    { label: t("nav.trafficMonitoring", "통계 현황"), href: "/admin/traffic", icon: BarChart3 },
-    { label: t("nav.settings"), href: "/admin/settings", icon: Settings },
+    { label: t("nav.trafficMonitoring", "통계 현황"), href: "/admin/traffic", icon: BarChart3, tourId: "nav-traffic" },
+    { label: t("nav.settings"), href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
   ];
 
   const navItems = activeRole === "admin" ? adminNav : activeRole === "teacher" ? teacherNav : studentNav;
