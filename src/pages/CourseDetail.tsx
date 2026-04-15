@@ -945,14 +945,28 @@ const ContentDialog = ({
     try {
       const results = await translateKoToEn(textsToTranslate);
       let idx = 0;
+      const translatedTitle = form.title ? (results[idx++] || "") : "";
+      const translatedDesc = form.description ? (results[idx++] || "") : "";
       setEnForm(f => ({
         ...f,
-        title: form.title ? (results[idx++] || "") : f.title,
-        description: form.description ? (results[idx++] || "") : f.description,
+        title: translatedTitle || f.title,
+        description: translatedDesc || f.description,
         video_url: f.video_url || form.video_url,
         video_provider: f.video_provider || form.video_provider,
         duration_minutes: f.duration_minutes ?? form.duration_minutes,
       }));
+      // Auto-save translated i18n to DB if editing existing content
+      if (editingId && translatedTitle) {
+        await supabase.from("course_content_i18n").upsert({
+          content_id: editingId,
+          language_code: "en",
+          title: translatedTitle,
+          description: translatedDesc || null,
+          video_url: form.video_url || null,
+          video_provider: form.video_provider || null,
+          duration_minutes: form.duration_minutes,
+        }, { onConflict: "content_id,language_code" });
+      }
     } catch {
       // silently fail
     } finally {
@@ -1152,13 +1166,24 @@ const CourseEditDialog = ({
     try {
       const results = await translateKoToEn(textsToTranslate);
       let idx = 0;
+      const translatedTitle = form.title ? (results[idx++] || "") : "";
+      const translatedDesc = form.description ? (results[idx++] || "") : "";
       setEnForm(f => ({
         ...f,
-        title: form.title ? (results[idx++] || "") : f.title,
-        description: form.description ? (results[idx++] || "") : f.description,
+        title: translatedTitle || f.title,
+        description: translatedDesc || f.description,
       }));
       setEnTitleManual(true);
       setEnDescManual(true);
+      // Auto-save translated i18n to DB
+      if (courseId && translatedTitle) {
+        await supabase.from("course_i18n").upsert({
+          course_id: courseId,
+          language_code: "en",
+          title: translatedTitle,
+          description: translatedDesc || null,
+        }, { onConflict: "course_id,language_code" });
+      }
     } catch {
       // silently fail
     } finally {
