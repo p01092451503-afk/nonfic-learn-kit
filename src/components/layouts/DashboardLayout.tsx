@@ -178,7 +178,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
           <div className="flex-1" />
-          <GuidedTourButton role={activeRole as "student" | "teacher" | "admin"} />
+          {/* <GuidedTourButton role={activeRole as "student" | "teacher" | "admin"} /> */}
           <div data-tour="language-toggle"><LanguageToggle /></div>
           <RoleSwitcher />
           <div data-tour="notification-bell"><NotificationBell /></div>
