@@ -43,6 +43,7 @@ const providerLabels: Record<string, string> = {
   upload: "업로드(CDN)",
   bunny: "Bunny CDN",
   cloudflare: "Cloudflare Stream",
+  kollus: "Kollus (카테노이드)",
 };
 
 const AdminVideos = () => {
@@ -203,6 +204,7 @@ const AdminVideos = () => {
               <SelectItem value="vimeo">Vimeo</SelectItem>
               <SelectItem value="bunny">Bunny CDN</SelectItem>
               <SelectItem value="cloudflare">Cloudflare Stream</SelectItem>
+              <SelectItem value="kollus">Kollus (카테노이드)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -281,8 +283,11 @@ const AdminVideos = () => {
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="동영상 제목" />
             </div>
             <div>
-              <label className="text-sm font-medium">동영상 URL *</label>
-              <Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://cdn.example.com/video.mp4" />
+              <label className="text-sm font-medium">{form.video_provider === "kollus" ? "미디어 콘텐츠 키 (Media Content Key) *" : "동영상 URL *"}</label>
+              <Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder={form.video_provider === "kollus" ? "Kollus 미디어 콘텐츠 키 입력" : "https://cdn.example.com/video.mp4"} />
+              {form.video_provider === "kollus" && (
+                <p className="text-xs text-muted-foreground mt-1">카테노이드 Kollus 관리자 → 미디어 → 콘텐츠 키를 입력하세요</p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -296,6 +301,7 @@ const AdminVideos = () => {
                     <SelectItem value="vimeo">Vimeo</SelectItem>
                     <SelectItem value="bunny">Bunny CDN</SelectItem>
                     <SelectItem value="cloudflare">Cloudflare Stream</SelectItem>
+                    <SelectItem value="kollus">Kollus (카테노이드)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
