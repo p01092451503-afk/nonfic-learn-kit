@@ -169,26 +169,42 @@ const StudentAchievements = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("achievements.subtitle")}</p>
         </div>
 
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4" aria-label={t("achievements.title")}>
-          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("achievements.currentLevel")}>
-            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mx-auto mb-2 sm:mb-3" aria-hidden="true" />
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">Lv.{level}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("achievements.currentLevel")}</p>
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3" aria-label={t("achievements.title")}>
+          <div className="stat-card flex items-center gap-3 !p-3 sm:!p-4" role="group" aria-label={t("achievements.currentLevel")}>
+            <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center shrink-0">
+              <TrendingUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">Lv.{level}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{t("achievements.currentLevel")}</p>
+            </div>
           </div>
-          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("achievements.totalPoints")}>
-            <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-warning mx-auto mb-2 sm:mb-3" aria-hidden="true" />
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">{totalPoints}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("achievements.totalPoints")}</p>
+          <div className="stat-card flex items-center gap-3 !p-3 sm:!p-4" role="group" aria-label={t("achievements.totalPoints")}>
+            <div className="h-8 w-8 rounded-md bg-warning/10 flex items-center justify-center shrink-0">
+              <Zap className="h-4 w-4 text-warning" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">{totalPoints}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{t("achievements.totalPoints")}</p>
+            </div>
           </div>
-          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("achievements.consecutiveDays")}>
-            <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-destructive mx-auto mb-2 sm:mb-3" aria-hidden="true" />
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">{streak}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("achievements.consecutiveDays")}</p>
+          <div className="stat-card flex items-center gap-3 !p-3 sm:!p-4" role="group" aria-label={t("achievements.consecutiveDays")}>
+            <div className="h-8 w-8 rounded-md bg-destructive/10 flex items-center justify-center shrink-0">
+              <Flame className="h-4 w-4 text-destructive" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">{streak}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{t("achievements.consecutiveDays")}</p>
+            </div>
           </div>
-          <div className="stat-card text-center !p-3 sm:!p-6" role="group" aria-label={t("achievements.earnedBadges")}>
-            <Award className="h-4 w-4 sm:h-5 sm:w-5 text-success mx-auto mb-2 sm:mb-3" aria-hidden="true" />
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">{myBadges.length}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("achievements.earnedBadges")}</p>
+          <div className="stat-card flex items-center gap-3 !p-3 sm:!p-4" role="group" aria-label={t("achievements.earnedBadges")}>
+            <div className="h-8 w-8 rounded-md bg-success/10 flex items-center justify-center shrink-0">
+              <Award className="h-4 w-4 text-success" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">{myBadges.length}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{t("achievements.earnedBadges")}</p>
+            </div>
           </div>
         </section>
 
