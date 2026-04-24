@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcement_i18n: {
+        Row: {
+          announcement_id: string
+          content: string
+          created_at: string
+          id: string
+          language_code: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          announcement_id: string
+          content: string
+          created_at?: string
+          id?: string
+          language_code: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          announcement_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          language_code?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_i18n_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcements: {
         Row: {
           author_id: string
@@ -565,6 +603,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "board_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "board_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      board_post_i18n: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          language_code: string
+          post_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          language_code: string
+          post_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          language_code?: string
+          post_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "board_post_i18n_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "board_posts"

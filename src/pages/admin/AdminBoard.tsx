@@ -16,8 +16,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Pin, Upload, X, FileText, Eye, ClipboardList } from "lucide-react";
 import TargetingFields, { isTargetingValid, type TargetingValue } from "@/components/admin/TargetingFields";
+import MultilingualTextFields, { EMPTY_MULTILINGUAL, isMultilingualValid, type MultilingualValue } from "@/components/admin/MultilingualTextFields";
+import { saveContentTranslations, loadContentTranslations } from "@/lib/i18nContent";
 
-const EMPTY_FORM = { title: "", content: "", is_pinned: false, is_published: true, course_id: "" };
+const EMPTY_FORM = { is_pinned: false, is_published: true, course_id: "" };
 const EMPTY_TARGET: TargetingValue = { countries: [], branchIds: [], courseIds: [] };
 
 const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
@@ -27,6 +29,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [ml, setMl] = useState<MultilingualValue>(EMPTY_MULTILINGUAL);
   const [target, setTarget] = useState<TargetingValue>(EMPTY_TARGET);
   const [files, setFiles] = useState<File[]>([]);
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
@@ -64,8 +67,8 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
         }
       }
       const payload = {
-        title: form.title,
-        content: form.content,
+        title: ml.ko.title,
+        content: ml.ko.content,
         is_pinned: form.is_pinned,
         is_published: form.is_published,
         course_id: form.course_id || null,
@@ -75,12 +78,17 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
         target_branch_ids: target.branchIds,
         target_course_ids: target.courseIds,
       };
+      let recordId = editingId;
       if (editingId) {
         const { error } = await supabase.from("board_posts").update(payload).eq("id", editingId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("board_posts").insert(payload);
+        const { data, error } = await supabase.from("board_posts").insert(payload).select("id").single();
         if (error) throw error;
+        recordId = data!.id;
+      }
+      if (recordId) {
+        await saveContentTranslations({ table: "board_post_i18n", fkColumn: "post_id", recordId, value: ml });
       }
     },
     onSuccess: () => {
@@ -106,6 +114,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
     setDialogOpen(false);
     setEditingId(null);
     setForm(EMPTY_FORM);
+    setMl(EMPTY_MULTILINGUAL);
     setTarget(EMPTY_TARGET);
     setFiles([]);
     setExistingFiles([]);
@@ -113,6 +122,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
 
   const openNew = () => {
     setForm(EMPTY_FORM);
+    setMl(EMPTY_MULTILINGUAL);
     setTarget(EMPTY_TARGET);
     setFiles([]);
     setExistingFiles([]);
@@ -120,14 +130,20 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
     setDialogOpen(true);
   };
 
-  const openEdit = (post: any) => {
+  const openEdit = async (post: any) => {
     setForm({
-      title: post.title,
-      content: post.content,
       is_pinned: post.is_pinned,
       is_published: post.is_published,
       course_id: post.course_id || "",
     });
+    const loaded = await loadContentTranslations({
+      table: "board_post_i18n",
+      fkColumn: "post_id",
+      recordId: post.id,
+      fallbackTitle: post.title,
+      fallbackContent: post.content,
+    });
+    setMl(loaded);
     setTarget({
       countries: post.target_countries || [],
       branchIds: post.target_branch_ids || [],
@@ -230,14 +246,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
             <DialogTitle className="text-base">{editingId ? t("board.editPost", "게시글 수정") : t("board.newPost", "새 게시글")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-1">
-              <Label className="text-xs">{t("board.postTitle", "제목")} *</Label>
-              <Input className="h-9 text-sm" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{t("board.postContent", "내용")} *</Label>
-              <Textarea className="text-sm min-h-[120px]" value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} />
-            </div>
+            <MultilingualTextFields value={ml} onChange={setMl} contentRows={5} />
             <TargetingFields value={target} onChange={setTarget} compact />
             <div className="space-y-2">
               <Label className="text-xs">{t("board.attachments", "첨부파일")}</Label>
@@ -289,7 +298,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={closeDialog}>{t("common.cancel")}</Button>
-            <Button size="sm" onClick={() => saveMutation.mutate()} disabled={!form.title.trim() || !form.content.trim() || !isTargetingValid(target) || saveMutation.isPending}>
+            <Button size="sm" onClick={() => saveMutation.mutate()} disabled={!isMultilingualValid(ml) || !isTargetingValid(target) || saveMutation.isPending}>
               {saveMutation.isPending ? t("common.processing") : editingId ? t("common.edit") : t("common.add")}
             </Button>
           </DialogFooter>

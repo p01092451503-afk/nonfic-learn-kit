@@ -9,23 +9,28 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Pin, FileText, Eye, Download, ClipboardList } from "lucide-react";
 import BoardComments from "@/components/BoardComments";
+import { pickTranslation } from "@/lib/i18nContent";
 
 const StudentBoard = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [selected, setSelected] = useState<any>(null);
+  const lang = i18n.language?.startsWith("en") ? "en" : "ko";
 
   const { data: posts = [], isLoading } = useQuery({
-    queryKey: ["board-posts-student"],
+    queryKey: ["board-posts-student", lang],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("board_posts")
-        .select("*")
+        .select("*, board_post_i18n(language_code, title, content)")
         .eq("is_published", true)
         .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+      return (data || []).map((p: any) => {
+        const localized = pickTranslation(p.board_post_i18n, lang, { title: p.title, content: p.content });
+        return { ...p, displayTitle: localized.title, displayContent: localized.content };
+      });
     },
   });
 
@@ -70,7 +75,7 @@ const StudentBoard = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 flex-wrap">
                     {post.is_pinned && <Pin className="h-3.5 w-3.5 text-primary shrink-0" />}
-                    <span className="font-medium text-foreground">{post.title}</span>
+                    <span className="font-medium text-foreground">{post.displayTitle}</span>
                     {(post.target_countries?.length || 0) > 0 && (
                       <Badge variant="outline" className="text-[10px]">🌐 {post.target_countries.join(", ")}</Badge>
                     )}
@@ -95,14 +100,14 @@ const StudentBoard = () => {
       <Dialog open={!!selected} onOpenChange={v => { if (!v) setSelected(null); }}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-base">{selected?.title}</DialogTitle>
+            <DialogTitle className="text-base">{selected?.displayTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="text-xs text-muted-foreground">
               {selected && new Date(selected.created_at).toLocaleString()}
               <span className="ml-3 inline-flex items-center gap-0.5"><Eye className="h-3 w-3" />{selected?.view_count}</span>
             </div>
-            <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{selected?.content}</div>
+            <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{selected?.displayContent}</div>
             {(selected?.file_urls?.length || 0) > 0 && (
               <div className="space-y-2 pt-2 border-t border-border">
                 <p className="text-xs font-medium text-muted-foreground">{t("board.attachments", "첨부파일")}</p>
