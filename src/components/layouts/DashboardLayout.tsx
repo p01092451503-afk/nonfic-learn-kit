@@ -143,45 +143,56 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
       )}
 
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-[transform,width] duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"} ${sidebarCollapsed ? "w-16" : "w-64"}`}
         role="navigation"
         aria-label={t("nav.mainNavigation", "메인 내비게이션")}
       >
-        <div className="p-6 flex flex-col items-start relative">
+        <div className={`${sidebarCollapsed ? "p-3 items-center" : "p-6 items-start"} flex flex-col relative transition-all`}>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden absolute top-4 right-4 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" aria-label={t("common.closeSidebar", "사이드바 닫기")}>
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
-          <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
-          <span className="mt-1.5 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full" aria-label={`${t("common.role", "역할")}: ${roleLabel}`}>
-            {roleLabel}
-          </span>
+          {sidebarCollapsed ? (
+            <h1 className="font-display text-2xl tracking-wider text-sidebar-primary" aria-label="NONFICTION">N</h1>
+          ) : (
+            <>
+              <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
+              <span className="mt-1.5 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full" aria-label={`${t("common.role", "역할")}: ${roleLabel}`}>
+                {roleLabel}
+              </span>
+            </>
+          )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1" data-tour="sidebar-nav" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
+        <nav className={`flex-1 overflow-y-auto py-4 space-y-1 ${sidebarCollapsed ? "px-2" : "px-3"}`} data-tour="sidebar-nav" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.href;
-            return (
+            const linkEl = (
               <Link key={item.href} to={item.href} onClick={() => setSidebarOpen(false)}
-                className={`nav-item ${isActive ? "nav-item-active" : ""}`}
+                className={`nav-item ${isActive ? "nav-item-active" : ""} ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                 aria-current={isActive ? "page" : undefined}
+                title={sidebarCollapsed ? item.label : undefined}
                 {...(item.tourId ? { "data-tour": item.tourId } : {})}>
                 <item.icon className="h-[18px] w-[18px]" aria-hidden="true" />
-                <span>{item.label}</span>
-                {item.showNew && (
+                {!sidebarCollapsed && <span>{item.label}</span>}
+                {!sidebarCollapsed && item.showNew && (
                   <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold leading-none rounded bg-destructive text-destructive-foreground animate-pulse">
                     NEW
                   </span>
                 )}
-                {isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" aria-hidden="true" />}
+                {!sidebarCollapsed && isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" aria-hidden="true" />}
+                {sidebarCollapsed && item.showNew && (
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive animate-pulse" aria-hidden="true" />
+                )}
               </Link>
             );
+            return linkEl;
           })}
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
-          <button onClick={handleSignOut} className="nav-item w-full text-muted-foreground hover:text-destructive" aria-label={t("auth.logout")}>
+          <button onClick={handleSignOut} className={`nav-item w-full text-muted-foreground hover:text-destructive ${sidebarCollapsed ? "justify-center px-2" : ""}`} aria-label={t("auth.logout")} title={sidebarCollapsed ? t("auth.logout") : undefined}>
             <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
-            <span>{t("auth.logout")}</span>
+            {!sidebarCollapsed && <span>{t("auth.logout")}</span>}
           </button>
         </div>
       </aside>
