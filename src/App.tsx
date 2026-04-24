@@ -48,6 +48,7 @@ import NotFound from "./pages/NotFound";
 import TrafficLogger from "./components/TrafficLogger";
 import CourseRedirect from "./components/CourseRedirect";
 import ContentRedirect from "./components/ContentRedirect";
+import AdminWebVitalsGate from "./components/AdminWebVitalsGate";
 
 
 const queryClient = new QueryClient({
@@ -69,6 +70,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <TrafficLogger />
+          <AdminWebVitalsGate />
           <Routes>
             <Route path="/" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
