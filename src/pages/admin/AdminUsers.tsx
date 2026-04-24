@@ -385,6 +385,7 @@ const AdminUsers = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* Add User Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
