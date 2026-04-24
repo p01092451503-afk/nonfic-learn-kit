@@ -299,6 +299,7 @@ const AdminLearning = () => {
           </TabsContent>
         </Tabs>
       </div>
+      )}
     </DashboardLayout>
   );
 };
