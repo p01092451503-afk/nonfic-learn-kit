@@ -15,8 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Pin, Upload, X, FileText, Eye, ClipboardList } from "lucide-react";
+import TargetingFields, { isTargetingValid, type TargetingValue } from "@/components/admin/TargetingFields";
 
 const EMPTY_FORM = { title: "", content: "", is_pinned: false, is_published: true, course_id: "" };
+const EMPTY_TARGET: TargetingValue = { countries: [], branchIds: [], courseIds: [] };
 
 const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
   const { t } = useTranslation();
@@ -25,6 +27,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [target, setTarget] = useState<TargetingValue>(EMPTY_TARGET);
   const [files, setFiles] = useState<File[]>([]);
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
   const [filterCourse, setFilterCourse] = useState("all");
@@ -68,6 +71,9 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
         course_id: form.course_id || null,
         file_urls: fileUrls,
         author_id: user!.id,
+        target_countries: target.countries,
+        target_branch_ids: target.branchIds,
+        target_course_ids: target.courseIds,
       };
       if (editingId) {
         const { error } = await supabase.from("board_posts").update(payload).eq("id", editingId);
@@ -100,12 +106,14 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
     setDialogOpen(false);
     setEditingId(null);
     setForm(EMPTY_FORM);
+    setTarget(EMPTY_TARGET);
     setFiles([]);
     setExistingFiles([]);
   };
 
   const openNew = () => {
     setForm(EMPTY_FORM);
+    setTarget(EMPTY_TARGET);
     setFiles([]);
     setExistingFiles([]);
     setEditingId(null);
@@ -119,6 +127,11 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
       is_pinned: post.is_pinned,
       is_published: post.is_published,
       course_id: post.course_id || "",
+    });
+    setTarget({
+      countries: post.target_countries || [],
+      branchIds: post.target_branch_ids || [],
+      courseIds: post.target_course_ids || [],
     });
     setExistingFiles(post.file_urls || []);
     setFiles([]);
@@ -182,7 +195,15 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
                         {post.is_pinned && <Pin className="h-3.5 w-3.5 text-primary shrink-0" />}
                         <span className="font-medium text-foreground">{post.title}</span>
                         {!post.is_published && <Badge variant="secondary" className="text-[10px]">{t("board.draft", "비공개")}</Badge>}
-                        {post.course_id && <Badge variant="outline" className="text-[10px]">{courses.find(c => c.id === post.course_id)?.title || t("board.course", "강좌")}</Badge>}
+                        {(post.target_countries?.length || 0) > 0 && (
+                          <Badge variant="outline" className="text-[10px]">🌐 {post.target_countries.join(", ")}</Badge>
+                        )}
+                        {(post.target_branch_ids?.length || 0) > 0 && (
+                          <Badge variant="outline" className="text-[10px]">지점 {post.target_branch_ids.length}</Badge>
+                        )}
+                        {(post.target_course_ids?.length || 0) > 0 && (
+                          <Badge variant="outline" className="text-[10px]">강의 {post.target_course_ids.length}</Badge>
+                        )}
                         {(post.file_urls?.length || 0) > 0 && <Badge variant="outline" className="text-[10px] gap-0.5"><FileText className="h-2.5 w-2.5" />{post.file_urls.length}</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{post.content}</p>
@@ -217,18 +238,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
               <Label className="text-xs">{t("board.postContent", "내용")} *</Label>
               <Textarea className="text-sm min-h-[120px]" value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{t("board.linkedCourse", "연결 강좌 (선택)")}</Label>
-              <Select value={form.course_id || "none"} onValueChange={v => setForm(f => ({ ...f, course_id: v === "none" ? "" : v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("board.generalBoard", "일반 게시판")}</SelectItem>
-                  {courses.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <TargetingFields value={target} onChange={setTarget} compact />
             <div className="space-y-2">
               <Label className="text-xs">{t("board.attachments", "첨부파일")}</Label>
               {existingFiles.length > 0 && (
@@ -279,7 +289,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={closeDialog}>{t("common.cancel")}</Button>
-            <Button size="sm" onClick={() => saveMutation.mutate()} disabled={!form.title.trim() || !form.content.trim() || saveMutation.isPending}>
+            <Button size="sm" onClick={() => saveMutation.mutate()} disabled={!form.title.trim() || !form.content.trim() || !isTargetingValid(target) || saveMutation.isPending}>
               {saveMutation.isPending ? t("common.processing") : editingId ? t("common.edit") : t("common.add")}
             </Button>
           </DialogFooter>

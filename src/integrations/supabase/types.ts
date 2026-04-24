@@ -23,6 +23,9 @@ export type Database = {
           id: string
           is_pinned: boolean
           is_published: boolean
+          target_branch_ids: string[] | null
+          target_countries: string[] | null
+          target_course_ids: string[] | null
           title: string
           updated_at: string
         }
@@ -34,6 +37,9 @@ export type Database = {
           id?: string
           is_pinned?: boolean
           is_published?: boolean
+          target_branch_ids?: string[] | null
+          target_countries?: string[] | null
+          target_course_ids?: string[] | null
           title: string
           updated_at?: string
         }
@@ -45,6 +51,9 @@ export type Database = {
           id?: string
           is_pinned?: boolean
           is_published?: boolean
+          target_branch_ids?: string[] | null
+          target_countries?: string[] | null
+          target_course_ids?: string[] | null
           title?: string
           updated_at?: string
         }
@@ -573,6 +582,9 @@ export type Database = {
           id: string
           is_pinned: boolean
           is_published: boolean
+          target_branch_ids: string[] | null
+          target_countries: string[] | null
+          target_course_ids: string[] | null
           title: string
           updated_at: string
           view_count: number
@@ -586,6 +598,9 @@ export type Database = {
           id?: string
           is_pinned?: boolean
           is_published?: boolean
+          target_branch_ids?: string[] | null
+          target_countries?: string[] | null
+          target_course_ids?: string[] | null
           title: string
           updated_at?: string
           view_count?: number
@@ -599,6 +614,9 @@ export type Database = {
           id?: string
           is_pinned?: boolean
           is_published?: boolean
+          target_branch_ids?: string[] | null
+          target_countries?: string[] | null
+          target_course_ids?: string[] | null
           title?: string
           updated_at?: string
           view_count?: number
@@ -1067,6 +1085,7 @@ export type Database = {
       departments: {
         Row: {
           code: string | null
+          country: string | null
           created_at: string | null
           display_order: number | null
           id: string
@@ -1079,6 +1098,7 @@ export type Database = {
         }
         Insert: {
           code?: string | null
+          country?: string | null
           created_at?: string | null
           display_order?: number | null
           id?: string
@@ -1091,6 +1111,7 @@ export type Database = {
         }
         Update: {
           code?: string | null
+          country?: string | null
           created_at?: string | null
           display_order?: number | null
           id?: string
@@ -1771,6 +1792,15 @@ export type Database = {
         Returns: Json
       }
       update_streak: { Args: { p_user_id: string }; Returns: undefined }
+      user_can_view_targeted_post: {
+        Args: {
+          _target_branch_ids: string[]
+          _target_countries: string[]
+          _target_course_ids: string[]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "teacher" | "student" | "super_admin"

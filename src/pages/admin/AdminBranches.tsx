@@ -24,7 +24,7 @@ const AdminBranches = () => {
   // Branch dialog state
   const [branchDialog, setBranchDialog] = useState(false);
   const [editingBranch, setEditingBranch] = useState<any>(null);
-  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "" });
+  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "", country: "" });
 
   // Team dialog state
   const [teamDialog, setTeamDialog] = useState(false);
@@ -88,6 +88,7 @@ const AdminBranches = () => {
         name: branchForm.name,
         name_en: branchForm.name_en || null,
         code: branchForm.code || null,
+        country: branchForm.country?.trim().toUpperCase() || null,
         parent_department_id: null,
       };
       if (editingBranch) {
@@ -151,12 +152,12 @@ const AdminBranches = () => {
   // ── Helpers ──
   const openAddBranch = () => {
     setEditingBranch(null);
-    setBranchForm({ name: "", name_en: "", code: "" });
+    setBranchForm({ name: "", name_en: "", code: "", country: "" });
     setBranchDialog(true);
   };
   const openEditBranch = (b: any) => {
     setEditingBranch(b);
-    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "" });
+    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "", country: b.country || "" });
     setBranchDialog(true);
   };
   const openAddTeam = () => {
@@ -469,6 +470,17 @@ const AdminBranches = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("admin.deptCode")}</label>
               <Input value={branchForm.code} onChange={e => setBranchForm(f => ({ ...f, code: e.target.value }))} placeholder="HQ, YDP, JJU" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">국가 코드 (선택)</label>
+              <Input
+                value={branchForm.country}
+                onChange={e => setBranchForm(f => ({ ...f, country: e.target.value.toUpperCase() }))}
+                placeholder="예: KR, JP, US"
+                maxLength={5}
+                className="uppercase"
+              />
+              <p className="text-[11px] text-muted-foreground">국가별 게시판/공지 타겟팅에 사용됩니다.</p>
             </div>
           </div>
           <DialogFooter>

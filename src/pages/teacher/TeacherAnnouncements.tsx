@@ -17,6 +17,9 @@ import { toast } from "@/hooks/use-toast";
 import { Megaphone, Plus, Pin, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import TargetingFields, { isTargetingValid, type TargetingValue } from "@/components/admin/TargetingFields";
+
+const EMPTY_TARGET: TargetingValue = { countries: [], branchIds: [], courseIds: [] };
 
 const TeacherAnnouncements = () => {
   const { t } = useTranslation();
@@ -26,6 +29,7 @@ const TeacherAnnouncements = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", content: "", is_pinned: false, is_published: true });
+  const [target, setTarget] = useState<TargetingValue>(EMPTY_TARGET);
 
   const { data: announcements } = useQuery({
     queryKey: ["teacher-announcements", user?.id],
@@ -43,11 +47,16 @@ const TeacherAnnouncements = () => {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const targetPayload = {
+        target_countries: target.countries,
+        target_branch_ids: target.branchIds,
+        target_course_ids: target.courseIds,
+      };
       if (editId) {
-        const { error } = await supabase.from("announcements").update({ ...form, updated_at: new Date().toISOString() }).eq("id", editId);
+        const { error } = await supabase.from("announcements").update({ ...form, ...targetPayload, updated_at: new Date().toISOString() }).eq("id", editId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("announcements").insert({ ...form, author_id: user!.id });
+        const { error } = await supabase.from("announcements").insert({ ...form, ...targetPayload, author_id: user!.id });
         if (error) throw error;
       }
     },
@@ -74,12 +83,18 @@ const TeacherAnnouncements = () => {
 
   const resetForm = () => {
     setForm({ title: "", content: "", is_pinned: false, is_published: true });
+    setTarget(EMPTY_TARGET);
     setEditId(null);
   };
 
   const openEdit = (ann: any) => {
     setEditId(ann.id);
     setForm({ title: ann.title, content: ann.content, is_pinned: ann.is_pinned, is_published: ann.is_published });
+    setTarget({
+      countries: ann.target_countries || [],
+      branchIds: ann.target_branch_ids || [],
+      courseIds: ann.target_course_ids || [],
+    });
     setDialogOpen(true);
   };
 
@@ -156,6 +171,7 @@ const TeacherAnnouncements = () => {
               <Label>{t("announcements.content", "내용")}</Label>
               <Textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} rows={6} />
             </div>
+            <TargetingFields value={target} onChange={setTarget} compact />
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Switch checked={form.is_pinned} onCheckedChange={(v) => setForm((f) => ({ ...f, is_pinned: v }))} />
@@ -166,7 +182,7 @@ const TeacherAnnouncements = () => {
                 <Label>{t("announcements.publish", "게시")}</Label>
               </div>
             </div>
-            <Button onClick={() => saveMutation.mutate()} disabled={!form.title || !form.content || saveMutation.isPending} className="w-full">
+            <Button onClick={() => saveMutation.mutate()} disabled={!form.title || !form.content || !isTargetingValid(target) || saveMutation.isPending} className="w-full">
               {saveMutation.isPending ? t("common.processing") : t("common.save")}
             </Button>
           </div>
