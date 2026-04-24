@@ -34,6 +34,10 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("sidebar-collapsed") === "true";
+  });
   const [hasNewAnnouncement, setHasNewAnnouncement] = useState(false);
   const [hasNewBoardPost, setHasNewBoardPost] = useState(false);
   const { profile, signOut } = useUser();
@@ -41,6 +45,14 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const { t } = useTranslation();
 
   const activeRole = role || primaryRole;
+
+  const toggleCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try { localStorage.setItem("sidebar-collapsed", String(next)); } catch { /* noop */ }
+      return next;
+    });
+  };
 
   // Check for new announcements & board posts (published within last 24 hours)
   useEffect(() => {
