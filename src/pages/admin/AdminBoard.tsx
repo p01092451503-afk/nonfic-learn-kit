@@ -71,6 +71,9 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
         course_id: form.course_id || null,
         file_urls: fileUrls,
         author_id: user!.id,
+        target_countries: target.countries,
+        target_branch_ids: target.branchIds,
+        target_course_ids: target.courseIds,
       };
       if (editingId) {
         const { error } = await supabase.from("board_posts").update(payload).eq("id", editingId);
@@ -103,12 +106,14 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
     setDialogOpen(false);
     setEditingId(null);
     setForm(EMPTY_FORM);
+    setTarget(EMPTY_TARGET);
     setFiles([]);
     setExistingFiles([]);
   };
 
   const openNew = () => {
     setForm(EMPTY_FORM);
+    setTarget(EMPTY_TARGET);
     setFiles([]);
     setExistingFiles([]);
     setEditingId(null);
@@ -122,6 +127,11 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
       is_pinned: post.is_pinned,
       is_published: post.is_published,
       course_id: post.course_id || "",
+    });
+    setTarget({
+      countries: post.target_countries || [],
+      branchIds: post.target_branch_ids || [],
+      courseIds: post.target_course_ids || [],
     });
     setExistingFiles(post.file_urls || []);
     setFiles([]);
