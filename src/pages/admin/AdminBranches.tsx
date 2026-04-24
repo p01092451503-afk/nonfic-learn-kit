@@ -471,6 +471,17 @@ const AdminBranches = () => {
               <label className="text-sm font-medium">{t("admin.deptCode")}</label>
               <Input value={branchForm.code} onChange={e => setBranchForm(f => ({ ...f, code: e.target.value }))} placeholder="HQ, YDP, JJU" />
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">국가 코드 (선택)</label>
+              <Input
+                value={branchForm.country}
+                onChange={e => setBranchForm(f => ({ ...f, country: e.target.value.toUpperCase() }))}
+                placeholder="예: KR, JP, US"
+                maxLength={5}
+                className="uppercase"
+              />
+              <p className="text-[11px] text-muted-foreground">국가별 게시판/공지 타겟팅에 사용됩니다.</p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBranchDialog(false)}>{t("common.cancel")}</Button>
