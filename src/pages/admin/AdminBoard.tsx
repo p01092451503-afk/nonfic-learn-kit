@@ -230,18 +230,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
               <Label className="text-xs">{t("board.postContent", "내용")} *</Label>
               <Textarea className="text-sm min-h-[120px]" value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{t("board.linkedCourse", "연결 강좌 (선택)")}</Label>
-              <Select value={form.course_id || "none"} onValueChange={v => setForm(f => ({ ...f, course_id: v === "none" ? "" : v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("board.generalBoard", "일반 게시판")}</SelectItem>
-                  {courses.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <TargetingFields value={target} onChange={setTarget} compact />
             <div className="space-y-2">
               <Label className="text-xs">{t("board.attachments", "첨부파일")}</Label>
               {existingFiles.length > 0 && (
