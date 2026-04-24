@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,48 +8,56 @@ import { UserProvider } from "@/contexts/UserContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
 import RoleBasedRedirect from "@/components/RoleBasedRedirect";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import StudentDashboard from "./pages/StudentDashboard";
-import StudentCourses from "./pages/student/StudentCourses";
-import StudentAssignments from "./pages/student/StudentAssignments";
-import StudentAchievements from "./pages/student/StudentAchievements";
-import CourseCatalog from "./pages/student/CourseCatalog";
-import MyPage from "./pages/student/MyPage";
-import TeacherDashboard from "./pages/TeacherDashboard";
-import TeacherCourses from "./pages/teacher/TeacherCourses";
-import TeacherAssignments from "./pages/teacher/TeacherAssignments";
-import CreateCourse from "./pages/teacher/CreateCourse";
-import TeacherStudents from "./pages/teacher/TeacherStudents";
-import TeacherStudentDetail from "./pages/teacher/TeacherStudentDetail";
-import TeacherNotifications from "./pages/teacher/TeacherNotifications";
-import TeacherAnnouncements from "./pages/teacher/TeacherAnnouncements";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminCourses from "./pages/admin/AdminCourses";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminLearning from "./pages/admin/AdminLearning";
-import AdminAttendance from "./pages/admin/AdminAttendance";
-import AdminCompletion from "./pages/admin/AdminCompletion";
-import AdminTraffic from "./pages/admin/AdminTraffic";
-import AdminBranches from "./pages/admin/AdminBranches";
-import AdminNotifications from "./pages/admin/AdminNotifications";
-import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
-import StudentAnnouncements from "./pages/student/StudentAnnouncements";
-import AdminBoard from "./pages/admin/AdminBoard";
-import AdminSurveys from "./pages/admin/AdminSurveys";
-import AdminVideos from "./pages/admin/AdminVideos";
-import StudentBoard from "./pages/student/StudentBoard";
-import DeptAdminDashboard from "./pages/DeptAdminDashboard";
-import CourseDetail from "./pages/CourseDetail";
-import AdminEnrollments from "./pages/admin/AdminEnrollments";
-import ContentPlayer from "./pages/ContentPlayer";
-import AssessmentPage from "./pages/AssessmentPage";
-import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth"; // keep eager: first paint
 import TrafficLogger from "./components/TrafficLogger";
-import CourseRedirect from "./components/CourseRedirect";
-import ContentRedirect from "./components/ContentRedirect";
 import AdminWebVitalsGate from "./components/AdminWebVitalsGate";
+
+// Lazy-load all non-critical routes to drastically reduce initial bundle.
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
+const StudentCourses = lazy(() => import("./pages/student/StudentCourses"));
+const StudentAssignments = lazy(() => import("./pages/student/StudentAssignments"));
+const StudentAchievements = lazy(() => import("./pages/student/StudentAchievements"));
+const CourseCatalog = lazy(() => import("./pages/student/CourseCatalog"));
+const MyPage = lazy(() => import("./pages/student/MyPage"));
+const TeacherDashboard = lazy(() => import("./pages/TeacherDashboard"));
+const TeacherCourses = lazy(() => import("./pages/teacher/TeacherCourses"));
+const TeacherAssignments = lazy(() => import("./pages/teacher/TeacherAssignments"));
+const CreateCourse = lazy(() => import("./pages/teacher/CreateCourse"));
+const TeacherStudents = lazy(() => import("./pages/teacher/TeacherStudents"));
+const TeacherStudentDetail = lazy(() => import("./pages/teacher/TeacherStudentDetail"));
+const TeacherNotifications = lazy(() => import("./pages/teacher/TeacherNotifications"));
+const TeacherAnnouncements = lazy(() => import("./pages/teacher/TeacherAnnouncements"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminCourses = lazy(() => import("./pages/admin/AdminCourses"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminLearning = lazy(() => import("./pages/admin/AdminLearning"));
+const AdminAttendance = lazy(() => import("./pages/admin/AdminAttendance"));
+const AdminCompletion = lazy(() => import("./pages/admin/AdminCompletion"));
+const AdminTraffic = lazy(() => import("./pages/admin/AdminTraffic"));
+const AdminBranches = lazy(() => import("./pages/admin/AdminBranches"));
+const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const AdminAnnouncements = lazy(() => import("./pages/admin/AdminAnnouncements"));
+const StudentAnnouncements = lazy(() => import("./pages/student/StudentAnnouncements"));
+const AdminBoard = lazy(() => import("./pages/admin/AdminBoard"));
+const AdminSurveys = lazy(() => import("./pages/admin/AdminSurveys"));
+const AdminVideos = lazy(() => import("./pages/admin/AdminVideos"));
+const StudentBoard = lazy(() => import("./pages/student/StudentBoard"));
+const DeptAdminDashboard = lazy(() => import("./pages/DeptAdminDashboard"));
+const CourseDetail = lazy(() => import("./pages/CourseDetail"));
+const AdminEnrollments = lazy(() => import("./pages/admin/AdminEnrollments"));
+const ContentPlayer = lazy(() => import("./pages/ContentPlayer"));
+const AssessmentPage = lazy(() => import("./pages/AssessmentPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const CourseRedirect = lazy(() => import("./components/CourseRedirect"));
+const ContentRedirect = lazy(() => import("./components/ContentRedirect"));
+
+const RouteFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="h-8 w-8 rounded-full border-2 border-muted border-t-foreground animate-spin" aria-label="로딩 중" />
+  </div>
+);
 
 
 const queryClient = new QueryClient({
