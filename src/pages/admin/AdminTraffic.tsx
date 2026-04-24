@@ -158,16 +158,20 @@ const AdminTraffic = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <SignupTrendChart period={parseInt(period)} />
-              <HourlyAccessChart />
-            </div>
-            <MemberStatsCard />
-            <CourseStatsCard />
+            <Suspense fallback={<ChartFallback height={300} />}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <SignupTrendChart period={parseInt(period)} />
+                <HourlyAccessChart />
+              </div>
+              <MemberStatsCard />
+              <CourseStatsCard />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="branch" className="space-y-4">
-            <BranchLearningStats />
+            <Suspense fallback={<ChartFallback height={400} />}>
+              <BranchLearningStats />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="traffic" className="space-y-4">
@@ -352,8 +356,10 @@ const AdminTraffic = () => {
           </TabsContent>
 
           <TabsContent value="learning" className="space-y-4">
-            <LearningActivityCard />
-            <CourseStatsCard />
+            <Suspense fallback={<ChartFallback height={300} />}>
+              <LearningActivityCard />
+              <CourseStatsCard />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
