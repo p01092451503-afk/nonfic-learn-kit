@@ -171,6 +171,7 @@ const TeacherAnnouncements = () => {
               <Label>{t("announcements.content", "내용")}</Label>
               <Textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} rows={6} />
             </div>
+            <TargetingFields value={target} onChange={setTarget} compact />
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Switch checked={form.is_pinned} onCheckedChange={(v) => setForm((f) => ({ ...f, is_pinned: v }))} />
@@ -181,7 +182,7 @@ const TeacherAnnouncements = () => {
                 <Label>{t("announcements.publish", "게시")}</Label>
               </div>
             </div>
-            <Button onClick={() => saveMutation.mutate()} disabled={!form.title || !form.content || saveMutation.isPending} className="w-full">
+            <Button onClick={() => saveMutation.mutate()} disabled={!form.title || !form.content || !isTargetingValid(target) || saveMutation.isPending} className="w-full">
               {saveMutation.isPending ? t("common.processing") : t("common.save")}
             </Button>
           </div>
