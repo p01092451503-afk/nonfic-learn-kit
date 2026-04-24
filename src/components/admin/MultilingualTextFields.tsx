@@ -37,6 +37,8 @@ const MultilingualTextFields = ({ value, onChange, contentRows = 6, autoTranslat
   const setAuto = (v: boolean) => {
     if (isControlled) onAutoTranslateChange!(v);
     else setInternalAuto(v);
+    // Clear EN when enabling auto-translate so save-time translation kicks in
+    if (v) onChange({ ...value, en: { title: "", content: "" } });
   };
 
   const updateKo = (patch: Partial<MultilingualValue["ko"]>) =>
