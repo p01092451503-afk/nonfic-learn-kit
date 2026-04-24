@@ -24,7 +24,7 @@ const AdminBranches = () => {
   // Branch dialog state
   const [branchDialog, setBranchDialog] = useState(false);
   const [editingBranch, setEditingBranch] = useState<any>(null);
-  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "" });
+  const [branchForm, setBranchForm] = useState({ name: "", name_en: "", code: "", country: "" });
 
   // Team dialog state
   const [teamDialog, setTeamDialog] = useState(false);
@@ -88,6 +88,7 @@ const AdminBranches = () => {
         name: branchForm.name,
         name_en: branchForm.name_en || null,
         code: branchForm.code || null,
+        country: branchForm.country?.trim().toUpperCase() || null,
         parent_department_id: null,
       };
       if (editingBranch) {
@@ -151,12 +152,12 @@ const AdminBranches = () => {
   // ── Helpers ──
   const openAddBranch = () => {
     setEditingBranch(null);
-    setBranchForm({ name: "", name_en: "", code: "" });
+    setBranchForm({ name: "", name_en: "", code: "", country: "" });
     setBranchDialog(true);
   };
   const openEditBranch = (b: any) => {
     setEditingBranch(b);
-    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "" });
+    setBranchForm({ name: b.name, name_en: b.name_en || "", code: b.code || "", country: b.country || "" });
     setBranchDialog(true);
   };
   const openAddTeam = () => {
