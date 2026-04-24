@@ -18,6 +18,8 @@ import { Megaphone, Plus, Pin, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import TargetingFields, { isTargetingValid, type TargetingValue } from "@/components/admin/TargetingFields";
+import MultilingualTextFields, { EMPTY_MULTILINGUAL, isMultilingualValid, type MultilingualValue } from "@/components/admin/MultilingualTextFields";
+import { saveContentTranslations, loadContentTranslations } from "@/lib/i18nContent";
 
 const EMPTY_TARGET: TargetingValue = { countries: [], branchIds: [], courseIds: [] };
 
@@ -28,7 +30,8 @@ const AdminAnnouncements = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", content: "", is_pinned: false, is_published: true });
+  const [form, setForm] = useState({ is_pinned: false, is_published: true });
+  const [ml, setMl] = useState<MultilingualValue>(EMPTY_MULTILINGUAL);
   const [target, setTarget] = useState<TargetingValue>(EMPTY_TARGET);
 
   const { data: announcements } = useQuery({
@@ -60,12 +63,18 @@ const AdminAnnouncements = () => {
         target_branch_ids: target.branchIds,
         target_course_ids: target.courseIds,
       };
+      const basePayload = { title: ml.ko.title, content: ml.ko.content, ...form, ...targetPayload };
+      let recordId = editId;
       if (editId) {
-        const { error } = await supabase.from("announcements").update({ ...form, ...targetPayload, updated_at: new Date().toISOString() }).eq("id", editId);
+        const { error } = await supabase.from("announcements").update({ ...basePayload, updated_at: new Date().toISOString() }).eq("id", editId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("announcements").insert({ ...form, ...targetPayload, author_id: user!.id });
+        const { data, error } = await supabase.from("announcements").insert({ ...basePayload, author_id: user!.id }).select("id").single();
         if (error) throw error;
+        recordId = data!.id;
+      }
+      if (recordId) {
+        await saveContentTranslations({ table: "announcement_i18n", fkColumn: "announcement_id", recordId, value: ml });
       }
     },
     onSuccess: () => {
@@ -90,14 +99,23 @@ const AdminAnnouncements = () => {
   });
 
   const resetForm = () => {
-    setForm({ title: "", content: "", is_pinned: false, is_published: true });
+    setForm({ is_pinned: false, is_published: true });
+    setMl(EMPTY_MULTILINGUAL);
     setTarget(EMPTY_TARGET);
     setEditId(null);
   };
 
-  const openEdit = (ann: any) => {
+  const openEdit = async (ann: any) => {
     setEditId(ann.id);
-    setForm({ title: ann.title, content: ann.content, is_pinned: ann.is_pinned, is_published: ann.is_published });
+    setForm({ is_pinned: ann.is_pinned, is_published: ann.is_published });
+    const loaded = await loadContentTranslations({
+      table: "announcement_i18n",
+      fkColumn: "announcement_id",
+      recordId: ann.id,
+      fallbackTitle: ann.title,
+      fallbackContent: ann.content,
+    });
+    setMl(loaded);
     setTarget({
       countries: ann.target_countries || [],
       branchIds: ann.target_branch_ids || [],
@@ -173,14 +191,7 @@ const AdminAnnouncements = () => {
             <DialogTitle>{editId ? t("announcements.edit", "공지 수정") : t("announcements.create", "공지 등록")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label>{t("announcements.titleLabel", "제목")}</Label>
-              <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
-            </div>
-            <div>
-              <Label>{t("announcements.content", "내용")}</Label>
-              <Textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} rows={6} />
-            </div>
+            <MultilingualTextFields value={ml} onChange={setMl} />
             <TargetingFields value={target} onChange={setTarget} compact />
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
@@ -192,7 +203,7 @@ const AdminAnnouncements = () => {
                 <Label>{t("announcements.publish", "게시")}</Label>
               </div>
             </div>
-            <Button onClick={() => saveMutation.mutate()} disabled={!form.title || !form.content || !isTargetingValid(target) || saveMutation.isPending} className="w-full">
+            <Button onClick={() => saveMutation.mutate()} disabled={!isMultilingualValid(ml) || !isTargetingValid(target) || saveMutation.isPending} className="w-full">
               {saveMutation.isPending ? t("common.processing") : t("common.save")}
             </Button>
           </div>
