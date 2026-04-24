@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings, Compass, UserCircle, ClipboardCheck,
   LogOut, Menu, X, ChevronRight, GraduationCap, CalendarCheck, Activity, Building2, Bell, Megaphone, FileText, BarChart3, Video,
+  PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import LanguageToggle from "@/components/LanguageToggle";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationBell from "@/components/NotificationBell";
 import GuidedTourButton from "@/components/GuidedTourButton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface NavItem {
   label: string;
@@ -32,6 +34,10 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("sidebar-collapsed") === "true";
+  });
   const [hasNewAnnouncement, setHasNewAnnouncement] = useState(false);
   const [hasNewBoardPost, setHasNewBoardPost] = useState(false);
   const { profile, signOut } = useUser();
@@ -39,6 +45,14 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const { t } = useTranslation();
 
   const activeRole = role || primaryRole;
+
+  const toggleCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try { localStorage.setItem("sidebar-collapsed", String(next)); } catch { /* noop */ }
+      return next;
+    });
+  };
 
   // Check for new announcements & board posts (published within last 24 hours)
   useEffect(() => {
@@ -129,45 +143,56 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
       )}
 
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-[transform,width] duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"} ${sidebarCollapsed ? "w-16" : "w-64"}`}
         role="navigation"
         aria-label={t("nav.mainNavigation", "메인 내비게이션")}
       >
-        <div className="p-6 flex flex-col items-start relative">
+        <div className={`${sidebarCollapsed ? "p-3 items-center" : "p-6 items-start"} flex flex-col relative transition-all`}>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden absolute top-4 right-4 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" aria-label={t("common.closeSidebar", "사이드바 닫기")}>
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
-          <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
-          <span className="mt-1.5 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full" aria-label={`${t("common.role", "역할")}: ${roleLabel}`}>
-            {roleLabel}
-          </span>
+          {sidebarCollapsed ? (
+            <h1 className="font-display text-2xl tracking-wider text-sidebar-primary" aria-label="NONFICTION">N</h1>
+          ) : (
+            <>
+              <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
+              <span className="mt-1.5 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full" aria-label={`${t("common.role", "역할")}: ${roleLabel}`}>
+                {roleLabel}
+              </span>
+            </>
+          )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1" data-tour="sidebar-nav" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
+        <nav className={`flex-1 overflow-y-auto py-4 space-y-1 ${sidebarCollapsed ? "px-2" : "px-3"}`} data-tour="sidebar-nav" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.href;
-            return (
+            const linkEl = (
               <Link key={item.href} to={item.href} onClick={() => setSidebarOpen(false)}
-                className={`nav-item ${isActive ? "nav-item-active" : ""}`}
+                className={`nav-item ${isActive ? "nav-item-active" : ""} ${sidebarCollapsed ? "justify-center px-2" : ""}`}
                 aria-current={isActive ? "page" : undefined}
+                title={sidebarCollapsed ? item.label : undefined}
                 {...(item.tourId ? { "data-tour": item.tourId } : {})}>
                 <item.icon className="h-[18px] w-[18px]" aria-hidden="true" />
-                <span>{item.label}</span>
-                {item.showNew && (
+                {!sidebarCollapsed && <span>{item.label}</span>}
+                {!sidebarCollapsed && item.showNew && (
                   <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold leading-none rounded bg-destructive text-destructive-foreground animate-pulse">
                     NEW
                   </span>
                 )}
-                {isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" aria-hidden="true" />}
+                {!sidebarCollapsed && isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" aria-hidden="true" />}
+                {sidebarCollapsed && item.showNew && (
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive animate-pulse" aria-hidden="true" />
+                )}
               </Link>
             );
+            return linkEl;
           })}
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
-          <button onClick={handleSignOut} className="nav-item w-full text-muted-foreground hover:text-destructive" aria-label={t("auth.logout")}>
+          <button onClick={handleSignOut} className={`nav-item w-full text-muted-foreground hover:text-destructive ${sidebarCollapsed ? "justify-center px-2" : ""}`} aria-label={t("auth.logout")} title={sidebarCollapsed ? t("auth.logout") : undefined}>
             <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
-            <span>{t("auth.logout")}</span>
+            {!sidebarCollapsed && <span>{t("auth.logout")}</span>}
           </button>
         </div>
       </aside>
@@ -176,6 +201,14 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border h-16 flex items-center px-6 gap-4" role="banner">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground" aria-label={t("common.openSidebar", "메뉴 열기")}>
             <Menu className="h-5 w-5" aria-hidden="true" />
+          </button>
+          <button
+            onClick={toggleCollapsed}
+            className="hidden lg:inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            aria-label={sidebarCollapsed ? t("common.expandSidebar", "사이드바 펼치기") : t("common.collapseSidebar", "사이드바 접기")}
+            title={sidebarCollapsed ? t("common.expandSidebar", "사이드바 펼치기") : t("common.collapseSidebar", "사이드바 접기")}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="h-5 w-5" aria-hidden="true" /> : <PanelLeftClose className="h-5 w-5" aria-hidden="true" />}
           </button>
           <div className="flex-1" />
           {/* <GuidedTourButton role={activeRole as "student" | "teacher" | "admin"} /> */}
