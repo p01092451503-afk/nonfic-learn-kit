@@ -76,7 +76,15 @@
     "heroSubtitle": "NONFICTION 사내교육 플랫폼에서 당신의 전문성을 키워보세요.",
     "platformFooter": "NONFICTION Internal Education Platform",
     "branch": "소속 지점",
-    "selectBranch": "소속 지점을 선택하세요"
+    "selectBranch": "소속 지점을 선택하세요",
+    "loginFailedTitle": "로그인할 수 없습니다",
+    "loginFailedInvalid": "이메일 또는 비밀번호가 올바르지 않습니다.\n입력하신 정보를 다시 확인해 주세요.",
+    "loginFailedNotConfirmed": "이메일 인증이 완료되지 않았습니다.\n가입 시 받으신 인증 메일을 확인해 주세요.",
+    "loginFailedNoAccount": "등록되지 않은 계정입니다.\n먼저 가입을 진행해 주세요.",
+    "loginFailedTooMany": "로그인 시도가 너무 많습니다.\n잠시 후 다시 시도해 주세요.",
+    "loginFailedGeneric": "로그인 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
+    "tryAgain": "다시 시도",
+    "goSignUp": "가입하기"
   },
   "nav": {
     "dashboard": "대시보드",
