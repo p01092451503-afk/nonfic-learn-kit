@@ -76,7 +76,15 @@
     "heroSubtitle": "Grow your expertise on the NONFICTION internal education platform.",
     "platformFooter": "NONFICTION Internal Education Platform",
     "branch": "Branch",
-    "selectBranch": "Select your branch"
+    "selectBranch": "Select your branch",
+    "loginFailedTitle": "Unable to sign in",
+    "loginFailedInvalid": "The email or password is incorrect.\nPlease double-check your information.",
+    "loginFailedNotConfirmed": "Your email has not been verified yet.\nPlease check the verification email we sent.",
+    "loginFailedNoAccount": "This account is not registered.\nPlease sign up first.",
+    "loginFailedTooMany": "Too many login attempts.\nPlease try again in a moment.",
+    "loginFailedGeneric": "Something went wrong while signing in.\nPlease try again later.",
+    "tryAgain": "Try again",
+    "goSignUp": "Sign up"
   },
   "nav": {
     "dashboard": "Dashboard",

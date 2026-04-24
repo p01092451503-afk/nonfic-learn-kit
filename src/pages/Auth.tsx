@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, ArrowRight, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ const Auth = () => {
   const [resetEmail, setResetEmail] = useState("");
   const [isResetting, setIsResetting] = useState(false);
   const [branches, setBranches] = useState<any[]>([]);
+  const [loginError, setLoginError] = useState<{ type: "invalid" | "not_confirmed" | "no_account" | "too_many" | "generic"; raw?: string } | null>(null);
 
   useEffect(() => {
     supabase.from("departments").select("id, name, name_en, is_active").eq("is_active", true).order("display_order").order("name").then(({ data }) => {
@@ -64,7 +65,21 @@ const Auth = () => {
         toast({ title: t("auth.signUpComplete"), description: t("auth.checkEmail") });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          const msg = (error.message || "").toLowerCase();
+          let type: "invalid" | "not_confirmed" | "no_account" | "too_many" | "generic" = "generic";
+          if (msg.includes("not confirmed") || msg.includes("email not confirmed")) {
+            type = "not_confirmed";
+          } else if (msg.includes("rate limit") || msg.includes("too many")) {
+            type = "too_many";
+          } else if (msg.includes("user not found") || msg.includes("no user")) {
+            type = "no_account";
+          } else if (msg.includes("invalid") || msg.includes("credentials") || msg.includes("password")) {
+            type = "invalid";
+          }
+          setLoginError({ type, raw: error.message });
+          return;
+        }
         if (rememberMe) {
           localStorage.setItem(SAVED_EMAIL_KEY, email);
         } else {
@@ -217,6 +232,75 @@ const Auth = () => {
           }}
         />
       )}
+
+      {loginError && (
+        <LoginErrorDialog
+          errorType={loginError.type}
+          onClose={() => setLoginError(null)}
+          onForgotPassword={() => {
+            setLoginError(null);
+            setResetEmail(email);
+            setShowForgotPassword(true);
+          }}
+          onSignUp={() => {
+            setLoginError(null);
+            setIsSignUp(true);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const LoginErrorDialog = ({
+  errorType,
+  onClose,
+  onForgotPassword,
+  onSignUp,
+}: {
+  errorType: "invalid" | "not_confirmed" | "no_account" | "too_many" | "generic";
+  onClose: () => void;
+  onForgotPassword: () => void;
+  onSignUp: () => void;
+}) => {
+  const { t } = useTranslation();
+  const descKeyMap = {
+    invalid: "auth.loginFailedInvalid",
+    not_confirmed: "auth.loginFailedNotConfirmed",
+    no_account: "auth.loginFailedNoAccount",
+    too_many: "auth.loginFailedTooMany",
+    generic: "auth.loginFailedGeneric",
+  } as const;
+  const showSignUp = errorType === "no_account" || errorType === "invalid";
+  const showForgot = errorType === "invalid";
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 animate-in fade-in" onClick={onClose}>
+      <div className="bg-background rounded-2xl p-6 sm:p-8 w-full max-w-md space-y-5 shadow-xl animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+          </div>
+          <div className="space-y-1.5 flex-1">
+            <h3 className="text-lg font-semibold text-foreground">{t("auth.loginFailedTitle")}</h3>
+            <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">{t(descKeyMap[errorType])}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2 pt-2">
+          {showSignUp && (
+            <Button type="button" variant="outline" className="rounded-full" onClick={onSignUp}>
+              {t("auth.goSignUp")}
+            </Button>
+          )}
+          {showForgot && (
+            <Button type="button" variant="outline" className="rounded-full" onClick={onForgotPassword}>
+              {t("auth.forgotPassword")}
+            </Button>
+          )}
+          <Button type="button" variant="login" className="rounded-full px-6" onClick={onClose}>
+            {t("auth.tryAgain")}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
