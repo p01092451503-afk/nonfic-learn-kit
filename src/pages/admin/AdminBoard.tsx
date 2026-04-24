@@ -195,7 +195,15 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
                         {post.is_pinned && <Pin className="h-3.5 w-3.5 text-primary shrink-0" />}
                         <span className="font-medium text-foreground">{post.title}</span>
                         {!post.is_published && <Badge variant="secondary" className="text-[10px]">{t("board.draft", "비공개")}</Badge>}
-                        {post.course_id && <Badge variant="outline" className="text-[10px]">{courses.find(c => c.id === post.course_id)?.title || t("board.course", "강좌")}</Badge>}
+                        {(post.target_countries?.length || 0) > 0 && (
+                          <Badge variant="outline" className="text-[10px]">🌐 {post.target_countries.join(", ")}</Badge>
+                        )}
+                        {(post.target_branch_ids?.length || 0) > 0 && (
+                          <Badge variant="outline" className="text-[10px]">지점 {post.target_branch_ids.length}</Badge>
+                        )}
+                        {(post.target_course_ids?.length || 0) > 0 && (
+                          <Badge variant="outline" className="text-[10px]">강의 {post.target_course_ids.length}</Badge>
+                        )}
                         {(post.file_urls?.length || 0) > 0 && <Badge variant="outline" className="text-[10px] gap-0.5"><FileText className="h-2.5 w-2.5" />{post.file_urls.length}</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{post.content}</p>
