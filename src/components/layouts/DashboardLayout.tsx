@@ -202,6 +202,14 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground" aria-label={t("common.openSidebar", "메뉴 열기")}>
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
+          <button
+            onClick={toggleCollapsed}
+            className="hidden lg:inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            aria-label={sidebarCollapsed ? t("common.expandSidebar", "사이드바 펼치기") : t("common.collapseSidebar", "사이드바 접기")}
+            title={sidebarCollapsed ? t("common.expandSidebar", "사이드바 펼치기") : t("common.collapseSidebar", "사이드바 접기")}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="h-5 w-5" aria-hidden="true" /> : <PanelLeftClose className="h-5 w-5" aria-hidden="true" />}
+          </button>
           <div className="flex-1" />
           {/* <GuidedTourButton role={activeRole as "student" | "teacher" | "admin"} /> */}
           <div data-tour="language-toggle"><LanguageToggle /></div>
