@@ -15,8 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Pin, Upload, X, FileText, Eye, ClipboardList } from "lucide-react";
+import TargetingFields, { isTargetingValid, type TargetingValue } from "@/components/admin/TargetingFields";
 
 const EMPTY_FORM = { title: "", content: "", is_pinned: false, is_published: true, course_id: "" };
+const EMPTY_TARGET: TargetingValue = { countries: [], branchIds: [], courseIds: [] };
 
 const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
   const { t } = useTranslation();
@@ -25,6 +27,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [target, setTarget] = useState<TargetingValue>(EMPTY_TARGET);
   const [files, setFiles] = useState<File[]>([]);
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
   const [filterCourse, setFilterCourse] = useState("all");
