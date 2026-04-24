@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { Languages, Loader2 } from "lucide-react";
 import { translateKoToEn } from "@/lib/translate";
 import { toast } from "sonner";
@@ -23,11 +24,20 @@ interface Props {
   value: MultilingualValue;
   onChange: (v: MultilingualValue) => void;
   contentRows?: number;
+  autoTranslate?: boolean;
+  onAutoTranslateChange?: (v: boolean) => void;
 }
 
-const MultilingualTextFields = ({ value, onChange, contentRows = 6 }: Props) => {
+const MultilingualTextFields = ({ value, onChange, contentRows = 6, autoTranslate, onAutoTranslateChange }: Props) => {
   const { t } = useTranslation();
   const [translating, setTranslating] = useState(false);
+  const [internalAuto, setInternalAuto] = useState(true);
+  const isControlled = autoTranslate !== undefined && !!onAutoTranslateChange;
+  const auto = isControlled ? !!autoTranslate : internalAuto;
+  const setAuto = (v: boolean) => {
+    if (isControlled) onAutoTranslateChange!(v);
+    else setInternalAuto(v);
+  };
 
   const updateKo = (patch: Partial<MultilingualValue["ko"]>) =>
     onChange({ ...value, ko: { ...value.ko, ...patch } });
@@ -56,12 +66,22 @@ const MultilingualTextFields = ({ value, onChange, contentRows = 6 }: Props) => 
       <div className="flex items-center justify-between gap-2">
         <TabsList className="h-8">
           <TabsTrigger value="ko" className="text-xs h-6">한국어</TabsTrigger>
-          <TabsTrigger value="en" className="text-xs h-6">English</TabsTrigger>
+          <TabsTrigger value="en" className="text-xs h-6" disabled={auto}>English</TabsTrigger>
         </TabsList>
-        <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={handleAutoTranslate} disabled={translating}>
-          {translating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
-          {t("multilingual.autoTranslate", "한→영 자동 번역")}
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Switch checked={auto} onCheckedChange={setAuto} aria-label={t("multilingual.autoTranslate", "자동 번역")} />
+            <Label className="text-xs cursor-pointer" onClick={() => setAuto(!auto)}>
+              {t("multilingual.autoTranslate", "자동 번역")}
+            </Label>
+          </div>
+          {!auto && (
+            <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={handleAutoTranslate} disabled={translating}>
+              {translating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+              {t("multilingual.translateNow", "한→영 번역")}
+            </Button>
+          )}
+        </div>
       </div>
       <TabsContent value="ko" className="space-y-3 mt-3">
         <div className="space-y-1">
@@ -72,7 +92,13 @@ const MultilingualTextFields = ({ value, onChange, contentRows = 6 }: Props) => 
           <Label className="text-xs">{t("announcements.content", "내용")} (KO) *</Label>
           <Textarea value={value.ko.content} onChange={(e) => updateKo({ content: e.target.value })} rows={contentRows} />
         </div>
+        {auto && (
+          <p className="text-[11px] text-muted-foreground">
+            {t("multilingual.autoTranslateHint", "저장 시 한국어 내용이 영어로 자동 번역됩니다.")}
+          </p>
+        )}
       </TabsContent>
+      {!auto && (
       <TabsContent value="en" className="space-y-3 mt-3">
         <div className="space-y-1">
           <Label className="text-xs">{t("announcements.titleLabel", "제목")} (EN)</Label>
@@ -83,6 +109,7 @@ const MultilingualTextFields = ({ value, onChange, contentRows = 6 }: Props) => 
           <Textarea value={value.en.content} onChange={(e) => updateEn({ content: e.target.value })} rows={contentRows} placeholder={t("multilingual.autoFillHint", "비워두면 한국어로 표시됩니다")} />
         </div>
       </TabsContent>
+      )}
     </Tabs>
   );
 };
