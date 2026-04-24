@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from "react";
+import BrandLoader from "@/components/BrandLoader";
 import { Activity, HardDrive, Globe, Play, TrendingUp, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,8 +28,11 @@ const HourlyAccessChart = lazy(() => import("@/components/admin/stats/HourlyAcce
 const SignupTrendChart = lazy(() => import("@/components/admin/stats/SignupTrendChart"));
 
 const ChartFallback = ({ height = 250 }: { height?: number }) => (
-  <div className="flex items-center justify-center rounded-lg border border-border bg-card" style={{ height }}>
-    <div className="h-6 w-6 rounded-full border-2 border-muted border-t-foreground animate-spin" aria-label="로딩 중" />
+  <div
+    className="flex items-center justify-center rounded-lg border border-border bg-card"
+    style={{ height }}
+  >
+    <BrandLoader />
   </div>
 );
 
