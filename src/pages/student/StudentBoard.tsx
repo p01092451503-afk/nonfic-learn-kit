@@ -71,6 +71,12 @@ const StudentBoard = () => {
                   <div className="flex items-center gap-2 flex-wrap">
                     {post.is_pinned && <Pin className="h-3.5 w-3.5 text-primary shrink-0" />}
                     <span className="font-medium text-foreground">{post.title}</span>
+                    {(post.target_countries?.length || 0) > 0 && (
+                      <Badge variant="outline" className="text-[10px]">🌐 {post.target_countries.join(", ")}</Badge>
+                    )}
+                    {(post.target_course_ids?.length || 0) > 0 && (
+                      <Badge variant="outline" className="text-[10px]">{t("board.course", "강의")}</Badge>
+                    )}
                     {(post.file_urls?.length || 0) > 0 && (
                       <Badge variant="outline" className="text-[10px] gap-0.5"><FileText className="h-2.5 w-2.5" />{post.file_urls.length}</Badge>
                     )}
