@@ -10,12 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
+import PageSkeleton from "@/components/PageSkeleton";
 
 const AdminLearning = () => {
   const { t, i18n } = useTranslation();
   const [courseFilter, setCourseFilter] = useState("all");
 
-  const { data: courses = [] } = useQuery({
+  const { data: courses = [], isPending: coursesPending } = useQuery({
     queryKey: ["admin-learning-courses"],
     queryFn: async () => {
       const { data, error } = await supabase.from("courses").select("id, title, status").order("title");
@@ -24,7 +25,7 @@ const AdminLearning = () => {
     },
   });
 
-  const { data: enrollments = [] } = useQuery({
+  const { data: enrollments = [], isPending: enrollmentsPending } = useQuery({
     queryKey: ["admin-learning-enrollments"],
     queryFn: async () => {
       const { data, error } = await supabase.from("enrollments").select("id, user_id, course_id, progress, enrolled_at, completed_at");
@@ -33,7 +34,7 @@ const AdminLearning = () => {
     },
   });
 
-  const { data: profiles = [] } = useQuery({
+  const { data: profiles = [], isPending: profilesPending } = useQuery({
     queryKey: ["admin-learning-profiles"],
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles").select("user_id, full_name, department");
@@ -41,6 +42,8 @@ const AdminLearning = () => {
       return data;
     },
   });
+
+  const isLoading = coursesPending || enrollmentsPending || profilesPending;
 
   const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
   const courseMap = new Map(courses.map((c: any) => [c.id, c]));
@@ -86,6 +89,9 @@ const AdminLearning = () => {
 
   return (
     <DashboardLayout role="admin">
+      {isLoading ? (
+        <PageSkeleton blocks={4} />
+      ) : (
       <div className="space-y-6 sm:space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -293,6 +299,7 @@ const AdminLearning = () => {
           </TabsContent>
         </Tabs>
       </div>
+      )}
     </DashboardLayout>
   );
 };

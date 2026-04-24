@@ -13,6 +13,7 @@ import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import PageSkeleton from "@/components/PageSkeleton";
 
 const ROLE_PRIORITY = ["super_admin", "admin", "teacher", "student"] as const;
 
@@ -35,7 +36,7 @@ const AdminUsers = () => {
     student: { text: t("roles.studentLabel", "학습자"), className: "text-foreground bg-secondary" },
   };
 
-  const { data: profiles = [] } = useQuery({
+  const { data: profiles = [], isPending: profilesPending } = useQuery({
     queryKey: ["admin-profiles"],
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
@@ -44,7 +45,7 @@ const AdminUsers = () => {
     },
   });
 
-  const { data: roles = [] } = useQuery({
+  const { data: roles = [], isPending: rolesPending } = useQuery({
     queryKey: ["admin-user-roles"],
     queryFn: async () => {
       const { data, error } = await supabase.from("user_roles").select("*");
@@ -52,6 +53,8 @@ const AdminUsers = () => {
       return data;
     },
   });
+
+  const isInitialLoading = profilesPending || rolesPending;
 
   const { data: departments = [] } = useQuery({
     queryKey: ["departments"],
@@ -255,6 +258,9 @@ const AdminUsers = () => {
 
   return (
     <DashboardLayout role="admin">
+      {isInitialLoading ? (
+        <PageSkeleton blocks={5} />
+      ) : (
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -379,6 +385,7 @@ const AdminUsers = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* Add User Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>

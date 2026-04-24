@@ -201,3 +201,39 @@
   background: hsl(var(--foreground) / 0.12) !important;
   transform: none;
 }
+
+/* ===== Brand Loader (NONFICTION wordmark skeleton) ===== */
+.brand-loader-wordmark {
+  font-family: 'Playfair Display', 'Noto Serif KR', serif;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--foreground) / 0.18) 0%,
+    hsl(var(--foreground) / 0.18) 35%,
+    hsl(var(--foreground) / 0.95) 50%,
+    hsl(var(--foreground) / 0.18) 65%,
+    hsl(var(--foreground) / 0.18) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: brand-loader-shimmer 1.8s ease-in-out infinite;
+}
+@keyframes brand-loader-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.brand-loader-bar {
+  animation: brand-loader-slide 1.4s ease-in-out infinite;
+}
+@keyframes brand-loader-slide {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(420%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-loader-wordmark,
+  .brand-loader-bar {
+    animation: none;
+  }
+}

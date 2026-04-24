@@ -11,6 +11,7 @@ import RoleBasedRedirect from "@/components/RoleBasedRedirect";
 import Auth from "./pages/Auth"; // keep eager: first paint
 import TrafficLogger from "./components/TrafficLogger";
 import AdminWebVitalsGate from "./components/AdminWebVitalsGate";
+import BrandLoader from "./components/BrandLoader";
 
 // Lazy-load all non-critical routes to drastically reduce initial bundle.
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -53,11 +54,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const CourseRedirect = lazy(() => import("./components/CourseRedirect"));
 const ContentRedirect = lazy(() => import("./components/ContentRedirect"));
 
-const RouteFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="h-8 w-8 rounded-full border-2 border-muted border-t-foreground animate-spin" aria-label="로딩 중" />
-  </div>
-);
+const RouteFallback = () => <BrandLoader fullscreen />;
 
 
 const queryClient = new QueryClient({
