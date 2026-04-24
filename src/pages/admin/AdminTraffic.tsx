@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Activity, HardDrive, Globe, Play, TrendingUp, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,15 +13,24 @@ import { format, subDays } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
 
+// Eager: lightweight summary cards shown above tabs
 import SiteSummaryCard from "@/components/admin/stats/SiteSummaryCard";
 import TodayOperationsCard from "@/components/admin/stats/TodayOperationsCard";
-import BranchLearningStats from "@/components/admin/stats/BranchLearningStats";
-import MemberStatsCard from "@/components/admin/stats/MemberStatsCard";
-import CourseStatsCard from "@/components/admin/stats/CourseStatsCard";
-import LearningActivityCard from "@/components/admin/stats/LearningActivityCard";
-import HourlyAccessChart from "@/components/admin/stats/HourlyAccessChart";
-import SignupTrendChart from "@/components/admin/stats/SignupTrendChart";
 import RealtimeUsersCard from "@/components/admin/stats/RealtimeUsersCard";
+
+// Lazy: chart-heavy components — load only when their tab is opened
+const BranchLearningStats = lazy(() => import("@/components/admin/stats/BranchLearningStats"));
+const MemberStatsCard = lazy(() => import("@/components/admin/stats/MemberStatsCard"));
+const CourseStatsCard = lazy(() => import("@/components/admin/stats/CourseStatsCard"));
+const LearningActivityCard = lazy(() => import("@/components/admin/stats/LearningActivityCard"));
+const HourlyAccessChart = lazy(() => import("@/components/admin/stats/HourlyAccessChart"));
+const SignupTrendChart = lazy(() => import("@/components/admin/stats/SignupTrendChart"));
+
+const ChartFallback = ({ height = 250 }: { height?: number }) => (
+  <div className="flex items-center justify-center rounded-lg border border-border bg-card" style={{ height }}>
+    <div className="h-6 w-6 rounded-full border-2 border-muted border-t-foreground animate-spin" aria-label="로딩 중" />
+  </div>
+);
 
 const formatBytes = (bytes: number) => {
   if (bytes === 0) return "0 B";
