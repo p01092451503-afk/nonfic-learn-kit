@@ -8,21 +8,26 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Megaphone, Pin, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
+import { pickTranslation } from "@/lib/i18nContent";
 
 const StudentAnnouncements = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedAnn, setSelectedAnn] = useState<any>(null);
+  const lang = i18n.language?.startsWith("en") ? "en" : "ko";
 
   const { data: announcements, isLoading } = useQuery({
     queryKey: ["student-announcements"],
     queryFn: async () => {
       const { data } = await supabase
         .from("announcements")
-        .select("*")
+        .select("*, announcement_i18n(language_code, title, content)")
         .eq("is_published", true)
         .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false });
-      return data || [];
+      return (data || []).map((a: any) => {
+        const localized = pickTranslation(a.announcement_i18n, lang, { title: a.title, content: a.content });
+        return { ...a, displayTitle: localized.title, displayContent: localized.content };
+      });
     },
   });
 
@@ -72,9 +77,9 @@ const StudentAnnouncements = () => {
                       {ann.is_pinned && (
                         <Badge variant="outline" className="text-xs shrink-0">{t("announcements.pinned", "고정")}</Badge>
                       )}
-                      <h3 className="font-medium truncate">{ann.title}</h3>
+                      <h3 className="font-medium truncate">{ann.displayTitle}</h3>
                     </div>
-                    <p className="text-sm text-muted-foreground truncate mt-0.5">{ann.content}</p>
+                    <p className="text-sm text-muted-foreground truncate mt-0.5">{ann.displayContent}</p>
                   </div>
                   <div className="text-xs text-muted-foreground shrink-0">
                     {format(new Date(ann.created_at), "yyyy-MM-dd")}
@@ -90,7 +95,7 @@ const StudentAnnouncements = () => {
       <Dialog open={!!selectedAnn} onOpenChange={() => setSelectedAnn(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{selectedAnn?.title}</DialogTitle>
+            <DialogTitle>{selectedAnn?.displayTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -99,7 +104,7 @@ const StudentAnnouncements = () => {
               <span>{selectedAnn && format(new Date(selectedAnn.created_at), "yyyy-MM-dd HH:mm")}</span>
             </div>
             <div className="whitespace-pre-wrap text-sm leading-relaxed border-t pt-4">
-              {selectedAnn?.content}
+              {selectedAnn?.displayContent}
             </div>
           </div>
         </DialogContent>
