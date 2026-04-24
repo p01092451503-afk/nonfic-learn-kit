@@ -26,7 +26,7 @@ export const BrandLoader = ({ fullscreen = false, label, className }: BrandLoade
       aria-busy="true"
     >
       <span
-        className="brand-loader-wordmark select-none font-serif text-3xl sm:text-4xl font-semibold tracking-[0.2em] text-foreground/90"
+        className="brand-loader-wordmark select-none font-serif text-3xl sm:text-4xl font-semibold tracking-[0.12em] text-foreground/90"
         aria-label="NONFICTION 로딩 중"
       >
         NONFICTION
