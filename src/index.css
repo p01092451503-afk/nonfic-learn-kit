@@ -68,6 +68,14 @@
     --warning-foreground: 30 10% 12%;
     --info: 210 60% 50%;
     --info-foreground: 0 0% 100%;
+
+    /* Chart palette — soft, brand-aligned hues with good separation */
+    --chart-1: 30 10% 18%;     /* charcoal (matches primary) */
+    --chart-2: 210 70% 55%;    /* blue */
+    --chart-3: 152 55% 45%;    /* green */
+    --chart-4: 38 90% 55%;     /* amber */
+    --chart-5: 280 55% 60%;    /* violet */
+    --chart-6: 0 70% 60%;      /* coral */
   }
 
   * {
