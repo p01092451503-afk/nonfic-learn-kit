@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
@@ -21,9 +22,11 @@ const StudentSurvey = ({ courseId }: StudentSurveyProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [answers, setAnswers] = useState<Record<string, { text?: string; value?: number }>>({});
+  const { i18n, t } = useTranslation();
+  const isEn = i18n.language?.startsWith("en");
 
   const { data: survey } = useQuery({
-    queryKey: ["course-survey", courseId],
+    queryKey: ["course-survey", courseId, isEn ? "en" : "ko"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("surveys")
@@ -33,13 +36,21 @@ const StudentSurvey = ({ courseId }: StudentSurveyProps) => {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
+      if (!data) return data;
+      if (isEn) {
+        return {
+          ...data,
+          title: (data as any).title_en || data.title,
+          description: (data as any).description_en || data.description,
+        };
+      }
       return data;
     },
     enabled: !!courseId,
   });
 
   const { data: questions = [] } = useQuery({
-    queryKey: ["survey-questions", survey?.id],
+    queryKey: ["survey-questions", survey?.id, isEn ? "en" : "ko"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("survey_questions")
@@ -47,7 +58,12 @@ const StudentSurvey = ({ courseId }: StudentSurveyProps) => {
         .eq("survey_id", survey!.id)
         .order("order_index");
       if (error) throw error;
-      return data;
+      if (!isEn) return data;
+      return (data || []).map((q: any) => ({
+        ...q,
+        question_text: q.question_text_en || q.question_text,
+        options: q.options_en || q.options,
+      }));
     },
     enabled: !!survey?.id,
   });
@@ -74,7 +90,7 @@ const StudentSurvey = ({ courseId }: StudentSurveyProps) => {
         if (q.is_required) {
           const ans = answers[q.id];
           if (!ans || (!ans.text && !ans.value)) {
-            throw new Error(`필수 질문에 답해주세요: ${q.question_text}`);
+            throw new Error(`${t("survey.requiredQuestion", "필수 질문에 답해주세요")}: ${q.question_text}`);
           }
         }
       }
@@ -100,9 +116,9 @@ const StudentSurvey = ({ courseId }: StudentSurveyProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["survey-response"] });
-      toast({ title: "설문이 제출되었습니다. 감사합니다!" });
+      toast({ title: t("survey.submitted", "설문이 제출되었습니다. 감사합니다!") });
     },
-    onError: (e: any) => toast({ title: "오류", description: e.message, variant: "destructive" }),
+    onError: (e: any) => toast({ title: t("common.error", "오류"), description: e.message, variant: "destructive" }),
   });
 
   if (!survey || questions.length === 0) return null;
@@ -112,7 +128,7 @@ const StudentSurvey = ({ courseId }: StudentSurveyProps) => {
       <Card className="border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20">
         <CardContent className="flex items-center gap-3 py-4">
           <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-          <span className="text-sm font-medium text-green-700 dark:text-green-300">설문에 이미 응답하셨습니다.</span>
+          <span className="text-sm font-medium text-green-700 dark:text-green-300">{t("survey.alreadyResponded", "설문에 이미 응답하셨습니다.")}</span>
         </CardContent>
       </Card>
     );
@@ -133,7 +149,7 @@ const StudentSurvey = ({ courseId }: StudentSurveyProps) => {
               <span className="text-sm font-medium">
                 {i + 1}. {q.question_text}
               </span>
-              {q.is_required && <Badge variant="destructive" className="text-[10px] h-4">필수</Badge>}
+              {q.is_required && <Badge variant="destructive" className="text-[10px] h-4">{t("common.required", "필수")}</Badge>}
             </div>
 
             {q.question_type === "multiple_choice" && (
@@ -154,7 +170,7 @@ const StudentSurvey = ({ courseId }: StudentSurveyProps) => {
               <Textarea
                 value={answers[q.id]?.text || ""}
                 onChange={e => setAnswers(prev => ({ ...prev, [q.id]: { text: e.target.value } }))}
-                placeholder="답변을 입력하세요"
+                placeholder={t("survey.answerPlaceholder", "답변을 입력하세요")}
                 rows={3}
               />
             )}
@@ -179,7 +195,7 @@ const StudentSurvey = ({ courseId }: StudentSurveyProps) => {
         ))}
 
         <Button onClick={() => submitMutation.mutate()} disabled={submitMutation.isPending} className="w-full">
-          {submitMutation.isPending ? "제출 중..." : "설문 제출"}
+          {submitMutation.isPending ? t("survey.submitting", "제출 중...") : t("survey.submit", "설문 제출")}
         </Button>
       </CardContent>
     </Card>
