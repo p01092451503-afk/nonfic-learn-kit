@@ -495,6 +495,27 @@ const CreateCourse = () => {
           if (i18nRows.length) {
             await supabase.from("course_content_i18n").insert(i18nRows);
           }
+
+          // Save media package items
+          const pkgRows: any[] = [];
+          insertedContents.forEach((ic: any, idx: number) => {
+            const c = contents[idx];
+            if (c.source === "package" && c.package_items?.length) {
+              c.package_items.forEach((it, itIdx) => {
+                if (!it.media_url) return;
+                pkgRows.push({
+                  content_id: ic.id,
+                  item_type: it.item_type,
+                  media_url: it.media_url,
+                  caption: it.caption || null,
+                  order_index: itIdx,
+                });
+              });
+            }
+          });
+          if (pkgRows.length) {
+            await (supabase as any).from("media_package_items").insert(pkgRows);
+          }
         }
       }
 
