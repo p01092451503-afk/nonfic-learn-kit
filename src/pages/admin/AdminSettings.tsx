@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, Bell, Shield, Building2, Plus, Pencil, Trash2, Users, Info, Layers, Server, Cloud, Lock, FileText } from "lucide-react";
+import { Settings, Bell, Shield, Building2, Plus, Pencil, Trash2, Users } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
-import SystemInfoSection from "@/components/admin/SystemInfoSection";
 
 const AdminSettings = () => {
   const { t, i18n } = useTranslation();
@@ -184,7 +183,6 @@ const AdminSettings = () => {
           <TabsList>
             <TabsTrigger value="general">{t("admin.generalSettings")}</TabsTrigger>
             <TabsTrigger value="departments">{t("admin.deptManagement")}</TabsTrigger>
-            <TabsTrigger value="system">{t("admin.systemInfo", "시스템 정보")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-8">
@@ -265,9 +263,6 @@ const AdminSettings = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="system" className="space-y-6">
-            <SystemInfoSection />
-          </TabsContent>
         </Tabs>
       </div>
 
