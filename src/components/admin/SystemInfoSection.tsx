@@ -1,5 +1,6 @@
-import { Info, Layers, Server, Cloud, Shield, FileText, Database, Globe, Cpu, Lock, Languages, KeyRound, ShieldCheck, FileCheck2, GitBranch, Boxes } from "lucide-react";
+import { Info, Layers, Server, Cloud, Shield, FileText, Database, Globe, Cpu, Lock, Languages, KeyRound, ShieldCheck, FileCheck2, GitBranch, Boxes, Smartphone } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PWAStatusCard from "./PWAStatusCard";
 
 interface SpecRow {
   name: string;
@@ -149,6 +150,7 @@ const SystemInfoSection = () => {
         <TabsList>
           <TabsTrigger value="stack" className="gap-2 text-sm"><Boxes className="h-4 w-4" /> 기술 스택</TabsTrigger>
           <TabsTrigger value="security" className="gap-2 text-sm"><Lock className="h-4 w-4" /> 보안 백서</TabsTrigger>
+          <TabsTrigger value="pwa" className="gap-2 text-sm"><Smartphone className="h-4 w-4" /> PWA 상태</TabsTrigger>
         </TabsList>
 
         <TabsContent value="stack" className="space-y-4">
@@ -157,6 +159,10 @@ const SystemInfoSection = () => {
 
         <TabsContent value="security" className="space-y-4">
           {securityWhitepaper.map((g) => <SpecCard key={g.title} group={g} />)}
+        </TabsContent>
+
+        <TabsContent value="pwa" className="space-y-4">
+          <PWAStatusCard />
         </TabsContent>
       </Tabs>
     </div>

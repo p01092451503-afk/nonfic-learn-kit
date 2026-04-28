@@ -79,7 +79,13 @@ const PWAUpdatePrompt = () => {
           onNeedRefresh() { if (!cancelled) setNeedRefresh(true); },
           onRegisteredSW(_url: string, registration: ServiceWorkerRegistration | undefined) {
             if (registration) {
-              setInterval(() => { registration.update().catch(() => {}); }, 60 * 60 * 1000);
+              // Initial check timestamp
+              localStorage.setItem("pwa-last-update-check", String(Date.now()));
+              setInterval(() => {
+                registration.update()
+                  .then(() => localStorage.setItem("pwa-last-update-check", String(Date.now())))
+                  .catch(() => {});
+              }, 60 * 60 * 1000);
             }
           },
         });
