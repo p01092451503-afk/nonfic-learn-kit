@@ -319,6 +319,12 @@ const CreateCourse = () => {
             updated.video_provider = "custom";
             updated.video_url = "";
             updated.card_image_url = "";
+          } else if (value === "package") {
+            updated.content_type = "media_package" as ContentType;
+            updated.video_provider = "";
+            updated.video_url = "";
+            updated.card_image_url = "";
+            if (!updated.package_items) updated.package_items = [];
           } else {
             updated.content_type = "video";
             updated.video_provider = "";
