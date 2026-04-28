@@ -218,7 +218,7 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
                           <Badge variant="outline" className="text-[10px]">🌐 {post.target_countries.join(", ")}</Badge>
                         )}
                         {(post.target_branch_ids?.length || 0) > 0 && (
-                          <Badge variant="outline" className="text-[10px]">지점 {post.target_branch_ids.length}</Badge>
+                          <Badge variant="outline" className="text-[10px]">조직 {post.target_branch_ids.length}</Badge>
                         )}
                         {(post.target_course_ids?.length || 0) > 0 && (
                           <Badge variant="outline" className="text-[10px]">강의 {post.target_course_ids.length}</Badge>

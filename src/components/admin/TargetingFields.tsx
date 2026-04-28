@@ -135,11 +135,11 @@ const TargetingFields = ({ value, onChange, compact }: TargetingFieldsProps) => 
 
       {/* Branches */}
       <div className="space-y-1.5">
-        <Label className="text-[11px] text-muted-foreground">지점</Label>
+        <Label className="text-[11px] text-muted-foreground">조직</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button type="button" variant="outline" size="sm" className="h-8 w-full justify-between text-xs">
-              <span>{value.branchIds.length > 0 ? `${value.branchIds.length}개 지점 선택` : "지점 선택"}</span>
+              <span>{value.branchIds.length > 0 ? `${value.branchIds.length}개 조직 선택` : "조직 선택"}</span>
               <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -147,7 +147,7 @@ const TargetingFields = ({ value, onChange, compact }: TargetingFieldsProps) => 
             <ScrollArea className="max-h-[240px]">
               <div className="p-1.5">
                 {branches.length === 0 ? (
-                  <p className="text-xs text-muted-foreground p-2">등록된 지점이 없습니다.</p>
+                  <p className="text-xs text-muted-foreground p-2">등록된 조직이 없습니다.</p>
                 ) : (
                   branches.map((b: any) => (
                     <label

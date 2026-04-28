@@ -81,7 +81,7 @@ const AdminBranches = () => {
       if (branchForm.code) {
         const existing = allDepts.find((d: any) => d.code === branchForm.code && d.id !== editingBranch?.id);
         if (existing) {
-          throw new Error(`지점 코드 "${branchForm.code}"는 이미 "${existing.name}"에서 사용 중입니다.`);
+          throw new Error(`조직 코드 "${branchForm.code}"는 이미 "${existing.name}"에서 사용 중입니다.`);
         }
       }
       const payload: any = {
@@ -237,7 +237,7 @@ const AdminBranches = () => {
     const nameIdx = headers.findIndex(h => h.includes("name") || h.includes("이름"));
     const emailIdx = headers.findIndex(h => h.includes("email") || h.includes("이메일"));
     const posIdx = headers.findIndex(h => h.includes("position") || h.includes("직급"));
-    const branchIdx = headers.findIndex(h => h.includes("branch") || h.includes("지점"));
+    const branchIdx = headers.findIndex(h => h.includes("branch") || h.includes("조직"));
     if (emailIdx === -1 || nameIdx === -1) {
       toast({ title: t("common.error"), description: "CSV에 이름(name)과 이메일(email) 열이 필요합니다.", variant: "destructive" });
       return;
@@ -268,7 +268,7 @@ const AdminBranches = () => {
   };
 
   const downloadTemplate = () => {
-    const csv = "이름,이메일,직급,지점\n홍길동,hong@example.com,사원,서울본사\n";
+    const csv = "이름,이메일,직급,조직\n홍길동,hong@example.com,사원,서울본사\n";
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -443,7 +443,7 @@ const AdminBranches = () => {
               </div>
               <div className="bg-muted/50 rounded-lg p-4 text-xs text-muted-foreground space-y-1">
                 <p className="font-medium text-foreground">{t("branches.csvFormat")}</p>
-                <p>이름, 이메일, 직급, 지점</p>
+                <p>이름, 이메일, 직급, 조직</p>
                 <p>홍길동, hong@example.com, 사원, 서울본사</p>
               </div>
             </div>
@@ -461,7 +461,7 @@ const AdminBranches = () => {
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("branches.branchName")}</label>
-              <Input value={branchForm.name} onChange={e => setBranchForm(f => ({ ...f, name: e.target.value }))} placeholder="예: 본사, 영등포지점" />
+              <Input value={branchForm.name} onChange={e => setBranchForm(f => ({ ...f, name: e.target.value }))} placeholder="예: 본사, 영등포조직" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("branches.branchNameEn")}</label>
