@@ -13,6 +13,7 @@ import TrafficLogger from "./components/TrafficLogger";
 import AdminWebVitalsGate from "./components/AdminWebVitalsGate";
 import AppErrorBoundary from "./components/AppErrorBoundary";
 import RouteSkeleton from "./components/RouteSkeleton";
+import PWAUpdatePrompt from "./components/PWAUpdatePrompt";
 
 const lazyWithRetry = <T extends { default: React.ComponentType<any> }>(factory: () => Promise<T>) =>
   lazy(async () => {
@@ -171,6 +172,7 @@ const App = () => (
         <BrowserRouter>
           <TrafficLogger />
           <AdminWebVitalsGate />
+          <PWAUpdatePrompt />
           <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
