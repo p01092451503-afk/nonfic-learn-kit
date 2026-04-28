@@ -242,10 +242,6 @@ const Auth = () => {
             setResetEmail(email);
             setShowForgotPassword(true);
           }}
-          onSignUp={() => {
-            setLoginError(null);
-            setIsSignUp(true);
-          }}
         />
       )}
     </div>
@@ -256,12 +252,10 @@ const LoginErrorDialog = ({
   errorType,
   onClose,
   onForgotPassword,
-  onSignUp,
 }: {
   errorType: "invalid" | "not_confirmed" | "no_account" | "too_many" | "generic";
   onClose: () => void;
   onForgotPassword: () => void;
-  onSignUp: () => void;
 }) => {
   const { t } = useTranslation();
   const descKeyMap = {
@@ -271,7 +265,6 @@ const LoginErrorDialog = ({
     too_many: "auth.loginFailedTooMany",
     generic: "auth.loginFailedGeneric",
   } as const;
-  const showSignUp = errorType === "no_account" || errorType === "invalid";
   const showForgot = errorType === "invalid";
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 animate-in fade-in" onClick={onClose}>
