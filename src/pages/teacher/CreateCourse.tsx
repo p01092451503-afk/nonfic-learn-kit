@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
   MonitorPlay, BookOpen, ExternalLink, Link2, Eye, ImagePlus, X, CalendarIcon,
-  Save, Languages, Loader2, LayoutGrid, Image as ImageIcon, ChevronUp, Package, ChevronDown,
+  Save, Languages, LayoutGrid, Image as ImageIcon, ChevronUp, Package, ChevronDown,
 } from "lucide-react";
 import { translateKoToEn } from "@/lib/translate";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import CategorySelect from "@/components/CategorySelect";
 import { useTranslation } from "react-i18next";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Database } from "@/integrations/supabase/types";
 
 type ContentType = Database["public"]["Enums"]["content_type"];
