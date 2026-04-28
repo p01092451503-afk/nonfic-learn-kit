@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Settings, Bell, Shield, Building2, Plus, Pencil, Trash2 } from "lucide-react";
+import { Settings, Bell, Shield, Building2, Plus, Pencil, Trash2, ToggleLeft, Users } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,15 +13,31 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
 
 const AdminSettings = () => {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith("en");
   const queryClient = useQueryClient();
+  const { teacherRoleEnabled } = useSystemSettings();
   const [deptDialogOpen, setDeptDialogOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<any>(null);
   const [deleteDeptId, setDeleteDeptId] = useState<string | null>(null);
   const [deptForm, setDeptForm] = useState({ name: "", name_en: "", code: "", parent_department_id: "", team_name: "" });
+
+  const updateSettingMutation = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: any }) => {
+      const { error } = await supabase
+        .from("system_settings" as any)
+        .upsert({ key, value }, { onConflict: "key" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["system-settings"] });
+      toast.success(t("admin.settingSaved", "설정이 저장되었습니다."));
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
 
   const settingSections = [
     {
@@ -169,6 +186,37 @@ const AdminSettings = () => {
           </TabsList>
 
           <TabsContent value="general" className="space-y-8">
+            {/* 역할 표시 설정 */}
+            <div className="stat-card space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <Users className="h-5 w-5 text-muted-foreground" />
+                <h2 className="text-base font-semibold text-foreground">
+                  {t("admin.roleVisibility", "역할 표시 설정")}
+                </h2>
+              </div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    {t("admin.useTeacherRole", "강사 역할 사용")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t(
+                      "admin.useTeacherRoleDesc",
+                      "비활성화하면 모든 사용자에게 강사 메뉴, 강사 대시보드, 역할 전환의 강사 옵션이 숨겨집니다.",
+                    )}
+                  </p>
+                </div>
+                <Switch
+                  checked={teacherRoleEnabled}
+                  onCheckedChange={(v) =>
+                    updateSettingMutation.mutate({ key: "teacher_role_enabled", value: v })
+                  }
+                  disabled={updateSettingMutation.isPending}
+                  aria-label={t("admin.useTeacherRole", "강사 역할 사용")}
+                />
+              </div>
+            </div>
+
             {settingSections.map((section) => (
               <div key={section.title} className="stat-card space-y-4">
                 <div className="flex items-center gap-3 pb-3 border-b border-border">
