@@ -71,13 +71,22 @@ const AdminDashboard = () => {
     },
   });
 
+  // Only the slim columns we actually use, and only mandatory/published rows
+  // (urgentMandatory + courseMap for activity feed). For 9K+ users this avoids
+  // pulling the whole table on every dashboard mount.
   const { data: courses = [] } = useQuery({
     queryKey: ["dash-courses"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("courses").select("id, title, status, is_mandatory, deadline").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, title, status, is_mandatory, deadline")
+        .eq("status", "published")
+        .order("created_at", { ascending: false })
+        .limit(200);
       if (error) throw error;
       return data;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: recentAnnouncements = [] } = useQuery({
@@ -87,15 +96,24 @@ const AdminDashboard = () => {
       if (error) throw error;
       return data;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
-  const { data: enrollments = [] } = useQuery({
-    queryKey: ["dash-enrollments"],
+  // Aggregated server-side summary — replaces the full enrollments + full
+  // profiles scans (the previous biggest bottleneck for the dashboard).
+  const { data: summary } = useQuery({
+    queryKey: ["dash-summary"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("enrollments").select("course_id, user_id, progress, completed_at, enrolled_at").order("enrolled_at", { ascending: false });
+      const { data, error } = await supabase.rpc("admin_dashboard_summary");
       if (error) throw error;
-      return data;
+      return data as {
+        total_enrollments: number;
+        total_completions: number;
+        active_courses: number;
+        top_courses: Array<{ id: string; title: string; enrolled: number; avg_progress: number }>;
+      };
     },
+    staleTime: 60_000,
   });
 
   const { data: recentActivity = [] } = useQuery({
@@ -121,17 +139,31 @@ const AdminDashboard = () => {
 
       return activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10);
     },
+    staleTime: 60_000,
   });
 
+  // Only fetch full_name for the user_ids that appear in the activity feed
+  // (was previously pulling ALL 9K profiles on every dashboard load).
+  const activityUserIds = useMemo(() => {
+    const ids = new Set<string>();
+    recentActivity.forEach((a: any) => { if (a.userId) ids.add(a.userId); });
+    return Array.from(ids);
+  }, [recentActivity]);
+
   const { data: profileMap = {} } = useQuery({
-    queryKey: ["dash-profile-map"],
+    queryKey: ["dash-profile-map", activityUserIds.join(",")],
+    enabled: activityUserIds.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("user_id, full_name");
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", activityUserIds);
       if (error) throw error;
       const map: Record<string, string> = {};
       data?.forEach((p: any) => { map[p.user_id] = p.full_name || ""; });
       return map;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   // ── Derived ──
@@ -143,23 +175,16 @@ const AdminDashboard = () => {
     return daysLeft <= 3;
   });
 
-  const topCourses = useMemo(() => {
-    const grouped: Record<string, { count: number; progress: number }> = {};
-    enrollments.forEach((e: any) => {
-      if (!grouped[e.course_id]) grouped[e.course_id] = { count: 0, progress: 0 };
-      grouped[e.course_id].count++;
-      grouped[e.course_id].progress += Number(e.progress) || 0;
-    });
-    return courses
-      .filter((c: any) => c.status === "published" && grouped[c.id])
-      .map((c: any) => ({
+  // Comes pre-aggregated from the server now.
+  const topCourses = useMemo(
+    () =>
+      (summary?.top_courses ?? []).map((c) => ({
         title: c.title,
-        enrolled: grouped[c.id].count,
-        avgProgress: Math.round(grouped[c.id].progress / grouped[c.id].count),
-      }))
-      .sort((a, b) => b.enrolled - a.enrolled)
-      .slice(0, 3);
-  }, [courses, enrollments]);
+        enrolled: Number(c.enrolled) || 0,
+        avgProgress: Number(c.avg_progress) || 0,
+      })),
+    [summary]
+  );
 
   const courseMap = useMemo(() => {
     const m: Record<string, string> = {};
