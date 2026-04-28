@@ -239,9 +239,9 @@ const AdminSettings = () => {
                 </div>
               </div>
             ))}
-            <div className="flex justify-end">
-              <Button className="rounded-xl">{t("admin.saveSettings")}</Button>
-            </div>
+            <p className="text-xs text-muted-foreground text-right">
+              {t("admin.autoSavedNotice", "설정은 변경 즉시 자동 저장됩니다.")}
+            </p>
           </TabsContent>
 
           <TabsContent value="departments" className="space-y-6">
