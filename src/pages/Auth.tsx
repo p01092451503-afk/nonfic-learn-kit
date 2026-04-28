@@ -187,10 +187,7 @@ const Auth = () => {
 
             <Button type="submit" variant="login" size="xl" className="w-full" disabled={isLoading}>
               {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  {t("common.processing")}
-                </span>
+                t("common.processing")
               ) : (
                 <span className="flex items-center gap-2">
                   {isSignUp ? t("auth.signUp") : t("auth.login")}
