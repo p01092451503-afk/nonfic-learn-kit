@@ -4,6 +4,7 @@ import {
   LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings, Compass, UserCircle, ClipboardCheck,
   LogOut, Menu, X, ChevronRight, GraduationCap, CalendarCheck, Activity, Building2, Bell, Megaphone, FileText, BarChart3, Video,
   PanelLeftClose, PanelLeftOpen, Languages,
+  Info,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -172,6 +173,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
       label: "시스템",
       items: [
         { label: t("nav.settings"), href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
+        { label: t("nav.systemInfo", "시스템 정보"), href: "/admin/system-info", icon: Info },
       ],
     },
   ];
