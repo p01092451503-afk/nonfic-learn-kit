@@ -286,11 +286,6 @@ const LoginErrorDialog = ({
           </div>
         </div>
         <div className="flex flex-wrap justify-end gap-2 pt-2">
-          {showSignUp && (
-            <Button type="button" variant="outline" className="rounded-full" onClick={onSignUp}>
-              {t("auth.goSignUp")}
-            </Button>
-          )}
           {showForgot && (
             <Button type="button" variant="outline" className="rounded-full" onClick={onForgotPassword}>
               {t("auth.forgotPassword")}
