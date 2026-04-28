@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const StudentCourses = () => {
   const { user } = useUser();
@@ -158,7 +159,25 @@ const StudentCourses = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" role="status" aria-label={t("common.loading", "로딩 중")} /></div>
+          <div className="space-y-8" role="status" aria-live="polite" aria-label={t("common.loading", "로딩 중")}>
+            {Array.from({ length: 2 }).map((_, section) => (
+              <section key={section} className="space-y-3">
+                <Skeleton className="h-5 w-32" />
+                <div className="rounded-2xl overflow-hidden border border-border">
+                  {Array.from({ length: 3 }).map((__, row) => (
+                    <div key={row} className="flex items-center gap-4 p-4 border-b-2 border-border/80 last:border-b-0">
+                      <Skeleton className="h-14 w-14 rounded-lg shrink-0" />
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <Skeleton className="h-4 w-2/3" />
+                        <Skeleton className="h-2 w-full" />
+                      </div>
+                      <Skeleton className="h-4 w-10 shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
         ) : (
           <div className="space-y-8">
             {/* 수강중인 강의 */}
