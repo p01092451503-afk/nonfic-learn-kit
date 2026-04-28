@@ -179,6 +179,14 @@ const AdminAttendance = ({ role = "admin" }: AdminAttendanceProps) => {
   const totalCompletions = filteredStats.reduce((a, b) => a + b.completions, 0);
   const totalMinutes = filteredStats.reduce((a, b) => a + b.learningMinutes, 0);
 
+  const { data: spark } = useDashboardSparklines(14);
+  const attSparkline = {
+    sessions7: (spark?.sessions ?? []).slice(-7),
+    completions7: (spark?.completions ?? []).slice(-7),
+    sessionsDelta: computeDelta(spark?.sessions),
+    completionsDelta: computeDelta(spark?.completions),
+  };
+
   const exportCsv = () => {
     const header = [
       isKo ? "이름" : "Name",
