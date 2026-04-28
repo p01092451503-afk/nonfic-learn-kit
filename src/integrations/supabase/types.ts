@@ -1252,6 +1252,53 @@ export type Database = {
           },
         ]
       }
+      media_package_items: {
+        Row: {
+          caption: string | null
+          content_id: string
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          item_type: string
+          media_url: string
+          order_index: number
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          content_id: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          item_type: string
+          media_url: string
+          order_index?: number
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          content_id?: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          item_type?: string
+          media_url?: string
+          order_index?: number
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_package_items_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "course_contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -1882,7 +1929,13 @@ export type Database = {
       app_role: "admin" | "teacher" | "student" | "super_admin"
       assignment_status: "draft" | "published" | "closed"
       attendance_status: "present" | "absent" | "late" | "excused"
-      content_type: "video" | "document" | "quiz" | "assignment" | "live"
+      content_type:
+        | "video"
+        | "document"
+        | "quiz"
+        | "assignment"
+        | "live"
+        | "media_package"
       enrollment_status: "pending" | "approved" | "rejected"
       question_type:
         | "multiple_choice_4"
@@ -2023,7 +2076,14 @@ export const Constants = {
       app_role: ["admin", "teacher", "student", "super_admin"],
       assignment_status: ["draft", "published", "closed"],
       attendance_status: ["present", "absent", "late", "excused"],
-      content_type: ["video", "document", "quiz", "assignment", "live"],
+      content_type: [
+        "video",
+        "document",
+        "quiz",
+        "assignment",
+        "live",
+        "media_package",
+      ],
       enrollment_status: ["pending", "approved", "rejected"],
       question_type: [
         "multiple_choice_4",
