@@ -1273,4 +1273,195 @@ function normalizeMangoboardUrl(url: string): string {
   return normalized;
 }
 
+/* ───── Media Package Items Editor ───── */
+
+const PackageItemsEditor = ({
+  items,
+  onChange,
+}: {
+  items: PackageItemDraft[];
+  onChange: (items: PackageItemDraft[]) => void;
+}) => {
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+
+  const guessType = (url: string): "image" | "video" => {
+    if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url)) return "video";
+    if (/\.(jpg|jpeg|png|gif|webp|svg|bmp|avif)(\?.*)?$/i.test(url)) return "image";
+    return "image";
+  };
+
+  const updateItem = (idx: number, patch: Partial<PackageItemDraft>) => {
+    const next = items.map((it, i) => (i === idx ? { ...it, ...patch } : it));
+    onChange(next);
+  };
+
+  const addItem = (type: "image" | "video") => {
+    onChange([
+      ...items,
+      { tempId: crypto.randomUUID(), item_type: type, media_url: "", caption: "" },
+    ]);
+  };
+
+  const removeItem = (idx: number) => {
+    onChange(items.filter((_, i) => i !== idx));
+  };
+
+  const moveItem = (from: number, to: number) => {
+    if (from === to || to < 0 || to >= items.length) return;
+    const next = [...items];
+    const [m] = next.splice(from, 1);
+    next.splice(to, 0, m);
+    onChange(next);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] text-muted-foreground">
+          이미지와 영상을 순서대로 배치하면 학습자가 [다음] 버튼으로 한 장씩 진행합니다. ({items.length}개)
+        </p>
+      </div>
+
+      {items.length === 0 && (
+        <div className="rounded-xl border border-dashed border-border bg-muted/20 py-6 text-center text-xs text-muted-foreground">
+          항목을 추가하여 패키지를 구성하세요.
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {items.map((it, idx) => {
+          const isImage = it.item_type === "image";
+          const showPreview = !!it.media_url;
+          return (
+            <div
+              key={it.tempId}
+              draggable
+              onDragStart={() => setDragIndex(idx)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (dragIndex !== null) moveItem(dragIndex, idx);
+                setDragIndex(null);
+              }}
+              className={`rounded-xl border border-border bg-background p-3 space-y-2 transition-opacity ${
+                dragIndex === idx ? "opacity-50" : ""
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="cursor-grab text-muted-foreground hover:text-foreground"
+                  title="드래그하여 순서 변경"
+                >
+                  <GripVertical className="h-4 w-4" />
+                </button>
+                <span className="text-[11px] font-medium text-muted-foreground w-6 text-center">
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <Select
+                  value={it.item_type}
+                  onValueChange={(v) => updateItem(idx, { item_type: v as "image" | "video" })}
+                >
+                  <SelectTrigger className="h-8 w-[100px] rounded-lg text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="image">이미지</SelectItem>
+                    <SelectItem value="video">영상</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  value={it.media_url}
+                  onChange={(e) => {
+                    const url = e.target.value;
+                    updateItem(idx, {
+                      media_url: url,
+                      item_type: url ? guessType(url) : it.item_type,
+                    });
+                  }}
+                  placeholder="https://... (이미지 또는 영상 URL)"
+                  className="h-8 rounded-lg border-border text-xs flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={() => moveItem(idx, idx - 1)}
+                  disabled={idx === 0}
+                  className="p-1 rounded hover:bg-accent text-muted-foreground disabled:opacity-30"
+                  title="위로"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveItem(idx, idx + 1)}
+                  disabled={idx === items.length - 1}
+                  className="p-1 rounded hover:bg-accent text-muted-foreground disabled:opacity-30"
+                  title="아래로"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeItem(idx)}
+                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                  title="삭제"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              <div className="flex gap-3">
+                {showPreview && (
+                  <div className="w-28 shrink-0 rounded-lg border border-border overflow-hidden bg-muted/30 aspect-video">
+                    {isImage ? (
+                      <img
+                        src={it.media_url}
+                        alt={`항목 ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <video src={it.media_url} className="w-full h-full object-cover" muted />
+                    )}
+                  </div>
+                )}
+                <Textarea
+                  value={it.caption}
+                  onChange={(e) => updateItem(idx, { caption: e.target.value })}
+                  placeholder="캡션 (선택)"
+                  className="min-h-[60px] rounded-lg border-border text-xs flex-1 resize-none"
+                  rows={2}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addItem("image")}
+          className="gap-1.5 h-8 text-xs"
+        >
+          <ImageIcon className="h-3.5 w-3.5" /> 이미지 추가
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addItem("video")}
+          className="gap-1.5 h-8 text-xs"
+        >
+          <Video className="h-3.5 w-3.5" /> 영상 추가
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export default CreateCourse;
