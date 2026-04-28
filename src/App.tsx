@@ -14,46 +14,69 @@ import AdminWebVitalsGate from "./components/AdminWebVitalsGate";
 import BrandLoader from "./components/BrandLoader";
 import AppErrorBoundary from "./components/AppErrorBoundary";
 
+// Retry dynamic imports — recovers from transient chunk fetch failures
+// (network blips, stale chunks after redeploy). Reloads once as last resort.
+const lazyWithRetry = <T extends { default: React.ComponentType<any> }>(
+  factory: () => Promise<T>,
+) =>
+  lazy(async () => {
+    const RELOAD_KEY = "lovable:chunk-reloaded";
+    try {
+      return await factory();
+    } catch (err) {
+      try {
+        return await factory();
+      } catch (err2) {
+        if (typeof window !== "undefined" && !sessionStorage.getItem(RELOAD_KEY)) {
+          sessionStorage.setItem(RELOAD_KEY, "1");
+          window.location.reload();
+          return new Promise<T>(() => {}); // never resolves; reload is in flight
+        }
+        throw err2;
+      }
+    }
+  });
+
 // Lazy-load all non-critical routes to drastically reduce initial bundle.
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
-const StudentCourses = lazy(() => import("./pages/student/StudentCourses"));
-const StudentAssignments = lazy(() => import("./pages/student/StudentAssignments"));
-const StudentAchievements = lazy(() => import("./pages/student/StudentAchievements"));
-const CourseCatalog = lazy(() => import("./pages/student/CourseCatalog"));
-const MyPage = lazy(() => import("./pages/student/MyPage"));
-const TeacherDashboard = lazy(() => import("./pages/TeacherDashboard"));
-const TeacherCourses = lazy(() => import("./pages/teacher/TeacherCourses"));
-const TeacherAssignments = lazy(() => import("./pages/teacher/TeacherAssignments"));
-const CreateCourse = lazy(() => import("./pages/teacher/CreateCourse"));
-const TeacherStudents = lazy(() => import("./pages/teacher/TeacherStudents"));
-const TeacherStudentDetail = lazy(() => import("./pages/teacher/TeacherStudentDetail"));
-const TeacherNotifications = lazy(() => import("./pages/teacher/TeacherNotifications"));
-const TeacherAnnouncements = lazy(() => import("./pages/teacher/TeacherAnnouncements"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
-const AdminCourses = lazy(() => import("./pages/admin/AdminCourses"));
-const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
-const AdminLearning = lazy(() => import("./pages/admin/AdminLearning"));
-const AdminAttendance = lazy(() => import("./pages/admin/AdminAttendance"));
-const AdminCompletion = lazy(() => import("./pages/admin/AdminCompletion"));
-const AdminTraffic = lazy(() => import("./pages/admin/AdminTraffic"));
-const AdminBranches = lazy(() => import("./pages/admin/AdminBranches"));
-const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
-const AdminAnnouncements = lazy(() => import("./pages/admin/AdminAnnouncements"));
-const StudentAnnouncements = lazy(() => import("./pages/student/StudentAnnouncements"));
-const AdminBoard = lazy(() => import("./pages/admin/AdminBoard"));
-const AdminSurveys = lazy(() => import("./pages/admin/AdminSurveys"));
-const AdminVideos = lazy(() => import("./pages/admin/AdminVideos"));
-const StudentBoard = lazy(() => import("./pages/student/StudentBoard"));
-const DeptAdminDashboard = lazy(() => import("./pages/DeptAdminDashboard"));
-const CourseDetail = lazy(() => import("./pages/CourseDetail"));
-const AdminEnrollments = lazy(() => import("./pages/admin/AdminEnrollments"));
-const ContentPlayer = lazy(() => import("./pages/ContentPlayer"));
-const AssessmentPage = lazy(() => import("./pages/AssessmentPage"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const CourseRedirect = lazy(() => import("./components/CourseRedirect"));
-const ContentRedirect = lazy(() => import("./components/ContentRedirect"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
+const StudentDashboard = lazyWithRetry(() => import("./pages/StudentDashboard"));
+const StudentCourses = lazyWithRetry(() => import("./pages/student/StudentCourses"));
+const StudentAssignments = lazyWithRetry(() => import("./pages/student/StudentAssignments"));
+const StudentAchievements = lazyWithRetry(() => import("./pages/student/StudentAchievements"));
+const CourseCatalog = lazyWithRetry(() => import("./pages/student/CourseCatalog"));
+const MyPage = lazyWithRetry(() => import("./pages/student/MyPage"));
+const TeacherDashboard = lazyWithRetry(() => import("./pages/TeacherDashboard"));
+const TeacherCourses = lazyWithRetry(() => import("./pages/teacher/TeacherCourses"));
+const TeacherAssignments = lazyWithRetry(() => import("./pages/teacher/TeacherAssignments"));
+const CreateCourse = lazyWithRetry(() => import("./pages/teacher/CreateCourse"));
+const TeacherStudents = lazyWithRetry(() => import("./pages/teacher/TeacherStudents"));
+const TeacherStudentDetail = lazyWithRetry(() => import("./pages/teacher/TeacherStudentDetail"));
+const TeacherNotifications = lazyWithRetry(() => import("./pages/teacher/TeacherNotifications"));
+const TeacherAnnouncements = lazyWithRetry(() => import("./pages/teacher/TeacherAnnouncements"));
+const AdminDashboard = lazyWithRetry(() => import("./pages/AdminDashboard"));
+const AdminUsers = lazyWithRetry(() => import("./pages/admin/AdminUsers"));
+const AdminCourses = lazyWithRetry(() => import("./pages/admin/AdminCourses"));
+const AdminSettings = lazyWithRetry(() => import("./pages/admin/AdminSettings"));
+const AdminLearning = lazyWithRetry(() => import("./pages/admin/AdminLearning"));
+const AdminAttendance = lazyWithRetry(() => import("./pages/admin/AdminAttendance"));
+const AdminCompletion = lazyWithRetry(() => import("./pages/admin/AdminCompletion"));
+const AdminTraffic = lazyWithRetry(() => import("./pages/admin/AdminTraffic"));
+const AdminBranches = lazyWithRetry(() => import("./pages/admin/AdminBranches"));
+const AdminNotifications = lazyWithRetry(() => import("./pages/admin/AdminNotifications"));
+const AdminAnnouncements = lazyWithRetry(() => import("./pages/admin/AdminAnnouncements"));
+const StudentAnnouncements = lazyWithRetry(() => import("./pages/student/StudentAnnouncements"));
+const AdminBoard = lazyWithRetry(() => import("./pages/admin/AdminBoard"));
+const AdminSurveys = lazyWithRetry(() => import("./pages/admin/AdminSurveys"));
+const AdminVideos = lazyWithRetry(() => import("./pages/admin/AdminVideos"));
+const StudentBoard = lazyWithRetry(() => import("./pages/student/StudentBoard"));
+const DeptAdminDashboard = lazyWithRetry(() => import("./pages/DeptAdminDashboard"));
+const CourseDetail = lazyWithRetry(() => import("./pages/CourseDetail"));
+const AdminEnrollments = lazyWithRetry(() => import("./pages/admin/AdminEnrollments"));
+const ContentPlayer = lazyWithRetry(() => import("./pages/ContentPlayer"));
+const AssessmentPage = lazyWithRetry(() => import("./pages/AssessmentPage"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const CourseRedirect = lazyWithRetry(() => import("./components/CourseRedirect"));
+const ContentRedirect = lazyWithRetry(() => import("./components/ContentRedirect"));
 
 const RouteFallback = () => null;
 
