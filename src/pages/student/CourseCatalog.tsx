@@ -9,6 +9,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const categoryGradients: Record<string, string> = {
   marketing: "from-orange-500 to-pink-500",
@@ -415,8 +416,10 @@ const CourseCatalog = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16" role="status" aria-live="polite" aria-label="Loading">
-            <span className="h-6 w-6 animate-spin rounded-full border-2 border-foreground/30 border-t-foreground" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-live="polite" aria-label="Loading">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-64 rounded-xl" />
+            ))}
           </div>
         ) : isCarouselView ? (
           <div className="min-w-0 space-y-8 sm:space-y-10">
