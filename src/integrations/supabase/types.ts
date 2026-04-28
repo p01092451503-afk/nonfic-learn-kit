@@ -1862,6 +1862,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_dashboard_summary: { Args: never; Returns: Json }
       award_points: {
         Args: {
           p_action_type: string
