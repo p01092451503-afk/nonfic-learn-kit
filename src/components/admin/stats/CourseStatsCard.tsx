@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { RankBar } from "@/components/ui/rank-bar";
 import { useTranslation } from "react-i18next";
 
 const CourseStatsCard = () => {
@@ -98,7 +98,7 @@ const CourseStatsCard = () => {
                 <span className="text-xs text-muted-foreground w-5 shrink-0">{i + 1}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-foreground truncate">{c.title}</p>
-                  <Progress value={topCourses[0]?.count > 0 ? (c.count / topCourses[0].count) * 100 : 0} className="h-1.5 mt-1" />
+                  <RankBar value={topCourses[0]?.count > 0 ? (c.count / topCourses[0].count) * 100 : 0} className="h-1.5 mt-1" />
                 </div>
                 <span className="text-xs font-semibold text-foreground shrink-0">{c.count}{t("common.people")}</span>
               </div>
