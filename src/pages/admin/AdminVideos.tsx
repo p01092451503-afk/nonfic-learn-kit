@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Video, Plus, Search, Trash2, Copy, Edit, ExternalLink } from "lucide-react";
+import { Video, Plus, Search, Trash2, Copy, Edit, ExternalLink, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +23,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import BunnyBulkUploadDialog from "@/components/admin/BunnyBulkUploadDialog";
 
 interface VideoAsset {
   id: string;
@@ -47,6 +48,7 @@ const AdminVideos = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   const providerLabels: Record<string, string> = {
     custom: t("videoMgmt.providerCustom"),
@@ -166,9 +168,14 @@ const AdminVideos = () => {
               {t("videoMgmt.subtitle")}
             </p>
           </div>
-          <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
-            <Plus className="h-4 w-4 mr-1" /> {t("videoMgmt.addVideo")}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setBulkOpen(true)}>
+              <Upload className="h-4 w-4 mr-1" /> {t("bunnyUpload.button", "다중 업로드")}
+            </Button>
+            <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
+              <Plus className="h-4 w-4 mr-1" /> {t("videoMgmt.addVideo")}
+            </Button>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -348,6 +355,8 @@ const AdminVideos = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <BunnyBulkUploadDialog open={bulkOpen} onOpenChange={setBulkOpen} />
     </DashboardLayout>
   );
 };
