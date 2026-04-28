@@ -1038,7 +1038,7 @@
   },
   "branches": {
     "title": "조직 관리",
-    "subtitle": "본사 및 전국 조직 정보를 관리하고 직원을 배치합니다",
+    "subtitle": "본사 및 조직 정보를 관리하고 직원을 배치합니다",
     "branchList": "조직 목록",
     "teamList": "팀 목록",
     "staffManagement": "직원 관리",
