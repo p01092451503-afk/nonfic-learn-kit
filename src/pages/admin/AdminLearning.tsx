@@ -107,22 +107,37 @@ const AdminLearning = () => {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-          {[
-            { label: t("admin.totalEnrolled"), value: totalStudents, sub: t("admin.enrolledStudentsLabel"), icon: Users },
-            { label: t("admin.completionCount"), value: completedCount, sub: `${filtered.length > 0 ? Math.round((completedCount / filtered.length) * 100) : 0}% ${t("admin.completionRateLabel")}`, icon: GraduationCap },
-            { label: t("admin.avgProgressLabel"), value: `${avgProgress}%`, sub: "", icon: BarChart3, showProgress: true },
-            { label: t("admin.atRisk"), value: atRisk, sub: t("admin.needsAttention"), icon: AlertTriangle },
-          ].map((stat) => (
-            <div key={stat.label} className="stat-card !p-3 sm:!p-5" role="group" aria-label={stat.label}>
-              <div className="flex items-center justify-between mb-2 sm:mb-3">
-                <span className="text-[10px] sm:text-xs text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" aria-hidden="true" />
-              </div>
-              <span className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</span>
-              {stat.showProgress && <Progress value={avgProgress} className="mt-2 h-2" aria-label={`${t("admin.avgProgressLabel")}: ${avgProgress}%`} />}
-              {stat.sub && <p className="text-[10px] sm:text-xs text-primary mt-1">{stat.sub}</p>}
-            </div>
-          ))}
+          <StatCard
+            label={t("admin.totalEnrolled")}
+            value={totalStudents}
+            icon={Users}
+            tone="primary"
+            trend={(learnSpark?.enrollments ?? []).slice(-7)}
+            delta={computeDelta(learnSpark?.enrollments)}
+            hint={t("admin.enrolledStudentsLabel")}
+          />
+          <StatCard
+            label={t("admin.completionCount")}
+            value={completedCount}
+            icon={GraduationCap}
+            tone="success"
+            trend={(learnSpark?.completions ?? []).slice(-7)}
+            delta={computeDelta(learnSpark?.completions)}
+            hint={`${filtered.length > 0 ? Math.round((completedCount / filtered.length) * 100) : 0}% ${t("admin.completionRateLabel")}`}
+          />
+          <StatCard
+            label={t("admin.avgProgressLabel")}
+            value={`${avgProgress}%`}
+            icon={BarChart3}
+            tone="info"
+          />
+          <StatCard
+            label={t("admin.atRisk")}
+            value={atRisk}
+            icon={AlertTriangle}
+            tone="danger"
+            hint={t("admin.needsAttention")}
+          />
         </div>
 
         <Tabs defaultValue="progress" className="space-y-4">
