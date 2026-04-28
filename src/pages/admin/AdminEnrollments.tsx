@@ -14,6 +14,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import StatCard from "@/components/ui/stat-card";
 import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AdminEnrollments = () => {
   const { user } = useUser();
@@ -182,7 +183,11 @@ const AdminEnrollments = () => {
 
         {/* Table */}
         {isLoading ? (
-          <div className="flex justify-center py-16"><span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" /></div>
+          <div className="space-y-3" role="status" aria-live="polite">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 rounded-xl" />
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <div className="stat-card text-center py-16">
             <Users className="h-10 w-10 text-muted-foreground mx-auto" />
