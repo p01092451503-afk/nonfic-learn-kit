@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings, Compass, UserCircle, ClipboardCheck,
   LogOut, Menu, X, ChevronRight, GraduationCap, CalendarCheck, Activity, Building2, Bell, Megaphone, FileText, BarChart3, Video,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose, PanelLeftOpen, Languages,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -121,6 +121,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.announcementManagement", "공지사항 관리"), href: "/admin/announcements", icon: Megaphone },
     { label: t("nav.boardManagement", "게시판 관리"), href: "/admin/board", icon: FileText },
     { label: t("nav.surveyManagement", "설문 관리"), href: "/admin/surveys", icon: ClipboardList },
+    { label: t("nav.i18nManagement", "다국어 관리"), href: "/admin/i18n", icon: Languages },
     { label: t("nav.settings"), href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
   ];
 
