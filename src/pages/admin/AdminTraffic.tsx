@@ -1,5 +1,4 @@
 import { lazy, Suspense, useState } from "react";
-import BrandLoader from "@/components/BrandLoader";
 import { Activity, HardDrive, Globe, Play, TrendingUp, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +13,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { format, subDays } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Eager: lightweight summary cards shown above tabs
 import SiteSummaryCard from "@/components/admin/stats/SiteSummaryCard";
@@ -30,10 +30,10 @@ const SignupTrendChart = lazy(() => import("@/components/admin/stats/SignupTrend
 
 const ChartFallback = ({ height = 250 }: { height?: number }) => (
   <div
-    className="flex items-center justify-center rounded-lg border border-border bg-card"
+    className="rounded-lg border border-border bg-card p-4"
     style={{ height }}
   >
-    <BrandLoader />
+    <Skeleton className="h-full w-full rounded-md" />
   </div>
 );
 
