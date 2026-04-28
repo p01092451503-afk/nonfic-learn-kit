@@ -39,7 +39,7 @@ async function fetchAllRows(): Promise<Row[]> {
     .from("courses")
     .select("id, title, description")
     .order("created_at", { ascending: false });
-  const courses = (coursesData ?? []) as Array<{ id: string; title: string | null; description: string | null }>;
+  const courses = ((coursesData as unknown) as Array<{ id: string; title: string | null; description: string | null }>) ?? [];
   const courseIds = (courses ?? []).map((c) => c.id);
   const { data: courseI18n } = courseIds.length
     ? await supabase
@@ -60,7 +60,7 @@ async function fetchAllRows(): Promise<Row[]> {
     .from("course_contents" as any)
     .select("id, title, description")
     .order("created_at", { ascending: false });
-  const contents = (contentsData ?? []) as Array<{ id: string; title: string | null; description: string | null }>;
+  const contents = ((contentsData as unknown) as Array<{ id: string; title: string | null; description: string | null }>) ?? [];
   const contentIds = (contents ?? []).map((c) => c.id);
   const { data: contentI18n } = contentIds.length
     ? await supabase
@@ -81,7 +81,7 @@ async function fetchAllRows(): Promise<Row[]> {
     .from("assessments")
     .select("id, title, description")
     .order("created_at", { ascending: false });
-  const assessments = (assessmentsData ?? []) as Array<{ id: string; title: string | null; description: string | null }>;
+  const assessments = ((assessmentsData as unknown) as Array<{ id: string; title: string | null; description: string | null }>) ?? [];
   const assIds = (assessments ?? []).map((a) => a.id);
   const { data: assI18n } = assIds.length
     ? await supabase
@@ -102,7 +102,7 @@ async function fetchAllRows(): Promise<Row[]> {
     .from("announcements")
     .select("id, title, content")
     .order("created_at", { ascending: false });
-  const anns = (annsData ?? []) as Array<{ id: string; title: string | null; content: string | null }>;
+  const anns = ((annsData as unknown) as Array<{ id: string; title: string | null; content: string | null }>) ?? [];
   const annIds = (anns ?? []).map((a) => a.id);
   const { data: annI18n } = annIds.length
     ? await supabase
@@ -123,7 +123,7 @@ async function fetchAllRows(): Promise<Row[]> {
     .from("board_posts")
     .select("id, title, content")
     .order("created_at", { ascending: false });
-  const posts = (postsData ?? []) as Array<{ id: string; title: string | null; content: string | null }>;
+  const posts = ((postsData as unknown) as Array<{ id: string; title: string | null; content: string | null }>) ?? [];
   const postIds = (posts ?? []).map((p) => p.id);
   const { data: postI18n } = postIds.length
     ? await supabase
