@@ -32,12 +32,34 @@ export const useDashboardSparklines = (days = 14) => {
     queryKey: ["dashboard-sparklines", days],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("dashboard_sparklines", { p_days: days });
-      if (error) throw error;
-      return (data ?? EMPTY) as SparklineSeries;
+      if (error) {
+        console.error("Dashboard sparkline load failed:", error);
+        return EMPTY;
+      }
+      return normalizeSparklineSeries(data);
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
+};
+
+const toNumberArray = (value: unknown): number[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => Number(item) || 0);
+};
+
+const normalizeSparklineSeries = (value: unknown): SparklineSeries => {
+  const row = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+  return {
+    days: Array.isArray(row.days) ? row.days.map(String) : [],
+    signups: toNumberArray(row.signups),
+    enrollments: toNumberArray(row.enrollments),
+    completions: toNumberArray(row.completions),
+    sessions: toNumberArray(row.sessions),
+    pageviews: toNumberArray(row.pageviews),
+    submissions: toNumberArray(row.submissions),
+    assessments: toNumberArray(row.assessments),
+  };
 };
 
 /**
