@@ -14,22 +14,28 @@ import { useTranslation } from "react-i18next";
 const StudentDashboard = () => {
   const { user, profile } = useUser();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.startsWith("en") ? "en" : "ko";
   const displayName = profile?.full_name || t("common.user");
 
   // 수강 중인 강좌 (진행 중)
   const { data: enrollments = [] } = useQuery({
-    queryKey: ["dash-enrollments", user?.id],
+    queryKey: ["dash-enrollments", user?.id, lang],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("enrollments")
-        .select("*, courses(id, title, instructor_id, difficulty_level)")
+        .select("*, courses(id, title, instructor_id, difficulty_level, course_i18n(language_code, title))")
         .eq("user_id", user!.id)
         .is("completed_at", null)
         .order("enrolled_at", { ascending: false })
         .limit(5);
       if (error) throw error;
-      return data;
+      if (lang === "ko") return data;
+      return (data || []).map((e: any) => {
+        if (!e.courses) return e;
+        const tr = (e.courses.course_i18n || []).find((x: any) => x.language_code === lang);
+        return { ...e, courses: { ...e.courses, title: tr?.title || e.courses.title } };
+      });
     },
     enabled: !!user?.id,
   });
