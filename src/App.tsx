@@ -23,14 +23,6 @@ const lazyWithRetry = <T extends { default: React.ComponentType<any> }>(factory:
       try {
         return await factory();
       } catch (retryError) {
-        if (typeof window !== "undefined") {
-          const key = `route-import-reload:${window.location.pathname}`;
-          if (!sessionStorage.getItem(key)) {
-            sessionStorage.setItem(key, "1");
-            window.location.reload();
-            return new Promise<T>(() => undefined);
-          }
-        }
         throw retryError;
       }
     }
