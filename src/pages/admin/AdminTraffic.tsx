@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
+import { RankBar } from "@/components/ui/rank-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -288,7 +289,7 @@ const AdminTraffic = () => {
                         <span className="text-muted-foreground">{item.label}</span>
                         <span className="font-medium shrink-0">{t("stats.itemCount", { count: item.count })}</span>
                       </div>
-                      <Progress value={totalContents > 0 ? (item.count / totalContents) * 100 : 0} className="h-2" />
+                      <RankBar value={totalContents > 0 ? (item.count / totalContents) * 100 : 0} className="h-2" />
                     </div>
                   ))}
                 </div>
@@ -319,7 +320,7 @@ const AdminTraffic = () => {
                                 <p className="text-[10px] text-muted-foreground">{ratio.toFixed(1)}%</p>
                               </div>
                             </div>
-                            <Progress value={ratio} className="mt-3 h-1.5" />
+                            <RankBar value={ratio} className="mt-3 h-1.5" />
                           </article>
                         );
                       })}
@@ -346,7 +347,7 @@ const AdminTraffic = () => {
                                   <TableCell className="text-right text-sm">{count.toLocaleString()}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                      <Progress value={ratio} className="h-1.5 w-16" />
+                                      <RankBar value={ratio} className="h-1.5 w-16" />
                                       <span className="text-xs text-muted-foreground w-10 text-right">{ratio.toFixed(1)}%</span>
                                     </div>
                                   </TableCell>
