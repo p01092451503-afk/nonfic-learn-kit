@@ -131,56 +131,63 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     {
       label: "인사이트",
       items: [
-        { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard, tourId: "nav-dashboard" },
-        { label: t("nav.trafficMonitoring", "통계 현황"), href: "/admin/traffic", icon: BarChart3, tourId: "nav-traffic" },
+        { label: "대시보드", href: "/admin", icon: LayoutDashboard, tourId: "nav-dashboard" },
+        { label: "종합 통계", href: "/admin/traffic", icon: BarChart3, tourId: "nav-traffic" },
       ],
     },
     {
-      label: "회원·조직",
+      label: "회원·조직 관리",
       items: [
-        { label: t("nav.userManagement"), href: "/admin/users", icon: Users, tourId: "nav-user-mgmt" },
-        { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2, tourId: "nav-branch-mgmt" },
+        { label: "회원 관리", href: "/admin/users", icon: Users, tourId: "nav-user-mgmt" },
+        { label: "조직 관리", href: "/admin/branches", icon: Building2, tourId: "nav-branch-mgmt" },
       ],
     },
     {
-      label: "콘텐츠",
+      label: "콘텐츠 관리",
       items: [
-        { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen, tourId: "nav-course-mgmt" },
-        { label: t("nav.videoManagement", "동영상 관리"), href: "/admin/videos", icon: Video },
+        { label: "강의/평가 관리", href: "/admin/courses", icon: BookOpen, tourId: "nav-course-mgmt" },
+        { label: "미디어 관리", href: "/admin/videos", icon: Video },
       ],
     },
     {
-      label: "학습 운영",
+      label: "학습 운영 관리",
       items: [
-        { label: t("nav.enrollmentManagement"), href: "/admin/enrollments", icon: ClipboardCheck, tourId: "nav-enrollment-mgmt" },
-        { label: t("nav.learningManagement"), href: "/admin/learning", icon: GraduationCap },
-        { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
-        { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy, tourId: "nav-completion-mgmt" },
-        { label: t("nav.surveyManagement", "설문 관리"), href: "/admin/surveys", icon: ClipboardList },
+        { label: "수강 승인", href: "/admin/enrollments", icon: ClipboardCheck, tourId: "nav-enrollment-mgmt" },
+        { label: "수강 현황", href: "/admin/learning", icon: GraduationCap },
+        { label: "출결 관리", href: "/admin/attendance", icon: CalendarCheck },
+        { label: "수료 현황", href: "/admin/completion", icon: Trophy, tourId: "nav-completion-mgmt" },
+        { label: "설문 현황", href: "/admin/surveys", icon: ClipboardList },
       ],
     },
     {
-      label: "커뮤니케이션",
+      label: "게시판 관리",
       items: [
-        { label: t("nav.notificationManagement", "알림 관리"), href: "/admin/notifications", icon: Bell },
-        { label: t("nav.announcementManagement", "공지사항 관리"), href: "/admin/announcements", icon: Megaphone },
-        { label: t("nav.boardManagement", "게시판 관리"), href: "/admin/board", icon: FileText },
+        { label: "발송 내역", href: "/admin/notifications", icon: Bell },
+        { label: "공지사항", href: "/admin/announcements", icon: Megaphone },
+        { label: "자료실", href: "/admin/board", icon: FileText },
+      ],
+    },
+    {
+      label: "다국어",
+      items: [
+        { label: "언어 관리", href: "/admin/i18n", icon: Compass },
       ],
     },
     {
       label: "시스템",
       items: [
-        { label: t("nav.settings"), href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
+        { label: "시스템 설정", href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
       ],
     },
   ];
 
   const flatNav = activeRole === "teacher" ? teacherNav : studentNav;
   const navGroups: NavGroup[] | null = activeRole === "admin" ? adminGroups : null;
-  // Track collapsed groups (admin only)
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
   const toggleGroup = (label: string) =>
     setCollapsedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+
   const roleLabel = t(`roles.${activeRole}`);
 
   const handleSignOut = async () => {
