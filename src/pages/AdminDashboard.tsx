@@ -423,21 +423,21 @@ const AdminDashboard = () => {
                     <Users className="h-4 w-4" />
                     {isEn ? "Total Enrollments" : "전체 수강"}
                   </span>
-                  <span className="text-sm font-bold text-foreground">{enrollments.length}</span>
+                    <span className="text-sm font-bold text-foreground">{summary?.total_enrollments ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
                     {isEn ? "Completions" : "수료 완료"}
                   </span>
-                  <span className="text-sm font-bold text-foreground">{enrollments.filter((e: any) => e.completed_at).length}</span>
+                    <span className="text-sm font-bold text-foreground">{summary?.total_completions ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
                     {isEn ? "Active Courses" : "활성 강의"}
                   </span>
-                  <span className="text-sm font-bold text-foreground">{courses.filter((c: any) => c.status === "published").length}</span>
+                    <span className="text-sm font-bold text-foreground">{summary?.active_courses ?? 0}</span>
                 </div>
               </div>
             </div>
