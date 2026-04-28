@@ -30,19 +30,24 @@ export const Sparkline = ({
   showLastDot = true,
   strokeWidth = 1.5,
 }: SparklineProps) => {
+  const safeData = useMemo(
+    () => (Array.isArray(data) ? data.map((value) => Number(value)).filter(Number.isFinite) : []),
+    [data]
+  );
+
   const { linePath, areaPath, lastPoint, isFlat } = useMemo(() => {
-    if (!data || data.length === 0) {
+    if (safeData.length === 0) {
       return { linePath: "", areaPath: "", lastPoint: null as null | { x: number; y: number }, isFlat: true };
     }
-    const min = Math.min(...data);
-    const max = Math.max(...data);
+    const min = Math.min(...safeData);
+    const max = Math.max(...safeData);
     const range = max - min || 1;
-    const stepX = data.length > 1 ? width / (data.length - 1) : 0;
+    const stepX = safeData.length > 1 ? width / (safeData.length - 1) : 0;
     // Pad the y-axis so flat lines don't sit on the edge
     const padY = 3;
     const innerH = height - padY * 2;
 
-    const points = data.map((v, i) => {
+    const points = safeData.map((v, i) => {
       const x = i * stepX;
       const y = padY + innerH - ((v - min) / range) * innerH;
       return { x, y };
@@ -63,14 +68,14 @@ export const Sparkline = ({
       lastPoint: points[points.length - 1],
       isFlat: max === min,
     };
-  }, [data, width, height]);
+  }, [safeData, width, height]);
 
-  if (!data || data.length === 0) return null;
+  if (safeData.length === 0) return null;
 
   // Stable id for gradient (color + length is enough; collisions are visually identical)
   const gradId = `spark-grad-${Math.abs(
     color.split("").reduce((a, c) => a + c.charCodeAt(0), 0)
-  )}-${data.length}`;
+  )}-${safeData.length}`;
 
   return (
     <svg
