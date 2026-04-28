@@ -112,6 +112,7 @@ const AdminEnrollments = () => {
   const approvedCount = enrollments.filter((e: any) => e.status === "approved").length;
   const rejectedCount = enrollments.filter((e: any) => e.status === "rejected").length;
   const pendingIds = filtered.filter((e: any) => e.status === "pending").map((e: any) => e.id);
+  const { data: enrollSpark } = useDashboardSparklines(14);
 
   const statusBadge = (status: string) => {
     switch (status) {
