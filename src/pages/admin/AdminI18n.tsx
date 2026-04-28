@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { translateKoToEn } from "@/lib/translate";
 import { toast } from "sonner";
 
-type Category = "course" | "content" | "assessment" | "announcement" | "board" | "category";
+type Category = "course" | "content" | "assessment" | "announcement" | "board" | "category" | "assignment";
 
 interface Row {
   id: string;
@@ -31,6 +31,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
   announcement: "공지",
   board: "게시판",
   category: "분류",
+  assignment: "과제",
 };
 
 async function fetchAllRows(): Promise<Row[]> {
@@ -150,6 +151,15 @@ async function fetchAllRows(): Promise<Row[]> {
     rows.push(buildRow("category", c.id, c.name ?? "", "", c.name_en ?? null, ""));
   });
 
+  // 7) Assignments (과제)
+  const { data: asgData } = await supabase
+    .from("assignments")
+    .select("id, title, title_en, instructions, instructions_en")
+    .order("created_at", { ascending: false });
+  (asgData ?? []).forEach((a: any) => {
+    rows.push(buildRow("assignment", a.id, a.title ?? "", a.instructions ?? "", a.title_en ?? null, a.instructions_en ?? null));
+  });
+
   return rows;
 }
 
@@ -205,6 +215,11 @@ async function upsertTranslation(row: Row, enTitle: string, enBody: string) {
         .from("categories")
         .update({ name_en: enTitle })
         .eq("id", row.id);
+    case "assignment":
+      return supabase
+        .from("assignments")
+        .update({ title_en: enTitle, instructions_en: enBody })
+        .eq("id", row.id);
   }
 }
 
@@ -230,6 +245,7 @@ const AdminI18n = () => {
       announcement: { total: 0, missing: 0, partial: 0, complete: 0 },
       board: { total: 0, missing: 0, partial: 0, complete: 0 },
       category: { total: 0, missing: 0, partial: 0, complete: 0 },
+      assignment: { total: 0, missing: 0, partial: 0, complete: 0 },
     };
     rows.forEach((r) => {
       c[r.category].total += 1;
