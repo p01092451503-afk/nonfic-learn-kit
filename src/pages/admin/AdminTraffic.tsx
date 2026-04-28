@@ -147,9 +147,13 @@ const AdminTraffic = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <RealtimeUsersCard />
-          <SiteSummaryCard />
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+            <RealtimeUsersCard />
+            <div className="xl:col-span-4">
+              <SiteSummaryCard />
+            </div>
+          </div>
           <TodayOperationsCard />
         </div>
 
