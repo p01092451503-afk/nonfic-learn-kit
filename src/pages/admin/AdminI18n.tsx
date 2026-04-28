@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { translateKoToEn } from "@/lib/translate";
 import { toast } from "sonner";
 
-type Category = "course" | "content" | "assessment" | "announcement" | "board" | "category" | "assignment";
+type Category = "course" | "content" | "assessment" | "announcement" | "board" | "category" | "assignment" | "survey" | "survey_question";
 
 interface Row {
   id: string;
@@ -32,6 +32,8 @@ const CATEGORY_LABELS: Record<Category, string> = {
   board: "게시판",
   category: "분류",
   assignment: "과제",
+  survey: "설문",
+  survey_question: "설문 문항",
 };
 
 async function fetchAllRows(): Promise<Row[]> {
@@ -160,6 +162,26 @@ async function fetchAllRows(): Promise<Row[]> {
     rows.push(buildRow("assignment", a.id, a.title ?? "", a.instructions ?? "", a.title_en ?? null, a.instructions_en ?? null));
   });
 
+  // 8) Surveys (설문)
+  const { data: surveysData } = await supabase
+    .from("surveys")
+    .select("id, title, description, title_en, description_en")
+    .order("created_at", { ascending: false });
+  (surveysData ?? []).forEach((s: any) => {
+    rows.push(buildRow("survey", s.id, s.title ?? "", s.description ?? "", s.title_en ?? null, s.description_en ?? null));
+  });
+
+  // 9) Survey questions (설문 문항)
+  const { data: sqData } = await supabase
+    .from("survey_questions")
+    .select("id, question_text, question_text_en, options, options_en")
+    .order("created_at", { ascending: false });
+  (sqData ?? []).forEach((q: any) => {
+    const koBody = Array.isArray(q.options) ? JSON.stringify(q.options) : "";
+    const enBody = Array.isArray(q.options_en) ? JSON.stringify(q.options_en) : null;
+    rows.push(buildRow("survey_question", q.id, q.question_text ?? "", koBody, q.question_text_en ?? null, enBody));
+  });
+
   return rows;
 }
 
@@ -220,6 +242,24 @@ async function upsertTranslation(row: Row, enTitle: string, enBody: string) {
         .from("assignments")
         .update({ title_en: enTitle, instructions_en: enBody })
         .eq("id", row.id);
+    case "survey":
+      return supabase
+        .from("surveys")
+        .update({ title_en: enTitle, description_en: enBody })
+        .eq("id", row.id);
+    case "survey_question": {
+      let optionsEn: any = null;
+      if (enBody && enBody.trim()) {
+        try {
+          optionsEn = JSON.parse(enBody);
+        } catch {
+          optionsEn = null;
+        }
+      }
+      const update: any = { question_text_en: enTitle };
+      if (optionsEn !== null) update.options_en = optionsEn;
+      return supabase.from("survey_questions").update(update).eq("id", row.id);
+    }
   }
 }
 
@@ -246,6 +286,8 @@ const AdminI18n = () => {
       board: { total: 0, missing: 0, partial: 0, complete: 0 },
       category: { total: 0, missing: 0, partial: 0, complete: 0 },
       assignment: { total: 0, missing: 0, partial: 0, complete: 0 },
+      survey: { total: 0, missing: 0, partial: 0, complete: 0 },
+      survey_question: { total: 0, missing: 0, partial: 0, complete: 0 },
     };
     rows.forEach((r) => {
       c[r.category].total += 1;
