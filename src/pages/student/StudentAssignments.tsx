@@ -41,29 +41,54 @@ const StudentAssignments = () => {
   };
 
   const { data: submissions = [] } = useQuery({
-    queryKey: ["my-submissions", user?.id],
+    queryKey: ["my-submissions", user?.id, i18n.language],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assignment_submissions")
-        .select("*, assignments(title, due_date, max_score, instructions, courses(title))")
+        .select("*, assignments(title, title_en, due_date, max_score, instructions, instructions_en, courses(title, course_i18n(language_code, title)))")
         .eq("student_id", user!.id)
         .order("submitted_at", { ascending: false });
       if (error) throw error;
-      return data;
+      const isEn = i18n.language?.startsWith("en");
+      if (!isEn) return data;
+      return (data || []).map((s: any) => {
+        if (!s.assignments) return s;
+        const a = s.assignments;
+        const courseTr = (a.courses?.course_i18n || []).find((x: any) => x.language_code === "en");
+        return {
+          ...s,
+          assignments: {
+            ...a,
+            title: a.title_en || a.title,
+            instructions: a.instructions_en || a.instructions,
+            courses: a.courses ? { ...a.courses, title: courseTr?.title || a.courses.title } : a.courses,
+          },
+        };
+      });
     },
     enabled: !!user?.id,
   });
 
   const { data: myAssignments = [] } = useQuery({
-    queryKey: ["my-assignments", user?.id],
+    queryKey: ["my-assignments", user?.id, i18n.language],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assignments")
-        .select("*, courses(title)")
+        .select("*, courses(title, course_i18n(language_code, title))")
         .eq("status", "published")
         .order("due_date", { ascending: true });
       if (error) throw error;
-      return data;
+      const isEn = i18n.language?.startsWith("en");
+      if (!isEn) return data;
+      return (data || []).map((a: any) => {
+        const courseTr = (a.courses?.course_i18n || []).find((x: any) => x.language_code === "en");
+        return {
+          ...a,
+          title: a.title_en || a.title,
+          instructions: a.instructions_en || a.instructions,
+          courses: a.courses ? { ...a.courses, title: courseTr?.title || a.courses.title } : a.courses,
+        };
+      });
     },
     enabled: !!user?.id,
   });
