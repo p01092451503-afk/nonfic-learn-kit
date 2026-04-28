@@ -11,6 +11,8 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import PageSkeleton from "@/components/PageSkeleton";
+import StatCard from "@/components/ui/stat-card";
+import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
 
 const AdminLearning = () => {
   const { t, i18n } = useTranslation();
@@ -54,6 +56,7 @@ const AdminLearning = () => {
   const visibleCompleterRows = completerRows.slice(0, 50);
   const totalStudents = new Set(filtered.map((e: any) => e.user_id)).size;
   const completedCount = completerRows.length;
+  const { data: learnSpark } = useDashboardSparklines(14);
   const avgProgress = filtered.length > 0 ? Math.round(filtered.reduce((s: number, e: any) => s + (Number(e.progress) || 0), 0) / filtered.length) : 0;
   const atRisk = filtered.filter((e: any) => (Number(e.progress) || 0) < 20 && !e.completed_at).length;
 
