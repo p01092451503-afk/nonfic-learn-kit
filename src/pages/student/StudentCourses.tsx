@@ -48,11 +48,12 @@ const StudentCourses = () => {
   });
 
   const { data: categories = [] } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["categories", lang],
     queryFn: async () => {
-      const { data, error } = await supabase.from("categories").select("id, name, slug");
+      const { data, error } = await supabase.from("categories").select("id, name, name_en, slug");
       if (error) throw error;
-      return data;
+      if (lang === "ko") return data;
+      return (data || []).map((c: any) => ({ ...c, name: c.name_en || c.name }));
     },
   });
 
