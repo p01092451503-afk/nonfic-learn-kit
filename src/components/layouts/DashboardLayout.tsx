@@ -43,7 +43,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const [hasNewBoardPost, setHasNewBoardPost] = useState(false);
   const { profile, signOut } = useUser();
   const { primaryRole } = useUserRole();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { teacherRoleEnabled } = useSystemSettings();
 
   const activeRole = role || primaryRole;
@@ -54,6 +54,13 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
       navigate("/student", { replace: true });
     }
   }, [activeRole, teacherRoleEnabled, navigate]);
+
+  // Force Korean for admin UI — admin pages must always render in Korean
+  useEffect(() => {
+    if (activeRole === "admin" && i18n.language !== "ko") {
+      i18n.changeLanguage("ko");
+    }
+  }, [activeRole, i18n]);
 
   const toggleCollapsed = () => {
     setSidebarCollapsed((prev) => {
