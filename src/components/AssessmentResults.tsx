@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { useUser } from "@/contexts/UserContext";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   courseId: string;
@@ -203,8 +204,11 @@ export default function AssessmentResults({ courseId, assessmentId, assessmentTi
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-8">
-        <span className="h-5 w-5 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
+      <div className="space-y-3" role="status" aria-live="polite">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+        </div>
+        {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
       </div>
     );
   }
@@ -321,8 +325,8 @@ export default function AssessmentResults({ courseId, assessmentId, assessmentTi
                         )}
                       </div>
                       {expandedAnswers.length === 0 ? (
-                        <div className="flex justify-center py-4">
-                          <span className="h-4 w-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
+                        <div className="space-y-2 py-2" role="status" aria-live="polite">
+                          {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />)}
                         </div>
                       ) : (
                         <div className="space-y-2">
