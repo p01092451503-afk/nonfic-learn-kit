@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Eye, EyeOff, ClipboardCheck, Users, Languages, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, ClipboardCheck, Users, Languages } from "lucide-react";
 import AssessmentResults from "@/components/AssessmentResults";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -624,7 +624,7 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted-foreground">{t("course.enOptional", "영어 버전 (선택)")}</p>
                 <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleTranslateAssessment} disabled={translatingAssessment || (!assessmentForm.title && !assessmentForm.description)}>
-                  {translatingAssessment ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+                  <Languages className="h-3 w-3" />
                   {t("course.autoTranslate", "자동 번역")}
                 </Button>
               </div>
@@ -720,7 +720,7 @@ export default function AssessmentManager({ courseId }: { courseId: string }) {
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">{t("assessment.questionText")} (EN)</Label>
                   <Button type="button" variant="outline" size="sm" className="h-6 text-[10px] gap-1 px-2" onClick={handleTranslateQuestion} disabled={translatingQuestion || !questionForm.question_text.trim()}>
-                    {translatingQuestion ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Languages className="h-2.5 w-2.5" />}
+                    <Languages className="h-2.5 w-2.5" />
                     {t("course.autoTranslate", "자동 번역")}
                   </Button>
                 </div>

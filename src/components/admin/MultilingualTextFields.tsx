@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Languages, Loader2 } from "lucide-react";
+import { Languages } from "lucide-react";
 import { translateKoToEn } from "@/lib/translate";
 import { toast } from "sonner";
 
@@ -79,7 +79,7 @@ const MultilingualTextFields = ({ value, onChange, contentRows = 6, autoTranslat
           </div>
           {!auto && (
             <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={handleAutoTranslate} disabled={translating}>
-              {translating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+              <Languages className="h-3 w-3" />
               {t("multilingual.translateNow", "한→영 번역")}
             </Button>
           )}
