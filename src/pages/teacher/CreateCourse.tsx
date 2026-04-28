@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
   MonitorPlay, BookOpen, ExternalLink, Link2, Eye, ImagePlus, X, CalendarIcon,
-  Save, Languages, Loader2, LayoutGrid, Image as ImageIcon, ChevronUp,
+  Save, Languages, Loader2, LayoutGrid, Image as ImageIcon, ChevronUp, Package, ChevronDown,
 } from "lucide-react";
 import { translateKoToEn } from "@/lib/translate";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,14 @@ import type { Database } from "@/integrations/supabase/types";
 type ContentType = Database["public"]["Enums"]["content_type"];
 type VideoProvider = Database["public"]["Enums"]["video_provider"];
 
-type ContentSource = "video" | "mangoboard" | "card";
+type ContentSource = "video" | "mangoboard" | "card" | "package";
+
+export interface PackageItemDraft {
+  tempId: string;
+  item_type: "image" | "video";
+  media_url: string;
+  caption: string;
+}
 
 interface ContentItem {
   tempId: string;
@@ -49,6 +56,7 @@ interface ContentItem {
   enDescription: string;
   card_image_url?: string;
   card_urls?: string[];
+  package_items?: PackageItemDraft[];
 }
 
 const CreateCourse = () => {
