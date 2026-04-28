@@ -147,22 +147,10 @@ const AdminCourses = () => {
 
         {/* Summary Stats */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <div className="stat-card !p-3 sm:!p-4">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("admin.totalCoursesLabel")}</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.total}</p>
-          </div>
-          <div className="stat-card !p-3 sm:!p-4">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("admin.publishedCourses")}</p>
-            <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.published}</p>
-          </div>
-          <div className="stat-card !p-3 sm:!p-4">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("teacher.draft")}</p>
-            <p className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.draft}</p>
-          </div>
-          <div className="stat-card !p-3 sm:!p-4">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("admin.totalStudents")}</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.totalStudents}</p>
-          </div>
+          <StatCard label={t("admin.totalCoursesLabel")} value={stats.total} icon={BookOpen} tone="primary" />
+          <StatCard label={t("admin.publishedCourses")} value={stats.published} icon={CheckCircle2} tone="success" />
+          <StatCard label={t("teacher.draft")} value={stats.draft} icon={FileEdit} tone="warning" />
+          <StatCard label={t("admin.totalStudents")} value={stats.totalStudents} icon={Users} tone="info" />
         </div>
 
         {/* Toolbar */}
