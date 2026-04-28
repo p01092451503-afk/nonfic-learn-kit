@@ -3,8 +3,6 @@ import { useEffect, useState, type ComponentType } from "react";
 import "./i18n";
 import "./index.css";
 
-const APP_RELOAD_KEY = "nonfiction:app-import-reloaded";
-
 const BootFallback = ({ failed }: { failed?: boolean }) => (
   <div className="min-h-screen bg-background flex items-center justify-center p-6">
     <div className="w-full max-w-sm text-center space-y-3">
@@ -47,13 +45,6 @@ const AppBootstrap = () => {
           if (mounted) setAppComponent(() => module.default);
         } catch (retryError) {
           console.error("App bootstrap failed:", retryError);
-
-          if (!sessionStorage.getItem(APP_RELOAD_KEY)) {
-            sessionStorage.setItem(APP_RELOAD_KEY, "1");
-            window.location.reload();
-            return;
-          }
-
           if (mounted) setFailed(true);
         }
       }
@@ -68,7 +59,6 @@ const AppBootstrap = () => {
 
   if (!AppComponent) return <BootFallback failed={failed} />;
 
-  sessionStorage.removeItem(APP_RELOAD_KEY);
   return <AppComponent />;
 };
 
