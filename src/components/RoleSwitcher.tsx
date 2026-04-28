@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
 
 const roleConfig = {
   admin: { icon: Shield, path: "/admin", labelKey: "roles.admin" },
@@ -20,11 +21,13 @@ const RoleSwitcher = () => {
   const { roles, primaryRole } = useUserRole();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { teacherRoleEnabled } = useSystemSettings();
 
   // Map roles to switchable dashboard roles (super_admin → admin)
-  const switchableRoles = Array.from(
+  const switchableRoles = (Array.from(
     new Set(roles.map((r) => (r === "super_admin" ? "admin" : r)))
-  ).filter((r) => r in roleConfig) as Array<keyof typeof roleConfig>;
+  ).filter((r) => r in roleConfig) as Array<keyof typeof roleConfig>)
+    .filter((r) => (r === "teacher" ? teacherRoleEnabled : true));
 
   if (switchableRoles.length <= 1) return null;
 
