@@ -11,8 +11,8 @@ import RoleBasedRedirect from "@/components/RoleBasedRedirect";
 import Auth from "./pages/Auth"; // keep eager: first paint
 import TrafficLogger from "./components/TrafficLogger";
 import AdminWebVitalsGate from "./components/AdminWebVitalsGate";
-import BrandLoader from "./components/BrandLoader";
 import AppErrorBoundary from "./components/AppErrorBoundary";
+import RouteSkeleton from "./components/RouteSkeleton";
 
 // Retry dynamic imports — recovers from transient chunk fetch failures
 // (network blips, stale chunks after redeploy). Reloads once as last resort.
@@ -78,7 +78,7 @@ const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const CourseRedirect = lazyWithRetry(() => import("./components/CourseRedirect"));
 const ContentRedirect = lazyWithRetry(() => import("./components/ContentRedirect"));
 
-const RouteFallback = () => null;
+const RouteFallback = () => <RouteSkeleton />;
 
 
 const queryClient = new QueryClient({
