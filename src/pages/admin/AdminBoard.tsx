@@ -18,6 +18,7 @@ import { Plus, Edit, Trash2, Pin, Upload, X, FileText, Eye, ClipboardList } from
 import TargetingFields, { isTargetingValid, type TargetingValue } from "@/components/admin/TargetingFields";
 import MultilingualTextFields, { EMPTY_MULTILINGUAL, isMultilingualValid, type MultilingualValue } from "@/components/admin/MultilingualTextFields";
 import { saveContentTranslations, loadContentTranslations } from "@/lib/i18nContent";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const EMPTY_FORM = { is_pinned: false, is_published: true, course_id: "" };
 const EMPTY_TARGET: TargetingValue = { countries: [], branchIds: [], courseIds: [] };
@@ -197,7 +198,9 @@ const AdminBoard = ({ role = "admin" }: { role?: "admin" | "teacher" }) => {
         </div>
 
         {isLoading ? (
-          <p className="text-muted-foreground text-sm">{t("common.loading")}</p>
+          <div className="space-y-3" role="status" aria-live="polite">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+          </div>
         ) : filteredPosts.length === 0 ? (
           <p className="text-muted-foreground text-sm">{t("common.noData")}</p>
         ) : (
