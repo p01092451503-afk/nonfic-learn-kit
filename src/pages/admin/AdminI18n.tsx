@@ -323,7 +323,7 @@ const AdminI18n = () => {
   );
 
   return (
-    <DashboardLayout>
+    <DashboardLayout role="admin">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
