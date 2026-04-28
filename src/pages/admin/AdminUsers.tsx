@@ -274,18 +274,28 @@ const AdminUsers = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="stat-card text-center !p-3 sm:!p-6">
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{profiles.length}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("admin.totalUsersCount")}</p>
-          </div>
-          <div className="stat-card text-center !p-3 sm:!p-6">
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{profiles.length}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("admin.activeUsers")}</p>
-          </div>
-          <div className="stat-card text-center !p-3 sm:!p-6">
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{teacherCount}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("admin.teacherCount")}</p>
-          </div>
+          <StatCard
+            label={t("admin.totalUsersCount")}
+            value={profiles.length}
+            icon={Users}
+            tone="primary"
+            trend={(usersSpark?.signups ?? []).slice(-7)}
+            delta={computeDelta(usersSpark?.signups)}
+          />
+          <StatCard
+            label={t("admin.activeUsers")}
+            value={profiles.length}
+            icon={Activity}
+            tone="success"
+            trend={(usersSpark?.sessions ?? []).slice(-7)}
+            delta={computeDelta(usersSpark?.sessions)}
+          />
+          <StatCard
+            label={t("admin.teacherCount")}
+            value={teacherCount}
+            icon={GraduationCap}
+            tone="info"
+          />
         </div>
 
         {/* Search + Dept Filter */}
