@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Video, Plus, Search, Trash2, Copy, Edit, ExternalLink, Upload } from "lucide-react";
@@ -23,7 +23,8 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-import BunnyBulkUploadDialog from "@/components/admin/BunnyBulkUploadDialog";
+
+const BunnyBulkUploadDialog = lazy(() => import("@/components/admin/BunnyBulkUploadDialog"));
 
 interface VideoAsset {
   id: string;
@@ -75,7 +76,7 @@ const AdminVideos = () => {
     setEditingId(null);
   };
 
-  const { data: videos = [], isLoading } = useQuery({
+  const { data: videos = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["video-assets"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -233,6 +234,15 @@ const AdminVideos = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t("common.loading")}</TableCell></TableRow>
+              ) : isError ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <div className="space-y-3">
+                      <p>{error instanceof Error ? error.message : t("videoMgmt.loadFailed", "동영상 목록을 불러오지 못했습니다.")}</p>
+                      <Button variant="outline" size="sm" onClick={() => refetch()}>{t("common.retry", "다시 시도")}</Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t("videoMgmt.noVideos")}</TableCell></TableRow>
               ) : filtered.map((v) => (
@@ -356,7 +366,11 @@ const AdminVideos = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <BunnyBulkUploadDialog open={bulkOpen} onOpenChange={setBulkOpen} />
+      {bulkOpen && (
+        <Suspense fallback={null}>
+          <BunnyBulkUploadDialog open={bulkOpen} onOpenChange={setBulkOpen} />
+        </Suspense>
+      )}
     </DashboardLayout>
   );
 };
