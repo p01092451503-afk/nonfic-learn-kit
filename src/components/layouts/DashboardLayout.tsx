@@ -192,6 +192,29 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     ? profile.full_name.slice(0, 2)
     : "NF";
 
+  const renderNavLink = (item: NavItem) => {
+    const isActive = location.pathname === item.href;
+    return (
+      <Link key={item.href} to={item.href} onClick={() => setSidebarOpen(false)}
+        className={`nav-item ${isActive ? "nav-item-active" : ""} ${sidebarCollapsed ? "justify-center px-2" : ""}`}
+        aria-current={isActive ? "page" : undefined}
+        title={sidebarCollapsed ? item.label : undefined}
+        {...(item.tourId ? { "data-tour": item.tourId } : {})}>
+        <item.icon className="h-[18px] w-[18px]" aria-hidden="true" />
+        {!sidebarCollapsed && <span>{item.label}</span>}
+        {!sidebarCollapsed && item.showNew && (
+          <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold leading-none rounded bg-destructive text-destructive-foreground animate-pulse">
+            NEW
+          </span>
+        )}
+        {!sidebarCollapsed && isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" aria-hidden="true" />}
+        {sidebarCollapsed && item.showNew && (
+          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive animate-pulse" aria-hidden="true" />
+        )}
+      </Link>
+    );
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       {sidebarOpen && (
