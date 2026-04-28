@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
   MonitorPlay, BookOpen, ExternalLink, Link2, Eye, ImagePlus, X, CalendarIcon,
-  Save, Languages, Loader2, LayoutGrid, Image as ImageIcon, ChevronUp,
+  Save, Languages, Loader2, LayoutGrid, Image as ImageIcon, ChevronUp, Package, ChevronDown,
 } from "lucide-react";
 import { translateKoToEn } from "@/lib/translate";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,14 @@ import type { Database } from "@/integrations/supabase/types";
 type ContentType = Database["public"]["Enums"]["content_type"];
 type VideoProvider = Database["public"]["Enums"]["video_provider"];
 
-type ContentSource = "video" | "mangoboard" | "card";
+type ContentSource = "video" | "mangoboard" | "card" | "package";
+
+export interface PackageItemDraft {
+  tempId: string;
+  item_type: "image" | "video";
+  media_url: string;
+  caption: string;
+}
 
 interface ContentItem {
   tempId: string;
@@ -49,6 +56,7 @@ interface ContentItem {
   enDescription: string;
   card_image_url?: string;
   card_urls?: string[];
+  package_items?: PackageItemDraft[];
 }
 
 const CreateCourse = () => {
@@ -162,10 +170,34 @@ const CreateCourse = () => {
 
       const i18nMap = new Map((contentI18ns || []).map((i: any) => [i.content_id, i]));
 
+      // Load media package items for any media_package contents
+      const packageContentIds = (courseContents || [])
+        .filter((c: any) => c.content_type === "media_package")
+        .map((c: any) => c.id);
+      const packageItemsMap = new Map<string, PackageItemDraft[]>();
+      if (packageContentIds.length > 0) {
+        const { data: pkgItems } = await (supabase as any)
+          .from("media_package_items")
+          .select("*")
+          .in("content_id", packageContentIds)
+          .order("order_index", { ascending: true });
+        (pkgItems || []).forEach((it: any) => {
+          const arr = packageItemsMap.get(it.content_id) || [];
+          arr.push({
+            tempId: it.id,
+            item_type: it.item_type,
+            media_url: it.media_url,
+            caption: it.caption || "",
+          });
+          packageItemsMap.set(it.content_id, arr);
+        });
+      }
+
       if (courseContents?.length) {
         setContents(courseContents.map((c: any) => {
           const en = i18nMap.get(c.id);
           const isCard = c.description?.startsWith("[card-content]");
+          const isPackage = c.content_type === "media_package";
           let cleanDesc = "";
           let cardUrls: string[] = [];
           if (isCard) {
@@ -190,10 +222,11 @@ const CreateCourse = () => {
             duration_minutes: c.duration_minutes,
             is_preview: c.is_preview || false,
             is_published: c.is_published || false,
-            source: isCard ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource),
+            source: isPackage ? "package" as ContentSource : (isCard ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource)),
             enTitle: en?.title || "",
             enDescription: en?.description || "",
             card_urls: cardUrls.length > 0 ? cardUrls : (isCard && c.video_url ? [c.video_url] : []),
+            package_items: isPackage ? (packageItemsMap.get(c.id) || []) : undefined,
           };
         }));
       }
@@ -311,6 +344,12 @@ const CreateCourse = () => {
             updated.video_provider = "custom";
             updated.video_url = "";
             updated.card_image_url = "";
+          } else if (value === "package") {
+            updated.content_type = "media_package" as ContentType;
+            updated.video_provider = "";
+            updated.video_url = "";
+            updated.card_image_url = "";
+            if (!updated.package_items) updated.package_items = [];
           } else {
             updated.content_type = "video";
             updated.video_provider = "";
@@ -456,6 +495,27 @@ const CreateCourse = () => {
           if (i18nRows.length) {
             await supabase.from("course_content_i18n").insert(i18nRows);
           }
+
+          // Save media package items
+          const pkgRows: any[] = [];
+          insertedContents.forEach((ic: any, idx: number) => {
+            const c = contents[idx];
+            if (c.source === "package" && c.package_items?.length) {
+              c.package_items.forEach((it, itIdx) => {
+                if (!it.media_url) return;
+                pkgRows.push({
+                  content_id: ic.id,
+                  item_type: it.item_type,
+                  media_url: it.media_url,
+                  caption: it.caption || null,
+                  order_index: itIdx,
+                });
+              });
+            }
+          });
+          if (pkgRows.length) {
+            await (supabase as any).from("media_package_items").insert(pkgRows);
+          }
         }
       }
 
@@ -540,6 +600,27 @@ const CreateCourse = () => {
           })).filter((r: any) => r.title);
           if (i18nRows.length) {
             await supabase.from("course_content_i18n").insert(i18nRows);
+          }
+
+          // Save media package items
+          const pkgRows: any[] = [];
+          insertedContents.forEach((ic: any, idx: number) => {
+            const c = contents[idx];
+            if (c.source === "package" && c.package_items?.length) {
+              c.package_items.forEach((it, itIdx) => {
+                if (!it.media_url) return;
+                pkgRows.push({
+                  content_id: ic.id,
+                  item_type: it.item_type,
+                  media_url: it.media_url,
+                  caption: it.caption || null,
+                  order_index: itIdx,
+                });
+              });
+            }
+          });
+          if (pkgRows.length) {
+            await (supabase as any).from("media_package_items").insert(pkgRows);
           }
         }
       }
@@ -822,8 +903,9 @@ const UnifiedContentEditor = ({
   const [showEn, setShowEn] = useState(false);
   const isMango = content.source === "mangoboard";
   const isCard = content.source === "card";
+  const isPackage = content.source === "package";
   const isValidMangoboard = isMango && content.video_url.includes("mangoboard.net");
-  const Icon = isCard ? LayoutGrid : isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
+  const Icon = isPackage ? Package : isCard ? LayoutGrid : isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
 
   // Real-time sync KO → EN
   useEffect(() => {
@@ -859,8 +941,8 @@ const UnifiedContentEditor = ({
           <GripVertical className="h-4 w-4" />
           <span className="text-xs font-medium">{String(index + 1).padStart(2, "0")}</span>
         </div>
-        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isMango || isCard ? "bg-primary/10" : "bg-accent"}`}>
-          <Icon className={`h-4 w-4 ${isMango || isCard ? "text-primary" : "text-accent-foreground"}`} />
+        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isMango || isCard || isPackage ? "bg-primary/10" : "bg-accent"}`}>
+          <Icon className={`h-4 w-4 ${isMango || isCard || isPackage ? "text-primary" : "text-accent-foreground"}`} />
         </div>
         <Input value={content.title} onChange={(e) => onChange("title", e.target.value)} placeholder={t("createCourse.contentTitlePlaceholder")} className="flex-1 h-9 rounded-lg border-border text-sm" required />
         <button type="button" onClick={onRemove} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
@@ -909,10 +991,27 @@ const UnifiedContentEditor = ({
               <LayoutGrid className="h-3.5 w-3.5" />
               {t("createCourse.sourceCard", "카드")}
             </button>
+            <button
+              type="button"
+              onClick={() => onChange("source", "package")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${
+                isPackage
+                  ? "bg-accent text-foreground border-border"
+                  : "bg-transparent text-muted-foreground border-transparent hover:bg-accent/50"
+              }`}
+            >
+              <Package className="h-3.5 w-3.5" />
+              미디어 패키지
+            </button>
           </div>
         </div>
 
-        {isMango ? (
+        {isPackage ? (
+          <PackageItemsEditor
+            items={content.package_items || []}
+            onChange={(items) => onChange("package_items", items)}
+          />
+        ) : isMango ? (
           /* ── Mangoboard fields ── */
           <>
             <div className="space-y-1.5">
@@ -1173,5 +1272,196 @@ function normalizeMangoboardUrl(url: string): string {
   }
   return normalized;
 }
+
+/* ───── Media Package Items Editor ───── */
+
+const PackageItemsEditor = ({
+  items,
+  onChange,
+}: {
+  items: PackageItemDraft[];
+  onChange: (items: PackageItemDraft[]) => void;
+}) => {
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+
+  const guessType = (url: string): "image" | "video" => {
+    if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url)) return "video";
+    if (/\.(jpg|jpeg|png|gif|webp|svg|bmp|avif)(\?.*)?$/i.test(url)) return "image";
+    return "image";
+  };
+
+  const updateItem = (idx: number, patch: Partial<PackageItemDraft>) => {
+    const next = items.map((it, i) => (i === idx ? { ...it, ...patch } : it));
+    onChange(next);
+  };
+
+  const addItem = (type: "image" | "video") => {
+    onChange([
+      ...items,
+      { tempId: crypto.randomUUID(), item_type: type, media_url: "", caption: "" },
+    ]);
+  };
+
+  const removeItem = (idx: number) => {
+    onChange(items.filter((_, i) => i !== idx));
+  };
+
+  const moveItem = (from: number, to: number) => {
+    if (from === to || to < 0 || to >= items.length) return;
+    const next = [...items];
+    const [m] = next.splice(from, 1);
+    next.splice(to, 0, m);
+    onChange(next);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] text-muted-foreground">
+          이미지와 영상을 순서대로 배치하면 학습자가 [다음] 버튼으로 한 장씩 진행합니다. ({items.length}개)
+        </p>
+      </div>
+
+      {items.length === 0 && (
+        <div className="rounded-xl border border-dashed border-border bg-muted/20 py-6 text-center text-xs text-muted-foreground">
+          항목을 추가하여 패키지를 구성하세요.
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {items.map((it, idx) => {
+          const isImage = it.item_type === "image";
+          const showPreview = !!it.media_url;
+          return (
+            <div
+              key={it.tempId}
+              draggable
+              onDragStart={() => setDragIndex(idx)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (dragIndex !== null) moveItem(dragIndex, idx);
+                setDragIndex(null);
+              }}
+              className={`rounded-xl border border-border bg-background p-3 space-y-2 transition-opacity ${
+                dragIndex === idx ? "opacity-50" : ""
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="cursor-grab text-muted-foreground hover:text-foreground"
+                  title="드래그하여 순서 변경"
+                >
+                  <GripVertical className="h-4 w-4" />
+                </button>
+                <span className="text-[11px] font-medium text-muted-foreground w-6 text-center">
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <Select
+                  value={it.item_type}
+                  onValueChange={(v) => updateItem(idx, { item_type: v as "image" | "video" })}
+                >
+                  <SelectTrigger className="h-8 w-[100px] rounded-lg text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="image">이미지</SelectItem>
+                    <SelectItem value="video">영상</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  value={it.media_url}
+                  onChange={(e) => {
+                    const url = e.target.value;
+                    updateItem(idx, {
+                      media_url: url,
+                      item_type: url ? guessType(url) : it.item_type,
+                    });
+                  }}
+                  placeholder="https://... (이미지 또는 영상 URL)"
+                  className="h-8 rounded-lg border-border text-xs flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={() => moveItem(idx, idx - 1)}
+                  disabled={idx === 0}
+                  className="p-1 rounded hover:bg-accent text-muted-foreground disabled:opacity-30"
+                  title="위로"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveItem(idx, idx + 1)}
+                  disabled={idx === items.length - 1}
+                  className="p-1 rounded hover:bg-accent text-muted-foreground disabled:opacity-30"
+                  title="아래로"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeItem(idx)}
+                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                  title="삭제"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              <div className="flex gap-3">
+                {showPreview && (
+                  <div className="w-28 shrink-0 rounded-lg border border-border overflow-hidden bg-muted/30 aspect-video">
+                    {isImage ? (
+                      <img
+                        src={it.media_url}
+                        alt={`항목 ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <video src={it.media_url} className="w-full h-full object-cover" muted />
+                    )}
+                  </div>
+                )}
+                <Textarea
+                  value={it.caption}
+                  onChange={(e) => updateItem(idx, { caption: e.target.value })}
+                  placeholder="캡션 (선택)"
+                  className="min-h-[60px] rounded-lg border-border text-xs flex-1 resize-none"
+                  rows={2}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addItem("image")}
+          className="gap-1.5 h-8 text-xs"
+        >
+          <ImageIcon className="h-3.5 w-3.5" /> 이미지 추가
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addItem("video")}
+          className="gap-1.5 h-8 text-xs"
+        >
+          <Video className="h-3.5 w-3.5" /> 영상 추가
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 export default CreateCourse;
