@@ -55,7 +55,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const CourseRedirect = lazy(() => import("./components/CourseRedirect"));
 const ContentRedirect = lazy(() => import("./components/ContentRedirect"));
 
-const RouteFallback = () => <BrandLoader fullscreen />;
+const RouteFallback = () => null;
 
 
 const queryClient = new QueryClient({
