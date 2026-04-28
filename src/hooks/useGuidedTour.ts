@@ -103,8 +103,8 @@ export const useGuidedTour = (role: "student" | "teacher" | "admin") => {
       },
       {
         element: '[data-tour="nav-branch-mgmt"]',
-        title: t("tour.branchMgmt", "지점 관리"),
-        description: t("tour.branchMgmtDesc", "지점(부서)을 생성·편집하고 조직 구조를 관리할 수 있습니다."),
+        title: t("tour.branchMgmt", "조직 관리"),
+        description: t("tour.branchMgmtDesc", "조직(부서)을 생성·편집하고 조직 구조를 관리할 수 있습니다."),
       },
       {
         element: '[data-tour="nav-course-mgmt"]',
