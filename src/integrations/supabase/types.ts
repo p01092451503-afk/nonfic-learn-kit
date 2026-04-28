@@ -1479,8 +1479,10 @@ export type Database = {
           id: string
           is_required: boolean
           options: Json | null
+          options_en: Json | null
           order_index: number
           question_text: string
+          question_text_en: string | null
           question_type: Database["public"]["Enums"]["survey_question_type"]
           survey_id: string
           updated_at: string
@@ -1490,8 +1492,10 @@ export type Database = {
           id?: string
           is_required?: boolean
           options?: Json | null
+          options_en?: Json | null
           order_index?: number
           question_text: string
+          question_text_en?: string | null
           question_type?: Database["public"]["Enums"]["survey_question_type"]
           survey_id: string
           updated_at?: string
@@ -1501,8 +1505,10 @@ export type Database = {
           id?: string
           is_required?: boolean
           options?: Json | null
+          options_en?: Json | null
           order_index?: number
           question_text?: string
+          question_text_en?: string | null
           question_type?: Database["public"]["Enums"]["survey_question_type"]
           survey_id?: string
           updated_at?: string
@@ -1555,9 +1561,11 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          description_en: string | null
           id: string
           is_active: boolean
           title: string
+          title_en: string | null
           updated_at: string
         }
         Insert: {
@@ -1565,9 +1573,11 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          description_en?: string | null
           id?: string
           is_active?: boolean
           title: string
+          title_en?: string | null
           updated_at?: string
         }
         Update: {
@@ -1575,9 +1585,11 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          description_en?: string | null
           id?: string
           is_active?: boolean
           title?: string
+          title_en?: string | null
           updated_at?: string
         }
         Relationships: [
