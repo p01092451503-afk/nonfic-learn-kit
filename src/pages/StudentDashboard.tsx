@@ -189,7 +189,7 @@ const StudentDashboard = () => {
 
       const { data: courses, error } = await supabase
         .from("courses")
-        .select("id, title, deadline, is_mandatory")
+        .select("id, title, deadline, is_mandatory, course_i18n(language_code, title)")
         .eq("is_mandatory", true)
         .eq("status", "published")
         .in("id", [...enrolledMap.keys()])
@@ -198,6 +198,9 @@ const StudentDashboard = () => {
       if (error) throw error;
       return (courses || []).map(c => ({
         ...c,
+        title: lang === "en"
+          ? ((c as any).course_i18n?.find((x: any) => x.language_code === "en")?.title || c.title)
+          : c.title,
         progress: enrolledMap.get(c.id) || 0,
         daysLeft: c.deadline ? Math.ceil((new Date(c.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null,
       }));
@@ -217,7 +220,7 @@ const StudentDashboard = () => {
 
       let query = supabase
         .from("courses")
-        .select("id, title, instructor_id")
+        .select("id, title, instructor_id, course_i18n(language_code, title)")
         .eq("status", "published")
         .limit(3);
 
@@ -225,17 +228,23 @@ const StudentDashboard = () => {
         // Filter out enrolled courses - use not.in
         const { data, error } = await supabase
           .from("courses")
-          .select("id, title, instructor_id")
+          .select("id, title, instructor_id, course_i18n(language_code, title)")
           .eq("status", "published")
           .not("id", "in", `(${enrolledIds.join(",")})`)
           .limit(3);
         if (error) throw error;
-        return data || [];
+        return (data || []).map((c: any) => ({
+          ...c,
+          title: lang === "en" ? (c.course_i18n?.find((x: any) => x.language_code === "en")?.title || c.title) : c.title,
+        }));
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return (data || []).map((c: any) => ({
+        ...c,
+        title: lang === "en" ? (c.course_i18n?.find((x: any) => x.language_code === "en")?.title || c.title) : c.title,
+      }));
     },
     enabled: !!user?.id,
   });
