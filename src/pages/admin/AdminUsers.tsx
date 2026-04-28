@@ -1,4 +1,4 @@
-import { Users, Search, UserPlus, Trash2, Pencil } from "lucide-react";
+import { Users, Search, UserPlus, Trash2, Pencil, Activity, GraduationCap } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
