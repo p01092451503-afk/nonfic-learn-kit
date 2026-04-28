@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Pin, FileText, Eye, Download, ClipboardList } from "lucide-react";
 import BoardComments from "@/components/BoardComments";
 import { pickTranslation } from "@/lib/i18nContent";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const StudentBoard = () => {
   const { t, i18n } = useTranslation();
@@ -65,7 +66,9 @@ const StudentBoard = () => {
         </div>
 
         {isLoading ? (
-          <p className="text-muted-foreground text-sm">{t("common.loading")}</p>
+          <div className="space-y-3" role="status" aria-live="polite">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+          </div>
         ) : posts.length === 0 ? (
           <p className="text-muted-foreground text-sm">{t("common.noData")}</p>
         ) : (

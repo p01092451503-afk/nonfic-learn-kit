@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ClipboardList, Plus, Pencil, Trash2, Eye, ChevronDown, ChevronUp, Star, MessageSquare, ListChecks, Upload, Download, Copy } from "lucide-react";
 import { useRef } from "react";
 
@@ -359,8 +360,10 @@ const AdminSurveys = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
+          <div className="space-y-3" role="status" aria-live="polite">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-xl" />
+            ))}
           </div>
         ) : surveys.length === 0 ? (
           <Card>

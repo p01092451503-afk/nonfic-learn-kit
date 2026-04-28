@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type SessionState = "checking" | "valid" | "invalid";
 
@@ -111,8 +112,8 @@ const ResetPassword = () => {
   if (sessionState === "checking") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-6">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <span className="h-5 w-5 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+        <div className="flex items-center gap-3 text-muted-foreground" role="status" aria-live="polite">
+          <Skeleton className="h-5 w-5 rounded-full" />
           <span className="text-sm">링크 확인 중...</span>
         </div>
       </div>
@@ -181,10 +182,7 @@ const ResetPassword = () => {
           </div>
           <Button type="submit" variant="login" size="xl" className="w-full" disabled={isLoading}>
             {isLoading ? (
-              <span className="flex items-center gap-2">
-                <span className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                처리 중...
-              </span>
+              "처리 중..."
             ) : (
               <span className="flex items-center gap-2">
                 비밀번호 변경

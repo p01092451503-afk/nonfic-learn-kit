@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Check, ImagePlus, Loader2 } from "lucide-react";
+import { Check, ImagePlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -274,10 +274,7 @@ const AvatarTab = () => {
           className="rounded-xl px-6 py-3 h-auto text-sm font-medium bg-foreground text-background hover:bg-foreground/90"
         >
           {isSaving ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-              {t("common.saving")}
-            </>
+            t("common.saving")
           ) : (
             t("mypage.applyAvatar")
           )}

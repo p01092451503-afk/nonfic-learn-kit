@@ -9,7 +9,7 @@ import {
   FileText, Video, ChevronRight, BarChart3, Plus, Pencil,
   Trash2, Eye, EyeOff, Settings, ChevronUp, ChevronDown,
   GripVertical, ExternalLink, Copy, MoreHorizontal,
-  ClipboardCheck, AlertTriangle, Upload, X, Image, Languages, Loader2,
+  ClipboardCheck, AlertTriangle, Upload, X, Image, Languages,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -25,6 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import PageSkeleton from "@/components/PageSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -439,9 +440,7 @@ const CourseDetail = () => {
   if (courseLoading) {
     return (
       <DashboardLayout role={role}>
-        <div className="flex items-center justify-center h-64">
-          <span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
-        </div>
+        <PageSkeleton blocks={4} />
       </DashboardLayout>
     );
   }
@@ -1156,7 +1155,7 @@ const ContentDialog = ({
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
             <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleAutoTranslate} disabled={translating || (!form.title && !form.description)}>
-              {translating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+              <Languages className="h-3 w-3" />
               {t("course.autoTranslate", "자동 번역")}
             </Button>
           </div>
@@ -1452,7 +1451,7 @@ const CourseEditDialog = ({
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
             <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleAutoTranslate} disabled={translating || (!form.title && !form.description)}>
-              {translating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+              <Languages className="h-3 w-3" />
               {t("course.autoTranslate", "자동 번역")}
             </Button>
           </div>

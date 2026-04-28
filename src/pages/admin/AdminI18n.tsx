@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Languages, Loader2, Wand2, RefreshCw } from "lucide-react";
+import { Languages, Wand2, RefreshCw } from "lucide-react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { translateKoToEn } from "@/lib/translate";
 import { toast } from "sonner";
@@ -339,7 +340,7 @@ const AdminI18n = () => {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
-              <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? "animate-spin" : ""}`} />
+              <RefreshCw className="h-4 w-4 mr-1" />
               새로고침
             </Button>
             <Button
@@ -348,7 +349,7 @@ const AdminI18n = () => {
               disabled={bulkBusy || totalMissing === 0}
               className="gap-1"
             >
-              {bulkBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+              <Wand2 className="h-4 w-4" />
               전체 자동 번역 ({totalMissing})
             </Button>
           </div>
@@ -410,7 +411,7 @@ const AdminI18n = () => {
                   disabled={bulkBusy || selected.size === 0}
                   className="gap-1"
                 >
-                  {bulkBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                  <Wand2 className="h-4 w-4" />
                   선택 항목 번역 ({selected.size})
                 </Button>
               </div>
@@ -418,7 +419,9 @@ const AdminI18n = () => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="py-12 text-center text-sm text-muted-foreground">불러오는 중…</div>
+              <div className="space-y-3" role="status" aria-live="polite">
+                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
+              </div>
             ) : visible.length === 0 ? (
               <div className="py-12 text-center text-sm text-muted-foreground">해당 조건의 항목이 없습니다.</div>
             ) : (
@@ -484,11 +487,7 @@ const AdminI18n = () => {
                             onClick={() => handleTranslateOne(r)}
                             disabled={rowBusy === r.id || bulkBusy}
                           >
-                            {rowBusy === r.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <Languages className="h-3 w-3" />
-                            )}
+                            <Languages className="h-3 w-3" />
                             번역
                           </Button>
                         </td>

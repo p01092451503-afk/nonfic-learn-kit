@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Image as ImageIcon, Video as VideoIcon, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 
 interface MediaPackagePlayerProps {
@@ -49,8 +50,8 @@ const MediaPackagePlayer = ({ contentId, onComplete }: MediaPackagePlayerProps) 
 
   if (isLoading) {
     return (
-      <div className="aspect-video w-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="aspect-video w-full">
+        <Skeleton className="h-full w-full rounded-lg" />
       </div>
     );
   }

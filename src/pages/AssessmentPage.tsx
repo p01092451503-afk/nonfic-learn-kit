@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import PageSkeleton from "@/components/PageSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -507,9 +508,7 @@ export default function AssessmentPage() {
   if (assessmentLoading) {
     return (
       <DashboardLayout role={layoutRole}>
-        <div className="flex items-center justify-center h-64">
-          <span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
-        </div>
+        <PageSkeleton blocks={4} />
       </DashboardLayout>
     );
   }

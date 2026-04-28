@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
   MonitorPlay, BookOpen, ExternalLink, Link2, Eye, ImagePlus, X, CalendarIcon,
-  Save, Languages, Loader2, LayoutGrid, Image as ImageIcon, ChevronUp, Package, ChevronDown,
+  Save, Languages, LayoutGrid, Image as ImageIcon, ChevronUp, Package, ChevronDown,
 } from "lucide-react";
 import { translateKoToEn } from "@/lib/translate";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import CategorySelect from "@/components/CategorySelect";
 import { useTranslation } from "react-i18next";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Database } from "@/integrations/supabase/types";
 
 type ContentType = Database["public"]["Enums"]["content_type"];
@@ -728,7 +729,7 @@ const CreateCourse = () => {
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted-foreground">{t("course.enOptional", "영어 버전 (선택)")}</p>
                 <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleTranslateCourse} disabled={translatingCourse || (!title && !description)}>
-                  {translatingCourse ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+                  <Languages className="h-3 w-3" />
                   {t("course.autoTranslate", "자동 번역")}
                 </Button>
               </div>
@@ -1060,8 +1061,9 @@ const UnifiedContentEditor = ({
                 <div className="relative aspect-video">
                   {previewLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <div className="w-full px-4 space-y-2 text-center" role="status" aria-live="polite">
+                        <Skeleton className="h-4 w-28 mx-auto" />
+                        <Skeleton className="h-2 w-40 mx-auto" />
                         <span className="text-xs text-muted-foreground">{t("createCourse.loadingText")}</span>
                       </div>
                     </div>
@@ -1244,7 +1246,7 @@ const UnifiedContentEditor = ({
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-medium text-muted-foreground uppercase">English</span>
               <Button type="button" variant="outline" size="sm" className="h-6 text-[10px] gap-1" onClick={handleTranslateContent} disabled={translating || (!content.title && !content.description)}>
-                {translating ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Languages className="h-2.5 w-2.5" />}
+                <Languages className="h-2.5 w-2.5" />
                 {t("course.autoTranslate", "자동 번역")}
               </Button>
             </div>
