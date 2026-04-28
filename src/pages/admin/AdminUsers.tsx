@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import PageSkeleton from "@/components/PageSkeleton";
+import StatCard from "@/components/ui/stat-card";
+import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
 
 const ROLE_PRIORITY = ["super_admin", "admin", "teacher", "student"] as const;
 
@@ -175,6 +177,7 @@ const AdminUsers = () => {
   });
 
   const teacherCount = profiles.filter((profile: any) => getPrimaryRole(profile.user_id) === "teacher").length;
+  const { data: usersSpark } = useDashboardSparklines(14);
 
   const openStaffEdit = (profile: any) => {
     const primaryRole = getPrimaryRole(profile.user_id);
