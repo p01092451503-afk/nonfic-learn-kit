@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { supabase } from "@/integrations/supabase/client";
 import LanguageToggle from "@/components/LanguageToggle";
 import RoleSwitcher from "@/components/RoleSwitcher";
@@ -43,8 +44,16 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const { profile, signOut } = useUser();
   const { primaryRole } = useUserRole();
   const { t } = useTranslation();
+  const { teacherRoleEnabled } = useSystemSettings();
 
   const activeRole = role || primaryRole;
+
+  // Redirect away from teacher dashboard if teacher role is disabled
+  useEffect(() => {
+    if (activeRole === "teacher" && !teacherRoleEnabled) {
+      navigate("/student", { replace: true });
+    }
+  }, [activeRole, teacherRoleEnabled, navigate]);
 
   const toggleCollapsed = () => {
     setSidebarCollapsed((prev) => {
