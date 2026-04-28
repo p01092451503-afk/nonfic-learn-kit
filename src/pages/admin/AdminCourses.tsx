@@ -1,4 +1,4 @@
-import { Plus, Search, MoreHorizontal, Eye, Edit, Users, BookOpen, Clock, LayoutGrid, List, AlertTriangle, CalendarClock, ArrowUpDown } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Eye, Edit, Users, BookOpen, Clock, LayoutGrid, List, AlertTriangle, CalendarClock, ArrowUpDown, CheckCircle2, FileEdit } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -15,6 +15,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import CourseCard from "@/components/CourseCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
+import StatCard from "@/components/ui/stat-card";
 
 const statusLabel: Record<string, string> = {
   draft: "초안",
