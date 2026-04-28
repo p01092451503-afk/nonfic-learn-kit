@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { translateKoToEn } from "@/lib/translate";
 import { toast } from "sonner";
 
-type Category = "course" | "content" | "assessment" | "announcement" | "board";
+type Category = "course" | "content" | "assessment" | "announcement" | "board" | "category";
 
 interface Row {
   id: string;
@@ -30,6 +30,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
   assessment: "평가",
   announcement: "공지",
   board: "게시판",
+  category: "분류",
 };
 
 async function fetchAllRows(): Promise<Row[]> {
