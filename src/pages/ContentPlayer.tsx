@@ -403,7 +403,11 @@ const ContentPlayer = () => {
           <div className="max-w-5xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
             {/* Media area */}
             <div className="bg-foreground/5 rounded-2xl overflow-hidden mb-6 relative">
-              {isCardContent(currentContent.description) ? (() => {
+              {currentContent.content_type === "media_package" ? (
+                <div className="p-4">
+                  <MediaPackagePlayer contentId={currentContent.id} />
+                </div>
+              ) : isCardContent(currentContent.description) ? (() => {
                 const urls = getCardUrls(currentContent.description, localVideoUrl);
                 const totalCards = urls.length;
                 const currentUrl = urls[cardIndex] || urls[0] || "";
