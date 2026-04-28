@@ -359,8 +359,10 @@ const AdminSurveys = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
+          <div className="space-y-3" role="status" aria-live="polite">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-xl" />
+            ))}
           </div>
         ) : surveys.length === 0 ? (
           <Card>

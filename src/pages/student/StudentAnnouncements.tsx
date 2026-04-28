@@ -53,8 +53,10 @@ const StudentAnnouncements = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="h-8 w-8 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+          <div className="space-y-3" role="status" aria-live="polite">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-xl" />
+            ))}
           </div>
         ) : announcements?.length === 0 ? (
           <Card>
