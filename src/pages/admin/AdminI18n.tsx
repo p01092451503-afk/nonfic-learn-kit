@@ -35,10 +35,11 @@ async function fetchAllRows(): Promise<Row[]> {
   const rows: Row[] = [];
 
   // 1) Courses
-  const { data: courses } = await supabase
+  const { data: coursesData } = await supabase
     .from("courses")
     .select("id, title, description")
     .order("created_at", { ascending: false });
+  const courses = (coursesData ?? []) as Array<{ id: string; title: string | null; description: string | null }>;
   const courseIds = (courses ?? []).map((c) => c.id);
   const { data: courseI18n } = courseIds.length
     ? await supabase
@@ -49,16 +50,17 @@ async function fetchAllRows(): Promise<Row[]> {
     : { data: [] as any[] };
   const courseEnMap = new Map<string, any>();
   (courseI18n ?? []).forEach((r: any) => courseEnMap.set(r.course_id, r));
-  (courses ?? []).forEach((c) => {
+  courses.forEach((c) => {
     const en = courseEnMap.get(c.id);
     rows.push(buildRow("course", c.id, c.title ?? "", c.description ?? "", en?.title ?? null, en?.description ?? null));
   });
 
-  // 2) Learning contents
-  const { data: contents } = await supabase
-    .from("learning_contents")
+  // 2) Course contents (lessons / 차시)
+  const { data: contentsData } = await supabase
+    .from("course_contents" as any)
     .select("id, title, description")
     .order("created_at", { ascending: false });
+  const contents = (contentsData ?? []) as Array<{ id: string; title: string | null; description: string | null }>;
   const contentIds = (contents ?? []).map((c) => c.id);
   const { data: contentI18n } = contentIds.length
     ? await supabase
@@ -69,16 +71,17 @@ async function fetchAllRows(): Promise<Row[]> {
     : { data: [] as any[] };
   const contentEnMap = new Map<string, any>();
   (contentI18n ?? []).forEach((r: any) => contentEnMap.set(r.content_id, r));
-  (contents ?? []).forEach((c) => {
+  contents.forEach((c) => {
     const en = contentEnMap.get(c.id);
     rows.push(buildRow("content", c.id, c.title ?? "", c.description ?? "", en?.title ?? null, en?.description ?? null));
   });
 
   // 3) Assessments
-  const { data: assessments } = await supabase
+  const { data: assessmentsData } = await supabase
     .from("assessments")
     .select("id, title, description")
     .order("created_at", { ascending: false });
+  const assessments = (assessmentsData ?? []) as Array<{ id: string; title: string | null; description: string | null }>;
   const assIds = (assessments ?? []).map((a) => a.id);
   const { data: assI18n } = assIds.length
     ? await supabase
@@ -89,16 +92,17 @@ async function fetchAllRows(): Promise<Row[]> {
     : { data: [] as any[] };
   const assEnMap = new Map<string, any>();
   (assI18n ?? []).forEach((r: any) => assEnMap.set(r.assessment_id, r));
-  (assessments ?? []).forEach((a) => {
+  assessments.forEach((a) => {
     const en = assEnMap.get(a.id);
     rows.push(buildRow("assessment", a.id, a.title ?? "", a.description ?? "", en?.title ?? null, en?.description ?? null));
   });
 
   // 4) Announcements
-  const { data: anns } = await supabase
+  const { data: annsData } = await supabase
     .from("announcements")
     .select("id, title, content")
     .order("created_at", { ascending: false });
+  const anns = (annsData ?? []) as Array<{ id: string; title: string | null; content: string | null }>;
   const annIds = (anns ?? []).map((a) => a.id);
   const { data: annI18n } = annIds.length
     ? await supabase
@@ -109,16 +113,17 @@ async function fetchAllRows(): Promise<Row[]> {
     : { data: [] as any[] };
   const annEnMap = new Map<string, any>();
   (annI18n ?? []).forEach((r: any) => annEnMap.set(r.announcement_id, r));
-  (anns ?? []).forEach((a) => {
+  anns.forEach((a) => {
     const en = annEnMap.get(a.id);
     rows.push(buildRow("announcement", a.id, a.title ?? "", a.content ?? "", en?.title ?? null, en?.content ?? null));
   });
 
   // 5) Board posts
-  const { data: posts } = await supabase
+  const { data: postsData } = await supabase
     .from("board_posts")
     .select("id, title, content")
     .order("created_at", { ascending: false });
+  const posts = (postsData ?? []) as Array<{ id: string; title: string | null; content: string | null }>;
   const postIds = (posts ?? []).map((p) => p.id);
   const { data: postI18n } = postIds.length
     ? await supabase
@@ -129,7 +134,7 @@ async function fetchAllRows(): Promise<Row[]> {
     : { data: [] as any[] };
   const postEnMap = new Map<string, any>();
   (postI18n ?? []).forEach((r: any) => postEnMap.set(r.post_id, r));
-  (posts ?? []).forEach((p) => {
+  posts.forEach((p) => {
     const en = postEnMap.get(p.id);
     rows.push(buildRow("board", p.id, p.title ?? "", p.content ?? "", en?.title ?? null, en?.content ?? null));
   });
