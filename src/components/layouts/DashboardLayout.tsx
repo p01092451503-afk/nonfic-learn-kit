@@ -139,7 +139,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
       label: "회원·조직",
       items: [
         { label: t("nav.userManagement"), href: "/admin/users", icon: Users, tourId: "nav-user-mgmt" },
-        { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2, tourId: "nav-branch-mgmt" },
+         { label: t("nav.branchManagement", "조직 관리"), href: "/admin/branches", icon: Building2, tourId: "nav-branch-mgmt" },
       ],
     },
     {
