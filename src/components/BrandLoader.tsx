@@ -10,7 +10,7 @@ interface BrandLoaderProps {
 
 /**
  * Brand-aligned skeleton loader.
- * Shows the NONFICTION wordmark with a shimmer sweep — replaces generic spinners
+ * Shows the CLASSYS wordmark with a shimmer sweep — replaces generic spinners
  * during route transitions and data loading states.
  */
 export const BrandLoader = ({ fullscreen = false, label, className }: BrandLoaderProps) => {
@@ -27,9 +27,9 @@ export const BrandLoader = ({ fullscreen = false, label, className }: BrandLoade
     >
       <span
         className="brand-loader-wordmark select-none font-serif text-3xl sm:text-4xl font-semibold tracking-[0.12em] text-foreground/90"
-        aria-label="NONFICTION 로딩 중"
+        aria-label="CLASSYS 로딩 중"
       >
-        NONFICTION
+        CLASSYS
       </span>
       <div className="h-[2px] w-40 overflow-hidden rounded-full bg-muted">
         <div className="brand-loader-bar h-full w-1/3 rounded-full bg-foreground/70" />
