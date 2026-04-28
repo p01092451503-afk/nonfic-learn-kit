@@ -941,8 +941,8 @@ const UnifiedContentEditor = ({
           <GripVertical className="h-4 w-4" />
           <span className="text-xs font-medium">{String(index + 1).padStart(2, "0")}</span>
         </div>
-        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isMango || isCard ? "bg-primary/10" : "bg-accent"}`}>
-          <Icon className={`h-4 w-4 ${isMango || isCard ? "text-primary" : "text-accent-foreground"}`} />
+        <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${isMango || isCard || isPackage ? "bg-primary/10" : "bg-accent"}`}>
+          <Icon className={`h-4 w-4 ${isMango || isCard || isPackage ? "text-primary" : "text-accent-foreground"}`} />
         </div>
         <Input value={content.title} onChange={(e) => onChange("title", e.target.value)} placeholder={t("createCourse.contentTitlePlaceholder")} className="flex-1 h-9 rounded-lg border-border text-sm" required />
         <button type="button" onClick={onRemove} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
@@ -990,6 +990,18 @@ const UnifiedContentEditor = ({
             >
               <LayoutGrid className="h-3.5 w-3.5" />
               {t("createCourse.sourceCard", "카드")}
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange("source", "package")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all border ${
+                isPackage
+                  ? "bg-accent text-foreground border-border"
+                  : "bg-transparent text-muted-foreground border-transparent hover:bg-accent/50"
+              }`}
+            >
+              <Package className="h-3.5 w-3.5" />
+              미디어 패키지
             </button>
           </div>
         </div>
