@@ -175,7 +175,7 @@ const StudentDashboard = () => {
 
   // 필수교육 (마감 임박 우선)
   const { data: mandatoryCourses = [] } = useQuery({
-    queryKey: ["dash-mandatory", user?.id],
+    queryKey: ["dash-mandatory", user?.id, lang],
     queryFn: async () => {
       // Get enrolled mandatory courses that are not completed
       const { data: myEnrollments } = await supabase
@@ -210,7 +210,7 @@ const StudentDashboard = () => {
 
   // 추천 강의 (수강하지 않은 published 강좌)
   const { data: recommendedCourses = [] } = useQuery({
-    queryKey: ["dash-recommended", user?.id],
+    queryKey: ["dash-recommended", user?.id, lang],
     queryFn: async () => {
       const { data: enrolledData } = await supabase
         .from("enrollments")
