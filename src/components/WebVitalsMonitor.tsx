@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Activity, ChevronDown, ChevronUp, X } from "lucide-react";
-import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from "web-vitals";
+import { Activity, X } from "lucide-react";
+import type { Metric } from "web-vitals";
 
 type VitalKey = "FCP" | "LCP" | "CLS" | "INP" | "TTFB";
 
@@ -37,37 +37,62 @@ const ratingClasses = (rating: VitalState["rating"]) => {
   }
 };
 
-const STORAGE_KEY = "web-vitals-monitor-visible";
+const STORAGE_KEY = "web-vitals-monitor-open";
 
 const WebVitalsMonitor = () => {
   const [vitals, setVitals] = useState<Record<VitalKey, VitalState>>(initialVitals);
-  const [collapsed, setCollapsed] = useState(false);
-  const [visible, setVisible] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
+  const [open, setOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === null ? true : stored === "true";
+    return stored === "true";
   });
 
+  // Lazy-load web-vitals only when the panel is opened, after idle.
   useEffect(() => {
-    const update = (key: VitalKey) => (metric: Metric) => {
-      setVitals((prev) => ({
-        ...prev,
-        [key]: { value: metric.value, rating: metric.rating },
-      }));
+    if (!open) return;
+    let cancelled = false;
+    const start = async () => {
+      const { onCLS, onFCP, onINP, onLCP, onTTFB } = await import("web-vitals");
+      if (cancelled) return;
+      const update = (key: VitalKey) => (metric: Metric) => {
+        setVitals((prev) => ({
+          ...prev,
+          [key]: { value: metric.value, rating: metric.rating },
+        }));
+      };
+      onFCP(update("FCP"));
+      onLCP(update("LCP"));
+      onCLS(update("CLS"));
+      onINP(update("INP"));
+      onTTFB(update("TTFB"));
     };
-    onFCP(update("FCP"));
-    onLCP(update("LCP"));
-    onCLS(update("CLS"));
-    onINP(update("INP"));
-    onTTFB(update("TTFB"));
-  }, []);
+    const ric = (window as unknown as {
+      requestIdleCallback?: (cb: () => void) => number;
+    }).requestIdleCallback;
+    const id = ric ? ric(start) : window.setTimeout(start, 200);
+    return () => {
+      cancelled = true;
+      if (!ric) clearTimeout(id);
+    };
+  }, [open]);
 
-  const handleClose = () => {
-    setVisible(false);
-    try { localStorage.setItem(STORAGE_KEY, "false"); } catch { /* noop */ }
+  const togglePanel = (next: boolean) => {
+    setOpen(next);
+    try { localStorage.setItem(STORAGE_KEY, String(next)); } catch { /* noop */ }
   };
 
-  if (!visible) return null;
+  if (!open) {
+    return (
+      <button
+        onClick={() => togglePanel(true)}
+        className="fixed bottom-4 right-4 z-50 h-10 w-10 rounded-full bg-background/95 backdrop-blur-md border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+        aria-label="Web Vitals 열기"
+        title="Web Vitals"
+      >
+        <Activity className="h-4 w-4 text-foreground" />
+      </button>
+    );
+  }
 
   const order: VitalKey[] = ["FCP", "LCP", "CLS", "INP", "TTFB"];
 
@@ -81,22 +106,14 @@ const WebVitalsMonitor = () => {
         <Activity className="h-4 w-4 text-foreground" aria-hidden="true" />
         <span className="text-sm font-semibold text-foreground flex-1">Web Vitals</span>
         <button
-          onClick={() => setCollapsed((c) => !c)}
-          className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-          aria-label={collapsed ? "펼치기" : "접기"}
-        >
-          {collapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-        </button>
-        <button
-          onClick={handleClose}
+          onClick={() => togglePanel(false)}
           className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
           aria-label="닫기"
         >
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-      {!collapsed && (
-        <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5">
           {order.map((key) => {
             const v = vitals[key];
             return (
@@ -110,8 +127,7 @@ const WebVitalsMonitor = () => {
               </span>
             );
           })}
-        </div>
-      )}
+      </div>
     </div>
   );
 };
