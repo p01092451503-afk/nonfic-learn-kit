@@ -3,6 +3,8 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Wifi } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import StatCard from "@/components/ui/stat-card";
+import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
 
 const RealtimeUsersCard = () => {
   const { t } = useTranslation();
@@ -43,24 +45,29 @@ const RealtimeUsersCard = () => {
     };
   }, [refetch]);
 
+  // Pull 7-day distinct-active-users series for the sparkline + delta.
+  const { data: spark } = useDashboardSparklines(14);
+  const sessions = spark?.sessions ?? [];
+  const last7 = sessions.slice(-7);
+  const delta = computeDelta(sessions);
+
   return (
-    <div className="stat-card !p-4 sm:!p-5 flex items-center gap-4">
-      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-        <Wifi className="h-6 w-6 text-primary" />
-      </div>
-      <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{t("stats.realtimeUsers", "현재 동시접속자")}</p>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-2xl font-bold text-foreground">{onlineCount.toLocaleString()}</span>
-          <span className="text-xs text-muted-foreground">{t("common.people")}</span>
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-chart-2 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-chart-2"></span>
-          </span>
-        </div>
-        <p className="text-[10px] text-muted-foreground mt-0.5">{t("stats.autoRefresh", "실시간 자동 갱신")}</p>
-      </div>
-    </div>
+    <StatCard
+      label={t("stats.realtimeUsers", "현재 동시접속자")}
+      value={onlineCount.toLocaleString()}
+      unit={t("common.people")}
+      icon={Wifi}
+      tone="primary"
+      trend={last7}
+      delta={delta}
+      hint={t("stats.autoRefresh", "실시간 자동 갱신")}
+      badge={
+        <span className="relative flex h-2.5 w-2.5 mt-1">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-chart-2 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-chart-2" />
+        </span>
+      }
+    />
   );
 };
 

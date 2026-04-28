@@ -9,6 +9,8 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { useUser } from "@/contexts/UserContext";
+import StatCard from "@/components/ui/stat-card";
+import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
 
 interface AdminAttendanceProps {
   role?: "admin" | "teacher";
@@ -177,6 +179,14 @@ const AdminAttendance = ({ role = "admin" }: AdminAttendanceProps) => {
   const totalCompletions = filteredStats.reduce((a, b) => a + b.completions, 0);
   const totalMinutes = filteredStats.reduce((a, b) => a + b.learningMinutes, 0);
 
+  const { data: spark } = useDashboardSparklines(14);
+  const attSparkline = {
+    sessions7: (spark?.sessions ?? []).slice(-7),
+    completions7: (spark?.completions ?? []).slice(-7),
+    sessionsDelta: computeDelta(spark?.sessions),
+    completionsDelta: computeDelta(spark?.completions),
+  };
+
   const exportCsv = () => {
     const header = [
       isKo ? "이름" : "Name",
@@ -227,34 +237,10 @@ const AdminAttendance = ({ role = "admin" }: AdminAttendanceProps) => {
 
         {/* Summary Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="stat-card !p-3 sm:!p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <p className="text-[10px] sm:text-xs">{isKo ? "전체 사용자" : "Total Users"}</p>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{totalUsers}</p>
-          </div>
-          <div className="stat-card !p-3 sm:!p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <LogIn className="h-4 w-4" />
-              <p className="text-[10px] sm:text-xs">{isKo ? "현재 온라인" : "Currently Online"}</p>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{totalOnline}</p>
-          </div>
-          <div className="stat-card !p-3 sm:!p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <p className="text-[10px] sm:text-xs">{isKo ? "총 학습시간" : "Total Learning Time"}</p>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{formatMinutes(totalMinutes)}</p>
-          </div>
-          <div className="stat-card !p-3 sm:!p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <BookOpen className="h-4 w-4" />
-              <p className="text-[10px] sm:text-xs">{isKo ? "학습 완료" : "Completions"}</p>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{totalCompletions}</p>
-          </div>
+          <StatCard label={isKo ? "전체 사용자" : "Total Users"} value={totalUsers} icon={Users} tone="primary" trend={attSparkline.sessions7} delta={attSparkline.sessionsDelta} />
+          <StatCard label={isKo ? "현재 온라인" : "Currently Online"} value={totalOnline} icon={LogIn} tone="success" />
+          <StatCard label={isKo ? "총 학습시간" : "Total Learning Time"} value={formatMinutes(totalMinutes)} icon={Clock} tone="info" />
+          <StatCard label={isKo ? "학습 완료" : "Completions"} value={totalCompletions} icon={BookOpen} tone="warning" trend={attSparkline.completions7} delta={attSparkline.completionsDelta} />
         </div>
 
         {/* Filters */}

@@ -1,4 +1,4 @@
-import { Users, Search, UserPlus, Trash2, Pencil } from "lucide-react";
+import { Users, Search, UserPlus, Trash2, Pencil, Activity, GraduationCap } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import PageSkeleton from "@/components/PageSkeleton";
+import StatCard from "@/components/ui/stat-card";
+import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
 
 const ROLE_PRIORITY = ["super_admin", "admin", "teacher", "student"] as const;
 
@@ -175,6 +177,7 @@ const AdminUsers = () => {
   });
 
   const teacherCount = profiles.filter((profile: any) => getPrimaryRole(profile.user_id) === "teacher").length;
+  const { data: usersSpark } = useDashboardSparklines(14);
 
   const openStaffEdit = (profile: any) => {
     const primaryRole = getPrimaryRole(profile.user_id);
@@ -274,18 +277,28 @@ const AdminUsers = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="stat-card text-center !p-3 sm:!p-6">
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{profiles.length}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("admin.totalUsersCount")}</p>
-          </div>
-          <div className="stat-card text-center !p-3 sm:!p-6">
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{profiles.length}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("admin.activeUsers")}</p>
-          </div>
-          <div className="stat-card text-center !p-3 sm:!p-6">
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{teacherCount}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{t("admin.teacherCount")}</p>
-          </div>
+          <StatCard
+            label={t("admin.totalUsersCount")}
+            value={profiles.length}
+            icon={Users}
+            tone="primary"
+            trend={(usersSpark?.signups ?? []).slice(-7)}
+            delta={computeDelta(usersSpark?.signups)}
+          />
+          <StatCard
+            label={t("admin.activeUsers")}
+            value={profiles.length}
+            icon={Activity}
+            tone="success"
+            trend={(usersSpark?.sessions ?? []).slice(-7)}
+            delta={computeDelta(usersSpark?.sessions)}
+          />
+          <StatCard
+            label={t("admin.teacherCount")}
+            value={teacherCount}
+            icon={GraduationCap}
+            tone="info"
+          />
         </div>
 
         {/* Search + Dept Filter */}

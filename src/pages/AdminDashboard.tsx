@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
+import StatCard from "@/components/ui/stat-card";
+import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
 
 const AdminDashboard = () => {
   const { profile } = useUser();
@@ -175,6 +177,16 @@ const AdminDashboard = () => {
     return daysLeft <= 3;
   });
 
+  // Time-series for visualization on stat cards
+  const { data: spark } = useDashboardSparklines(14);
+  const sessions7   = (spark?.sessions ?? []).slice(-7);
+  const signups7    = (spark?.signups ?? []).slice(-7);
+  const completions7 = (spark?.completions ?? []).slice(-7);
+  const enrollDelta  = computeDelta(spark?.enrollments);
+  const sessionsDelta = computeDelta(spark?.sessions);
+  const signupsDelta = computeDelta(spark?.signups);
+  const completionsDelta = computeDelta(spark?.completions);
+
   // Comes pre-aggregated from the server now.
   const topCourses = useMemo(
     () =>
@@ -225,39 +237,40 @@ const AdminDashboard = () => {
         </div>
 
         {/* ① Live Status Banner */}
-        <div className="stat-card !p-0 overflow-hidden">
-          <div className="flex items-center divide-x divide-border">
-            <div className="flex-1 flex items-center gap-3 px-5 py-4">
-              <span className="relative flex h-3 w-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <StatCard
+            label={isEn ? "Online Now" : "현재 접속"}
+            value={onlineUsers}
+            unit={t("common.people")}
+            icon={Activity}
+            tone="info"
+            trend={sessions7}
+            delta={sessionsDelta}
+            badge={
+              <span className="relative flex h-2.5 w-2.5 mt-1">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-chart-3 opacity-75" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-chart-3" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-chart-3" />
               </span>
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {isEn ? "Online Now" : "현재 접속"}
-                </p>
-                <p className="text-2xl font-bold text-foreground">{onlineUsers}<span className="text-sm font-normal text-muted-foreground ml-1">{t("common.people")}</span></p>
-              </div>
-            </div>
-            <div className="flex-1 flex items-center gap-3 px-5 py-4">
-              <UserPlus className="h-5 w-5 text-chart-2" />
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {isEn ? "Today Signups" : "오늘 가입"}
-                </p>
-                <p className="text-2xl font-bold text-foreground">{todayStats?.todaySignups || 0}<span className="text-sm font-normal text-muted-foreground ml-1">{t("common.people")}</span></p>
-              </div>
-            </div>
-            <div className="flex-1 flex items-center gap-3 px-5 py-4">
-              <GraduationCap className="h-5 w-5 text-chart-4" />
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {isEn ? "Today Completions" : "오늘 수료"}
-                </p>
-                <p className="text-2xl font-bold text-foreground">{todayStats?.todayCompletions || 0}<span className="text-sm font-normal text-muted-foreground ml-1">{t("common.people")}</span></p>
-              </div>
-            </div>
-          </div>
+            }
+          />
+          <StatCard
+            label={isEn ? "Today Signups" : "오늘 가입"}
+            value={todayStats?.todaySignups || 0}
+            unit={t("common.people")}
+            icon={UserPlus}
+            tone="success"
+            trend={signups7}
+            delta={signupsDelta}
+          />
+          <StatCard
+            label={isEn ? "Today Completions" : "오늘 수료"}
+            value={todayStats?.todayCompletions || 0}
+            unit={t("common.people")}
+            icon={GraduationCap}
+            tone="warning"
+            trend={completions7}
+            delta={completionsDelta}
+          />
         </div>
 
         {/* ② Action Required Cards */}

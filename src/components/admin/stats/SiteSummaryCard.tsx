@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Users, UserPlus, Globe, Monitor } from "lucide-react";
 import { startOfMonth, startOfDay } from "date-fns";
 import { useTranslation } from "react-i18next";
+import StatCard from "@/components/ui/stat-card";
+import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
 
 const SiteSummaryCard = () => {
   const { t } = useTranslation();
@@ -30,27 +32,51 @@ const SiteSummaryCard = () => {
 
   const stats = data || { todayVisitors: 0, monthNewMembers: 0, totalMembers: 0, todayPageViews: 0 };
 
-  const items = [
-    { label: t("stats.todayVisitors"), value: `${stats.todayVisitors.toLocaleString()}${t("common.people")}`, icon: Globe, color: "text-primary" },
-    { label: t("stats.monthNewSignups"), value: `${stats.monthNewMembers.toLocaleString()}${t("common.people")}`, icon: UserPlus, color: "text-chart-2" },
-    { label: t("stats.totalMembers"), value: `${stats.totalMembers.toLocaleString()}${t("common.people")}`, icon: Users, color: "text-chart-3" },
-    { label: t("stats.todayPageViews"), value: `${stats.todayPageViews.toLocaleString()}${t("common.cases")}`, icon: Monitor, color: "text-chart-4" },
-  ];
+  const { data: spark } = useDashboardSparklines(14);
+  const sessions7 = (spark?.sessions ?? []).slice(-7);
+  const signups7 = (spark?.signups ?? []).slice(-7);
+  const pageviews7 = (spark?.pageviews ?? []).slice(-7);
+
+  const visitorsDelta = computeDelta(spark?.sessions);
+  const signupsDelta  = computeDelta(spark?.signups);
+  const pageviewsDelta = computeDelta(spark?.pageviews);
 
   return (
-    <div className="stat-card !p-4 sm:!p-5 space-y-3">
-      <h3 className="text-sm font-semibold text-foreground">{t("stats.siteSummary")}</h3>
-      <div className="space-y-2.5">
-        {items.map((item) => (
-          <div key={item.label} className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <item.icon className={`h-3.5 w-3.5 ${item.color}`} />
-              {item.label}
-            </div>
-            <span className="text-sm font-bold text-foreground">{item.value}</span>
-          </div>
-        ))}
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+      <StatCard
+        label={t("stats.todayVisitors")}
+        value={stats.todayVisitors.toLocaleString()}
+        unit={t("common.people")}
+        icon={Globe}
+        tone="primary"
+        trend={sessions7}
+        delta={visitorsDelta}
+      />
+      <StatCard
+        label={t("stats.monthNewSignups")}
+        value={stats.monthNewMembers.toLocaleString()}
+        unit={t("common.people")}
+        icon={UserPlus}
+        tone="success"
+        trend={signups7}
+        delta={signupsDelta}
+      />
+      <StatCard
+        label={t("stats.totalMembers")}
+        value={stats.totalMembers.toLocaleString()}
+        unit={t("common.people")}
+        icon={Users}
+        tone="info"
+      />
+      <StatCard
+        label={t("stats.todayPageViews")}
+        value={stats.todayPageViews.toLocaleString()}
+        unit={t("common.cases")}
+        icon={Monitor}
+        tone="warning"
+        trend={pageviews7}
+        delta={pageviewsDelta}
+      />
     </div>
   );
 };
