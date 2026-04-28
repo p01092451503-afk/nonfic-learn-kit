@@ -269,7 +269,7 @@ const CourseCatalog = () => {
   });
 
   const { data: categories = [] } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["categories", lang],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
@@ -277,7 +277,8 @@ const CourseCatalog = () => {
         .eq("is_active", true)
         .order("display_order", { ascending: true });
       if (error) throw error;
-      return data;
+      if (lang === "ko") return data;
+      return (data || []).map((c: any) => ({ ...c, name: c.name_en || c.name }));
     },
   });
 
