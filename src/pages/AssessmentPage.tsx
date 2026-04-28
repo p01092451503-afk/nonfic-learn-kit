@@ -507,9 +507,7 @@ export default function AssessmentPage() {
   if (assessmentLoading) {
     return (
       <DashboardLayout role={layoutRole}>
-        <div className="flex items-center justify-center h-64">
-          <span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
-        </div>
+        <PageSkeleton blocks={4} />
       </DashboardLayout>
     );
   }

@@ -439,9 +439,7 @@ const CourseDetail = () => {
   if (courseLoading) {
     return (
       <DashboardLayout role={role}>
-        <div className="flex items-center justify-center h-64">
-          <span className="h-6 w-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
-        </div>
+        <PageSkeleton blocks={4} />
       </DashboardLayout>
     );
   }
