@@ -1876,6 +1876,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      dashboard_sparklines: { Args: { p_days?: number }; Returns: Json }
       get_assessment_questions_for_student: {
         Args: { p_assessment_id: string }
         Returns: {
