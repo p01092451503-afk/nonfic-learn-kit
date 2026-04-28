@@ -455,9 +455,11 @@ export type Database = {
           due_date: string | null
           id: string
           instructions: string | null
+          instructions_en: string | null
           max_score: number | null
           status: Database["public"]["Enums"]["assignment_status"] | null
           title: string
+          title_en: string | null
           updated_at: string | null
         }
         Insert: {
@@ -469,9 +471,11 @@ export type Database = {
           due_date?: string | null
           id?: string
           instructions?: string | null
+          instructions_en?: string | null
           max_score?: number | null
           status?: Database["public"]["Enums"]["assignment_status"] | null
           title: string
+          title_en?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -483,9 +487,11 @@ export type Database = {
           due_date?: string | null
           id?: string
           instructions?: string | null
+          instructions_en?: string | null
           max_score?: number | null
           status?: Database["public"]["Enums"]["assignment_status"] | null
           title?: string
+          title_en?: string | null
           updated_at?: string | null
         }
         Relationships: [
