@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { Upload, X, Image as ImageIcon, Video as VideoIcon, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Video as VideoIcon, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -220,7 +220,7 @@ export default function BunnyBulkUploadDialog({ open, onOpenChange }: Props) {
                   <div className="shrink-0">
                     {it.status === "done" ? <CheckCircle2 className="h-4 w-4 text-green-600" />
                       : it.status === "error" ? <AlertCircle className="h-4 w-4 text-destructive" />
-                      : it.status === "uploading" ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      : it.status === "uploading" ? <Upload className="h-4 w-4 text-muted-foreground" />
                       : (
                         <Button variant="ghost" size="icon" onClick={() => removeItem(it.id)}>
                           <X className="h-4 w-4" />
