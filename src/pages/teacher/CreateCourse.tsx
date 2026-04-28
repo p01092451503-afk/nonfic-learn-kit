@@ -1006,7 +1006,12 @@ const UnifiedContentEditor = ({
           </div>
         </div>
 
-        {isMango ? (
+        {isPackage ? (
+          <PackageItemsEditor
+            items={content.package_items || []}
+            onChange={(items) => onChange("package_items", items)}
+          />
+        ) : isMango ? (
           /* ── Mangoboard fields ── */
           <>
             <div className="space-y-1.5">
