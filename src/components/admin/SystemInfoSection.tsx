@@ -117,14 +117,14 @@ const SpecCard = ({ group }: { group: SpecGroup }) => {
   return (
     <div className="stat-card !p-0 overflow-hidden">
       <div className="flex items-center gap-2 px-5 py-3 border-b-2 border-border/80 bg-muted/30">
-        <Icon className="h-4 w-4 text-foreground" aria-hidden="true" />
-        <h3 className="text-sm font-semibold text-foreground">{group.title}</h3>
+        <Icon className="h-5 w-5 text-foreground" aria-hidden="true" />
+        <h3 className="text-base font-semibold text-foreground">{group.title}</h3>
       </div>
       <div className="divide-y divide-border">
         {group.rows.map((row) => (
-          <div key={row.name} className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-6 px-5 py-3">
-            <div className="text-sm font-medium text-foreground">{row.name}</div>
-            <div className="text-xs text-muted-foreground leading-relaxed">{row.desc}</div>
+          <div key={row.name} className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-1 md:gap-6 px-5 py-4">
+            <div className="text-base font-medium text-foreground">{row.name}</div>
+            <div className="text-sm text-muted-foreground leading-relaxed">{row.desc}</div>
           </div>
         ))}
       </div>
@@ -137,18 +137,18 @@ const SystemInfoSection = () => {
     <div className="space-y-6">
       <div className="stat-card">
         <div className="flex items-center gap-2">
-          <Info className="h-5 w-5 text-foreground" aria-hidden="true" />
-          <h2 className="text-base font-semibold text-foreground">시스템 정보</h2>
+          <Info className="h-6 w-6 text-foreground" aria-hidden="true" />
+          <h2 className="text-lg font-semibold text-foreground">시스템 정보</h2>
         </div>
-        <p className="text-xs text-muted-foreground mt-1.5">
+        <p className="text-sm text-muted-foreground mt-2">
           본 플랫폼의 기술 스택, 보안 정책, 소스코드 이관 절차를 안내합니다. 고객사 감사 및 보안 검토 자료로 활용할 수 있습니다.
         </p>
       </div>
 
       <Tabs defaultValue="stack" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="stack" className="gap-2"><Boxes className="h-3.5 w-3.5" /> 기술 스택</TabsTrigger>
-          <TabsTrigger value="security" className="gap-2"><Lock className="h-3.5 w-3.5" /> 보안 백서</TabsTrigger>
+          <TabsTrigger value="stack" className="gap-2 text-sm"><Boxes className="h-4 w-4" /> 기술 스택</TabsTrigger>
+          <TabsTrigger value="security" className="gap-2 text-sm"><Lock className="h-4 w-4" /> 보안 백서</TabsTrigger>
         </TabsList>
 
         <TabsContent value="stack" className="space-y-4">
