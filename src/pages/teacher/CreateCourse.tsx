@@ -729,7 +729,7 @@ const CreateCourse = () => {
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted-foreground">{t("course.enOptional", "영어 버전 (선택)")}</p>
                 <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleTranslateCourse} disabled={translatingCourse || (!title && !description)}>
-                  {translatingCourse ? <Loader2 className="h-3 w-3 animate-spin" /> : <Languages className="h-3 w-3" />}
+                  <Languages className="h-3 w-3" />
                   {t("course.autoTranslate", "자동 번역")}
                 </Button>
               </div>
@@ -1245,7 +1245,7 @@ const UnifiedContentEditor = ({
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-medium text-muted-foreground uppercase">English</span>
               <Button type="button" variant="outline" size="sm" className="h-6 text-[10px] gap-1" onClick={handleTranslateContent} disabled={translating || (!content.title && !content.description)}>
-                {translating ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Languages className="h-2.5 w-2.5" />}
+                <Languages className="h-2.5 w-2.5" />
                 {t("course.autoTranslate", "자동 번역")}
               </Button>
             </div>
