@@ -1061,8 +1061,9 @@ const UnifiedContentEditor = ({
                 <div className="relative aspect-video">
                   {previewLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <div className="w-full px-4 space-y-2 text-center" role="status" aria-live="polite">
+                        <Skeleton className="h-4 w-28 mx-auto" />
+                        <Skeleton className="h-2 w-40 mx-auto" />
                         <span className="text-xs text-muted-foreground">{t("createCourse.loadingText")}</span>
                       </div>
                     </div>
