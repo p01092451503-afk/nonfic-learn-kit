@@ -25,6 +25,11 @@ interface NavItem {
   tourId?: string;
 }
 
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
   role?: "student" | "teacher" | "admin";
@@ -122,25 +127,60 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
     { label: t("nav.boardManagement", "게시판 관리"), href: "/teacher/board", icon: FileText },
     { label: t("nav.attendanceManagement"), href: "/teacher/attendance", icon: CalendarCheck },
   ];
-  const adminNav: NavItem[] = [
-    { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard, tourId: "nav-dashboard" },
-    { label: t("nav.trafficMonitoring", "통계 현황"), href: "/admin/traffic", icon: BarChart3, tourId: "nav-traffic" },
-    { label: t("nav.userManagement"), href: "/admin/users", icon: Users, tourId: "nav-user-mgmt" },
-    { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2, tourId: "nav-branch-mgmt" },
-    { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen, tourId: "nav-course-mgmt" },
-    { label: t("nav.videoManagement", "동영상 관리"), href: "/admin/videos", icon: Video },
-    { label: t("nav.enrollmentManagement"), href: "/admin/enrollments", icon: ClipboardCheck, tourId: "nav-enrollment-mgmt" },
-    { label: t("nav.learningManagement"), href: "/admin/learning", icon: GraduationCap },
-    { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
-    { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy, tourId: "nav-completion-mgmt" },
-    { label: t("nav.notificationManagement", "알림 관리"), href: "/admin/notifications", icon: Bell },
-    { label: t("nav.announcementManagement", "공지사항 관리"), href: "/admin/announcements", icon: Megaphone },
-    { label: t("nav.boardManagement", "게시판 관리"), href: "/admin/board", icon: FileText },
-    { label: t("nav.surveyManagement", "설문 관리"), href: "/admin/surveys", icon: ClipboardList },
-    { label: t("nav.settings"), href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
+  const adminGroups: NavGroup[] = [
+    {
+      label: "인사이트",
+      items: [
+        { label: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard, tourId: "nav-dashboard" },
+        { label: t("nav.trafficMonitoring", "통계 현황"), href: "/admin/traffic", icon: BarChart3, tourId: "nav-traffic" },
+      ],
+    },
+    {
+      label: "회원·조직",
+      items: [
+        { label: t("nav.userManagement"), href: "/admin/users", icon: Users, tourId: "nav-user-mgmt" },
+        { label: t("nav.branchManagement", "지점 관리"), href: "/admin/branches", icon: Building2, tourId: "nav-branch-mgmt" },
+      ],
+    },
+    {
+      label: "콘텐츠",
+      items: [
+        { label: t("nav.courseManagement"), href: "/admin/courses", icon: BookOpen, tourId: "nav-course-mgmt" },
+        { label: t("nav.videoManagement", "동영상 관리"), href: "/admin/videos", icon: Video },
+      ],
+    },
+    {
+      label: "학습 운영",
+      items: [
+        { label: t("nav.enrollmentManagement"), href: "/admin/enrollments", icon: ClipboardCheck, tourId: "nav-enrollment-mgmt" },
+        { label: t("nav.learningManagement"), href: "/admin/learning", icon: GraduationCap },
+        { label: t("nav.attendanceManagement"), href: "/admin/attendance", icon: CalendarCheck },
+        { label: t("nav.completionManagement"), href: "/admin/completion", icon: Trophy, tourId: "nav-completion-mgmt" },
+        { label: t("nav.surveyManagement", "설문 관리"), href: "/admin/surveys", icon: ClipboardList },
+      ],
+    },
+    {
+      label: "커뮤니케이션",
+      items: [
+        { label: t("nav.notificationManagement", "알림 관리"), href: "/admin/notifications", icon: Bell },
+        { label: t("nav.announcementManagement", "공지사항 관리"), href: "/admin/announcements", icon: Megaphone },
+        { label: t("nav.boardManagement", "게시판 관리"), href: "/admin/board", icon: FileText },
+      ],
+    },
+    {
+      label: "시스템",
+      items: [
+        { label: t("nav.settings"), href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
+      ],
+    },
   ];
 
-  const navItems = activeRole === "admin" ? adminNav : activeRole === "teacher" ? teacherNav : studentNav;
+  const flatNav = activeRole === "teacher" ? teacherNav : studentNav;
+  const navGroups: NavGroup[] | null = activeRole === "admin" ? adminGroups : null;
+  // Track collapsed groups (admin only)
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const toggleGroup = (label: string) =>
+    setCollapsedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   const roleLabel = t(`roles.${activeRole}`);
 
   const handleSignOut = async () => {
@@ -179,30 +219,34 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
           )}
         </div>
 
-        <nav className={`flex-1 overflow-y-auto py-4 space-y-1 ${sidebarCollapsed ? "px-2" : "px-3"}`} data-tour="sidebar-nav" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.href;
-            const linkEl = (
-              <Link key={item.href} to={item.href} onClick={() => setSidebarOpen(false)}
-                className={`nav-item ${isActive ? "nav-item-active" : ""} ${sidebarCollapsed ? "justify-center px-2" : ""}`}
-                aria-current={isActive ? "page" : undefined}
-                title={sidebarCollapsed ? item.label : undefined}
-                {...(item.tourId ? { "data-tour": item.tourId } : {})}>
-                <item.icon className="h-[18px] w-[18px]" aria-hidden="true" />
-                {!sidebarCollapsed && <span>{item.label}</span>}
-                {!sidebarCollapsed && item.showNew && (
-                  <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold leading-none rounded bg-destructive text-destructive-foreground animate-pulse">
-                    NEW
-                  </span>
-                )}
-                {!sidebarCollapsed && isActive && <ChevronRight className="h-3.5 w-3.5 ml-auto" aria-hidden="true" />}
-                {sidebarCollapsed && item.showNew && (
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive animate-pulse" aria-hidden="true" />
-                )}
-              </Link>
-            );
-            return linkEl;
-          })}
+        <nav className={`flex-1 overflow-y-auto py-4 ${sidebarCollapsed ? "px-2 space-y-1" : "px-3 space-y-4"}`} data-tour="sidebar-nav" aria-label={t("nav.sideNavigation", "사이드 메뉴")}>
+          {navGroups ? (
+            navGroups.map((group) => {
+              const isGroupCollapsed = !!collapsedGroups[group.label];
+              return (
+                <div key={group.label} className={sidebarCollapsed ? "" : "space-y-1"}>
+                  {!sidebarCollapsed && (
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(group.label)}
+                      className="w-full flex items-center justify-between px-2.5 py-1 mb-0.5 rounded-full bg-sidebar-accent/60 text-[11px] font-semibold tracking-wide text-muted-foreground hover:bg-sidebar-accent transition-colors"
+                      aria-expanded={!isGroupCollapsed}
+                    >
+                      <span>{group.label}</span>
+                      <ChevronRight className={`h-3.5 w-3.5 transition-transform ${isGroupCollapsed ? "" : "rotate-90"}`} aria-hidden="true" />
+                    </button>
+                  )}
+                  {(sidebarCollapsed || !isGroupCollapsed) && (
+                    <div className="space-y-0.5">
+                      {group.items.map((item) => renderNavLink(item))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <div className="space-y-1">{flatNav.map((item) => renderNavLink(item))}</div>
+          )}
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
