@@ -135,18 +135,9 @@ const AdminEnrollments = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="stat-card !p-3 sm:!p-4">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("enrollment.pendingCount")}</p>
-            <p className="text-xl sm:text-2xl font-bold text-amber-600 mt-1">{pendingCount}</p>
-          </div>
-          <div className="stat-card !p-3 sm:!p-4">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("enrollment.approvedCount")}</p>
-            <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">{approvedCount}</p>
-          </div>
-          <div className="stat-card !p-3 sm:!p-4">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{t("enrollment.rejectedCount")}</p>
-            <p className="text-xl sm:text-2xl font-bold text-destructive mt-1">{rejectedCount}</p>
-          </div>
+          <StatCard label={t("enrollment.pendingCount")} value={pendingCount} icon={Clock} tone="warning" />
+          <StatCard label={t("enrollment.approvedCount")} value={approvedCount} icon={CheckCircle2} tone="success" trend={(enrollSpark?.enrollments ?? []).slice(-7)} delta={computeDelta(enrollSpark?.enrollments)} />
+          <StatCard label={t("enrollment.rejectedCount")} value={rejectedCount} icon={XCircle} tone="danger" />
         </div>
 
         {/* Toolbar */}
