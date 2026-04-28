@@ -170,10 +170,34 @@ const CreateCourse = () => {
 
       const i18nMap = new Map((contentI18ns || []).map((i: any) => [i.content_id, i]));
 
+      // Load media package items for any media_package contents
+      const packageContentIds = (courseContents || [])
+        .filter((c: any) => c.content_type === "media_package")
+        .map((c: any) => c.id);
+      const packageItemsMap = new Map<string, PackageItemDraft[]>();
+      if (packageContentIds.length > 0) {
+        const { data: pkgItems } = await (supabase as any)
+          .from("media_package_items")
+          .select("*")
+          .in("content_id", packageContentIds)
+          .order("order_index", { ascending: true });
+        (pkgItems || []).forEach((it: any) => {
+          const arr = packageItemsMap.get(it.content_id) || [];
+          arr.push({
+            tempId: it.id,
+            item_type: it.item_type,
+            media_url: it.media_url,
+            caption: it.caption || "",
+          });
+          packageItemsMap.set(it.content_id, arr);
+        });
+      }
+
       if (courseContents?.length) {
         setContents(courseContents.map((c: any) => {
           const en = i18nMap.get(c.id);
           const isCard = c.description?.startsWith("[card-content]");
+          const isPackage = c.content_type === "media_package";
           let cleanDesc = "";
           let cardUrls: string[] = [];
           if (isCard) {
@@ -198,10 +222,11 @@ const CreateCourse = () => {
             duration_minutes: c.duration_minutes,
             is_preview: c.is_preview || false,
             is_published: c.is_published || false,
-            source: isCard ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource),
+            source: isPackage ? "package" as ContentSource : (isCard ? "card" as ContentSource : (c.video_url?.includes("mangoboard") ? "mangoboard" as ContentSource : "video" as ContentSource)),
             enTitle: en?.title || "",
             enDescription: en?.description || "",
             card_urls: cardUrls.length > 0 ? cardUrls : (isCard && c.video_url ? [c.video_url] : []),
+            package_items: isPackage ? (packageItemsMap.get(c.id) || []) : undefined,
           };
         }));
       }
