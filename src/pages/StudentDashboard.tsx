@@ -60,16 +60,20 @@ const StudentDashboard = () => {
   // 각 강좌의 다음 차시 조회
   const courseIds = enrollments.map((e: any) => e.course_id);
   const { data: courseContents = [] } = useQuery({
-    queryKey: ["dash-course-contents", courseIds],
+    queryKey: ["dash-course-contents", courseIds, lang],
     queryFn: async () => {
       if (courseIds.length === 0) return [];
       const { data, error } = await supabase
         .from("course_contents")
-        .select("id, course_id, title, order_index")
+        .select("id, course_id, title, order_index, course_content_i18n(language_code, title)")
         .in("course_id", courseIds)
         .order("order_index", { ascending: true });
       if (error) throw error;
-      return data;
+      if (lang === "ko") return data;
+      return (data || []).map((c: any) => {
+        const tr = (c.course_content_i18n || []).find((x: any) => x.language_code === lang);
+        return { ...c, title: tr?.title || c.title };
+      });
     },
     enabled: courseIds.length > 0,
   });
