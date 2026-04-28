@@ -73,7 +73,6 @@ const App = () => (
           <TrafficLogger />
           <AdminWebVitalsGate />
           <AppErrorBoundary>
-            <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -142,7 +141,6 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-            </Suspense>
           </AppErrorBoundary>
         </BrowserRouter>
       </TooltipProvider>
