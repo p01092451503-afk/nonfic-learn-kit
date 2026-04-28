@@ -12,6 +12,7 @@ import Auth from "./pages/Auth"; // keep eager: first paint
 import TrafficLogger from "./components/TrafficLogger";
 import AdminWebVitalsGate from "./components/AdminWebVitalsGate";
 import BrandLoader from "./components/BrandLoader";
+import AppErrorBoundary from "./components/AppErrorBoundary";
 
 // Lazy-load all non-critical routes to drastically reduce initial bundle.
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -77,7 +78,8 @@ const App = () => (
         <BrowserRouter>
           <TrafficLogger />
           <AdminWebVitalsGate />
-          <Suspense fallback={<RouteFallback />}>
+          <AppErrorBoundary>
+            <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -146,7 +148,8 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          </Suspense>
+            </Suspense>
+          </AppErrorBoundary>
         </BrowserRouter>
       </TooltipProvider>
     </UserProvider>
