@@ -252,11 +252,11 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
                     <button
                       type="button"
                       onClick={() => toggleGroup(group.label)}
-                      className="w-full flex items-center justify-between px-2.5 py-1 mb-0.5 rounded-full bg-sidebar-accent/60 text-[11px] font-semibold tracking-wide text-muted-foreground hover:bg-sidebar-accent transition-colors"
+                      className="w-full flex items-center justify-between px-3 py-1.5 mb-1.5 text-[10px] font-bold tracking-[0.14em] uppercase text-foreground/70 hover:text-foreground border-b border-sidebar-border/70 transition-colors"
                       aria-expanded={!isGroupCollapsed}
                     >
                       <span>{group.label}</span>
-                      <ChevronRight className={`h-3.5 w-3.5 transition-transform ${isGroupCollapsed ? "" : "rotate-90"}`} aria-hidden="true" />
+                      <ChevronRight className={`h-3 w-3 transition-transform ${isGroupCollapsed ? "" : "rotate-90"}`} aria-hidden="true" />
                     </button>
                   )}
                   {(sidebarCollapsed || !isGroupCollapsed) && (
