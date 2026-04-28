@@ -253,7 +253,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
                     <button
                       type="button"
                       onClick={() => toggleGroup(group.label)}
-                      className="w-full flex items-center justify-between px-2.5 py-1 mb-0.5 rounded-full bg-sidebar-accent/60 text-[11px] font-semibold tracking-wide text-muted-foreground hover:bg-sidebar-accent transition-colors"
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 mb-0.5 rounded-full bg-foreground/10 text-[11px] font-semibold tracking-wide text-foreground/70 hover:bg-foreground/15 transition-colors"
                       aria-expanded={!isGroupCollapsed}
                     >
                       <span>{group.label}</span>
