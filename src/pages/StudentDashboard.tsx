@@ -14,22 +14,28 @@ import { useTranslation } from "react-i18next";
 const StudentDashboard = () => {
   const { user, profile } = useUser();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.startsWith("en") ? "en" : "ko";
   const displayName = profile?.full_name || t("common.user");
 
   // 수강 중인 강좌 (진행 중)
   const { data: enrollments = [] } = useQuery({
-    queryKey: ["dash-enrollments", user?.id],
+    queryKey: ["dash-enrollments", user?.id, lang],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("enrollments")
-        .select("*, courses(id, title, instructor_id, difficulty_level)")
+        .select("*, courses(id, title, instructor_id, difficulty_level, course_i18n(language_code, title))")
         .eq("user_id", user!.id)
         .is("completed_at", null)
         .order("enrolled_at", { ascending: false })
         .limit(5);
       if (error) throw error;
-      return data;
+      if (lang === "ko") return data;
+      return (data || []).map((e: any) => {
+        if (!e.courses) return e;
+        const tr = (e.courses.course_i18n || []).find((x: any) => x.language_code === lang);
+        return { ...e, courses: { ...e.courses, title: tr?.title || e.courses.title } };
+      });
     },
     enabled: !!user?.id,
   });
@@ -169,7 +175,7 @@ const StudentDashboard = () => {
 
   // 필수교육 (마감 임박 우선)
   const { data: mandatoryCourses = [] } = useQuery({
-    queryKey: ["dash-mandatory", user?.id],
+    queryKey: ["dash-mandatory", user?.id, lang],
     queryFn: async () => {
       // Get enrolled mandatory courses that are not completed
       const { data: myEnrollments } = await supabase
@@ -183,7 +189,7 @@ const StudentDashboard = () => {
 
       const { data: courses, error } = await supabase
         .from("courses")
-        .select("id, title, deadline, is_mandatory")
+        .select("id, title, deadline, is_mandatory, course_i18n(language_code, title)")
         .eq("is_mandatory", true)
         .eq("status", "published")
         .in("id", [...enrolledMap.keys()])
@@ -192,6 +198,9 @@ const StudentDashboard = () => {
       if (error) throw error;
       return (courses || []).map(c => ({
         ...c,
+        title: lang === "en"
+          ? ((c as any).course_i18n?.find((x: any) => x.language_code === "en")?.title || c.title)
+          : c.title,
         progress: enrolledMap.get(c.id) || 0,
         daysLeft: c.deadline ? Math.ceil((new Date(c.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null,
       }));
@@ -201,7 +210,7 @@ const StudentDashboard = () => {
 
   // 추천 강의 (수강하지 않은 published 강좌)
   const { data: recommendedCourses = [] } = useQuery({
-    queryKey: ["dash-recommended", user?.id],
+    queryKey: ["dash-recommended", user?.id, lang],
     queryFn: async () => {
       const { data: enrolledData } = await supabase
         .from("enrollments")
@@ -211,7 +220,7 @@ const StudentDashboard = () => {
 
       let query = supabase
         .from("courses")
-        .select("id, title, instructor_id")
+        .select("id, title, instructor_id, course_i18n(language_code, title)")
         .eq("status", "published")
         .limit(3);
 
@@ -219,17 +228,23 @@ const StudentDashboard = () => {
         // Filter out enrolled courses - use not.in
         const { data, error } = await supabase
           .from("courses")
-          .select("id, title, instructor_id")
+          .select("id, title, instructor_id, course_i18n(language_code, title)")
           .eq("status", "published")
           .not("id", "in", `(${enrolledIds.join(",")})`)
           .limit(3);
         if (error) throw error;
-        return data || [];
+        return (data || []).map((c: any) => ({
+          ...c,
+          title: lang === "en" ? (c.course_i18n?.find((x: any) => x.language_code === "en")?.title || c.title) : c.title,
+        }));
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return (data || []).map((c: any) => ({
+        ...c,
+        title: lang === "en" ? (c.course_i18n?.find((x: any) => x.language_code === "en")?.title || c.title) : c.title,
+      }));
     },
     enabled: !!user?.id,
   });

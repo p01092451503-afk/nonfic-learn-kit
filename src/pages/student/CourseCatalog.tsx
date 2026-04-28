@@ -242,19 +242,29 @@ const CourseCatalog = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const { i18n } = useTranslation();
+  const lang = i18n.language?.startsWith("en") ? "en" : "ko";
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
 
   const { data: courses = [], isLoading } = useQuery({
-    queryKey: ["catalog-courses"],
+    queryKey: ["catalog-courses", lang],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
-        .select("*")
+        .select("*, course_i18n(language_code, title, description)")
         .eq("status", "published")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+      if (lang === "ko") return data;
+      return (data || []).map((c: any) => {
+        const tr = (c.course_i18n || []).find((x: any) => x.language_code === lang);
+        return {
+          ...c,
+          title: tr?.title || c.title,
+          description: tr?.description || c.description,
+        };
+      });
     },
   });
 

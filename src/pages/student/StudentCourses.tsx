@@ -18,14 +18,31 @@ const StudentCourses = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.startsWith("en") ? "en" : "ko";
 
   const { data: enrollments = [], isLoading } = useQuery({
-    queryKey: ["my-enrollments", user?.id],
+    queryKey: ["my-enrollments", user?.id, lang],
     queryFn: async () => {
-      const { data, error } = await supabase.from("enrollments").select("*, courses(*)").eq("user_id", user!.id).order("enrolled_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("enrollments")
+        .select("*, courses(*, course_i18n(language_code, title, description))")
+        .eq("user_id", user!.id)
+        .order("enrolled_at", { ascending: false });
       if (error) throw error;
-      return data;
+      if (lang === "ko") return data;
+      return (data || []).map((e: any) => {
+        if (!e.courses) return e;
+        const tr = (e.courses.course_i18n || []).find((x: any) => x.language_code === lang);
+        return {
+          ...e,
+          courses: {
+            ...e.courses,
+            title: tr?.title || e.courses.title,
+            description: tr?.description || e.courses.description,
+          },
+        };
+      });
     },
     enabled: !!user?.id,
   });
