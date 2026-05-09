@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { ChartTooltip } from "@/components/dashboard/ChartTooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
 
@@ -105,15 +106,16 @@ const BranchLearningStats = () => {
           <p className="text-sm text-muted-foreground text-center py-6">{t("common.noData")}</p>
         ) : (
           <>
-            <div className="h-[220px] sm:h-[260px]">
+            <div className="h-[160px] sm:h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={isMobile ? { top: 4, right: 4, left: 0, bottom: 0 } : { top: 4, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} tickMargin={6} />
-                  <YAxis tick={{ fontSize: 10 }} width={30} hide={isMobile} domain={[0, 100]} />
-                  <Tooltip formatter={(value: number) => `${value}%`} />
-                  <Bar dataKey={completionRateLabel} fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey={avgProgressLabel} fill="hsl(var(--chart-2))" radius={[3, 3, 0, 0]} />
+                <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%" barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/60" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} tickMargin={6} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 10 }} width={26} hide={isMobile} domain={[0, 100]} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                  <Tooltip cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }} content={<ChartTooltip unit="%" />} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" iconSize={8} height={20} />
+                  <Bar dataKey={completionRateLabel} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={18} />
+                  <Bar dataKey={avgProgressLabel} fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
