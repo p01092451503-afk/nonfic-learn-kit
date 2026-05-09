@@ -1128,16 +1128,6 @@ const UnifiedContentEditor = ({
           </div>
         )}
 
-        const applyLibraryVideo = (v: { url: string; provider: string; title: string; duration_minutes: number | null }) => {
-          onChange("video_url", v.url);
-          onChange("video_provider", v.provider);
-          if (!content.title && v.title) onChange("title", v.title);
-          if (v.duration_minutes != null) onChange("duration_minutes", v.duration_minutes);
-          setUploadError(null);
-        };
-        return null;
-      })()}
-
         <VideoLibraryPicker
           open={libraryOpen}
           onOpenChange={setLibraryOpen}
