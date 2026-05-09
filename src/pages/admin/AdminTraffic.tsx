@@ -3,7 +3,6 @@ import { Activity, HardDrive, Globe, Play, TrendingUp, Calendar } from "lucide-r
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { RankBar } from "@/components/ui/rank-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
