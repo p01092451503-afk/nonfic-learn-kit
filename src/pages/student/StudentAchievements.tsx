@@ -1,6 +1,8 @@
-import { Award, Flame, Star, Target, TrendingUp, Zap, Crown, Medal, BookOpen } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Award, Flame, Star, Target, TrendingUp, Zap, Crown, Medal, BookOpen, Sparkles, Loader2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import {
@@ -38,11 +40,28 @@ const badgeIcons: Record<string, React.ElementType> = {
 const StudentAchievements = () => {
   const { user } = useUser();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [seeding, setSeeding] = useState(false);
   const [detail, setDetail] = useState<
     | { type: "level" | "points" | "streak" | "badges" }
     | { type: "badge"; badge: any; earned: boolean; earnedAt?: string }
     | null
   >(null);
+
+  const handleSeed = async () => {
+    if (seeding) return;
+    setSeeding(true);
+    try {
+      const { error } = await supabase.functions.invoke("seed-my-achievements");
+      if (error) throw error;
+      toast({ title: "샘플 데이터가 생성되었습니다" });
+      await queryClient.invalidateQueries();
+    } catch (e: any) {
+      toast({ title: "샘플 데이터 생성 실패", description: e.message, variant: "destructive" });
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const { data: gamification } = useQuery({
     queryKey: ["my-gamification", user?.id],
@@ -207,8 +226,16 @@ const StudentAchievements = () => {
     <DashboardLayout role="student">
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2"><Award className="h-6 w-6" aria-hidden="true" />{t("achievements.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("achievements.subtitle")}</p>
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2"><Award className="h-6 w-6" aria-hidden="true" />{t("achievements.title")}</h1>
+              <p className="text-sm text-muted-foreground mt-1">{t("achievements.subtitle")}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleSeed} disabled={seeding} className="rounded-full">
+              {seeding ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
+              샘플 데이터 채우기
+            </Button>
+          </div>
         </div>
 
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3" aria-label={t("achievements.title")}>
