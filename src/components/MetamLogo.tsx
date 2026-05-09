@@ -15,8 +15,10 @@ interface MetamLogoProps {
  * - markOnly: renders only the leading "M" (used by collapsed sidebar)
  */
 export const MetamLogo = ({ className, markOnly = false, mono = false }: MetamLogoProps) => {
-  const wordFill = mono ? "currentColor" : "currentColor";
-  const markFill = mono ? "currentColor" : "#0050A4";
+  // Leading M + "eta" wordmark are black; only the trailing M keeps brand blue.
+  const wordFill = "currentColor";
+  const leadingMarkFill = "currentColor";
+  const trailingMarkFill = mono ? "currentColor" : "#0050A4";
 
   if (markOnly) {
     return (
@@ -30,7 +32,7 @@ export const MetamLogo = ({ className, markOnly = false, mono = false }: MetamLo
       >
         <path
           d="M37.4809 2.95312H29.2065L20.6654 26.6572L12.1654 2.95312H3.91152L0 38.9573H7.4401L9.86087 16.512L17.6976 38.198H23.6606L31.511 16.4915L33.9318 38.9573H41.4129L37.5151 3.24045L37.4809 2.95312Z"
-          fill={markFill}
+          fill={leadingMarkFill}
         />
       </svg>
     );
@@ -45,10 +47,10 @@ export const MetamLogo = ({ className, markOnly = false, mono = false }: MetamLo
       aria-label="METAM"
       role="img"
     >
-      {/* leading M (brand blue) */}
+      {/* leading M (black) */}
       <path
         d="M37.4809 2.95312H29.2065L20.6654 26.6572L12.1654 2.95312H3.91152L0 38.9573H7.4401L9.86087 16.512L17.6976 38.198H23.6606L31.511 16.4915L33.9318 38.9573H41.4129L37.5151 3.24045L37.4809 2.95312Z"
-        fill={markFill}
+        fill={leadingMarkFill}
       />
       {/* e */}
       <path
@@ -68,7 +70,7 @@ export const MetamLogo = ({ className, markOnly = false, mono = false }: MetamLo
       {/* trailing M (brand blue) */}
       <path
         d="M177.449 1.86719H167.472L159.683 23.4916L151.929 1.86719H141.979L137.828 39.999H147.409L149.44 21.1725L155.963 39.2328H163.424L169.961 21.152L171.992 39.999H181.614L177.449 1.86719Z"
-        fill={markFill}
+        fill={trailingMarkFill}
       />
     </svg>
   );
