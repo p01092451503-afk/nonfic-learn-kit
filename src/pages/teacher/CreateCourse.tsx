@@ -878,6 +878,9 @@ const UnifiedContentEditor = ({
   const [previewError, setPreviewError] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [showEn, setShowEn] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isMango = content.source === "mangoboard";
   const isCard = content.source === "card";
   const isPackage = content.source === "package";
@@ -908,6 +911,67 @@ const UnifiedContentEditor = ({
     setPreviewError(false);
     setPreviewLoading(true);
     setShowPreview(true);
+  };
+
+  const handleDirectUpload = async (file: File) => {
+    if (!file) return;
+    const MAX_MB = 5120;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      alert(`파일이 너무 큽니다 (최대 ${MAX_MB}MB)`);
+      return;
+    }
+    setUploadingVideo(true);
+    setUploadProgress(0);
+    try {
+      const { data: token, error: tokenErr } = await supabase.functions.invoke("bunny-create-video", {
+        body: { title: content.title || file.name },
+      });
+      if (tokenErr || !token?.uploadUrl) throw new Error(tokenErr?.message || token?.error || "토큰 발급 실패");
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", token.uploadUrl, true);
+        xhr.setRequestHeader("AccessKey", token.accessKey);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 95));
+          }
+        };
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`HTTP ${xhr.status}`)));
+        xhr.onerror = () => reject(new Error("네트워크 오류"));
+        xhr.send(file);
+      });
+
+      const cdn = token.cdnHostname as string | null;
+      const playUrl = cdn
+        ? `https://${cdn}/${token.videoId}/playlist.m3u8`
+        : `https://iframe.mediadelivery.net/play/${token.libraryId}/${token.videoId}`;
+      const thumb = cdn ? `https://${cdn}/${token.videoId}/thumbnail.jpg` : null;
+
+      // Save to video_assets library so it's reusable
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("video_assets").insert({
+            title: content.title || file.name,
+            video_url: playUrl,
+            video_provider: "upload" as any,
+            file_size_mb: Math.round((file.size / (1024 * 1024)) * 100) / 100,
+            thumbnail_url: thumb,
+            uploaded_by: user.id,
+          } as any);
+        }
+      } catch { /* non-fatal */ }
+
+      onChange("video_url", playUrl);
+      onChange("video_provider", "upload");
+      setUploadProgress(100);
+    } catch (e: any) {
+      alert(`업로드 실패: ${e?.message || "알 수 없는 오류"}`);
+    } finally {
+      setUploadingVideo(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   return (
