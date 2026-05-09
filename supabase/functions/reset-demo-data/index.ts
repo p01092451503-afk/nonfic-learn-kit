@@ -190,7 +190,6 @@ Deno.serve(async (req) => {
       user_id: studentId,
       login_at: new Date(Date.now() - i * 86400000).toISOString(),
       logout_at: new Date(Date.now() - i * 86400000 + 45 * 60000).toISOString(),
-      duration_seconds: 45 * 60,
     }));
     await admin.from("user_sessions").insert(sessionRows);
 
