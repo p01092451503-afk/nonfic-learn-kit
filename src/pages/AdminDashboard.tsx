@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import {
   Users, BookOpen, Activity, LayoutDashboard, Building2, GraduationCap,
   AlertTriangle, ClipboardCheck, Bell, Megaphone, Clock, ChevronRight,
-  UserPlus, CheckCircle2, FileText, ArrowRight,
+  UserPlus, CheckCircle2, FileText, ArrowRight, Target, Percent, ListChecks,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -75,6 +75,66 @@ const AdminDashboard = () => {
       if (error) throw error;
       return count || 0;
     },
+  });
+
+  // ── Role widgets: 수강생 현황 / 과제 처리율 / 평가 통계 ──
+  const { data: learnerStats } = useQuery({
+    queryKey: ["dash-learner-stats"],
+    queryFn: async () => {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const [totalRes, activeRes, newRes] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("user_sessions").select("user_id").gte("login_at", sevenDaysAgo),
+        supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", thirtyDaysAgo),
+      ]);
+      const activeIds = new Set((activeRes.data || []).map((s: any) => s.user_id));
+      return {
+        total: totalRes.count || 0,
+        active7d: activeIds.size,
+        new30d: newRes.count || 0,
+      };
+    },
+    staleTime: 60_000,
+  });
+
+  const { data: assignmentStats } = useQuery({
+    queryKey: ["dash-assignment-stats"],
+    queryFn: async () => {
+      const [totalRes, gradedRes, submittedRes] = await Promise.all([
+        supabase.from("assignment_submissions").select("*", { count: "exact", head: true }),
+        supabase.from("assignment_submissions").select("*", { count: "exact", head: true }).eq("status", "graded"),
+        supabase.from("assignment_submissions").select("*", { count: "exact", head: true }).eq("status", "submitted"),
+      ]);
+      const total = totalRes.count || 0;
+      const graded = gradedRes.count || 0;
+      return { total, graded, pending: submittedRes.count || 0, rate: total > 0 ? Math.round((graded / total) * 100) : 0 };
+    },
+    staleTime: 60_000,
+  });
+
+  const { data: assessmentStats } = useQuery({
+    queryKey: ["dash-assessment-stats"],
+    queryFn: async () => {
+      const [totalRes, passedRes, completedRes, scoreRes] = await Promise.all([
+        supabase.from("assessment_attempts").select("*", { count: "exact", head: true }),
+        supabase.from("assessment_attempts").select("*", { count: "exact", head: true }).eq("passed", true),
+        supabase.from("assessment_attempts").select("*", { count: "exact", head: true }).not("completed_at", "is", null),
+        supabase.from("assessment_attempts").select("score").not("score", "is", null).limit(1000),
+      ]);
+      const completed = completedRes.count || 0;
+      const passed = passedRes.count || 0;
+      const scores = (scoreRes.data || []).map((r: any) => Number(r.score) || 0);
+      const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      return {
+        total: totalRes.count || 0,
+        completed,
+        passed,
+        avgScore,
+        passRate: completed > 0 ? Math.round((passed / completed) * 100) : 0,
+      };
+    },
+    staleTime: 60_000,
   });
 
   // Only the slim columns we actually use, and only mandatory/published rows
