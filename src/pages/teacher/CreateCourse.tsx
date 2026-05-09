@@ -29,6 +29,7 @@ import { useUser } from "@/contexts/UserContext";
 import CategorySelect from "@/components/CategorySelect";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import VideoPreview from "@/components/VideoPreview";
 import type { Database } from "@/integrations/supabase/types";
 
 type ContentType = Database["public"]["Enums"]["content_type"];
@@ -1068,6 +1069,18 @@ const UnifiedContentEditor = ({
             )}
           </div>
         </div>
+
+        {/* ── Thumbnail & playback preview ── */}
+        {content.video_url && (
+          <div className="max-w-md">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase block mb-1.5">미리보기</label>
+            <VideoPreview
+              videoUrl={content.video_url}
+              provider={content.video_provider}
+              title={content.title}
+            />
+          </div>
+        )}
 
         {/* Common fields */}
         <div className="space-y-1.5">
