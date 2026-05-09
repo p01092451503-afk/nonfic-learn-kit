@@ -30,6 +30,7 @@ import CategorySelect from "@/components/CategorySelect";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import VideoPreview from "@/components/VideoPreview";
+import VideoLibraryPicker from "@/components/VideoLibraryPicker";
 import type { Database } from "@/integrations/supabase/types";
 
 type ContentType = Database["public"]["Enums"]["content_type"];
@@ -883,6 +884,7 @@ const UnifiedContentEditor = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [lastUploadFile, setLastUploadFile] = useState<File | null>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMango = content.source === "mangoboard";
   const isCard = content.source === "card";
