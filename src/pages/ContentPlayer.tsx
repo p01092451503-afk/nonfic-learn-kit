@@ -14,6 +14,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
+import { useEnrollmentProgressSync } from "@/hooks/useEnrollmentProgressSync";
 import { logContentAccess } from "@/hooks/useTrafficLogger";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
@@ -219,25 +220,29 @@ const ContentPlayer = () => {
     }
   }, [videoProgress.autoCompleted]);
 
-  // Auto-sync enrollment progress whenever content progress changes
-  const lastSyncedProgressRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (!user?.id || !courseId || contents.length === 0) return;
-    const percentage = overallProgress;
-    if (lastSyncedProgressRef.current === percentage) return;
-    lastSyncedProgressRef.current = percentage;
-    (async () => {
-      await supabase
+  // Fetch enrollment to know existing completed_at (so we never overwrite it).
+  const { data: enrollment } = useQuery({
+    queryKey: ["enrollment", courseId, user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
         .from("enrollments")
-        .update({
-          progress: percentage,
-          completed_at: percentage >= 100 ? new Date().toISOString() : null,
-        })
-        .eq("user_id", user.id)
-        .eq("course_id", courseId);
-      queryClient.invalidateQueries({ queryKey: ["my-enrollments"] });
-    })();
-  }, [overallProgress, user?.id, courseId, contents.length]);
+        .select("completed_at")
+        .eq("course_id", courseId!)
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!courseId && !!user?.id,
+  });
+
+  // Single source of truth for enrollment.progress + completed_at.
+  useEnrollmentProgressSync({
+    userId: user?.id,
+    courseId,
+    overallProgress,
+    enrollmentCompletedAt: enrollment?.completed_at,
+    contentsLength: contents.length,
+  });
 
   const videoIframeCallback = useCallback(
     (el: HTMLElement | null) => {

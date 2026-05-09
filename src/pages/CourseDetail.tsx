@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { translateKoToEn } from "@/lib/translate";
 import AssessmentManager from "@/components/AssessmentManager";
 import StudentSurvey from "@/components/StudentSurvey";
+import { useEnrollmentProgressSync } from "@/hooks/useEnrollmentProgressSync";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -436,6 +437,16 @@ const CourseDetail = () => {
   const progressMap = new Map(progressData.map((p) => [p.content_id, p]));
   const completedCount = progressData.filter((p) => p.completed).length;
   const overallProgress = contents.length > 0 ? Math.round((completedCount / contents.length) * 100) : 0;
+
+  // Keep enrollment.progress + completed_at consistent with lesson progress.
+  useEnrollmentProgressSync({
+    userId: user?.id,
+    courseId,
+    overallProgress,
+    enrollmentCompletedAt: enrollment?.completed_at,
+    contentsLength: contents.length,
+    enabled: !!enrollment,
+  });
   const publishedCount = contents.filter(c => c.is_published).length;
   const totalDuration = contents.reduce((sum, c) => sum + (c.duration_minutes || 0), 0);
 
