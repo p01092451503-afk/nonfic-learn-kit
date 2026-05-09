@@ -112,7 +112,7 @@ const BranchLearningStats = () => {
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border/60" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} tickMargin={6} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 10 }} width={26} hide={isMobile} domain={[0, 100]} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                  <Tooltip cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }} content={<ChartTooltip valueSuffix="%" />} />
+                  <Tooltip cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }} content={<ChartTooltip unit="%" />} />
                   <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" iconSize={8} height={20} />
                   <Bar dataKey={completionRateLabel} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={18} />
                   <Bar dataKey={avgProgressLabel} fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} maxBarSize={18} />
