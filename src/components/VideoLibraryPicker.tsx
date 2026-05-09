@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 
 interface VideoAsset {
@@ -17,15 +19,26 @@ interface VideoAsset {
   created_at: string;
 }
 
+export type OverwriteMode = "if_empty" | "always" | "never";
+
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onSelect: (video: { url: string; provider: string; title: string; duration_minutes: number | null }) => void;
+  onSelect: (video: {
+    url: string;
+    provider: string;
+    title: string;
+    duration_minutes: number | null;
+    titleMode: OverwriteMode;
+    durationMode: OverwriteMode;
+  }) => void;
 }
 
 export default function VideoLibraryPicker({ open, onOpenChange, onSelect }: Props) {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [titleMode, setTitleMode] = useState<OverwriteMode>("if_empty");
+  const [durationMode, setDurationMode] = useState<OverwriteMode>("if_empty");
 
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ["video-library-picker"],
@@ -54,11 +67,36 @@ export default function VideoLibraryPicker({ open, onOpenChange, onSelect }: Pro
       provider: selected.video_provider,
       title: selected.title,
       duration_minutes: selected.duration_minutes,
+      titleMode,
+      durationMode,
     });
     onOpenChange(false);
     setSelectedId(null);
     setSearch("");
   };
+
+  const renderModeOptions = (
+    name: string,
+    value: OverwriteMode,
+    onChange: (v: OverwriteMode) => void,
+  ) => (
+    <RadioGroup
+      value={value}
+      onValueChange={(v) => onChange(v as OverwriteMode)}
+      className="flex flex-wrap gap-3"
+    >
+      {[
+        { v: "if_empty", label: "비어있을 때만" },
+        { v: "always", label: "항상 덮어쓰기" },
+        { v: "never", label: "유지" },
+      ].map((opt) => (
+        <div key={opt.v} className="flex items-center gap-1.5">
+          <RadioGroupItem id={`${name}-${opt.v}`} value={opt.v} />
+          <Label htmlFor={`${name}-${opt.v}`} className="text-xs cursor-pointer">{opt.label}</Label>
+        </div>
+      ))}
+    </RadioGroup>
+  );
 
   return (
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) { setSelectedId(null); setSearch(""); } }}>
@@ -113,6 +151,19 @@ export default function VideoLibraryPicker({ open, onOpenChange, onSelect }: Pro
                 );
               })
             )}
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">적용 옵션</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <p className="text-[11px] text-muted-foreground">제목</p>
+                {renderModeOptions("title", titleMode, setTitleMode)}
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] text-muted-foreground">재생시간</p>
+                {renderModeOptions("duration", durationMode, setDurationMode)}
+              </div>
+            </div>
           </div>
         </div>
         <DialogFooter>
