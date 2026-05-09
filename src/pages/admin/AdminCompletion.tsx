@@ -43,7 +43,7 @@ const AdminCompletion = () => {
   const { data: profiles = [] } = useQuery({
     queryKey: ["admin-comp-profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("user_id, full_name");
+      const { data, error } = await supabase.from("profiles").select("user_id, full_name, email, team_name, department");
       if (error) throw error;
       return data;
     },
@@ -105,6 +105,7 @@ const AdminCompletion = () => {
 
   const profileMap = new Map(profiles.map((p: any) => [p.user_id, p.full_name]));
   const emailMap = new Map(profiles.map((p: any) => [p.user_id, p.email || ""]));
+  const profileFullMap = new Map(profiles.map((p: any) => [p.user_id, p]));
   const criteriaMap = new Map(criteriaList.map((c: any) => [c.course_id, c]));
   const templateMap = new Map(templates.map((t: any) => [t.course_id, t]));
   const certSet = new Set(certificates.map((c: any) => `${c.user_id}_${c.course_id}`));
@@ -172,9 +173,14 @@ const AdminCompletion = () => {
       const certNumber = `CERT-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
       const course = courses.find((c: any) => c.id === enrollment.course_id);
       const template = templateMap.get(enrollment.course_id);
+      const prof: any = profileFullMap.get(enrollment.user_id) || {};
+      const email = emailMap.get(enrollment.user_id) || "";
       const blob = await generateCertificateImage({
         studentName: profileMap.get(enrollment.user_id) || "-",
-        studentEmail: emailMap.get(enrollment.user_id) || "-",
+        studentEmail: email || "-",
+        studentLoginId: email ? email.split("@")[0] : "-",
+        branchName: prof.department || "메타엠",
+        teamName: prof.team_name || "-",
         courseName: course?.title || "-",
         issuedDate: new Date().toLocaleDateString("ko-KR"),
         certificateNumber: certNumber,
