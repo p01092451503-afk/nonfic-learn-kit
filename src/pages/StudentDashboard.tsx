@@ -16,6 +16,8 @@ import MiniBarChart from "@/components/dashboard/MiniBarChart";
 import { format, subDays, startOfDay } from "date-fns";
 import { useState } from "react";
 import PeriodFilter, { type Period, periodToDays } from "@/components/dashboard/PeriodFilter";
+import StatCard from "@/components/ui/stat-card";
+import { useStudentSparklines, computeDelta } from "@/hooks/useStudentSparklines";
 
 const StudentDashboard = () => {
   const { user, profile } = useUser();
@@ -25,6 +27,7 @@ const StudentDashboard = () => {
   const displayName = profile?.full_name || t("common.user");
   const [activityPeriod, setActivityPeriod] = useState<Period>("7d");
   const activityDays = periodToDays(activityPeriod);
+  const { data: spark } = useStudentSparklines(user?.id, 14);
 
   // 수강 중인 강좌 (진행 중)
   const { data: enrollments = [] } = useQuery({
@@ -424,6 +427,65 @@ const StudentDashboard = () => {
     { label: t("dashboard.totalPoints"), value: String(gamification?.total_points || 0), sub: t("dashboard.cumulativePoints"), icon: Award },
   ];
 
+  const trendHint = lang === "en" ? "vs last 7 days" : "최근 7일 대비";
+  type Tone = "primary" | "success" | "warning" | "danger" | "info" | "neutral";
+  const visualStats: Array<{
+    label: string; value: string; unit?: string; icon: any; tone: Tone;
+    trend?: number[]; delta?: number | null; hint?: string; href?: string;
+  }> = [
+    {
+      label: t("dashboard.coursesInProgress"), value: String(enrollmentStats?.inProgress || 0),
+      icon: BookOpen, tone: "primary",
+      trend: spark?.enrollments, delta: computeDelta(spark?.enrollments),
+      hint: t("dashboard.inProgress"), href: "/dashboard/courses",
+    },
+    {
+      label: t("dashboard.coursesCompleted"), value: String(enrollmentStats?.completed || 0),
+      icon: ClipboardCheck, tone: "success",
+      trend: spark?.completions, delta: computeDelta(spark?.completions),
+      hint: t("dashboard.totalCourses", { count: enrollmentStats?.total || 0 }), href: "/dashboard/courses",
+    },
+    {
+      label: t("dashboard.learningTime"),
+      value: String(gamification?.experience_points ? Math.round(gamification.experience_points / 60) : 0),
+      unit: "h", icon: Clock, tone: "info",
+      trend: spark?.sessions, delta: computeDelta(spark?.sessions),
+      hint: t("dashboard.cumulativeLearning"),
+    },
+    {
+      label: t("dashboard.badgesEarned"), value: String(badgeCount),
+      icon: Award, tone: "warning",
+      trend: spark?.badges, delta: computeDelta(spark?.badges),
+      hint: t("dashboard.earnedBadges"), href: "/dashboard/achievements",
+    },
+    {
+      label: t("dashboard.consecutiveLearning"),
+      value: String(gamification?.streak_days || 0), unit: t("common.days"),
+      icon: TrendingUp, tone: "primary",
+      trend: spark?.sessions, delta: computeDelta(spark?.sessions),
+      hint: t("dashboard.consecutiveDays"),
+    },
+    {
+      label: t("dashboard.level"), value: `Lv.${gamification?.level || 1}`,
+      icon: Star, tone: "info",
+      trend: spark?.points, delta: computeDelta(spark?.points),
+      hint: `${gamification?.experience_points || 0} XP`, href: "/dashboard/achievements",
+    },
+    {
+      label: t("dashboard.completedAssignments"), value: String(completedAssignments),
+      icon: ClipboardCheck, tone: "success",
+      trend: spark?.assignments, delta: computeDelta(spark?.assignments),
+      hint: t("dashboard.totalAssignmentsSub", { count: totalAssignments }),
+      href: "/dashboard/assignments",
+    },
+    {
+      label: t("dashboard.totalPoints"), value: String(gamification?.total_points || 0),
+      icon: Award, tone: "warning",
+      trend: spark?.points, delta: computeDelta(spark?.points),
+      hint: t("dashboard.cumulativePoints"), href: "/dashboard/achievements",
+    },
+  ];
+
   return (
     <DashboardLayout role="student">
       <div className="space-y-8">
@@ -436,30 +498,22 @@ const StudentDashboard = () => {
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("dashboard.hello")}</p>
         </div>
 
-        {/* Stat Cards - Compact 2 rows */}
-        <section className="grid grid-cols-4 gap-2 sm:gap-3" aria-label={t("dashboard.stats", "학습 통계")}>
-          {[...stats, ...detailStats].map((stat) => {
-            const content = (
-              <>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">{stat.label}</span>
-                  <stat.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1" aria-hidden="true" />
-                </div>
-                <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">{stat.value}</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 truncate">{stat.sub}</p>
-              </>
-            );
-            const href = (stat as any).href;
-            return href ? (
-              <Link key={stat.label} to={href} className="stat-card !p-2.5 sm:!p-3 hover:shadow-md transition-shadow cursor-pointer" role="group" aria-label={stat.label}>
-                {content}
-              </Link>
-            ) : (
-              <div key={stat.label} className="stat-card !p-2.5 sm:!p-3" role="group" aria-label={stat.label}>
-                {content}
-              </div>
-            );
-          })}
+        {/* Stat Cards — visualization-rich (sparkline + delta) */}
+        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" aria-label={t("dashboard.stats", "학습 통계")}>
+          {visualStats.map((s) => (
+            <StatCard
+              key={s.label}
+              label={s.label}
+              value={s.value}
+              unit={s.unit}
+              icon={s.icon}
+              tone={s.tone}
+              trend={s.trend}
+              delta={s.delta}
+              hint={s.hint}
+              onClick={s.href ? () => navigate(s.href!) : undefined}
+            />
+          ))}
         </section>
 
         {/* Role Insight Widgets: 동기 현황 / 과제 처리 / 평가 통계 */}
