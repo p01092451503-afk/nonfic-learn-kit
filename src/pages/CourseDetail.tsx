@@ -494,6 +494,16 @@ const CourseDetail = () => {
                   {t("course.courseSettings")}
                 </Button>
                 <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-1.5 text-xs"
+                  onClick={() => setBulkUploadOpen(true)}
+                  aria-label="VOD 일괄 업로드"
+                >
+                  <Upload className="h-3 w-3" aria-hidden="true" />
+                  VOD 일괄 업로드
+                </Button>
+                <Button
                   size="sm"
                   className="h-9 gap-1.5 text-xs"
                   onClick={openAddContent}
