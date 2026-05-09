@@ -399,16 +399,37 @@ const MyPage = () => {
                             <span>{new Date(cert.issued_at).toLocaleDateString("ko-KR")}</span>
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-lg gap-1.5 shrink-0"
-                          onClick={() => handleDownloadCert(cert)}
-                          disabled={downloadingCertId === cert.id}
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                          {downloadingCertId === cert.id ? t("mypage.generating") : t("mypage.downloadCert")}
-                        </Button>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-lg gap-1.5"
+                            onClick={() => handlePreviewCert(cert)}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            {t("mypage.previewCert", "미리보기")}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-lg gap-1.5"
+                            onClick={() => handleDownloadCert(cert, "pdf")}
+                            disabled={downloadingCertId === cert.id}
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            {downloadingCertId === cert.id ? t("mypage.generating") : "PDF"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-lg gap-1.5"
+                            onClick={() => handleDownloadCert(cert, "png")}
+                            disabled={downloadingCertId === cert.id}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            PNG
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
