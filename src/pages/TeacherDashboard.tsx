@@ -17,12 +17,15 @@ import DonutChart from "@/components/dashboard/DonutChart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 import { ChartTooltip } from "@/components/dashboard/ChartTooltip";
 import RadialProgress from "@/components/dashboard/RadialProgress";
+import PeriodFilter, { type Period, periodToDays } from "@/components/dashboard/PeriodFilter";
+import { useState } from "react";
 
 const TeacherDashboard = () => {
   const { user, profile } = useUser();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const dateFnsLocale = i18n.language?.startsWith("en") ? enUS : ko;
+  const [coursePeriod, setCoursePeriod] = useState<Period>("all");
 
   const { data: courses = [] } = useQuery({
     queryKey: ["teacher-dash-courses", user?.id],
@@ -40,7 +43,7 @@ const TeacherDashboard = () => {
     queryKey: ["teacher-dash-enrollments", courseIds],
     queryFn: async () => {
       if (courseIds.length === 0) return [];
-      const { data, error } = await supabase.from("enrollments").select("course_id, user_id, progress, completed_at").in("course_id", courseIds);
+      const { data, error } = await supabase.from("enrollments").select("course_id, user_id, progress, completed_at, enrolled_at").in("course_id", courseIds);
       if (error) throw error;
       return data;
     },
@@ -153,8 +156,12 @@ const TeacherDashboard = () => {
   });
 
   // Per-course enrollment + avg progress for visualization
+  const courseSinceMs = coursePeriod === "all" ? 0 : Date.now() - periodToDays(coursePeriod) * 86400000;
+  const filteredEnrollments = coursePeriod === "all"
+    ? enrollments
+    : enrollments.filter((e: any) => e.enrolled_at && new Date(e.enrolled_at).getTime() >= courseSinceMs);
   const courseChartData = courses.slice(0, 8).map((c: any) => {
-    const list = enrollments.filter((e: any) => e.course_id === c.id);
+    const list = filteredEnrollments.filter((e: any) => e.course_id === c.id);
     const avg = list.length > 0
       ? Math.round(list.reduce((s: number, e: any) => s + (Number(e.progress) || 0), 0) / list.length)
       : 0;
@@ -285,9 +292,11 @@ const TeacherDashboard = () => {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
                 {t("teacher.myCoursesList")}
               </h3>
-              <span className="text-[11px] text-muted-foreground">
-                {i18n.language?.startsWith("en") ? "students · avg progress" : "수강생 · 평균 진도"}
-              </span>
+              <PeriodFilter
+                value={coursePeriod}
+                onChange={setCoursePeriod}
+                labels={i18n.language?.startsWith("en") ? undefined : { "7d": "7일", "30d": "30일", all: "전체" }}
+              />
             </div>
             {courseChartData.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-10">{t("teacher.noCourses")}</p>
