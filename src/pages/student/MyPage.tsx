@@ -115,9 +115,13 @@ const MyPage = () => {
     try {
       const course = cert.courses;
       const template = certTemplates.find((t: any) => t.course_id === cert.course_id);
+      const email = user?.email || "";
       const blob = await generateCertificateImage({
         studentName: profile?.full_name || "-",
-        studentEmail: user?.email || "-",
+        studentEmail: email || "-",
+        studentLoginId: email ? email.split("@")[0] : "-",
+        branchName: (profile as any)?.department || "메타엠",
+        teamName: profile?.team_name || "-",
         courseName: course?.title || "-",
         issuedDate: new Date(cert.issued_at).toLocaleDateString("ko-KR"),
         certificateNumber: cert.certificate_number,
