@@ -31,6 +31,10 @@ import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import VideoPreview from "@/components/VideoPreview";
 import VideoLibraryPicker from "@/components/VideoLibraryPicker";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type ContentType = Database["public"]["Enums"]["content_type"];
@@ -885,6 +889,9 @@ const UnifiedContentEditor = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [lastUploadFile, setLastUploadFile] = useState<File | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [pendingLibraryVideo, setPendingLibraryVideo] = useState<
+    null | { url: string; provider: string; title: string; duration_minutes: number | null }
+  >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMango = content.source === "mangoboard";
   const isCard = content.source === "card";
@@ -1125,13 +1132,46 @@ const UnifiedContentEditor = ({
           open={libraryOpen}
           onOpenChange={setLibraryOpen}
           onSelect={({ url, provider, title, duration_minutes }) => {
-            onChange("video_url", url);
-            onChange("video_provider", provider);
-            if (!content.title && title) onChange("title", title);
-            if (duration_minutes != null) onChange("duration_minutes", duration_minutes);
-            setUploadError(null);
+            const next = { url, provider, title, duration_minutes };
+            if (content.video_url && content.video_url.trim() && content.video_url !== url) {
+              setPendingLibraryVideo(next);
+            } else {
+              onChange("video_url", url);
+              onChange("video_provider", provider);
+              if (!content.title && title) onChange("title", title);
+              if (duration_minutes != null) onChange("duration_minutes", duration_minutes);
+              setUploadError(null);
+            }
           }}
         />
+
+        <AlertDialog open={!!pendingLibraryVideo} onOpenChange={(o) => { if (!o) setPendingLibraryVideo(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>영상을 교체하시겠어요?</AlertDialogTitle>
+              <AlertDialogDescription>
+                현재 차시에 이미 영상이 설정되어 있습니다. 라이브러리에서 선택한 영상으로 교체하면 기존 URL과 제공처가 덮어써집니다.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (!pendingLibraryVideo) return;
+                  const { url, provider, title, duration_minutes } = pendingLibraryVideo;
+                  onChange("video_url", url);
+                  onChange("video_provider", provider);
+                  if (!content.title && title) onChange("title", title);
+                  if (duration_minutes != null) onChange("duration_minutes", duration_minutes);
+                  setUploadError(null);
+                  setPendingLibraryVideo(null);
+                }}
+              >
+                교체하기
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Common fields */}
         <div className="space-y-1.5">
