@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, Bell, Shield, Building2, Plus, Pencil, Trash2, Users } from "lucide-react";
+import { Settings, Bell, Shield, Building2, Plus, Pencil, Trash2, Users, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,27 @@ const AdminSettings = () => {
   const isEn = i18n.language?.startsWith("en");
   const queryClient = useQueryClient();
   const { teacherRoleEnabled } = useSystemSettings();
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+
+  const resetDemoMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("reset-demo-data");
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return data;
+    },
+    onSuccess: (data: any) => {
+      toast.success(
+        t(
+          "admin.demoResetDone",
+          `데모 데이터가 초기화되었습니다. (수강 ${data?.enrolled ?? 0}개, 강의 ${data?.courses_assigned ?? 0}개)`,
+        ),
+      );
+      setResetConfirmOpen(false);
+      queryClient.invalidateQueries();
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
   const [deptDialogOpen, setDeptDialogOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<any>(null);
   const [deleteDeptId, setDeleteDeptId] = useState<string | null>(null);
@@ -183,6 +204,7 @@ const AdminSettings = () => {
           <TabsList>
             <TabsTrigger value="general">{t("admin.generalSettings")}</TabsTrigger>
             <TabsTrigger value="departments">{t("admin.deptManagement")}</TabsTrigger>
+            <TabsTrigger value="demo">{t("admin.demoData", "데모 데이터")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-8">
@@ -263,8 +285,62 @@ const AdminSettings = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="demo" className="space-y-6">
+            <div className="stat-card space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <RefreshCw className="h-5 w-5 text-muted-foreground" />
+                <h2 className="text-base font-semibold text-foreground">
+                  {t("admin.demoDataReset", "데모 데이터 초기화 및 재시드")}
+                </h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t(
+                  "admin.demoDataResetDesc",
+                  "데모 학습자(student@demo.local)의 수강·진도·과제·평가·게이미피케이션 데이터를 모두 삭제한 뒤 샘플 데이터를 다시 생성합니다. 데모 관리자/강사/학습자 계정의 비밀번호는 demo1234! 로 재설정되며, 강사는 모든 공개 강의의 담당자로 지정됩니다.",
+                )}
+              </p>
+              <div className="rounded-lg border border-border/80 bg-muted/30 p-4 space-y-2 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground">{t("admin.demoAccounts", "데모 계정")}</p>
+                <p>· admin@demo.local / demo1234!</p>
+                <p>· teacher@demo.local / demo1234!</p>
+                <p>· student@demo.local / demo1234!</p>
+              </div>
+              <Button
+                variant="default"
+                className="rounded-xl gap-2"
+                onClick={() => setResetConfirmOpen(true)}
+                disabled={resetDemoMutation.isPending}
+              >
+                <RefreshCw className={`h-4 w-4 ${resetDemoMutation.isPending ? "animate-spin" : ""}`} />
+                {resetDemoMutation.isPending
+                  ? t("admin.demoResetting", "초기화 중...")
+                  : t("admin.demoResetButton", "초기화 후 다시 시드")}
+              </Button>
+            </div>
+          </TabsContent>
+
         </Tabs>
       </div>
+
+      <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("admin.demoDataReset", "데모 데이터 초기화 및 재시드")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                "admin.demoResetConfirm",
+                "데모 학습자의 수강/진도/포인트/뱃지/평가/세션 데이터가 모두 삭제된 후 다시 생성됩니다. 실제 사용자 데이터는 영향을 받지 않습니다. 계속하시겠습니까?",
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => resetDemoMutation.mutate()}>
+              {t("admin.demoResetButton", "초기화 후 다시 시드")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Add/Edit Department Dialog */}
       <Dialog open={deptDialogOpen} onOpenChange={setDeptDialogOpen}>
