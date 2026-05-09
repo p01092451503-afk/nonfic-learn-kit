@@ -4,13 +4,14 @@ import {
   LayoutDashboard, BookOpen, ClipboardList, Trophy, Users, Settings, Compass, UserCircle, ClipboardCheck,
   LogOut, Menu, X, ChevronRight, GraduationCap, CalendarCheck, Activity, Building2, Bell, Megaphone, FileText, BarChart3, Video,
   PanelLeftClose, PanelLeftOpen, Languages,
-  Info,
+  Info, ListChecks,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
+import { useSidebarMenuVisibility } from "@/hooks/useSidebarMenuVisibility";
 import { supabase } from "@/integrations/supabase/client";
 import MetamLogo from "@/components/MetamLogo";
 import RoleSwitcher from "@/components/RoleSwitcher";
@@ -51,6 +52,7 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
   const { primaryRole } = useUserRole();
   const { t, i18n } = useTranslation();
   const { teacherRoleEnabled } = useSystemSettings();
+  const { isHidden } = useSidebarMenuVisibility();
 
   const activeRole = role || primaryRole;
 
@@ -173,13 +175,21 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
       label: "시스템",
       items: [
         { label: t("nav.settings"), href: "/admin/settings", icon: Settings, tourId: "nav-settings" },
+        { label: t("nav.menuVisibility", "메뉴 노출 관리"), href: "/admin/menu-visibility", icon: ListChecks },
         { label: t("nav.systemInfo", "시스템 정보"), href: "/admin/system-info", icon: Info },
       ],
     },
   ];
 
-  const flatNav = activeRole === "teacher" ? teacherNav : studentNav;
-  const navGroups: NavGroup[] | null = activeRole === "admin" ? adminGroups : null;
+  const filterItems = (items: NavItem[]) =>
+    items.filter((it) => !isHidden(activeRole as any, it.href));
+  const flatNav = filterItems(activeRole === "teacher" ? teacherNav : studentNav);
+  const navGroups: NavGroup[] | null =
+    activeRole === "admin"
+      ? adminGroups
+          .map((g) => ({ ...g, items: filterItems(g.items) }))
+          .filter((g) => g.items.length > 0)
+      : null;
   // Track collapsed groups (admin only)
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const toggleGroup = (label: string) =>

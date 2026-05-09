@@ -1461,6 +1461,33 @@ export type Database = {
           },
         ]
       }
+      sidebar_menu_visibility: {
+        Row: {
+          hidden: boolean
+          id: string
+          menu_key: string
+          role: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          hidden?: boolean
+          id?: string
+          menu_key: string
+          role: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          hidden?: boolean
+          id?: string
+          menu_key?: string
+          role?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       survey_answers: {
         Row: {
           answer_text: string | null

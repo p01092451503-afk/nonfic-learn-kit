@@ -61,6 +61,7 @@ const AdminSurveys = lazyWithRetry(() => import("./pages/admin/AdminSurveys"));
 const AdminVideos = lazyWithRetry(() => import("./pages/admin/AdminVideos"));
 const AdminI18n = lazyWithRetry(() => import("./pages/admin/AdminI18n"));
 const AdminSystemInfo = lazyWithRetry(() => import("./pages/admin/AdminSystemInfo"));
+const AdminMenuVisibility = lazyWithRetry(() => import("./pages/admin/AdminMenuVisibility"));
 const StudentBoard = lazyWithRetry(() => import("./pages/student/StudentBoard"));
 const DeptAdminDashboard = lazyWithRetry(() => import("./pages/DeptAdminDashboard"));
 const CourseDetail = lazyWithRetry(() => import("./pages/CourseDetail"));
@@ -137,6 +138,7 @@ const AppRoutes = () => {
           <Route path="/admin/videos" element={<AdminRoute><AdminVideos /></AdminRoute>} />
           <Route path="/admin/i18n" element={<AdminRoute><AdminI18n /></AdminRoute>} />
           <Route path="/admin/system-info" element={<AdminRoute><AdminSystemInfo /></AdminRoute>} />
+          <Route path="/admin/menu-visibility" element={<AdminRoute><AdminMenuVisibility /></AdminRoute>} />
 
           {/* Dept Admin */}
           <Route path="/dept-admin" element={<ProtectedRoute><DeptAdminDashboard /></ProtectedRoute>} />
