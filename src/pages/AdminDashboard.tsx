@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Users, BookOpen, Activity, LayoutDashboard, Building2, GraduationCap,
   AlertTriangle, ClipboardCheck, Bell, Megaphone, Clock, ChevronRight,
@@ -20,6 +20,7 @@ import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparkl
 import MultiTrendChart from "@/components/dashboard/MultiTrendChart";
 import DonutChart from "@/components/dashboard/DonutChart";
 import RadialProgress from "@/components/dashboard/RadialProgress";
+import PeriodFilter, { type Period, periodToDays } from "@/components/dashboard/PeriodFilter";
 
 const AdminDashboard = () => {
   const { profile } = useUser();
@@ -27,6 +28,8 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const isEn = i18n.language?.startsWith("en");
   const locale = isEn ? enUS : ko;
+  const [trendPeriod, setTrendPeriod] = useState<Period>("7d");
+  const trendDays = periodToDays(trendPeriod);
 
   // ── Data Queries ──
   const { data: realtimeSessions = [] } = useQuery({
@@ -242,7 +245,7 @@ const AdminDashboard = () => {
   });
 
   // Time-series for visualization on stat cards
-  const { data: spark } = useDashboardSparklines(14);
+  const { data: spark } = useDashboardSparklines(trendDays);
   const sessions7   = (spark?.sessions ?? []).slice(-7);
   const signups7    = (spark?.signups ?? []).slice(-7);
   const completions7 = (spark?.completions ?? []).slice(-7);
@@ -578,11 +581,20 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                 <Activity className="h-4 w-4 text-muted-foreground" />
-                {isEn ? "14-Day Trends" : "14일 추이"}
+                {isEn
+                  ? trendPeriod === "all" ? "All-Period Trends" : `${trendDays}-Day Trends`
+                  : trendPeriod === "all" ? "전체 기간 추이" : `${trendDays}일 추이`}
               </h3>
-              <span className="text-[11px] text-muted-foreground">
-                {isEn ? "signups · enrollments · completions" : "가입 · 수강 · 수료"}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:inline text-[11px] text-muted-foreground">
+                  {isEn ? "signups · enrollments · completions" : "가입 · 수강 · 수료"}
+                </span>
+                <PeriodFilter
+                  value={trendPeriod}
+                  onChange={setTrendPeriod}
+                  labels={isEn ? undefined : { "7d": "7일", "30d": "30일", all: "전체" }}
+                />
+              </div>
             </div>
             <MultiTrendChart
               days={spark?.days ?? []}
