@@ -1949,6 +1949,7 @@ export type Database = {
         Returns: undefined
       }
       dashboard_sparklines: { Args: { p_days?: number }; Returns: Json }
+      generate_certificate_number: { Args: never; Returns: string }
       get_assessment_questions_for_student: {
         Args: { p_assessment_id: string }
         Returns: {
