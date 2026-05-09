@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ListChecks, Save } from "lucide-react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -115,15 +115,12 @@ const AdminMenuVisibility = () => {
 
   const renderRole = (role: MenuRole) => {
     const menus = ROLE_MENUS[role];
-    const groups = useMemo(() => {
-      const map: Record<string, MenuDef[]> = {};
-      menus.forEach((m) => {
-        const g = m.group || "메뉴";
-        if (!map[g]) map[g] = [];
-        map[g].push(m);
-      });
-      return map;
-    }, [menus]);
+    const groups: Record<string, MenuDef[]> = {};
+    menus.forEach((m) => {
+      const g = m.group || "메뉴";
+      if (!groups[g]) groups[g] = [];
+      groups[g].push(m);
+    });
 
     return (
       <div className="space-y-4">
