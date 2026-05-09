@@ -1136,16 +1136,11 @@ const UnifiedContentEditor = ({
         <VideoLibraryPicker
           open={libraryOpen}
           onOpenChange={setLibraryOpen}
-          onSelect={({ url, provider, title, duration_minutes }) => {
-            const next = { url, provider, title, duration_minutes };
-            if (content.video_url && content.video_url.trim() && content.video_url !== url) {
-              setPendingLibraryVideo(next);
+          onSelect={(v) => {
+            if (content.video_url && content.video_url.trim() && content.video_url !== v.url) {
+              setPendingLibraryVideo(v);
             } else {
-              onChange("video_url", url);
-              onChange("video_provider", provider);
-              if (!content.title && title) onChange("title", title);
-              if (duration_minutes != null) onChange("duration_minutes", duration_minutes);
-              setUploadError(null);
+              applyLibraryVideo(v);
             }
           }}
         />
@@ -1163,12 +1158,7 @@ const UnifiedContentEditor = ({
               <AlertDialogAction
                 onClick={() => {
                   if (!pendingLibraryVideo) return;
-                  const { url, provider, title, duration_minutes } = pendingLibraryVideo;
-                  onChange("video_url", url);
-                  onChange("video_provider", provider);
-                  if (!content.title && title) onChange("title", title);
-                  if (duration_minutes != null) onChange("duration_minutes", duration_minutes);
-                  setUploadError(null);
+                  applyLibraryVideo(pendingLibraryVideo);
                   setPendingLibraryVideo(null);
                 }}
               >
