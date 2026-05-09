@@ -1,4 +1,5 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { ChartTooltip } from "./ChartTooltip";
 
 export interface TrendSeries {
   key: string;
@@ -42,14 +43,7 @@ export const MultiTrendChart = ({ days, series, height = 220, className }: Props
           <CartesianGrid strokeDasharray="3 3" className="stroke-border/60" vertical={false} />
           <XAxis dataKey="date" tick={{ fontSize: 10 }} tickMargin={6} minTickGap={20} stroke="hsl(var(--muted-foreground))" />
           <YAxis tick={{ fontSize: 10 }} width={28} stroke="hsl(var(--muted-foreground))" />
-          <Tooltip
-            contentStyle={{
-              background: "hsl(var(--background))",
-              border: "1px solid hsl(var(--border))",
-              borderRadius: 8,
-              fontSize: 12,
-            }}
-          />
+          <Tooltip cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }} content={<ChartTooltip />} />
           <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
           {series.map((s) => (
             <Area

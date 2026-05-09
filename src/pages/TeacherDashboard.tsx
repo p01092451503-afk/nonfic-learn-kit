@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import StatCard from "@/components/ui/stat-card";
 import DonutChart from "@/components/dashboard/DonutChart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
+import { ChartTooltip } from "@/components/dashboard/ChartTooltip";
 import RadialProgress from "@/components/dashboard/RadialProgress";
 
 const TeacherDashboard = () => {
@@ -149,14 +150,7 @@ const TeacherDashboard = () => {
                     <XAxis dataKey="label" tick={{ fontSize: 10 }} tickMargin={6} stroke="hsl(var(--muted-foreground))" />
                     <YAxis yAxisId="left" tick={{ fontSize: 10 }} width={28} stroke="hsl(var(--muted-foreground))" />
                     <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} width={32} domain={[0, 100]} stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip
-                      contentStyle={{
-                        background: "hsl(var(--background))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: 8,
-                        fontSize: 12,
-                      }}
-                    />
+                    <Tooltip cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }} content={<ChartTooltip />} />
                     <Bar yAxisId="left" dataKey="students" name={t("teacher.totalStudents")} fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
                     <Bar yAxisId="right" dataKey="progress" name={t("dashboard.progressRate")} fill="hsl(var(--chart-2))" radius={[6, 6, 0, 0]} />
                   </BarChart>
