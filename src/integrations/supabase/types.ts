@@ -1919,6 +1919,7 @@ export type Database = {
           created_at: string
           description: string | null
           duration_minutes: number | null
+          file_hash: string | null
           file_size_mb: number | null
           id: string
           thumbnail_url: string | null
@@ -1932,6 +1933,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number | null
+          file_hash?: string | null
           file_size_mb?: number | null
           id?: string
           thumbnail_url?: string | null
@@ -1945,6 +1947,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number | null
+          file_hash?: string | null
           file_size_mb?: number | null
           id?: string
           thumbnail_url?: string | null
