@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MediaPackagePlayer from "@/components/MediaPackagePlayer";
+import LearningNotes from "@/components/learning/LearningNotes";
+import NextContentPreview from "@/components/learning/NextContentPreview";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
@@ -595,6 +597,31 @@ const ContentPlayer = () => {
                   ) : null}
                 </div>
               </div>
+
+              {/* Next content preview */}
+              {nextContent && (() => {
+                const isSeq = (course as any)?.is_sequential;
+                const currentDone = currentProgress?.completed;
+                const locked = isSeq && !currentDone && routePrefix === "/student";
+                return (
+                  <NextContentPreview
+                    next={{
+                      id: nextContent.id,
+                      title: getTitle(nextContent),
+                      description: getDescription(nextContent),
+                      duration_minutes: nextContent.duration_minutes,
+                      content_type: nextContent.content_type,
+                    }}
+                    locked={locked}
+                    onClick={() => navigate(`${routePrefix}/courses/${courseId}/content/${nextContent.id}`)}
+                  />
+                );
+              })()}
+
+              {/* Learning notes */}
+              {user?.id && courseId && contentId && (
+                <LearningNotes userId={user.id} contentId={contentId} courseId={courseId} />
+              )}
 
               {/* Navigation */}
               <div className="flex items-center justify-between pt-4 border-t border-border">
