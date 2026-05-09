@@ -1013,6 +1013,43 @@ const UnifiedContentEditor = ({
           </div>
         </div>
 
+        {/* ── Direct video upload ── */}
+        <div className="rounded-lg border border-dashed border-border bg-accent/30 p-3 flex items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleDirectUpload(f);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => !uploadingVideo && fileInputRef.current?.click()}
+            disabled={uploadingVideo}
+            className="inline-flex items-center gap-2 h-8 px-3 rounded-lg bg-foreground text-background text-xs font-medium hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {uploadingVideo ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+            동영상 직접 등록하기
+          </button>
+          <div className="flex-1 min-w-0">
+            {uploadingVideo ? (
+              <div className="space-y-1">
+                <div className="h-1.5 rounded-full bg-border overflow-hidden">
+                  <div className="h-full bg-primary transition-all" style={{ width: `${uploadProgress}%` }} />
+                </div>
+                <p className="text-[10px] text-muted-foreground">업로드 중... {uploadProgress}%</p>
+              </div>
+            ) : (
+              <p className="text-[10px] text-muted-foreground truncate">
+                MP4 등 동영상 파일을 직접 업로드합니다 (최대 5GB). 업로드가 완료되면 영상 URL이 자동으로 채워집니다.
+              </p>
+            )}
+          </div>
+        </div>
+
         {/* Common fields */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.descLabel")}</label>
