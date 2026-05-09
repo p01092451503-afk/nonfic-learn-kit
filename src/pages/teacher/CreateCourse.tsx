@@ -923,6 +923,24 @@ const UnifiedContentEditor = ({
     setUploadingVideo(true);
     setUploadProgress(0);
     try {
+      // Duplicate check by file hash (SHA-256)
+      const { computeFileHash, findDuplicateByHash } = await import("@/lib/fileHash");
+      const fileHash = await computeFileHash(file);
+      const dup = await findDuplicateByHash(fileHash);
+      if (dup) {
+        const reuse = window.confirm(
+          `이미 동일한 파일이 업로드되어 있습니다.\n\n[${dup.title}]\n\n기존 영상을 그대로 사용하시겠습니까? (취소 시 업로드 중단)`,
+        );
+        if (reuse) {
+          onChange("video_url", dup.video_url);
+          onChange("video_provider", "upload");
+        }
+        setUploadingVideo(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setUploadProgress(reuse ? 100 : 0);
+        return;
+      }
+
       const { data: token, error: tokenErr } = await supabase.functions.invoke("bunny-create-video", {
         body: { title: content.title || file.name },
       });
@@ -959,6 +977,7 @@ const UnifiedContentEditor = ({
             file_size_mb: Math.round((file.size / (1024 * 1024)) * 100) / 100,
             thumbnail_url: thumb,
             uploaded_by: user.id,
+            file_hash: fileHash,
           } as any);
         }
       } catch { /* non-fatal */ }

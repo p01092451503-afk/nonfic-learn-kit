@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import { computeFileHash, findDuplicateByHash } from "@/lib/fileHash";
 
 type ItemStatus = "queued" | "uploading" | "done" | "error";
 
@@ -21,6 +22,7 @@ interface UploadItem {
   progress: number;
   url?: string;
   error?: string;
+  duplicate?: boolean;
 }
 
 interface Props {
@@ -82,6 +84,12 @@ export default function BunnyBulkUploadDialog({ open, onOpenChange }: Props) {
 
   const uploadImage = async (item: UploadItem) => {
     updateItem(item.id, { status: "uploading", progress: 10 });
+    const hash = await computeFileHash(item.file);
+    const dup = await findDuplicateByHash(hash);
+    if (dup) {
+      updateItem(item.id, { status: "done", progress: 100, url: dup.video_url, duplicate: true });
+      return;
+    }
     const fd = new FormData();
     fd.append("file", item.file);
     fd.append("folder", "images");
@@ -96,7 +104,8 @@ export default function BunnyBulkUploadDialog({ open, onOpenChange }: Props) {
       file_size_mb: Math.round((item.file.size / (1024 * 1024)) * 100) / 100,
       thumbnail_url: data.url,
       uploaded_by: user!.id,
-    });
+      file_hash: hash,
+    } as any);
     if (dbErr) throw dbErr;
     updateItem(item.id, { status: "done", progress: 100 });
   };
@@ -105,6 +114,12 @@ export default function BunnyBulkUploadDialog({ open, onOpenChange }: Props) {
     new Promise<void>(async (resolve, reject) => {
       try {
         updateItem(item.id, { status: "uploading", progress: 2 });
+        const hash = await computeFileHash(item.file);
+        const dup = await findDuplicateByHash(hash);
+        if (dup) {
+          updateItem(item.id, { status: "done", progress: 100, url: dup.video_url, duplicate: true });
+          return resolve();
+        }
         const { data: token, error: tokenErr } = await supabase.functions.invoke("bunny-create-video", {
           body: { title: item.file.name },
         });
@@ -133,7 +148,8 @@ export default function BunnyBulkUploadDialog({ open, onOpenChange }: Props) {
               file_size_mb: Math.round((item.file.size / (1024 * 1024)) * 100) / 100,
               thumbnail_url: thumb,
               uploaded_by: user!.id,
-            });
+              file_hash: hash,
+            } as any);
             if (dbErr) return reject(dbErr);
             updateItem(item.id, { status: "done", progress: 100, url: playUrl });
             resolve();
@@ -215,6 +231,9 @@ export default function BunnyBulkUploadDialog({ open, onOpenChange }: Props) {
                     )}
                     {it.status === "error" && (
                       <p className="text-xs text-destructive mt-1 truncate">{it.error}</p>
+                    )}
+                    {it.status === "done" && it.duplicate && (
+                      <p className="text-xs text-amber-600 mt-1">중복 파일 — 기존 항목을 재사용했습니다</p>
                     )}
                   </div>
                   <div className="shrink-0">
