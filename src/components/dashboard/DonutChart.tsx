@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { ChartTooltip } from "./ChartTooltip";
 
 export interface DonutSlice {
   label: string;
@@ -36,16 +37,7 @@ export const DonutChart = ({ data, size = 180, centerValue, centerLabel }: Props
                 <Cell key={i} fill={s.color} />
               ))}
             </Pie>
-            {!empty && (
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--background))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-              />
-            )}
+            {!empty && <Tooltip content={<ChartTooltip />} />}
           </PieChart>
         </ResponsiveContainer>
         {(centerValue !== undefined || centerLabel) && (
