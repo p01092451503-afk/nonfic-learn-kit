@@ -20,6 +20,7 @@ import {
   Bar,
   Cell,
 } from "recharts";
+import { ChartTooltip } from "@/components/dashboard/ChartTooltip";
 import { format, startOfWeek, subWeeks } from "date-fns";
 
 const badgeIcons: Record<string, React.ElementType> = {
