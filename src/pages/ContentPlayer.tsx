@@ -219,6 +219,26 @@ const ContentPlayer = () => {
     }
   }, [videoProgress.autoCompleted]);
 
+  // Auto-sync enrollment progress whenever content progress changes
+  const lastSyncedProgressRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!user?.id || !courseId || contents.length === 0) return;
+    const percentage = overallProgress;
+    if (lastSyncedProgressRef.current === percentage) return;
+    lastSyncedProgressRef.current = percentage;
+    (async () => {
+      await supabase
+        .from("enrollments")
+        .update({
+          progress: percentage,
+          completed_at: percentage >= 100 ? new Date().toISOString() : null,
+        })
+        .eq("user_id", user.id)
+        .eq("course_id", courseId);
+      queryClient.invalidateQueries({ queryKey: ["my-enrollments"] });
+    })();
+  }, [overallProgress, user?.id, courseId, contents.length]);
+
   const videoIframeCallback = useCallback(
     (el: HTMLElement | null) => {
       if (!el || !currentContent || !isTrackableVideo) return;
