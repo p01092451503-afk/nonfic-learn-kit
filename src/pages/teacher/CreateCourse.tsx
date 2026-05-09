@@ -5,7 +5,7 @@ import {
   ArrowLeft, Plus, Trash2, GripVertical, Video, FileText, BarChart3,
   MonitorPlay, BookOpen, ExternalLink, Link2, Eye, ImagePlus, X, CalendarIcon,
   Save, Languages, LayoutGrid, Image as ImageIcon, ChevronUp, Package, ChevronDown,
-  Upload, Loader2,
+  Upload, Loader2, AlertCircle, RotateCw,
 } from "lucide-react";
 import { translateKoToEn } from "@/lib/translate";
 import { Button } from "@/components/ui/button";
@@ -881,6 +881,8 @@ const UnifiedContentEditor = ({
   const [showEn, setShowEn] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [lastUploadFile, setLastUploadFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMango = content.source === "mangoboard";
   const isCard = content.source === "card";
@@ -918,9 +920,12 @@ const UnifiedContentEditor = ({
     if (!file) return;
     const MAX_MB = 5120;
     if (file.size > MAX_MB * 1024 * 1024) {
-      alert(`파일이 너무 큽니다 (최대 ${MAX_MB}MB)`);
+      setUploadError(`파일이 너무 큽니다 (최대 ${MAX_MB}MB)`);
+      setLastUploadFile(null);
       return;
     }
+    setUploadError(null);
+    setLastUploadFile(file);
     setUploadingVideo(true);
     setUploadProgress(0);
     try {
@@ -986,8 +991,10 @@ const UnifiedContentEditor = ({
       onChange("video_url", playUrl);
       onChange("video_provider", "upload");
       setUploadProgress(100);
+      setLastUploadFile(null);
     } catch (e: any) {
-      alert(`업로드 실패: ${e?.message || "알 수 없는 오류"}`);
+      setUploadError(e?.message || "알 수 없는 오류");
+      setUploadProgress(0);
     } finally {
       setUploadingVideo(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -1034,7 +1041,7 @@ const UnifiedContentEditor = ({
         </div>
 
         {/* ── Direct video upload ── */}
-        <div className="rounded-lg border border-dashed border-border bg-accent/30 p-3 flex items-center gap-3">
+        <div className={`rounded-lg border border-dashed p-3 flex items-center gap-3 ${uploadError ? "border-destructive/50 bg-destructive/5" : "border-border bg-accent/30"}`}>
           <input
             ref={fileInputRef}
             type="file"
@@ -1062,12 +1069,33 @@ const UnifiedContentEditor = ({
                 </div>
                 <p className="text-[10px] text-muted-foreground">업로드 중... {uploadProgress}%</p>
               </div>
+            ) : uploadError ? (
+              <div className="flex items-start gap-2 min-w-0">
+                <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-medium text-destructive">업로드 실패</p>
+                  <p className="text-[10px] text-destructive/80 truncate" title={uploadError}>{uploadError}</p>
+                </div>
+              </div>
             ) : (
               <p className="text-[10px] text-muted-foreground truncate">
                 MP4 등 동영상 파일을 직접 업로드합니다 (최대 5GB). 업로드가 완료되면 영상 URL이 자동으로 채워집니다.
               </p>
             )}
           </div>
+          {uploadError && !uploadingVideo && (
+            <button
+              type="button"
+              onClick={() => {
+                if (lastUploadFile) handleDirectUpload(lastUploadFile);
+                else fileInputRef.current?.click();
+              }}
+              className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border bg-background text-xs font-medium hover:bg-muted"
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+              {lastUploadFile ? "재시도" : "다시 선택"}
+            </button>
+          )}
         </div>
 
         {/* ── Thumbnail & playback preview ── */}
