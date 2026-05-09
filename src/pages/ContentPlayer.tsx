@@ -800,8 +800,11 @@ const ContentPlayer = () => {
         <DrawerContent className="max-h-[80vh]">
           <DrawerHeader className="pb-2">
             <DrawerTitle className="text-base">{t("course.learningProgress")}</DrawerTitle>
-            <p className="text-xs text-muted-foreground">{completedCount} / {contents.length} {t("course.completed")} · {overallProgress}%</p>
-            <Progress value={overallProgress} className="h-2 mt-2" />
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${stageBadgeClass}`}>{stageLabel}</span>
+              <p className="text-xs text-muted-foreground tabular-nums">{completedCount} / {contents.length} {t("course.completed")} · {overallProgress}%</p>
+            </div>
+            <Progress value={overallProgress} className={`h-2 mt-2 ${stageColorClass}`} />
           </DrawerHeader>
           <ScrollArea className="flex-1 px-4 pb-4 max-h-[55vh]">
             <div className="space-y-0.5">
