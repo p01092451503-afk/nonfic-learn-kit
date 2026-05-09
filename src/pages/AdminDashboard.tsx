@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import {
   Users, BookOpen, Activity, LayoutDashboard, Building2, GraduationCap,
   AlertTriangle, ClipboardCheck, Bell, Megaphone, Clock, ChevronRight,
-  UserPlus, CheckCircle2, FileText, ArrowRight,
+  UserPlus, CheckCircle2, FileText, ArrowRight, Target, Percent, ListChecks,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -75,6 +75,66 @@ const AdminDashboard = () => {
       if (error) throw error;
       return count || 0;
     },
+  });
+
+  // ── Role widgets: 수강생 현황 / 과제 처리율 / 평가 통계 ──
+  const { data: learnerStats } = useQuery({
+    queryKey: ["dash-learner-stats"],
+    queryFn: async () => {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const [totalRes, activeRes, newRes] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("user_sessions").select("user_id").gte("login_at", sevenDaysAgo),
+        supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", thirtyDaysAgo),
+      ]);
+      const activeIds = new Set((activeRes.data || []).map((s: any) => s.user_id));
+      return {
+        total: totalRes.count || 0,
+        active7d: activeIds.size,
+        new30d: newRes.count || 0,
+      };
+    },
+    staleTime: 60_000,
+  });
+
+  const { data: assignmentStats } = useQuery({
+    queryKey: ["dash-assignment-stats"],
+    queryFn: async () => {
+      const [totalRes, gradedRes, submittedRes] = await Promise.all([
+        supabase.from("assignment_submissions").select("*", { count: "exact", head: true }),
+        supabase.from("assignment_submissions").select("*", { count: "exact", head: true }).eq("status", "graded"),
+        supabase.from("assignment_submissions").select("*", { count: "exact", head: true }).eq("status", "submitted"),
+      ]);
+      const total = totalRes.count || 0;
+      const graded = gradedRes.count || 0;
+      return { total, graded, pending: submittedRes.count || 0, rate: total > 0 ? Math.round((graded / total) * 100) : 0 };
+    },
+    staleTime: 60_000,
+  });
+
+  const { data: assessmentStats } = useQuery({
+    queryKey: ["dash-assessment-stats"],
+    queryFn: async () => {
+      const [totalRes, passedRes, completedRes, scoreRes] = await Promise.all([
+        supabase.from("assessment_attempts").select("*", { count: "exact", head: true }),
+        supabase.from("assessment_attempts").select("*", { count: "exact", head: true }).eq("passed", true),
+        supabase.from("assessment_attempts").select("*", { count: "exact", head: true }).not("completed_at", "is", null),
+        supabase.from("assessment_attempts").select("score").not("score", "is", null).limit(1000),
+      ]);
+      const completed = completedRes.count || 0;
+      const passed = passedRes.count || 0;
+      const scores = (scoreRes.data || []).map((r: any) => Number(r.score) || 0);
+      const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      return {
+        total: totalRes.count || 0,
+        completed,
+        passed,
+        avgScore,
+        passRate: completed > 0 ? Math.round((passed / completed) * 100) : 0,
+      };
+    },
+    staleTime: 60_000,
   });
 
   // Only the slim columns we actually use, and only mandatory/published rows
@@ -411,7 +471,108 @@ const AdminDashboard = () => {
         </div>
 
         {/* ③ Bottom Row: Activity Feed + Quick Summary */}
-        {/* ③ Trend visualization */}
+        {/* ②-b Role Insight Widgets: 수강생 현황 / 과제 처리율 / 평가 통계 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* 수강생 현황 */}
+          <div className="stat-card !p-5 min-w-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                {isEn ? "Learner Status" : "수강생 현황"}
+              </h3>
+              <Link to="/admin/users" className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
+                {t("common.viewAll")} <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="flex items-end gap-3 mb-4">
+              <span className="text-3xl font-bold text-foreground leading-none">{learnerStats?.total ?? 0}</span>
+              <span className="text-xs text-muted-foreground mb-1">{isEn ? "total learners" : "전체 수강생"}</span>
+            </div>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><Activity className="h-3.5 w-3.5 text-chart-3" />{isEn ? "Active (7d)" : "활동(7일)"}</span>
+                <span className="font-semibold text-foreground">{learnerStats?.active7d ?? 0}{t("common.people")}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><UserPlus className="h-3.5 w-3.5 text-chart-2" />{isEn ? "New (30d)" : "신규(30일)"}</span>
+                <span className="font-semibold text-foreground">{learnerStats?.new30d ?? 0}{t("common.people")}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><ClipboardCheck className="h-3.5 w-3.5 text-primary" />{isEn ? "Pending approval" : "승인 대기"}</span>
+                <span className="font-semibold text-foreground">{pendingEnrollments}{t("common.count")}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 과제 처리율 */}
+          <div className="stat-card !p-5 min-w-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                {isEn ? "Assignment Processing" : "과제 처리율"}
+              </h3>
+              <Link to="/admin/courses" className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
+                {t("common.viewAll")} <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="flex items-center justify-center mb-3">
+              <RadialProgress value={assignmentStats?.rate ?? 0} label={isEn ? "Graded" : "채점률"} size={130} color="hsl(var(--chart-2))" />
+            </div>
+            <div className="space-y-2 pt-3 border-t border-border/60">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{isEn ? "Total submissions" : "총 제출"}</span>
+                <span className="font-semibold text-foreground">{assignmentStats?.total ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{isEn ? "Graded" : "채점 완료"}</span>
+                <span className="font-semibold text-chart-2">{assignmentStats?.graded ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{isEn ? "Pending" : "대기"}</span>
+                <span className="font-semibold text-amber-600">{assignmentStats?.pending ?? 0}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 평가 통계 */}
+          <div className="stat-card !p-5 min-w-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Target className="h-4 w-4 text-muted-foreground" />
+                {isEn ? "Assessment Stats" : "평가 통계"}
+              </h3>
+              <Link to="/admin/courses" className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
+                {t("common.viewAll")} <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="rounded-lg bg-muted/40 p-3">
+                <p className="text-[11px] text-muted-foreground">{isEn ? "Pass rate" : "합격률"}</p>
+                <p className="text-2xl font-bold text-chart-3 mt-0.5">{assessmentStats?.passRate ?? 0}%</p>
+              </div>
+              <div className="rounded-lg bg-muted/40 p-3">
+                <p className="text-[11px] text-muted-foreground">{isEn ? "Avg score" : "평균 점수"}</p>
+                <p className="text-2xl font-bold text-foreground mt-0.5">{assessmentStats?.avgScore ?? 0}</p>
+              </div>
+            </div>
+            <div className="space-y-2 pt-3 border-t border-border/60">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><ListChecks className="h-3.5 w-3.5" />{isEn ? "Total attempts" : "총 응시"}</span>
+                <span className="font-semibold text-foreground">{assessmentStats?.total ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-chart-2" />{isEn ? "Passed" : "합격"}</span>
+                <span className="font-semibold text-chart-2">{assessmentStats?.passed ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><Percent className="h-3.5 w-3.5" />{isEn ? "Completed" : "완료"}</span>
+                <span className="font-semibold text-foreground">{assessmentStats?.completed ?? 0}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ③ Trend visualization (kept) */}
         <div className="grid lg:grid-cols-3 gap-4">
           <div className="stat-card !p-5 lg:col-span-2 min-w-0">
             <div className="flex items-center justify-between mb-2">

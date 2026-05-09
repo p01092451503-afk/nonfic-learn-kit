@@ -1,5 +1,6 @@
 import {
   BookOpen, Users, ClipboardCheck, TrendingUp, ArrowRight, Clock, Plus, LayoutDashboard,
+  Target, Activity, CheckCircle2, FileText,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -74,6 +75,71 @@ const TeacherDashboard = () => {
 
   const profileMap = new Map(submitterProfiles.map((p: any) => [p.user_id, p.full_name]));
 
+  // ── Role widgets: 수강생 현황 / 과제 처리율 / 평가 통계 (강사 담당 강의 한정) ──
+  const { data: teacherInsights } = useQuery({
+    queryKey: ["teacher-insights", courseIds],
+    queryFn: async () => {
+      if (courseIds.length === 0) {
+        return {
+          assignmentTotal: 0, assignmentGraded: 0, assignmentPending: 0, assignmentRate: 0,
+          assessTotal: 0, assessCompleted: 0, assessPassed: 0, assessAvg: 0, assessPassRate: 0,
+          activeLearners: 0, completedLearners: 0,
+        };
+      }
+      // assignments under teacher's courses
+      const { data: asns } = await supabase
+        .from("assignments")
+        .select("id")
+        .in("course_id", courseIds);
+      const asnIds = (asns || []).map((a: any) => a.id);
+      let assignmentTotal = 0, assignmentGraded = 0, assignmentPending = 0;
+      if (asnIds.length > 0) {
+        const [tRes, gRes, pRes] = await Promise.all([
+          supabase.from("assignment_submissions").select("*", { count: "exact", head: true }).in("assignment_id", asnIds),
+          supabase.from("assignment_submissions").select("*", { count: "exact", head: true }).in("assignment_id", asnIds).eq("status", "graded"),
+          supabase.from("assignment_submissions").select("*", { count: "exact", head: true }).in("assignment_id", asnIds).eq("status", "submitted"),
+        ]);
+        assignmentTotal = tRes.count || 0;
+        assignmentGraded = gRes.count || 0;
+        assignmentPending = pRes.count || 0;
+      }
+
+      // assessments under teacher's courses
+      const { data: asses } = await supabase
+        .from("assessments")
+        .select("id")
+        .in("course_id", courseIds);
+      const assIds = (asses || []).map((a: any) => a.id);
+      let assTotal = 0, assCompleted = 0, assPassed = 0, assAvg = 0;
+      if (assIds.length > 0) {
+        const [aT, aC, aP, aS] = await Promise.all([
+          supabase.from("assessment_attempts").select("*", { count: "exact", head: true }).in("assessment_id", assIds),
+          supabase.from("assessment_attempts").select("*", { count: "exact", head: true }).in("assessment_id", assIds).not("completed_at", "is", null),
+          supabase.from("assessment_attempts").select("*", { count: "exact", head: true }).in("assessment_id", assIds).eq("passed", true),
+          supabase.from("assessment_attempts").select("score").in("assessment_id", assIds).not("score", "is", null).limit(1000),
+        ]);
+        assTotal = aT.count || 0;
+        assCompleted = aC.count || 0;
+        assPassed = aP.count || 0;
+        const sc = (aS.data || []).map((r: any) => Number(r.score) || 0);
+        assAvg = sc.length > 0 ? Math.round(sc.reduce((a, b) => a + b, 0) / sc.length) : 0;
+      }
+
+      return {
+        assignmentTotal, assignmentGraded, assignmentPending,
+        assignmentRate: assignmentTotal > 0 ? Math.round((assignmentGraded / assignmentTotal) * 100) : 0,
+        assessTotal: assTotal, assessCompleted: assCompleted, assessPassed: assPassed, assessAvg: assAvg,
+        assessPassRate: assCompleted > 0 ? Math.round((assPassed / assCompleted) * 100) : 0,
+      };
+    },
+    enabled: courseIds.length > 0,
+    staleTime: 60_000,
+  });
+
+  const completedLearners = enrollments.filter((e: any) => e.completed_at).length;
+  const activeLearners = enrollments.filter((e: any) => !e.completed_at && Number(e.progress) > 0).length;
+  const notStartedLearners = Math.max(0, enrollments.length - completedLearners - activeLearners);
+
   const totalStudents = enrollments.length;
   const publishedCourses = courses.filter((c: any) => c.status === "published").length;
   const draftCourses = courses.filter((c: any) => c.status !== "published").length;
@@ -126,6 +192,89 @@ const TeacherDashboard = () => {
           <StatCard label={t("teacher.activeCourses")} value={publishedCourses} icon={BookOpen} tone="success" hint={t("teacher.waitingCount", { count: draftCourses })} />
           <StatCard label={t("teacher.allCourses")} value={courses.length} icon={LayoutDashboard} tone="info" hint={t("teacher.registeredCourses")} />
           <StatCard label={t("teacher.recentSubmissions")} value={pendingSubmissions.length} icon={TrendingUp} tone="warning" hint={t("teacher.recentAssignmentSub")} />
+        </section>
+
+        {/* Role Insight Widgets: 수강생 현황 / 과제 처리율 / 평가 통계 */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4" aria-label={t("teacher.teacherDashboard")}>
+          <div className="stat-card !p-5 min-w-0">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              {i18n.language?.startsWith("en") ? "Learner Status" : "수강생 현황"}
+            </h3>
+            <div className="flex items-end gap-3 mb-4">
+              <span className="text-3xl font-bold text-foreground leading-none">{enrollments.length}</span>
+              <span className="text-xs text-muted-foreground mb-1">{i18n.language?.startsWith("en") ? "total enrollments" : "전체 수강"}</span>
+            </div>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><Activity className="h-3.5 w-3.5 text-chart-3" />{i18n.language?.startsWith("en") ? "Active" : "학습 중"}</span>
+                <span className="font-semibold text-foreground">{activeLearners}{t("common.people")}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-chart-2" />{i18n.language?.startsWith("en") ? "Completed" : "수료"}</span>
+                <span className="font-semibold text-chart-2">{completedLearners}{t("common.people")}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" />{i18n.language?.startsWith("en") ? "Not started" : "미시작"}</span>
+                <span className="font-semibold text-foreground">{notStartedLearners}{t("common.people")}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="stat-card !p-5 min-w-0">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              {i18n.language?.startsWith("en") ? "Assignment Processing" : "과제 처리율"}
+            </h3>
+            <div className="flex items-center justify-center mb-3">
+              <RadialProgress value={teacherInsights?.assignmentRate ?? 0} label={i18n.language?.startsWith("en") ? "Graded" : "채점률"} size={130} color="hsl(var(--chart-2))" />
+            </div>
+            <div className="space-y-2 pt-3 border-t border-border/60">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{i18n.language?.startsWith("en") ? "Total" : "총 제출"}</span>
+                <span className="font-semibold text-foreground">{teacherInsights?.assignmentTotal ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("teacher.graded")}</span>
+                <span className="font-semibold text-chart-2">{teacherInsights?.assignmentGraded ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("teacher.ungraded")}</span>
+                <span className="font-semibold text-amber-600">{teacherInsights?.assignmentPending ?? 0}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="stat-card !p-5 min-w-0">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Target className="h-4 w-4 text-muted-foreground" />
+              {i18n.language?.startsWith("en") ? "Assessment Stats" : "평가 통계"}
+            </h3>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="rounded-lg bg-muted/40 p-3">
+                <p className="text-[11px] text-muted-foreground">{i18n.language?.startsWith("en") ? "Pass rate" : "합격률"}</p>
+                <p className="text-2xl font-bold text-chart-3 mt-0.5">{teacherInsights?.assessPassRate ?? 0}%</p>
+              </div>
+              <div className="rounded-lg bg-muted/40 p-3">
+                <p className="text-[11px] text-muted-foreground">{i18n.language?.startsWith("en") ? "Avg score" : "평균 점수"}</p>
+                <p className="text-2xl font-bold text-foreground mt-0.5">{teacherInsights?.assessAvg ?? 0}</p>
+              </div>
+            </div>
+            <div className="space-y-2 pt-3 border-t border-border/60">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{i18n.language?.startsWith("en") ? "Total attempts" : "총 응시"}</span>
+                <span className="font-semibold text-foreground">{teacherInsights?.assessTotal ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-chart-2" />{i18n.language?.startsWith("en") ? "Passed" : "합격"}</span>
+                <span className="font-semibold text-chart-2">{teacherInsights?.assessPassed ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{i18n.language?.startsWith("en") ? "Completed" : "완료"}</span>
+                <span className="font-semibold text-foreground">{teacherInsights?.assessCompleted ?? 0}</span>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Visualization row: per-course enrollment + avg progress · submission mix · overall progress */}
