@@ -184,6 +184,25 @@ const ContentPlayer = () => {
   const currentProgress = progressMap.get(contentId || "");
   const completedCount = progressData.filter((p) => p.completed).length;
   const overallProgress = contents.length > 0 ? Math.round((completedCount / contents.length) * 100) : 0;
+  const stageLabel = overallProgress >= 100
+    ? "학습 완료"
+    : overallProgress >= 80
+      ? "이수 임박"
+      : overallProgress > 0
+        ? "학습 중"
+        : "시작 전";
+  const stageColorClass = overallProgress >= 100
+    ? "[&>div]:bg-green-500"
+    : overallProgress >= 80
+      ? "[&>div]:bg-amber-500"
+      : "";
+  const stageBadgeClass = overallProgress >= 100
+    ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30"
+    : overallProgress >= 80
+      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+      : overallProgress > 0
+        ? "bg-primary/10 text-primary border-primary/20"
+        : "bg-muted text-muted-foreground border-border";
 
   const localVideoUrlForHook = currentContent ? getVideoUrl(currentContent) : null;
   const localProviderForHook = currentContent ? getVideoProvider(currentContent) : null;
@@ -418,8 +437,15 @@ const ContentPlayer = () => {
           <span className="text-sm text-muted-foreground">
             <span className="font-bold text-foreground text-base">{currentIndex + 1}</span> / {contents.length} {t("course.lesson")}
           </span>
-          <Progress value={overallProgress} className="w-28 h-2 hidden sm:block" />
-          <span className="text-sm font-bold text-foreground">{overallProgress}%</span>
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {completedCount}/{contents.length} {t("course.completed")}
+            </span>
+            <Progress value={overallProgress} className={`w-24 h-2 ${stageColorClass}`} />
+          </div>
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${stageBadgeClass}`}>
+            {stageLabel} · {overallProgress}%
+          </span>
         </div>
       </header>
 
@@ -686,10 +712,10 @@ const ContentPlayer = () => {
               </div>
               <div className="px-4 py-3 border-b border-border">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                  <span>{t("course.progress")}</span>
-                  <span className="font-semibold text-foreground">{overallProgress}%</span>
+                  <span className={`px-1.5 py-0.5 rounded-full border text-[10px] font-semibold ${stageBadgeClass}`}>{stageLabel}</span>
+                  <span className="font-semibold text-foreground tabular-nums">{completedCount}/{contents.length} · {overallProgress}%</span>
                 </div>
-                <Progress value={overallProgress} className="h-2" />
+                <Progress value={overallProgress} className={`h-2 ${stageColorClass}`} />
               </div>
               <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
                 {contents.map((c, idx) => {
@@ -774,8 +800,11 @@ const ContentPlayer = () => {
         <DrawerContent className="max-h-[80vh]">
           <DrawerHeader className="pb-2">
             <DrawerTitle className="text-base">{t("course.learningProgress")}</DrawerTitle>
-            <p className="text-xs text-muted-foreground">{completedCount} / {contents.length} {t("course.completed")} · {overallProgress}%</p>
-            <Progress value={overallProgress} className="h-2 mt-2" />
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${stageBadgeClass}`}>{stageLabel}</span>
+              <p className="text-xs text-muted-foreground tabular-nums">{completedCount} / {contents.length} {t("course.completed")} · {overallProgress}%</p>
+            </div>
+            <Progress value={overallProgress} className={`h-2 mt-2 ${stageColorClass}`} />
           </DrawerHeader>
           <ScrollArea className="flex-1 px-4 pb-4 max-h-[55vh]">
             <div className="space-y-0.5">

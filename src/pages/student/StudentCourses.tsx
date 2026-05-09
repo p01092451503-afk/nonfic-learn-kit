@@ -74,6 +74,20 @@ const StudentCourses = () => {
     if (!course) return null;
     const cat = categoryMap.get(course.category_id);
     const progress = isCompleted ? 100 : Number(enrollment.progress) || 0;
+    const rounded = Math.round(progress);
+    const stageLabel = rounded >= 100
+      ? "학습 완료"
+      : rounded >= 80
+        ? "이수 임박"
+        : rounded > 0
+          ? "학습 중"
+          : "시작 전";
+    const progressBarClass =
+      rounded >= 100
+        ? "[&>div]:bg-green-500"
+        : rounded >= 80
+          ? "[&>div]:bg-amber-500"
+          : "";
 
     return (
       <Link
@@ -98,9 +112,19 @@ const StudentCourses = () => {
             {cat && <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-md">{cat.name}</span>}
           </div>
           {!isCompleted && (
-            <div className="flex items-center gap-3">
-              <Progress value={progress} className="flex-1 h-1.5" aria-label={`${t("dashboard.progressRate")}: ${Math.round(progress)}%`} />
-              <span className="text-xs font-medium text-muted-foreground">{Math.round(progress)}%</span>
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <Progress
+                  value={progress}
+                  className={`flex-1 h-1.5 ${progressBarClass}`}
+                  aria-label={`${t("dashboard.progressRate")}: ${rounded}% (${stageLabel})`}
+                />
+                <span className="text-xs font-semibold text-foreground tabular-nums">{rounded}%</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <span className={`inline-block h-1.5 w-1.5 rounded-full ${rounded >= 80 ? "bg-amber-500" : rounded > 0 ? "bg-primary" : "bg-muted-foreground/40"}`} aria-hidden="true" />
+                <span>{stageLabel}</span>
+              </div>
             </div>
           )}
           {isCompleted && (
