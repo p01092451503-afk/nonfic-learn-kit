@@ -29,6 +29,7 @@ import { useUser } from "@/contexts/UserContext";
 import CategorySelect from "@/components/CategorySelect";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import VideoPreview from "@/components/VideoPreview";
 import type { Database } from "@/integrations/supabase/types";
 
 type ContentType = Database["public"]["Enums"]["content_type"];
