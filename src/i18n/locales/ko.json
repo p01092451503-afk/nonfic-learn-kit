@@ -849,7 +849,7 @@
     "assignmentLabel": "과제",
     "liveLabel": "라이브",
     "contentSectionTitle": "강의 차시",
-    "contentSectionHint": "동영상 또는 망고보드 차시를 추가하세요",
+    "contentSectionHint": "동영상 강의를 추가하세요",
     "emptyContentHint": "아직 추가된 차시가 없습니다",
     "contentSourceLabel": "차시 소스",
     "sourceVideo": "동영상",
