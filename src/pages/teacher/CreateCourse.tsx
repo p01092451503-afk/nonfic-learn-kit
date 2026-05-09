@@ -31,6 +31,7 @@ import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import VideoPreview from "@/components/VideoPreview";
 import VideoLibraryPicker from "@/components/VideoLibraryPicker";
+import type { OverwriteMode } from "@/components/VideoLibraryPicker";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -879,7 +880,7 @@ const UnifiedContentEditor = ({
   const [lastUploadFile, setLastUploadFile] = useState<File | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [pendingLibraryVideo, setPendingLibraryVideo] = useState<
-    null | { url: string; provider: string; title: string; duration_minutes: number | null }
+    null | { url: string; provider: string; title: string; duration_minutes: number | null; titleMode: OverwriteMode; durationMode: OverwriteMode }
   >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMango = content.source === "mangoboard";
@@ -887,6 +888,21 @@ const UnifiedContentEditor = ({
   const isPackage = content.source === "package";
   const isValidMangoboard = isMango && content.video_url.includes("mangoboard.net");
   const Icon = isPackage ? Package : isCard ? LayoutGrid : isMango ? BookOpen : (contentTypeOptions.find((o) => o.value === content.content_type)?.icon || Video);
+
+  const applyLibraryVideo = (v: { url: string; provider: string; title: string; duration_minutes: number | null; titleMode: OverwriteMode; durationMode: OverwriteMode }) => {
+    onChange("video_url", v.url);
+    onChange("video_provider", v.provider);
+    const shouldOverwrite = (mode: OverwriteMode, current: unknown, incoming: unknown) => {
+      if (incoming == null || incoming === "") return false;
+      if (mode === "never") return false;
+      if (mode === "always") return true;
+      // if_empty
+      return current == null || current === "" || (typeof current === "number" && current === 0);
+    };
+    if (shouldOverwrite(v.titleMode, content.title, v.title)) onChange("title", v.title);
+    if (shouldOverwrite(v.durationMode, content.duration_minutes, v.duration_minutes)) onChange("duration_minutes", v.duration_minutes);
+    setUploadError(null);
+  };
 
   // Real-time sync KO → EN
   useEffect(() => {
@@ -1120,16 +1136,11 @@ const UnifiedContentEditor = ({
         <VideoLibraryPicker
           open={libraryOpen}
           onOpenChange={setLibraryOpen}
-          onSelect={({ url, provider, title, duration_minutes }) => {
-            const next = { url, provider, title, duration_minutes };
-            if (content.video_url && content.video_url.trim() && content.video_url !== url) {
-              setPendingLibraryVideo(next);
+          onSelect={(v) => {
+            if (content.video_url && content.video_url.trim() && content.video_url !== v.url) {
+              setPendingLibraryVideo(v);
             } else {
-              onChange("video_url", url);
-              onChange("video_provider", provider);
-              if (!content.title && title) onChange("title", title);
-              if (duration_minutes != null) onChange("duration_minutes", duration_minutes);
-              setUploadError(null);
+              applyLibraryVideo(v);
             }
           }}
         />
@@ -1147,12 +1158,7 @@ const UnifiedContentEditor = ({
               <AlertDialogAction
                 onClick={() => {
                   if (!pendingLibraryVideo) return;
-                  const { url, provider, title, duration_minutes } = pendingLibraryVideo;
-                  onChange("video_url", url);
-                  onChange("video_provider", provider);
-                  if (!content.title && title) onChange("title", title);
-                  if (duration_minutes != null) onChange("duration_minutes", duration_minutes);
-                  setUploadError(null);
+                  applyLibraryVideo(pendingLibraryVideo);
                   setPendingLibraryVideo(null);
                 }}
               >
