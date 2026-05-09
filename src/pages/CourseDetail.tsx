@@ -31,6 +31,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import VodBulkUploadDialog from "@/components/admin/VodBulkUploadDialog";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
@@ -77,6 +78,7 @@ const CourseDetail = () => {
   const isEn = i18n.language?.startsWith("en");
 
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [editingContentId, setEditingContentId] = useState<string | null>(null);
   const [contentForm, setContentForm] = useState<ContentFormData>(emptyContent);
   const [contentEnForm, setContentEnForm] = useState<ContentI18nData>(emptyI18n);
@@ -492,6 +494,16 @@ const CourseDetail = () => {
                   {t("course.courseSettings")}
                 </Button>
                 <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-1.5 text-xs"
+                  onClick={() => setBulkUploadOpen(true)}
+                  aria-label="VOD 일괄 업로드"
+                >
+                  <Upload className="h-3 w-3" aria-hidden="true" />
+                  VOD 일괄 업로드
+                </Button>
+                <Button
                   size="sm"
                   className="h-9 gap-1.5 text-xs"
                   onClick={openAddContent}
@@ -694,6 +706,15 @@ const CourseDetail = () => {
           isPending={upsertContentMutation.isPending}
           t={t}
         />
+
+        {courseId && (
+          <VodBulkUploadDialog
+            open={bulkUploadOpen}
+            onOpenChange={setBulkUploadOpen}
+            courseId={courseId}
+            startOrderIndex={contents.length > 0 ? Math.max(...contents.map((c: any) => c.order_index ?? 0)) + 1 : 0}
+          />
+        )}
 
         <CourseEditDialog
           open={courseEditOpen}
@@ -1026,202 +1047,172 @@ const ContentDialog = ({
   isPending: boolean;
   t: any;
 }) => {
-  const [translating, setTranslating] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
 
-  // Real-time sync: copy non-translatable fields from KO to EN automatically
-  useEffect(() => {
-    setEnForm(f => ({
-      ...f,
-      video_url: f.video_url || form.video_url,
-      video_provider: f.video_provider || form.video_provider,
-      duration_minutes: f.duration_minutes ?? form.duration_minutes,
-    }));
-  }, [form.video_url, form.video_provider, form.duration_minutes]);
+  const cleanTitle = (filename: string) =>
+    filename.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
 
-  // Real-time sync: mirror KO title/description to EN (raw, untranslated) so EN is never empty
-  useEffect(() => {
-    setEnForm(f => ({
-      ...f,
-      title: f.title || form.title,
-      description: f.description || form.description,
-    }));
-  }, [form.title, form.description]);
+  const handleVideoUpload = (file: File) => {
+    if (!file.type.startsWith("video/")) return;
+    setUploading(true);
+    setUploadPct(2);
+    (async () => {
+      try {
+        const { data: token, error: tokenErr } = await supabase.functions.invoke("bunny-create-video", {
+          body: { title: file.name },
+        });
+        if (tokenErr || !token?.uploadUrl) throw new Error(tokenErr?.message || "업로드 토큰 발급 실패");
 
-  const handleAutoTranslate = async () => {
-    const textsToTranslate = [form.title, form.description].filter(Boolean);
-    if (textsToTranslate.length === 0) return;
-    setTranslating(true);
-    try {
-      const results = await translateKoToEn(textsToTranslate);
-      let idx = 0;
-      const translatedTitle = form.title ? (results[idx++] || "") : "";
-      const translatedDesc = form.description ? (results[idx++] || "") : "";
-      setEnForm(f => ({
-        ...f,
-        title: translatedTitle || f.title,
-        description: translatedDesc || f.description,
-        video_url: f.video_url || form.video_url,
-        video_provider: f.video_provider || form.video_provider,
-        duration_minutes: f.duration_minutes ?? form.duration_minutes,
-      }));
-      // Auto-save translated i18n to DB if editing existing content
-      if (editingId && translatedTitle) {
-        await supabase.from("course_content_i18n").upsert({
-          content_id: editingId,
-          language_code: "en",
-          title: translatedTitle,
-          description: translatedDesc || null,
-          video_url: form.video_url || null,
-          video_provider: form.video_provider || null,
-          duration_minutes: form.duration_minutes,
-        }, { onConflict: "content_id,language_code" });
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("PUT", token.uploadUrl, true);
+          xhr.setRequestHeader("AccessKey", token.accessKey);
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) setUploadPct(Math.max(2, Math.round((e.loaded / e.total) * 95)));
+          };
+          xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(`HTTP ${xhr.status}`));
+          xhr.onerror = () => reject(new Error("네트워크 오류"));
+          xhr.send(file);
+        });
+
+        const cdn = token.cdnHostname as string | null;
+        const playUrl = cdn
+          ? `https://${cdn}/${token.videoId}/playlist.m3u8`
+          : `https://iframe.mediadelivery.net/play/${token.libraryId}/${token.videoId}`;
+
+        setForm((f) => ({
+          ...f,
+          video_url: playUrl,
+          video_provider: "bunny",
+          content_type: "video",
+          title: f.title || cleanTitle(file.name),
+        }));
+        setUploadPct(100);
+      } catch {
+        setUploadPct(0);
+      } finally {
+        setUploading(false);
       }
-    } catch {
-      // silently fail
-    } finally {
-      setTranslating(false);
-    }
+    })();
   };
 
   return (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-      <DialogHeader>
-        <DialogTitle className="text-base">{editingId ? t("course.editContent") : t("course.addContent")}</DialogTitle>
-      </DialogHeader>
-      <Tabs defaultValue="ko" className="w-full">
-        <TabsList className="w-full">
-          <TabsTrigger value="ko" className="flex-1">{t("course.koTab")}</TabsTrigger>
-          <TabsTrigger value="en" className="flex-1">{t("course.enTab")}</TabsTrigger>
-        </TabsList>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-base">{editingId ? t("course.editContent") : t("course.addContent")}</DialogTitle>
+        </DialogHeader>
 
-        <TabsContent value="ko" className="space-y-3 pt-2">
-          <div className="space-y-1">
-            <Label className="text-xs">{t("course.contentTitle")} *</Label>
-            <Input className="h-9 text-sm" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t("course.contentPlaceholder")} />
+        <div className="space-y-4 pt-1">
+          {/* VOD Upload / URL */}
+          <div className="space-y-2">
+            <Label className="text-xs font-medium">동영상 *</Label>
+            <div
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f && !uploading) handleVideoUpload(f); }}
+              className="border-2 border-dashed border-border rounded-lg p-5 text-center cursor-pointer hover:bg-muted/40 transition-colors"
+            >
+              {uploading ? (
+                <>
+                  <Upload className="h-7 w-7 mx-auto text-muted-foreground mb-2 animate-pulse" />
+                  <p className="text-sm font-medium">업로드 중... {uploadPct}%</p>
+                  <Progress value={uploadPct} className="h-1 mt-2" />
+                </>
+              ) : form.video_url ? (
+                <>
+                  <Video className="h-7 w-7 mx-auto text-primary mb-2" />
+                  <p className="text-xs font-medium text-foreground truncate">{form.video_url}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">클릭하면 다른 영상으로 교체</p>
+                </>
+              ) : (
+                <>
+                  <Upload className="h-7 w-7 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm font-medium">동영상 파일을 드래그하거나 클릭</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">최대 5GB · MP4, MOV 등</p>
+                </>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleVideoUpload(f); }}
+              />
+            </div>
+            <details className="group">
+              <summary className="text-[11px] text-muted-foreground cursor-pointer hover:text-foreground select-none">
+                또는 외부 URL 입력 (YouTube/Vimeo)
+              </summary>
+              <Input
+                className="h-9 text-sm mt-2"
+                value={form.video_url}
+                onChange={(e) => setForm(f => ({ ...f, video_url: e.target.value, video_provider: e.target.value.includes("youtube") ? "youtube" : e.target.value.includes("vimeo") ? "vimeo" : f.video_provider || "bunny" }))}
+                placeholder="https://..."
+              />
+            </details>
           </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs">제목 *</Label>
+            <Input
+              className="h-9 text-sm"
+              value={form.title}
+              onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
+              placeholder="차시 제목 (영상 업로드 시 자동 입력)"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs">{t("course.contentType")}</Label>
-              <Select value={form.content_type} onValueChange={(v) => setForm(f => ({ ...f, content_type: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="video">{t("course.video")}</SelectItem>
-                  <SelectItem value="document">{t("course.document")}</SelectItem>
-                  <SelectItem value="quiz">{t("course.quiz")}</SelectItem>
-                  <SelectItem value="assignment">{t("course.assignment")}</SelectItem>
-                  <SelectItem value="live">{t("course.live")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-xs">재생 시간 (분)</Label>
+              <Input
+                className="h-9 text-sm"
+                type="number"
+                value={form.duration_minutes ?? ""}
+                onChange={(e) => setForm(f => ({ ...f, duration_minutes: e.target.value ? Number(e.target.value) : null }))}
+                placeholder="선택"
+              />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">{t("course.playbackTime")}</Label>
-              <Input className="h-9 text-sm" type="number" value={form.duration_minutes ?? ""} onChange={(e) => setForm(f => ({ ...f, duration_minutes: e.target.value ? Number(e.target.value) : null }))} />
+              <Label className="text-xs">공개 설정</Label>
+              <div className="flex h-9 items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <Switch checked={form.is_published} onCheckedChange={(v) => setForm(f => ({ ...f, is_published: v }))} />
+                  <Label className="text-xs">공개</Label>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Switch checked={form.is_preview} onCheckedChange={(v) => setForm(f => ({ ...f, is_preview: v }))} />
+                  <Label className="text-xs">미리보기</Label>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("course.contentUrl")}</Label>
-            <Input className="h-9 text-sm" value={form.video_url} onChange={(e) => setForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://..." />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("course.provider")}</Label>
-            <Select value={form.video_provider} onValueChange={(v) => setForm(f => ({ ...f, video_provider: v }))}>
-              <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t("course.select")} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="youtube">{t("course.youtube")}</SelectItem>
-                <SelectItem value="vimeo">{t("course.vimeo")}</SelectItem>
-                <SelectItem value="custom">{t("course.flipLearningMango")}</SelectItem>
-                <SelectItem value="upload">{t("course.cdnUpload")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("course.description")}</Label>
-            <Textarea className="text-sm" value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={2} />
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Switch checked={form.is_published} onCheckedChange={(v) => setForm(f => ({ ...f, is_published: v }))} />
-              <Label className="text-xs">{t("course.isPublished")}</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch checked={form.is_preview} onCheckedChange={(v) => setForm(f => ({ ...f, is_preview: v }))} />
-              <Label className="text-xs">{t("course.allowPreview")}</Label>
-            </div>
-          </div>
-        </TabsContent>
 
-        <TabsContent value="en" className="space-y-3 pt-2">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">{t("course.enOptional")}</p>
-            <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleAutoTranslate} disabled={translating || (!form.title && !form.description)}>
-              <Languages className="h-3 w-3" />
-              {t("course.autoTranslate", "자동 번역")}
-            </Button>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("course.enTitle")}</Label>
-            <Input className="h-9 text-sm" value={enForm.title} onChange={(e) => setEnForm(f => ({ ...f, title: e.target.value }))} placeholder="English title" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label className="text-xs">{t("course.contentType")}</Label>
-              <Select value={form.content_type} onValueChange={(v) => setForm(f => ({ ...f, content_type: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="video">{t("course.video")}</SelectItem>
-                  <SelectItem value="document">{t("course.document")}</SelectItem>
-                  <SelectItem value="quiz">{t("course.quiz")}</SelectItem>
-                  <SelectItem value="assignment">{t("course.assignment")}</SelectItem>
-                  <SelectItem value="live">{t("course.live")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{t("course.playbackTime")}</Label>
-              <Input className="h-9 text-sm" type="number" value={enForm.duration_minutes ?? ""} onChange={(e) => setEnForm(f => ({ ...f, duration_minutes: e.target.value ? Number(e.target.value) : null }))} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("course.contentUrl")}</Label>
-            <Input className="h-9 text-sm" value={enForm.video_url} onChange={(e) => setEnForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://..." />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("course.provider")}</Label>
-            <Select value={enForm.video_provider || form.video_provider} onValueChange={(v) => setEnForm(f => ({ ...f, video_provider: v }))}>
-              <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t("course.select")} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="youtube">{t("course.youtube")}</SelectItem>
-                <SelectItem value="vimeo">{t("course.vimeo")}</SelectItem>
-                <SelectItem value="custom">{t("course.flipLearningMango")}</SelectItem>
-                <SelectItem value="upload">{t("course.cdnUpload")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{t("course.enDescription")}</Label>
-            <Textarea className="text-sm" value={enForm.description} onChange={(e) => setEnForm(f => ({ ...f, description: e.target.value }))} rows={2} placeholder="English description" />
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Switch checked={form.is_published} onCheckedChange={(v) => setForm(f => ({ ...f, is_published: v }))} />
-              <Label className="text-xs">{t("course.isPublished")}</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch checked={form.is_preview} onCheckedChange={(v) => setForm(f => ({ ...f, is_preview: v }))} />
-              <Label className="text-xs">{t("course.allowPreview")}</Label>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
-      <DialogFooter>
-        <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
-        <Button size="sm" onClick={onSubmit} disabled={!form.title.trim() || isPending}>
-          {isPending ? t("common.saving") : editingId ? t("common.edit") : t("common.add")}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+          <details className="group">
+            <summary className="text-[11px] text-muted-foreground cursor-pointer hover:text-foreground select-none">
+              설명 추가 (선택)
+            </summary>
+            <Textarea
+              className="text-sm mt-2"
+              value={form.description}
+              onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
+              rows={2}
+              placeholder="차시 설명 (학습자에게 표시)"
+            />
+          </details>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={uploading}>{t("common.cancel")}</Button>
+          <Button size="sm" onClick={onSubmit} disabled={!form.title.trim() || isPending || uploading}>
+            {isPending ? t("common.saving") : editingId ? t("common.edit") : t("common.add")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
