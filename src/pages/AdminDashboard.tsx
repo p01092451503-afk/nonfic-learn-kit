@@ -471,11 +471,6 @@ const AdminDashboard = () => {
         </div>
 
         {/* ③ Bottom Row: Activity Feed + Quick Summary */}
-        {/* ③ Trend visualization */}
-        <div className="grid lg:grid-cols-3 gap-4">
-          {/* (intentionally left in place) */}
-        </div>
-
         {/* ②-b Role Insight Widgets: 수강생 현황 / 과제 처리율 / 평가 통계 */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* 수강생 현황 */}
