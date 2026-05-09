@@ -12,10 +12,14 @@ interface CertificateData {
   descText: string;
   issuerName: string;
   backgroundImageUrl?: string | null;
+  studentLoginId?: string;
+  branchName?: string;
+  teamName?: string;
 }
 
 export const generateCertificateImage = async (data: CertificateData): Promise<Blob> => {
   const canvas = document.createElement("canvas");
+  // Landscape A4-ish proportions matching the reference design
   const W = 1754;
   const H = 1240;
   canvas.width = W;
@@ -33,89 +37,119 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
     drawDefaultBackground(ctx, W, H);
   }
 
-  const cx = W / 2;
+  // ====== Layout constants ======
+  const BRAND = "#0050A4";          // 메타엠 blue (matches metam-logo)
+  const INK = "#0F172A";            // near-black
+  const SUB = "#94A3B8";            // muted gray
+  const HAIRLINE = "#E5E7EB";       // soft divider
+  const PAD_X = 140;                // generous left/right padding
 
-  // === Title ===
-  ctx.textAlign = "center";
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = "300 64px 'Playfair Display', 'Noto Serif KR', serif";
-  ctx.letterSpacing = "12px";
-  ctx.fillText(data.titleText, cx, 240);
+  // === Top: brand (left) + certificate number (right) ===
+  ctx.textAlign = "left";
+  ctx.font = "700 28px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = BRAND;
+  ctx.letterSpacing = "2px";
+  ctx.fillText("메타엠 EDUCATION", PAD_X, 200);
   ctx.letterSpacing = "0px";
 
-  // Thin gold divider
-  const grad = ctx.createLinearGradient(cx - 160, 0, cx + 160, 0);
-  grad.addColorStop(0, "transparent");
-  grad.addColorStop(0.2, "#b8975a");
-  grad.addColorStop(0.5, "#d4af6a");
-  grad.addColorStop(0.8, "#b8975a");
-  grad.addColorStop(1, "transparent");
-  ctx.strokeStyle = grad;
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(cx - 160, 275);
-  ctx.lineTo(cx + 160, 275);
-  ctx.stroke();
+  ctx.textAlign = "right";
+  ctx.font = "400 20px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = SUB;
+  ctx.letterSpacing = "3px";
+  ctx.fillText("CERTIFICATE NO.", W - PAD_X, 195);
+  ctx.letterSpacing = "0px";
+  ctx.font = "600 26px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = INK;
+  ctx.fillText(data.certificateNumber, W - PAD_X, 235);
 
-  // === Student Name ===
-  ctx.fillStyle = "#111111";
-  ctx.font = "600 48px 'Noto Sans KR', sans-serif";
-  ctx.fillText(data.studentName, cx, 380);
+  // === Title block ===
+  ctx.textAlign = "left";
+  ctx.fillStyle = INK;
+  ctx.font = "800 110px 'Noto Sans KR', sans-serif";
+  ctx.fillText(data.titleText || "수료증", PAD_X, 410);
 
-  // Email / ID
-  ctx.font = "300 20px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#888888";
-  ctx.fillText(data.studentEmail, cx, 420);
+  ctx.font = "400 26px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = SUB;
+  ctx.letterSpacing = "6px";
+  ctx.fillText("CERTIFICATE OF COMPLETION", PAD_X, 460);
+  ctx.letterSpacing = "0px";
 
-  // === Description ===
-  ctx.font = "300 24px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#555555";
-  wrapText(ctx, data.descText, cx, 510, W - 400, 36);
+  // === Description with left blue accent bar ===
+  const descTop = 560;
+  const descBottom = 690;
+  ctx.fillStyle = "#DBEAFE";
+  ctx.fillRect(PAD_X, descTop, 4, descBottom - descTop);
 
-  // === Course Name ===
-  // Subtle background pill for course name
-  const courseText = data.courseName;
-  ctx.font = "500 30px 'Noto Sans KR', sans-serif";
-  const courseWidth = ctx.measureText(courseText).width;
-  const pillPadX = 40;
-  const pillPadY = 14;
-  const pillY = 640;
+  const descCourse = data.courseName || "-";
+  const descPlain = `위 사람은 `;
+  const descPlain2 = `을(를) 성실히 이수하였기에`;
+  const descPlain3 = `이 증서를 수여합니다.`;
 
-  ctx.fillStyle = "#f5f0e8";
-  roundRect(ctx, cx - courseWidth / 2 - pillPadX, pillY - 24 - pillPadY, courseWidth + pillPadX * 2, 24 + pillPadY * 2, 8);
-  ctx.fill();
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#334155";
+  ctx.font = "400 28px 'Noto Sans KR', sans-serif";
 
-  ctx.fillStyle = "#1a1a1a";
-  ctx.fillText(courseText, cx, pillY);
+  // Line 1 — mixed weight: "위 사람은 [bold course] 을(를) 성실히 이수하였기에"
+  let cursorX = PAD_X + 36;
+  const line1Y = descTop + 50;
+  ctx.fillText(descPlain, cursorX, line1Y);
+  cursorX += ctx.measureText(descPlain).width;
 
-  // === Date ===
-  ctx.font = "300 20px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#999999";
-  ctx.fillText(data.issuedDate, cx, 740);
+  ctx.font = "700 28px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = INK;
+  ctx.fillText(descCourse, cursorX, line1Y);
+  cursorX += ctx.measureText(descCourse).width;
 
-  // === Certificate Number ===
-  ctx.font = "300 16px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = "#bbbbbb";
-  ctx.fillText(`No. ${data.certificateNumber}`, cx, 780);
+  ctx.font = "400 28px 'Noto Sans KR', sans-serif";
+  ctx.fillStyle = "#334155";
+  ctx.fillText(descPlain2, cursorX, line1Y);
 
-  // === Issuer ===
+  // Line 2
+  ctx.fillText(descPlain3, PAD_X + 36, line1Y + 50);
+
+  // === Info grid: 2 cols x 3 rows ===
+  const colGap = 80;
+  const colW = (W - PAD_X * 2 - colGap) / 2;
+  const leftX = PAD_X;
+  const rightX = PAD_X + colW + colGap;
+  const rowYs = [810, 920, 1030];
+
+  const rows: Array<[[string, string], [string, string]]> = [
+    [["이름", data.studentName || "-"], ["아이디", data.studentLoginId || data.studentEmail?.split("@")[0] || "-"]],
+    [["소속 지사", data.branchName || "메타엠"], ["소속 팀", data.teamName || "-"]],
+    [["과정명", data.courseName || "-"], ["수료 일자", data.issuedDate || "-"]],
+  ];
+
+  rows.forEach((row, i) => {
+    const y = rowYs[i];
+    [row[0], row[1]].forEach(([label, value], j) => {
+      const x = j === 0 ? leftX : rightX;
+      // Label
+      ctx.font = "400 18px 'Noto Sans KR', sans-serif";
+      ctx.fillStyle = SUB;
+      ctx.fillText(label, x, y - 38);
+      // Value
+      ctx.font = "700 28px 'Noto Sans KR', sans-serif";
+      ctx.fillStyle = INK;
+      ctx.fillText(value, x, y);
+      // Underline
+      ctx.strokeStyle = HAIRLINE;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, y + 18);
+      ctx.lineTo(x + colW, y + 18);
+      ctx.stroke();
+    });
+  });
+
+  // === Issuer (small, bottom-left) ===
   if (data.issuerName) {
-    // Signature line first
-    const lineGrad = ctx.createLinearGradient(cx - 100, 0, cx + 100, 0);
-    lineGrad.addColorStop(0, "transparent");
-    lineGrad.addColorStop(0.3, "#cccccc");
-    lineGrad.addColorStop(0.7, "#cccccc");
-    lineGrad.addColorStop(1, "transparent");
-    ctx.strokeStyle = lineGrad;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(cx - 100, 940);
-    ctx.lineTo(cx + 100, 940);
-    ctx.stroke();
-
-    ctx.font = "400 26px 'Noto Sans KR', sans-serif";
-    ctx.fillStyle = "#1a1a1a";
-    ctx.fillText(data.issuerName, cx, 925);
+    ctx.font = "400 18px 'Noto Sans KR', sans-serif";
+    ctx.fillStyle = SUB;
+    ctx.fillText("발급기관", PAD_X, H - 110);
+    ctx.font = "600 22px 'Noto Sans KR', sans-serif";
+    ctx.fillStyle = INK;
+    ctx.fillText(data.issuerName, PAD_X, H - 80);
   }
 
   return new Promise((resolve) => {
@@ -124,52 +158,29 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
 };
 
 function drawDefaultBackground(ctx: CanvasRenderingContext2D, W: number, H: number) {
-  // Clean white/cream background
-  ctx.fillStyle = "#fefcf8";
+  // Pure white card
+  ctx.fillStyle = "#FFFFFF";
   ctx.fillRect(0, 0, W, H);
 
-  // Outer border - thin dark line
-  ctx.strokeStyle = "#1a1a1a";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(50, 50, W - 100, H - 100);
-
-  // Inner border - subtle gold
-  ctx.strokeStyle = "#d4c5a0";
-  ctx.lineWidth = 0.5;
-  ctx.strokeRect(65, 65, W - 130, H - 130);
-
-  // Corner accents - small L-shapes
-  const cornerSize = 30;
-  const offset = 50;
-  ctx.strokeStyle = "#1a1a1a";
-  ctx.lineWidth = 2;
-
-  // Top-left
-  drawCorner(ctx, offset, offset, cornerSize, 1, 1);
-  // Top-right
-  drawCorner(ctx, W - offset, offset, cornerSize, -1, 1);
-  // Bottom-left
-  drawCorner(ctx, offset, H - offset, cornerSize, 1, -1);
-  // Bottom-right
-  drawCorner(ctx, W - offset, H - offset, cornerSize, -1, -1);
-
-  // Subtle watermark pattern - very light diagonal lines
-  ctx.strokeStyle = "rgba(212, 197, 160, 0.08)";
+  // Soft outer frame shadow effect — a hairline border around the card
+  ctx.strokeStyle = "#EEF2F6";
   ctx.lineWidth = 1;
-  for (let i = -H; i < W; i += 40) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i + H, H);
-    ctx.stroke();
-  }
-}
+  ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
 
-function drawCorner(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, dx: number, dy: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + dx * size, y);
-  ctx.lineTo(x, y);
-  ctx.lineTo(x, y + dy * size);
-  ctx.stroke();
+  // Left brand accent bar (matches reference design)
+  ctx.fillStyle = "#0050A4";
+  ctx.fillRect(0, 0, 14, H);
+
+  // Decorative concentric circles bottom-right (very faint, brand blue)
+  const cx = W - 220;
+  const cy = H - 180;
+  ctx.strokeStyle = "rgba(0, 80, 164, 0.10)";
+  ctx.lineWidth = 2;
+  [320, 240, 160].forEach((r) => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+  });
 }
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
