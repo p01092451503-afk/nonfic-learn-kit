@@ -109,7 +109,7 @@ const Auth = () => {
               약속을 지키는{"\n"}사람들이 일하는{"\n"}회사, 메타엠
             </h2>
             <p className="text-sm text-white/70 leading-relaxed">
-              고객상담 BPO 전문가를 위한 사내 교육 플랫폼.
+              고객상담 BPO 전문가를 위한 사내 교육 플랫폼
             </p>
           </div>
         </div>
