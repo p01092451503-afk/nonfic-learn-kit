@@ -183,7 +183,7 @@ const PWAUpdatePrompt = () => {
           <div className="bg-background border-2 border-border rounded-xl shadow-xl p-4 flex items-start gap-3">
             <Download className="h-5 w-5 mt-0.5 text-foreground shrink-0" aria-hidden="true" />
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-foreground">{t("pwa.installTitle", "홈화면에 NONFICTION 설치")}</p>
+              <p className="font-semibold text-sm text-foreground">{t("pwa.installTitle", "홈화면에 METAM 설치")}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{t("pwa.installDesc", "앱처럼 빠르게 실행하고 오프라인에서도 일부 기능을 사용할 수 있습니다.")}</p>
               <div className="flex gap-2 mt-3">
                 <Button size="sm" className="h-8 text-xs font-semibold" onClick={handleInstall}>
@@ -243,7 +243,7 @@ const PWAUpdatePrompt = () => {
                 <Smartphone className="h-5 w-5 text-foreground" aria-hidden="true" />
               </div>
               <DialogTitle className="text-lg">
-                {t("pwa.iosGuideTitle", "홈화면에 NONFICTION 추가하기")}
+                {t("pwa.iosGuideTitle", "홈화면에 METAM 추가하기")}
               </DialogTitle>
             </div>
             <DialogDescription className="text-sm pt-1">

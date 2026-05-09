@@ -44,7 +44,7 @@ const AdminSettings = () => {
       title: t("admin.generalSettings"),
       icon: Settings,
       items: [
-        { label: t("admin.platformName"), value: "NONFICTION LMS", type: "text" },
+        { label: t("admin.platformName"), value: "METAM LMS", type: "text" },
         { label: t("admin.defaultLanguage"), value: "한국어", type: "select" },
         { label: t("admin.timezone"), value: "Asia/Seoul (UTC+9)", type: "select" },
       ],

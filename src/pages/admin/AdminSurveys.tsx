@@ -586,7 +586,7 @@ const AdminSurveys = () => {
                     });
 
                     lines.push("───────────────────────────────────────");
-                    lines.push("NONFICTION LMS | 자동 생성 리포트");
+                    lines.push("METAM LMS | 자동 생성 리포트");
 
                     navigator.clipboard.writeText(lines.join("\n"));
                     toast({ title: "리포트가 클립보드에 복사되었습니다." });

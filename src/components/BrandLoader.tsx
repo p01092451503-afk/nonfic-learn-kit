@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import MetamLogo from "@/components/MetamLogo";
 
 interface BrandLoaderProps {
   /** Render full viewport height (for route fallbacks) */
@@ -10,7 +11,7 @@ interface BrandLoaderProps {
 
 /**
  * Brand-aligned skeleton loader.
- * Shows the NONFICTION wordmark with a shimmer sweep — replaces generic spinners
+ * Shows the METAM wordmark with a shimmer sweep — replaces generic spinners
  * during route transitions and data loading states.
  */
 export const BrandLoader = ({ fullscreen = false, label, className }: BrandLoaderProps) => {
@@ -25,11 +26,8 @@ export const BrandLoader = ({ fullscreen = false, label, className }: BrandLoade
       aria-live="polite"
       aria-busy="true"
     >
-      <span
-        className="brand-loader-wordmark select-none font-serif text-3xl sm:text-4xl font-semibold tracking-[0.12em] text-foreground/90"
-        aria-label="NONFICTION 로딩 중"
-      >
-        NONFICTION
+      <span className="inline-flex items-center brand-loader-pulse" aria-label="METAM 로딩 중">
+        <MetamLogo className="h-8 sm:h-10 w-auto text-foreground/80" />
       </span>
       <div className="h-[2px] w-40 overflow-hidden rounded-full bg-muted">
         <div className="brand-loader-bar h-full w-1/3 rounded-full bg-foreground/70" />

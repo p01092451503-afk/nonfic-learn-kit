@@ -414,7 +414,7 @@ const AdminUsers = () => {
             </div>
             <div>
               <Label>{t("auth.email")}</Label>
-              <Input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} placeholder="user@nonfiction.co.kr" className="mt-1" />
+              <Input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} placeholder="user@meta-m.co.kr" className="mt-1" />
             </div>
             <div>
               <Label>{t("admin.tempPassword")}</Label>

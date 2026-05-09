@@ -12,7 +12,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { supabase } from "@/integrations/supabase/client";
-import LanguageToggle from "@/components/LanguageToggle";
+import MetamLogo from "@/components/MetamLogo";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationBell from "@/components/NotificationBell";
 import GuidedTourButton from "@/components/GuidedTourButton";
@@ -234,11 +234,11 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
           {sidebarCollapsed ? (
-            <h1 className="font-display text-2xl tracking-wider text-sidebar-primary" aria-label="NONFICTION">N</h1>
+            <MetamLogo markOnly className="h-7 w-auto text-sidebar-primary" />
           ) : (
             <>
-              <h1 className="font-display text-[1.7rem] tracking-wider text-sidebar-primary">NONFICTION</h1>
-              <span className="mt-1.5 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full" aria-label={`${t("common.role", "역할")}: ${roleLabel}`}>
+              <MetamLogo className="h-8 w-auto text-sidebar-primary" />
+              <span className="mt-2 inline-block text-[11px] tracking-[0.1em] font-medium text-muted-foreground bg-accent px-2.5 py-0.5 rounded-full" aria-label={`${t("common.role", "역할")}: ${roleLabel}`}>
                 {roleLabel}
               </span>
             </>
@@ -298,9 +298,6 @@ const DashboardLayout = ({ children, role = "student", contentClassName }: Dashb
           </button>
           <div className="flex-1" />
           {/* <GuidedTourButton role={activeRole as "student" | "teacher" | "admin"} /> */}
-          {activeRole !== "admin" && (
-            <div data-tour="language-toggle"><LanguageToggle /></div>
-          )}
           <RoleSwitcher />
           <div data-tour="notification-bell"><NotificationBell /></div>
           <div className="flex items-center gap-3 pl-3 border-l border-border" data-tour="user-profile">
