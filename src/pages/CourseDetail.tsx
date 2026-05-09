@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { translateKoToEn } from "@/lib/translate";
 import AssessmentManager from "@/components/AssessmentManager";
 import StudentSurvey from "@/components/StudentSurvey";
+import { useEnrollmentProgressSync } from "@/hooks/useEnrollmentProgressSync";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
