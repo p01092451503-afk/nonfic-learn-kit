@@ -1,4 +1,4 @@
-import { Search, BookOpen, Info, Clock, Star, ChevronRight } from "lucide-react";
+import { Search, BookOpen, Info, Clock, Star, ChevronRight, CheckCircle2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -110,6 +110,12 @@ const StudentCourses = () => {
             <h3 className="text-sm font-semibold text-foreground truncate">{course.title}</h3>
             {course.is_mandatory && <Badge variant="destructive" className="text-[10px] h-5">{t("common.required")}</Badge>}
             {cat && <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-md">{cat.name}</span>}
+            {isCompleted && (
+              <Badge className="text-[10px] h-5 gap-1 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/30 hover:bg-green-500/15">
+                <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+                이수 완료
+              </Badge>
+            )}
           </div>
           {!isCompleted && (
             <div className="space-y-1">
@@ -128,9 +134,16 @@ const StudentCourses = () => {
             </div>
           )}
           {isCompleted && (
-            <div className="flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" aria-hidden="true" />
-              <span className="text-xs font-medium text-green-600 dark:text-green-400">{t("course.completionLabel")}</span>
+            <div className="flex items-center gap-2 flex-wrap text-[11px]">
+              <span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-semibold">
+                <Star className="h-3 w-3 text-amber-500 fill-amber-500" aria-hidden="true" />
+                전 차시 학습 완료 · 100%
+              </span>
+              {enrollment.completed_at && (
+                <span className="text-muted-foreground">
+                  {new Date(enrollment.completed_at).toLocaleDateString(lang === "en" ? "en-US" : "ko-KR", { year: "numeric", month: "short", day: "numeric" })} 이수
+                </span>
+              )}
             </div>
           )}
         </div>
