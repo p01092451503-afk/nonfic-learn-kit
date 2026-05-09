@@ -12,8 +12,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { Bell, Send, Users, User } from "lucide-react";
+import { Bell, Send, Users, User, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 const AdminNotifications = () => {
@@ -26,6 +38,7 @@ const AdminNotifications = () => {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [searchUser, setSearchUser] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const { data: students } = useQuery({
     queryKey: ["students-for-notify"],
@@ -92,6 +105,31 @@ const AdminNotifications = () => {
       toast({ title: "오류", description: err.message, variant: "destructive" });
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      if (ids.length === 0) return;
+      const { error } = await supabase.from("notifications").delete().in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: (_d, ids) => {
+      toast({ title: t("notifications.deleted", "알림이 삭제되었습니다"), description: `${ids.length}건` });
+      setSelectedIds([]);
+      queryClient.invalidateQueries({ queryKey: ["recent-sent-notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: (err: Error) => {
+      toast({ title: "오류", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+  const toggleSelectAll = () => {
+    const all = recentNotifications?.map((n) => n.id) || [];
+    setSelectedIds((prev) => (prev.length === all.length ? [] : all));
+  };
 
   const filteredStudents = students?.filter(
     (s) =>
@@ -171,28 +209,95 @@ const AdminNotifications = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5" />{t("notifications.recentSent", "최근 발송 내역")}</CardTitle>
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5" />{t("notifications.recentSent", "최근 발송 내역")}</CardTitle>
+              {selectedIds.length > 0 && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      {t("common.delete", "삭제")} ({selectedIds.length})
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("notifications.confirmDelete", "선택한 알림을 삭제하시겠습니까?")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("notifications.confirmDeleteDesc", "삭제된 알림은 복구할 수 없으며, 수신자의 알림함에서도 사라집니다.")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t("common.cancel", "취소")}</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteMutation.mutate(selectedIds)}>
+                        {t("common.delete", "삭제")}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={
+                        (recentNotifications?.length ?? 0) > 0 &&
+                        selectedIds.length === recentNotifications?.length
+                      }
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="select all"
+                    />
+                  </TableHead>
                   <TableHead>{t("notifications.title", "제목")}</TableHead>
                   <TableHead>{t("notifications.message", "내용")}</TableHead>
                   <TableHead>{t("notifications.sentAt", "발송일시")}</TableHead>
                   <TableHead>{t("notifications.readStatus", "읽음")}</TableHead>
+                  <TableHead className="w-16 text-right">{t("common.actions", "작업")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {recentNotifications?.length === 0 && (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">{t("common.noData")}</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">{t("common.noData")}</TableCell></TableRow>
                 )}
                 {recentNotifications?.map((n) => (
                   <TableRow key={n.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.includes(n.id)}
+                        onCheckedChange={() => toggleSelect(n.id)}
+                        aria-label={`select ${n.title}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">{n.title}</TableCell>
                     <TableCell className="max-w-[300px] truncate">{n.message}</TableCell>
                     <TableCell>{format(new Date(n.created_at!), "yyyy-MM-dd HH:mm")}</TableCell>
                     <TableCell>{n.is_read ? "✓" : "—"}</TableCell>
+                    <TableCell className="text-right">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" aria-label={t("common.delete", "삭제")}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t("notifications.confirmDelete", "이 알림을 삭제하시겠습니까?")}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {t("notifications.confirmDeleteDesc", "삭제된 알림은 복구할 수 없으며, 수신자의 알림함에서도 사라집니다.")}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t("common.cancel", "취소")}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMutation.mutate([n.id])}>
+                              {t("common.delete", "삭제")}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
