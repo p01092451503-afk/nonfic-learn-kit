@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { computeFileHash, findDuplicateByHash } from "@/lib/fileHash";
 
 type ItemStatus = "queued" | "uploading" | "done" | "error";
 
@@ -17,6 +18,7 @@ interface UploadItem {
   status: ItemStatus;
   progress: number;
   error?: string;
+  duplicate?: boolean;
 }
 
 interface Props {
@@ -73,6 +75,23 @@ export default function VodBulkUploadDialog({ open, onOpenChange, courseId, star
     new Promise<void>(async (resolve, reject) => {
       try {
         updateItem(item.id, { status: "uploading", progress: 2 });
+        const hash = await computeFileHash(item.file);
+        const dup = await findDuplicateByHash(hash);
+        if (dup) {
+          // Reuse existing video URL — insert as a new course chapter
+          const { error: dbErr } = await supabase.from("course_contents").insert({
+            course_id: courseId,
+            title: cleanTitle(item.file.name),
+            content_type: "video",
+            video_provider: "bunny" as any,
+            video_url: dup.video_url,
+            order_index: orderIndex,
+            is_published: true,
+          });
+          if (dbErr) return reject(dbErr);
+          updateItem(item.id, { status: "done", progress: 100, duplicate: true });
+          return resolve();
+        }
         const { data: token, error: tokenErr } = await supabase.functions.invoke("bunny-create-video", {
           body: { title: item.file.name },
         });
@@ -103,6 +122,19 @@ export default function VodBulkUploadDialog({ open, onOpenChange, courseId, star
               is_published: true,
             });
             if (dbErr) return reject(dbErr);
+            // Register in video assets library with file hash for future dedupe
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await supabase.from("video_assets").insert({
+                title: cleanTitle(item.file.name),
+                video_url: playUrl,
+                video_provider: "bunny",
+                file_size_mb: Math.round((item.file.size / (1024 * 1024)) * 100) / 100,
+                thumbnail_url: cdn ? `https://${cdn}/${token.videoId}/thumbnail.jpg` : null,
+                uploaded_by: user.id,
+                file_hash: hash,
+              } as any);
+            }
             updateItem(item.id, { status: "done", progress: 100 });
             resolve();
           } else {
@@ -182,6 +214,9 @@ export default function VodBulkUploadDialog({ open, onOpenChange, courseId, star
                     )}
                     {it.status === "error" && (
                       <p className="text-xs text-destructive mt-1 truncate">{it.error}</p>
+                    )}
+                    {it.status === "done" && it.duplicate && (
+                      <p className="text-xs text-amber-600 mt-1">중복 파일 — 기존 영상을 재사용했습니다</p>
                     )}
                   </div>
                   <div className="shrink-0">
