@@ -26,7 +26,7 @@ export const BrandLoader = ({ fullscreen = false, label, className }: BrandLoade
       aria-live="polite"
       aria-busy="true"
     >
-      <span className="brand-loader-wordmark inline-flex items-center" aria-label="METAM 로딩 중">
+      <span className="inline-flex items-center brand-loader-pulse" aria-label="METAM 로딩 중">
         <MetamLogo className="h-8 sm:h-10 w-auto text-foreground/80" />
       </span>
       <div className="h-[2px] w-40 overflow-hidden rounded-full bg-muted">
