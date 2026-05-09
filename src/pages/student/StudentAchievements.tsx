@@ -1,7 +1,15 @@
 import { Award, Flame, Star, Target, TrendingUp, Zap, Crown, Medal, BookOpen } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useTranslation } from "react-i18next";
@@ -30,6 +38,11 @@ const badgeIcons: Record<string, React.ElementType> = {
 const StudentAchievements = () => {
   const { user } = useUser();
   const { t } = useTranslation();
+  const [detail, setDetail] = useState<
+    | { type: "level" | "points" | "streak" | "badges" }
+    | { type: "badge"; badge: any; earned: boolean; earnedAt?: string }
+    | null
+  >(null);
 
   const { data: gamification } = useQuery({
     queryKey: ["my-gamification", user?.id],
@@ -96,6 +109,34 @@ const StudentAchievements = () => {
     },
     enabled: !!user?.id,
   });
+
+  const { data: fullPointHistory = [] } = useQuery({
+    queryKey: ["point-history-full", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("point_history")
+        .select("points, created_at, action_type, description")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && !!detail,
+  });
+
+  const actionLabel = (a: string) => {
+    const map: Record<string, string> = {
+      lesson_completed: t("achievements.actionLessonCompleted", "차시 완료"),
+      assessment_completed: t("achievements.actionAssessmentCompleted", "평가 응시"),
+      assessment_passed: t("achievements.actionAssessmentPassed", "평가 합격"),
+      assignment_completed: t("achievements.actionAssignmentCompleted", "과제 제출"),
+      streak_bonus: t("achievements.actionStreakBonus", "연속 학습 보너스"),
+    };
+    return map[a] || a;
+  };
+
+  const formatDate = (d: string) => new Date(d).toLocaleString();
 
   const { data: courseProgress = [] } = useQuery({
     queryKey: ["my-course-progress", user?.id],
@@ -171,7 +212,7 @@ const StudentAchievements = () => {
         </div>
 
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3" aria-label={t("achievements.title")}>
-          <div className="stat-card flex items-center gap-3 !p-3 sm:!p-4" role="group" aria-label={t("achievements.currentLevel")}>
+          <button type="button" onClick={() => setDetail({ type: "level" })} className="stat-card flex items-center gap-3 !p-3 sm:!p-4 text-left hover:bg-muted/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" aria-label={t("achievements.currentLevel")}>
             <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center shrink-0">
               <TrendingUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             </div>
@@ -179,8 +220,8 @@ const StudentAchievements = () => {
               <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">Lv.{level}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground">{t("achievements.currentLevel")}</p>
             </div>
-          </div>
-          <div className="stat-card flex items-center gap-3 !p-3 sm:!p-4" role="group" aria-label={t("achievements.totalPoints")}>
+          </button>
+          <button type="button" onClick={() => setDetail({ type: "points" })} className="stat-card flex items-center gap-3 !p-3 sm:!p-4 text-left hover:bg-muted/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" aria-label={t("achievements.totalPoints")}>
             <div className="h-8 w-8 rounded-md bg-warning/10 flex items-center justify-center shrink-0">
               <Zap className="h-4 w-4 text-warning" aria-hidden="true" />
             </div>
@@ -188,8 +229,8 @@ const StudentAchievements = () => {
               <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">{totalPoints}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground">{t("achievements.totalPoints")}</p>
             </div>
-          </div>
-          <div className="stat-card flex items-center gap-3 !p-3 sm:!p-4" role="group" aria-label={t("achievements.consecutiveDays")}>
+          </button>
+          <button type="button" onClick={() => setDetail({ type: "streak" })} className="stat-card flex items-center gap-3 !p-3 sm:!p-4 text-left hover:bg-muted/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" aria-label={t("achievements.consecutiveDays")}>
             <div className="h-8 w-8 rounded-md bg-destructive/10 flex items-center justify-center shrink-0">
               <Flame className="h-4 w-4 text-destructive" aria-hidden="true" />
             </div>
@@ -197,8 +238,8 @@ const StudentAchievements = () => {
               <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">{streak}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground">{t("achievements.consecutiveDays")}</p>
             </div>
-          </div>
-          <div className="stat-card flex items-center gap-3 !p-3 sm:!p-4" role="group" aria-label={t("achievements.earnedBadges")}>
+          </button>
+          <button type="button" onClick={() => setDetail({ type: "badges" })} className="stat-card flex items-center gap-3 !p-3 sm:!p-4 text-left hover:bg-muted/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" aria-label={t("achievements.earnedBadges")}>
             <div className="h-8 w-8 rounded-md bg-success/10 flex items-center justify-center shrink-0">
               <Award className="h-4 w-4 text-success" aria-hidden="true" />
             </div>
@@ -206,7 +247,7 @@ const StudentAchievements = () => {
               <p className="text-lg sm:text-xl font-bold text-foreground leading-tight">{myBadges.length}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground">{t("achievements.earnedBadges")}</p>
             </div>
-          </div>
+          </button>
         </section>
 
         {/* Donut visualization row */}
@@ -388,13 +429,19 @@ const StudentAchievements = () => {
                 {allBadges.map((badge: any) => {
                   const earned = earnedBadgeIds.has(badge.id);
                   const Icon = badgeIcons[badge.icon] || Star;
+                  const earnedRow: any = myBadges.find((b: any) => b.badge_id === badge.id);
                   return (
-                    <div key={badge.id} className={`stat-card text-center !p-4 ${!earned ? "opacity-40 grayscale" : ""}`}>
+                    <button
+                      key={badge.id}
+                      type="button"
+                      onClick={() => setDetail({ type: "badge", badge, earned, earnedAt: earnedRow?.earned_at })}
+                      className={`stat-card text-center !p-4 hover:bg-muted/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring ${!earned ? "opacity-40 grayscale" : ""}`}
+                    >
                       <Icon className={`h-8 w-8 mx-auto mb-2 ${earned ? "text-warning" : "text-muted-foreground"}`} />
                       <h3 className="text-sm font-medium text-foreground">{badge.name}</h3>
                       <p className="text-[10px] text-muted-foreground mt-1">{badge.description}</p>
                       {earned && <p className="text-[10px] text-success font-medium mt-1.5">{t("achievements.earned")}</p>}
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -426,6 +473,137 @@ const StudentAchievements = () => {
             )}
           </div>
         </div>
+
+        <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
+          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+            {detail?.type === "badge" ? (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    {(() => {
+                      const Icon = badgeIcons[detail.badge.icon] || Star;
+                      return <Icon className={`h-5 w-5 ${detail.earned ? "text-warning" : "text-muted-foreground"}`} />;
+                    })()}
+                    {detail.badge.name}
+                  </DialogTitle>
+                  <DialogDescription>{detail.badge.description}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between border-b border-border/80 pb-2">
+                    <span className="text-muted-foreground">{t("achievements.detailType", "유형")}</span>
+                    <span className="text-foreground">{detail.badge.badge_type}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-border/80 pb-2">
+                    <span className="text-muted-foreground">{t("achievements.detailRequirement", "획득 조건")}</span>
+                    <span className="text-foreground">{detail.badge.requirement_type} ≥ {detail.badge.requirement_value}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-border/80 pb-2">
+                    <span className="text-muted-foreground">{t("achievements.detailStatus", "상태")}</span>
+                    <span className={detail.earned ? "text-success font-medium" : "text-muted-foreground"}>
+                      {detail.earned ? t("achievements.earned") : t("achievements.notEarned", "미획득")}
+                    </span>
+                  </div>
+                  {detail.earned && detail.earnedAt && (
+                    <div className="flex justify-between border-b border-border/80 pb-2">
+                      <span className="text-muted-foreground">{t("achievements.detailEarnedAt", "획득 시점")}</span>
+                      <span className="text-foreground">{formatDate(detail.earnedAt)}</span>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : detail?.type === "level" ? (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5" />Lv.{level} {t("achievements.detailLevelTitle", "레벨 상세")}</DialogTitle>
+                  <DialogDescription>{t("achievements.detailLevelDesc", "활동을 통해 경험치(XP)를 모아 레벨을 올리세요.")}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between border-b border-border/80 pb-2"><span className="text-muted-foreground">{t("achievements.currentLevel")}</span><span className="font-medium">Lv.{level}</span></div>
+                  <div className="flex justify-between border-b border-border/80 pb-2"><span className="text-muted-foreground">XP</span><span className="font-medium">{xp.toLocaleString()} / {nextLevelXp.toLocaleString()}</span></div>
+                  <div className="flex justify-between border-b border-border/80 pb-2"><span className="text-muted-foreground">{t("achievements.xpProgress")}</span><span className="font-medium">{xpProgress}%</span></div>
+                  <div className="flex justify-between border-b border-border/80 pb-2"><span className="text-muted-foreground">{t("achievements.nextLevelLabel")}</span><span className="font-medium">Lv.{level + 1} (남은 {xpRemaining.toLocaleString()} XP)</span></div>
+                </div>
+              </>
+            ) : detail?.type === "streak" ? (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2"><Flame className="h-5 w-5 text-destructive" />{t("achievements.learningStreak")}</DialogTitle>
+                  <DialogDescription>{t("achievements.detailStreakDesc", "최근 연속 학습 보너스 내역입니다.")}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between border-b border-border/80 pb-2">
+                    <span className="text-muted-foreground">{t("achievements.consecutiveDays")}</span>
+                    <span className="font-medium">{streak}일</span>
+                  </div>
+                  {fullPointHistory.filter((p: any) => p.action_type === "streak_bonus").slice(0, 30).map((p: any, i: number) => (
+                    <div key={i} className="flex justify-between border-b border-border/80 pb-2">
+                      <span className="text-muted-foreground">{formatDate(p.created_at)}</span>
+                      <span className="font-medium text-warning">+{p.points}pt</span>
+                    </div>
+                  ))}
+                  {fullPointHistory.filter((p: any) => p.action_type === "streak_bonus").length === 0 && (
+                    <p className="text-muted-foreground">{t("common.noData")}</p>
+                  )}
+                </div>
+              </>
+            ) : detail?.type === "points" || detail?.type === "badges" ? (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    {detail.type === "points" ? <Zap className="h-5 w-5 text-warning" /> : <Award className="h-5 w-5 text-success" />}
+                    {detail.type === "points"
+                      ? t("achievements.detailPointsTitle", "포인트 획득 내역")
+                      : t("achievements.detailBadgesTitle", "획득 뱃지 내역")}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {detail.type === "points"
+                      ? t("achievements.detailPointsDesc", "포인트가 적립된 활동, 시점을 확인할 수 있습니다.")
+                      : t("achievements.detailBadgesDesc", "획득한 뱃지의 시점을 확인할 수 있습니다.")}
+                  </DialogDescription>
+                </DialogHeader>
+                {detail.type === "points" ? (
+                  <div className="space-y-2 text-sm">
+                    {fullPointHistory.length === 0 ? (
+                      <p className="text-muted-foreground">{t("common.noData")}</p>
+                    ) : (
+                      fullPointHistory.slice(0, 50).map((p: any, i: number) => (
+                        <div key={i} className="flex justify-between items-start border-b border-border/80 pb-2 gap-3">
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground">{actionLabel(p.action_type)}</p>
+                            <p className="text-xs text-muted-foreground">{formatDate(p.created_at)}</p>
+                          </div>
+                          <span className="font-semibold text-warning whitespace-nowrap">+{p.points}pt</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2 text-sm">
+                    {myBadges.length === 0 ? (
+                      <p className="text-muted-foreground">{t("achievements.noBadges")}</p>
+                    ) : (
+                      myBadges.map((b: any) => {
+                        const Icon = badgeIcons[b.badges?.icon] || Star;
+                        return (
+                          <div key={b.id} className="flex justify-between items-start border-b border-border/80 pb-2 gap-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Icon className="h-4 w-4 text-warning shrink-0" />
+                              <div className="min-w-0">
+                                <p className="font-medium text-foreground">{b.badges?.name}</p>
+                                <p className="text-xs text-muted-foreground">{b.badges?.description}</p>
+                              </div>
+                            </div>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(b.earned_at)}</span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </>
+            ) : null}
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
