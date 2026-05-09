@@ -437,8 +437,15 @@ const ContentPlayer = () => {
           <span className="text-sm text-muted-foreground">
             <span className="font-bold text-foreground text-base">{currentIndex + 1}</span> / {contents.length} {t("course.lesson")}
           </span>
-          <Progress value={overallProgress} className="w-28 h-2 hidden sm:block" />
-          <span className="text-sm font-bold text-foreground">{overallProgress}%</span>
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {completedCount}/{contents.length} {t("course.completed")}
+            </span>
+            <Progress value={overallProgress} className={`w-24 h-2 ${stageColorClass}`} />
+          </div>
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${stageBadgeClass}`}>
+            {stageLabel} · {overallProgress}%
+          </span>
         </div>
       </header>
 
