@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
 import StatCard from "@/components/ui/stat-card";
+import RankBar from "@/components/ui/rank-bar";
 import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
 import MultiTrendChart from "@/components/dashboard/MultiTrendChart";
 import DonutChart from "@/components/dashboard/DonutChart";
@@ -537,12 +538,7 @@ const AdminDashboard = () => {
                         <span className="text-xs text-muted-foreground shrink-0">{course.enrolled}{t("common.people")}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary rounded-full transition-all"
-                            style={{ width: `${course.avgProgress}%` }}
-                          />
-                        </div>
+                        <RankBar value={course.avgProgress} className="h-2" />
                         <span className="text-xs text-muted-foreground w-10 text-right">{course.avgProgress}%</span>
                       </div>
                     </div>
