@@ -14,6 +14,8 @@ import RadialProgress from "@/components/dashboard/RadialProgress";
 import DonutChart from "@/components/dashboard/DonutChart";
 import MiniBarChart from "@/components/dashboard/MiniBarChart";
 import { format, subDays, startOfDay } from "date-fns";
+import { useState } from "react";
+import PeriodFilter, { type Period, periodToDays } from "@/components/dashboard/PeriodFilter";
 
 const StudentDashboard = () => {
   const { user, profile } = useUser();
@@ -21,6 +23,8 @@ const StudentDashboard = () => {
   const { t, i18n } = useTranslation();
   const lang = i18n.language?.startsWith("en") ? "en" : "ko";
   const displayName = profile?.full_name || t("common.user");
+  const [activityPeriod, setActivityPeriod] = useState<Period>("7d");
+  const activityDays = periodToDays(activityPeriod);
 
   // 수강 중인 강좌 (진행 중)
   const { data: enrollments = [] } = useQuery({
@@ -363,9 +367,9 @@ const StudentDashboard = () => {
 
   // 7일 학습 활동 (content_progress 완료 기준)
   const { data: weeklyActivity = [] } = useQuery({
-    queryKey: ["dash-weekly-activity", user?.id],
+    queryKey: ["dash-weekly-activity", user?.id, activityDays],
     queryFn: async () => {
-      const since = startOfDay(subDays(new Date(), 6)).toISOString();
+      const since = startOfDay(subDays(new Date(), activityDays - 1)).toISOString();
       const { data, error } = await supabase
         .from("content_progress")
         .select("completed_at, completed")
@@ -376,9 +380,14 @@ const StudentDashboard = () => {
       const labels = lang === "en"
         ? ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
         : ["일","월","화","수","목","금","토"];
-      const buckets = Array.from({ length: 7 }, (_, i) => {
-        const d = subDays(new Date(), 6 - i);
-        return { key: format(d, "yyyy-MM-dd"), label: labels[d.getDay()], value: 0 };
+      const buckets = Array.from({ length: activityDays }, (_, i) => {
+        const d = subDays(new Date(), activityDays - 1 - i);
+        const label = activityDays <= 7
+          ? labels[d.getDay()]
+          : activityDays <= 30
+            ? format(d, "M/d")
+            : format(d, "M/d");
+        return { key: format(d, "yyyy-MM-dd"), label, value: 0 };
       });
       (data || []).forEach((r: any) => {
         if (!r.completed_at) return;
@@ -386,7 +395,11 @@ const StudentDashboard = () => {
         const b = buckets.find(b => b.key === k);
         if (b) b.value += 1;
       });
-      return buckets.map(({ label, value }) => ({ label, value }));
+      // For longer periods, thin x-axis labels to avoid overlap
+      return buckets.map(({ label, value }, i) => {
+        const everyN = activityDays <= 7 ? 1 : activityDays <= 30 ? 3 : 14;
+        return { label: i % everyN === 0 ? label : "", value };
+      });
     },
     enabled: !!user?.id,
   });
@@ -566,13 +579,21 @@ const StudentDashboard = () => {
           <div className="stat-card !p-5 min-w-0">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" /> {lang === "en" ? "Last 7 days" : "최근 7일 활동"}
+                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                {lang === "en"
+                  ? activityPeriod === "all" ? "All-period activity" : `Last ${activityDays} days`
+                  : activityPeriod === "all" ? "전체 기간 활동" : `최근 ${activityDays}일 활동`}
               </h3>
-              <span className="text-[11px] text-muted-foreground">
-                {weeklyActivity.reduce((s: number, d: any) => s + d.value, 0)} {lang === "en" ? "lessons" : "차시"}
-              </span>
+              <PeriodFilter
+                value={activityPeriod}
+                onChange={setActivityPeriod}
+                labels={lang === "en" ? undefined : { "7d": "7일", "30d": "30일", all: "전체" }}
+              />
             </div>
             <MiniBarChart data={weeklyActivity as any} height={150} />
+            <p className="text-[11px] text-muted-foreground text-right mt-2">
+              {weeklyActivity.reduce((s: number, d: any) => s + d.value, 0)} {lang === "en" ? "lessons" : "차시"}
+            </p>
           </div>
         </section>
 
