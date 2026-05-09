@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import LanguageToggle from "@/components/LanguageToggle";
+import MetamLogo from "@/components/MetamLogo";
 import loginBg from "@/assets/login-bg.jpg";
 
 // Preload the image as early as possible
@@ -16,7 +16,7 @@ preloadLink.as = "image";
 preloadLink.href = loginBg;
 document.head.appendChild(preloadLink);
 
-const SAVED_EMAIL_KEY = "nonfiction_saved_email";
+const SAVED_EMAIL_KEY = "metam_saved_email";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -97,33 +97,32 @@ const Auth = () => {
   return (
     <div className="flex min-h-screen">
       {/* Left - Visual Panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden" style={{ backgroundColor: "#e8ddd0" }}>
-        <img src={loginBg} alt="NONFICTION LMS" className="absolute inset-0 w-full h-full object-cover opacity-60" width={1920} height={1080} fetchPriority="high" loading="eager" decoding="async" />
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden" style={{ backgroundColor: "#0050A4" }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0050A4] via-[#003d80] to-[#001f4d]" aria-hidden="true" />
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full text-white">
           <div>
-            <h1 className="font-display text-4xl tracking-wider text-foreground">NONFICTION</h1>
-            <p className="mt-1 text-sm tracking-[0.3em] text-foreground/50 uppercase">Learning Management System</p>
+            <MetamLogo mono className="h-10 w-auto text-white" />
+            <p className="mt-3 text-sm tracking-[0.3em] text-white/60 uppercase">Learning Management System</p>
           </div>
           <div className="space-y-4">
-            <h2 className="font-display text-3xl leading-snug text-foreground whitespace-pre-line">{t("auth.heroTitle")}</h2>
-            <p className="text-sm text-foreground/50 whitespace-nowrap leading-relaxed">{t("auth.heroSubtitle")}</p>
+            <h2 className="font-display text-3xl leading-snug text-white whitespace-pre-line">
+              약속을 지키는{"\n"}사람들이 일하는{"\n"}회사, 메타엠
+            </h2>
+            <p className="text-sm text-white/70 leading-relaxed">
+              고객상담 BPO 전문가를 위한 사내 교육 플랫폼.
+            </p>
           </div>
         </div>
       </div>
 
       {/* Right - Form */}
       <div className="flex-1 flex items-center justify-center px-6 lg:px-16 bg-white relative">
-        {/* Language toggle */}
-        <div className="absolute top-4 right-4">
-          <LanguageToggle />
-        </div>
-
         <div className="w-full max-w-md space-y-10">
-          <div className="lg:hidden text-center">
-            <h1 className="font-display text-2xl tracking-wider text-foreground">NONFICTION</h1>
+          <div className="lg:hidden flex justify-center">
+            <MetamLogo className="h-8 w-auto text-foreground" />
           </div>
           <div className="hidden lg:block">
-            <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">NONFICTION Education</p>
+            <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">METAM Education</p>
           </div>
 
           <div className="space-y-2">
@@ -158,7 +157,7 @@ const Auth = () => {
                 <label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("auth.email")}</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input type="email" placeholder="name@nonfiction.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 pl-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20" required />
+                  <Input type="email" placeholder="name@meta-m.co.kr" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 pl-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20" required />
                 </div>
               </div>
               <div className="space-y-2">
@@ -303,7 +302,7 @@ const ForgotPasswordModal = ({ resetEmail, setResetEmail, isResetting, onClose, 
         </div>
         <div className="relative">
           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input type="email" placeholder="name@nonfiction.com" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} className="h-12 pl-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20" required />
+          <Input type="email" placeholder="name@meta-m.co.kr" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} className="h-12 pl-11 bg-white border border-border rounded-xl text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-foreground/20" required />
         </div>
         <div className="flex gap-3">
           <Button type="button" variant="outline" className="flex-1 rounded-full" onClick={onClose}>{t("common.cancel")}</Button>
