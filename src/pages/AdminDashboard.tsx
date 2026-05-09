@@ -15,7 +15,11 @@ import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
 import StatCard from "@/components/ui/stat-card";
+import RankBar from "@/components/ui/rank-bar";
 import { useDashboardSparklines, computeDelta } from "@/hooks/useDashboardSparklines";
+import MultiTrendChart from "@/components/dashboard/MultiTrendChart";
+import DonutChart from "@/components/dashboard/DonutChart";
+import RadialProgress from "@/components/dashboard/RadialProgress";
 
 const AdminDashboard = () => {
   const { profile } = useUser();
@@ -197,6 +201,22 @@ const AdminDashboard = () => {
       })),
     [summary]
   );
+
+  const completionRate = useMemo(() => {
+    const total = summary?.total_enrollments ?? 0;
+    const done = summary?.total_completions ?? 0;
+    return total > 0 ? Math.round((done / total) * 100) : 0;
+  }, [summary]);
+
+  const enrollmentMix = useMemo(() => {
+    const total = summary?.total_enrollments ?? 0;
+    const done = summary?.total_completions ?? 0;
+    const inProgress = Math.max(0, total - done);
+    return [
+      { label: isEn ? "Completed" : "수료 완료", value: done, color: "hsl(var(--chart-2))" },
+      { label: isEn ? "In Progress" : "학습 중", value: inProgress, color: "hsl(var(--primary))" },
+    ];
+  }, [summary, isEn]);
 
   const courseMap = useMemo(() => {
     const m: Record<string, string> = {};
@@ -391,6 +411,43 @@ const AdminDashboard = () => {
         </div>
 
         {/* ③ Bottom Row: Activity Feed + Quick Summary */}
+        {/* ③ Trend visualization */}
+        <div className="grid lg:grid-cols-3 gap-4">
+          <div className="stat-card !p-5 lg:col-span-2 min-w-0">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Activity className="h-4 w-4 text-muted-foreground" />
+                {isEn ? "14-Day Trends" : "14일 추이"}
+              </h3>
+              <span className="text-[11px] text-muted-foreground">
+                {isEn ? "signups · enrollments · completions" : "가입 · 수강 · 수료"}
+              </span>
+            </div>
+            <MultiTrendChart
+              days={spark?.days ?? []}
+              series={[
+                { key: "signups", label: isEn ? "Signups" : "가입", color: "hsl(var(--chart-2))", values: spark?.signups ?? [] },
+                { key: "enrollments", label: isEn ? "Enrollments" : "수강", color: "hsl(var(--primary))", values: spark?.enrollments ?? [] },
+                { key: "completions", label: isEn ? "Completions" : "수료", color: "hsl(var(--chart-4))", values: spark?.completions ?? [] },
+              ]}
+              height={240}
+            />
+          </div>
+          <div className="stat-card !p-5 min-w-0 flex flex-col">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+              <GraduationCap className="h-4 w-4 text-muted-foreground" />
+              {isEn ? "Completion Mix" : "수료 비율"}
+            </h3>
+            <div className="flex items-center justify-center gap-4 flex-1">
+              <RadialProgress value={completionRate} label={isEn ? "Completion" : "수료율"} size={140} />
+            </div>
+            <div className="mt-3 pt-3 border-t border-border/60">
+              <DonutChart data={enrollmentMix} size={120} />
+            </div>
+          </div>
+        </div>
+
+        {/* ④ Activity Feed + Top Courses */}
         <div className="grid lg:grid-cols-5 gap-4">
           {/* Recent Activity Feed */}
           <div className="stat-card !p-5 lg:col-span-3">
@@ -481,12 +538,7 @@ const AdminDashboard = () => {
                         <span className="text-xs text-muted-foreground shrink-0">{course.enrolled}{t("common.people")}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary rounded-full transition-all"
-                            style={{ width: `${course.avgProgress}%` }}
-                          />
-                        </div>
+                        <RankBar value={course.avgProgress} className="h-2" />
                         <span className="text-xs text-muted-foreground w-10 text-right">{course.avgProgress}%</span>
                       </div>
                     </div>

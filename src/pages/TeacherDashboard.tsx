@@ -11,6 +11,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { ko, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
+import StatCard from "@/components/ui/stat-card";
+import DonutChart from "@/components/dashboard/DonutChart";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
+import RadialProgress from "@/components/dashboard/RadialProgress";
 
 const TeacherDashboard = () => {
   const { user, profile } = useUser();
@@ -73,17 +77,35 @@ const TeacherDashboard = () => {
   const publishedCourses = courses.filter((c: any) => c.status === "published").length;
   const draftCourses = courses.filter((c: any) => c.status !== "published").length;
   const pendingSubmissions = recentSubmissions.filter((s: any) => s.status === "submitted");
+  const gradedSubmissions = recentSubmissions.filter((s: any) => s.status === "graded");
+  const returnedSubmissions = recentSubmissions.filter((s: any) => s.status !== "submitted" && s.status !== "graded");
 
   const enrollmentCountMap = new Map<string, number>();
   enrollments.forEach((e: any) => {
     enrollmentCountMap.set(e.course_id, (enrollmentCountMap.get(e.course_id) || 0) + 1);
   });
 
-  const stats = [
-    { label: t("teacher.totalStudents"), value: totalStudents, sub: t("teacher.myStudents"), icon: Users },
-    { label: t("teacher.activeCourses"), value: publishedCourses, sub: t("teacher.waitingCount", { count: draftCourses }), icon: BookOpen },
-    { label: t("teacher.allCourses"), value: courses.length, sub: t("teacher.registeredCourses"), icon: LayoutDashboard },
-    { label: t("teacher.recentSubmissions"), value: pendingSubmissions.length, sub: t("teacher.recentAssignmentSub"), icon: TrendingUp },
+  // Per-course enrollment + avg progress for visualization
+  const courseChartData = courses.slice(0, 8).map((c: any) => {
+    const list = enrollments.filter((e: any) => e.course_id === c.id);
+    const avg = list.length > 0
+      ? Math.round(list.reduce((s: number, e: any) => s + (Number(e.progress) || 0), 0) / list.length)
+      : 0;
+    return {
+      label: c.title?.length > 10 ? c.title.slice(0, 10) + "…" : c.title,
+      students: list.length,
+      progress: avg,
+    };
+  });
+
+  const overallAvgProgress = enrollments.length > 0
+    ? Math.round(enrollments.reduce((s: number, e: any) => s + (Number(e.progress) || 0), 0) / enrollments.length)
+    : 0;
+
+  const submissionMix = [
+    { label: t("teacher.ungraded"), value: pendingSubmissions.length, color: "hsl(var(--chart-4))" },
+    { label: t("teacher.graded"), value: gradedSubmissions.length, color: "hsl(var(--chart-2))" },
+    { label: t("teacher.returned"), value: returnedSubmissions.length, color: "hsl(var(--muted-foreground))" },
   ];
 
   return (
@@ -99,16 +121,59 @@ const TeacherDashboard = () => {
         </div>
 
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3" aria-label={t("teacher.teacherDashboard")}>
-          {stats.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-border bg-card p-4" role="group" aria-label={stat.label}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{stat.label}</span>
-                <stat.icon className="h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-[11px] text-primary mt-0.5">{stat.sub}</p>
+          <StatCard label={t("teacher.totalStudents")} value={totalStudents} icon={Users} tone="primary" hint={t("teacher.myStudents")} />
+          <StatCard label={t("teacher.activeCourses")} value={publishedCourses} icon={BookOpen} tone="success" hint={t("teacher.waitingCount", { count: draftCourses })} />
+          <StatCard label={t("teacher.allCourses")} value={courses.length} icon={LayoutDashboard} tone="info" hint={t("teacher.registeredCourses")} />
+          <StatCard label={t("teacher.recentSubmissions")} value={pendingSubmissions.length} icon={TrendingUp} tone="warning" hint={t("teacher.recentAssignmentSub")} />
+        </section>
+
+        {/* Visualization row: per-course enrollment + avg progress · submission mix · overall progress */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="stat-card !p-5 lg:col-span-2 min-w-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
+                {t("teacher.myCoursesList")}
+              </h3>
+              <span className="text-[11px] text-muted-foreground">
+                {i18n.language?.startsWith("en") ? "students · avg progress" : "수강생 · 평균 진도"}
+              </span>
             </div>
-          ))}
+            {courseChartData.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-10">{t("teacher.noCourses")}</p>
+            ) : (
+              <div style={{ width: "100%", height: 240 }}>
+                <ResponsiveContainer>
+                  <BarChart data={courseChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border/60" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fontSize: 10 }} tickMargin={6} stroke="hsl(var(--muted-foreground))" />
+                    <YAxis yAxisId="left" tick={{ fontSize: 10 }} width={28} stroke="hsl(var(--muted-foreground))" />
+                    <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} width={32} domain={[0, 100]} stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip
+                      contentStyle={{
+                        background: "hsl(var(--background))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Bar yAxisId="left" dataKey="students" name={t("teacher.totalStudents")} fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                    <Bar yAxisId="right" dataKey="progress" name={t("dashboard.progressRate")} fill="hsl(var(--chart-2))" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+          <div className="stat-card !p-5 min-w-0 flex flex-col">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
+              <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+              {t("teacher.recentSubmissionsTitle")}
+            </h3>
+            <DonutChart data={submissionMix} size={140} centerValue={recentSubmissions.length} centerLabel={t("teacher.recentSubmissions")} />
+            <div className="mt-4 pt-4 border-t border-border/60 flex items-center justify-center">
+              <RadialProgress value={overallAvgProgress} label={t("dashboard.progressRate")} size={120} color="hsl(var(--chart-2))" />
+            </div>
+          </div>
         </section>
 
         <div className="rounded-xl border border-border bg-card overflow-hidden">
