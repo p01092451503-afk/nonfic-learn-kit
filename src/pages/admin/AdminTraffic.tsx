@@ -117,16 +117,6 @@ const AdminTraffic = () => {
     bytesGB: parseFloat((data.bytes / (1024 * 1024 * 1024)).toFixed(3)),
   }));
 
-  const pageMap = new Map<string, number>();
-  trafficLogs
-    .filter((l) => l.event_type === "page_view")
-    .forEach((l) => {
-      pageMap.set(l.page_path!, (pageMap.get(l.page_path!) || 0) + 1);
-    });
-  const topPages = Array.from(pageMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
-
   const trafficStats = [
     { label: t("stats.webTraffic"), value: formatBytes(webBytes), icon: Globe },
     { label: t("stats.cdnTraffic"), value: formatBytes(cdnBytes), icon: Play },
