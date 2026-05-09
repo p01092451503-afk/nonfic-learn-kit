@@ -712,10 +712,10 @@ const ContentPlayer = () => {
               </div>
               <div className="px-4 py-3 border-b border-border">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                  <span>{t("course.progress")}</span>
-                  <span className="font-semibold text-foreground">{overallProgress}%</span>
+                  <span className={`px-1.5 py-0.5 rounded-full border text-[10px] font-semibold ${stageBadgeClass}`}>{stageLabel}</span>
+                  <span className="font-semibold text-foreground tabular-nums">{completedCount}/{contents.length} · {overallProgress}%</span>
                 </div>
-                <Progress value={overallProgress} className="h-2" />
+                <Progress value={overallProgress} className={`h-2 ${stageColorClass}`} />
               </div>
               <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
                 {contents.map((c, idx) => {
