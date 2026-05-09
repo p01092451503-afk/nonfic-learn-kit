@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MediaPackagePlayer from "@/components/MediaPackagePlayer";
+import LearningNotes from "@/components/learning/LearningNotes";
+import NextContentPreview from "@/components/learning/NextContentPreview";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
