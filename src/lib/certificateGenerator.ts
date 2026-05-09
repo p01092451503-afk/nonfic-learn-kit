@@ -232,3 +232,20 @@ export const downloadBlob = (blob: Blob, filename: string) => {
   a.click();
   URL.revokeObjectURL(url);
 };
+
+/**
+ * Generate a PDF blob from certificate data (landscape A4, embedded PNG).
+ */
+export const generateCertificatePdf = async (data: CertificateData): Promise<Blob> => {
+  const { jsPDF } = await import("jspdf");
+  const pngBlob = await generateCertificateImage(data);
+  const dataUrl: string = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsDataURL(pngBlob);
+  });
+  // Landscape A4: 297mm x 210mm
+  const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  pdf.addImage(dataUrl, "PNG", 0, 0, 297, 210);
+  return pdf.output("blob");
+};
