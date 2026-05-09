@@ -184,6 +184,25 @@ const ContentPlayer = () => {
   const currentProgress = progressMap.get(contentId || "");
   const completedCount = progressData.filter((p) => p.completed).length;
   const overallProgress = contents.length > 0 ? Math.round((completedCount / contents.length) * 100) : 0;
+  const stageLabel = overallProgress >= 100
+    ? "학습 완료"
+    : overallProgress >= 80
+      ? "이수 임박"
+      : overallProgress > 0
+        ? "학습 중"
+        : "시작 전";
+  const stageColorClass = overallProgress >= 100
+    ? "[&>div]:bg-green-500"
+    : overallProgress >= 80
+      ? "[&>div]:bg-amber-500"
+      : "";
+  const stageBadgeClass = overallProgress >= 100
+    ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30"
+    : overallProgress >= 80
+      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+      : overallProgress > 0
+        ? "bg-primary/10 text-primary border-primary/20"
+        : "bg-muted text-muted-foreground border-border";
 
   const localVideoUrlForHook = currentContent ? getVideoUrl(currentContent) : null;
   const localProviderForHook = currentContent ? getVideoProvider(currentContent) : null;
