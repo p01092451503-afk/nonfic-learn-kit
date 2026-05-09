@@ -48,7 +48,8 @@ export function useVideoProgress({
         user_id: userId,
         content_id: contentId,
         last_position_seconds: Math.round(posSeconds),
-        progress_percentage: Math.round(pct),
+        // Lessons are binary: completed → 100, otherwise actual %.
+        progress_percentage: completed ? 100 : Math.round(pct),
         completed,
         completed_at: completed ? new Date().toISOString() : null,
         last_accessed_at: new Date().toISOString(),
