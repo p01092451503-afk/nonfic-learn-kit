@@ -31,6 +31,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import VodBulkUploadDialog from "@/components/admin/VodBulkUploadDialog";
 
 const contentTypeIcon: Record<string, React.ElementType> = {
   video: Video, document: FileText, quiz: BarChart3, assignment: FileText, live: Video,
@@ -77,6 +78,7 @@ const CourseDetail = () => {
   const isEn = i18n.language?.startsWith("en");
 
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [editingContentId, setEditingContentId] = useState<string | null>(null);
   const [contentForm, setContentForm] = useState<ContentFormData>(emptyContent);
   const [contentEnForm, setContentEnForm] = useState<ContentI18nData>(emptyI18n);
