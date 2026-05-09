@@ -37,8 +37,7 @@ export const ChartTooltip = ({
 
   return (
     <div className="relative overflow-hidden rounded-lg border border-border/80 bg-background shadow-lg min-w-[140px]">
-      <div className="absolute left-0 top-0 h-full w-1 bg-foreground/90" />
-      <div className="px-3 py-2 pl-4">
+      <div className="px-3 py-2">
         {displayLabel && (
           <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             {displayLabel}
