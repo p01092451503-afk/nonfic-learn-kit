@@ -1063,6 +1063,15 @@ const UnifiedContentEditor = ({
             {uploadingVideo ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
             동영상 직접 등록하기
           </button>
+          <button
+            type="button"
+            onClick={() => setLibraryOpen(true)}
+            disabled={uploadingVideo}
+            className="inline-flex items-center gap-2 h-8 px-3 rounded-lg border border-border bg-background text-xs font-medium hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Video className="h-3.5 w-3.5" />
+            라이브러리에서 선택
+          </button>
           <div className="flex-1 min-w-0">
             {uploadingVideo ? (
               <div className="space-y-1">
@@ -1111,6 +1120,19 @@ const UnifiedContentEditor = ({
             />
           </div>
         )}
+
+        <VideoLibraryPicker
+          open={libraryOpen}
+          onOpenChange={setLibraryOpen}
+          onSelect={({ url, provider, title, duration_minutes }) => {
+            onChange("video_url", url);
+            onChange("video_provider", provider);
+            if (!content.title && title) onChange("title", title);
+            if (duration_minutes != null) onChange("duration_minutes", duration_minutes);
+            setUploadError(null);
+            toast({ title: "영상이 적용되었습니다", description: title });
+          }}
+        />
 
         {/* Common fields */}
         <div className="space-y-1.5">
