@@ -460,6 +460,37 @@ const MyPage = () => {
             </TabsContent>
           </Tabs>
       </div>
+      <Dialog open={!!previewCert} onOpenChange={(open) => { if (!open) closePreview(); }}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>{t("mypage.certificatePreview", "이수증 미리보기")}</DialogTitle>
+          </DialogHeader>
+          <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center min-h-[400px]">
+            {previewLoading || !previewUrl ? (
+              <p className="text-sm text-muted-foreground">{t("mypage.generating")}</p>
+            ) : (
+              <img src={previewUrl} alt="Certificate preview" className="max-w-full h-auto rounded shadow" />
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              className="rounded-lg gap-1.5"
+              onClick={() => previewCert && handleDownloadCert(previewCert, "png")}
+              disabled={!previewCert || downloadingCertId === previewCert?.id}
+            >
+              <Download className="h-4 w-4" /> PNG
+            </Button>
+            <Button
+              className="rounded-lg gap-1.5"
+              onClick={() => previewCert && handleDownloadCert(previewCert, "pdf")}
+              disabled={!previewCert || downloadingCertId === previewCert?.id}
+            >
+              <FileText className="h-4 w-4" /> PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
