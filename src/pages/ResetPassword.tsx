@@ -142,7 +142,7 @@ const ResetPassword = () => {
     <div className="min-h-screen flex items-center justify-center bg-background px-6">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="font-display text-2xl tracking-wider text-foreground">NONFICTION</h1>
+          <h1 className="font-display text-2xl tracking-wider text-foreground">METAM</h1>
           <h2 className="text-xl font-semibold text-foreground">새 비밀번호 설정</h2>
           <p className="text-sm text-muted-foreground">새로운 비밀번호를 입력해 주세요.</p>
         </div>
