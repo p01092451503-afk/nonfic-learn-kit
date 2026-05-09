@@ -1070,6 +1070,18 @@ const UnifiedContentEditor = ({
           </div>
         </div>
 
+        {/* ── Thumbnail & playback preview ── */}
+        {content.video_url && (
+          <div className="max-w-md">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase block mb-1.5">미리보기</label>
+            <VideoPreview
+              videoUrl={content.video_url}
+              provider={content.video_provider}
+              title={content.title}
+            />
+          </div>
+        )}
+
         {/* Common fields */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-medium text-muted-foreground uppercase">{t("createCourse.descLabel")}</label>
