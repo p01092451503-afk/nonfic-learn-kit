@@ -707,6 +707,15 @@ const CourseDetail = () => {
           t={t}
         />
 
+        {courseId && (
+          <VodBulkUploadDialog
+            open={bulkUploadOpen}
+            onOpenChange={setBulkUploadOpen}
+            courseId={courseId}
+            startOrderIndex={contents.length > 0 ? Math.max(...contents.map((c: any) => c.order_index ?? 0)) + 1 : 0}
+          />
+        )}
+
         <CourseEditDialog
           open={courseEditOpen}
           onOpenChange={setCourseEditOpen}
