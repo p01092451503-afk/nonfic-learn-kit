@@ -10,6 +10,10 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
+import RadialProgress from "@/components/dashboard/RadialProgress";
+import DonutChart from "@/components/dashboard/DonutChart";
+import MiniBarChart from "@/components/dashboard/MiniBarChart";
+import { format, subDays, startOfDay } from "date-fns";
 
 const StudentDashboard = () => {
   const { user, profile } = useUser();
@@ -292,6 +296,42 @@ const StudentDashboard = () => {
 
   const assignmentCompletionRate = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
 
+  // 7일 학습 활동 (content_progress 완료 기준)
+  const { data: weeklyActivity = [] } = useQuery({
+    queryKey: ["dash-weekly-activity", user?.id],
+    queryFn: async () => {
+      const since = startOfDay(subDays(new Date(), 6)).toISOString();
+      const { data, error } = await supabase
+        .from("content_progress")
+        .select("completed_at, completed")
+        .eq("user_id", user!.id)
+        .eq("completed", true)
+        .gte("completed_at", since);
+      if (error) throw error;
+      const labels = lang === "en"
+        ? ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+        : ["일","월","화","수","목","금","토"];
+      const buckets = Array.from({ length: 7 }, (_, i) => {
+        const d = subDays(new Date(), 6 - i);
+        return { key: format(d, "yyyy-MM-dd"), label: labels[d.getDay()], value: 0 };
+      });
+      (data || []).forEach((r: any) => {
+        if (!r.completed_at) return;
+        const k = format(new Date(r.completed_at), "yyyy-MM-dd");
+        const b = buckets.find(b => b.key === k);
+        if (b) b.value += 1;
+      });
+      return buckets.map(({ label, value }) => ({ label, value }));
+    },
+    enabled: !!user?.id,
+  });
+
+  const overallProgress = enrollmentStats?.avgProgress || 0;
+  const enrollmentMix = [
+    { label: t("dashboard.coursesCompleted"), value: enrollmentStats?.completed || 0, color: "hsl(var(--chart-2))" },
+    { label: t("dashboard.coursesInProgress"), value: enrollmentStats?.inProgress || 0, color: "hsl(var(--primary))" },
+  ];
+
   const stats = [
     { label: t("dashboard.coursesInProgress"), value: String(enrollmentStats?.inProgress || 0), sub: t("dashboard.inProgress"), icon: BookOpen, href: "/dashboard/courses" },
     { label: t("dashboard.coursesCompleted"), value: String(enrollmentStats?.completed || 0), sub: t("dashboard.totalCourses", { count: enrollmentStats?.total || 0 }), icon: ClipboardCheck, href: "/dashboard/courses" },
@@ -342,6 +382,43 @@ const StudentDashboard = () => {
               </div>
             );
           })}
+        </section>
+
+        {/* Visualization Hero — overall progress · enrollment mix · weekly activity */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4" aria-label={t("dashboard.learningStats")}>
+          <div className="stat-card !p-5 flex flex-col items-center justify-center min-w-0">
+            <h3 className="text-sm font-semibold text-foreground mb-3 self-start flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-muted-foreground" /> {t("dashboard.progressRate")}
+            </h3>
+            <RadialProgress
+              value={overallProgress}
+              label={t("dashboard.averageScore")}
+              sublabel={`${enrollmentStats?.completed || 0} / ${enrollmentStats?.total || 0}`}
+              size={170}
+            />
+          </div>
+          <div className="stat-card !p-5 min-w-0">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-muted-foreground" /> {t("dashboard.coursesInProgress")} · {t("dashboard.coursesCompleted")}
+            </h3>
+            <DonutChart
+              data={enrollmentMix}
+              size={150}
+              centerValue={enrollmentStats?.total || 0}
+              centerLabel={t("dashboard.totalCourses", { count: enrollmentStats?.total || 0 })}
+            />
+          </div>
+          <div className="stat-card !p-5 min-w-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-muted-foreground" /> {lang === "en" ? "Last 7 days" : "최근 7일 활동"}
+              </h3>
+              <span className="text-[11px] text-muted-foreground">
+                {weeklyActivity.reduce((s: number, d: any) => s + d.value, 0)} {lang === "en" ? "lessons" : "차시"}
+              </span>
+            </div>
+            <MiniBarChart data={weeklyActivity as any} height={150} />
+          </div>
         </section>
 
         {/* 필수교육 안내 */}
