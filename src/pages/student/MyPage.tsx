@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { User, Lock, Camera, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp, Award, Download } from "lucide-react";
+import { User, Lock, Camera, ArrowRight, UserCircle, BookOpen, Trophy, Star, TrendingUp, Award, Download, Eye, FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import AvatarTab from "@/components/mypage/AvatarTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-import { generateCertificateImage, downloadBlob } from "@/lib/certificateGenerator";
+import { generateCertificateImage, generateCertificatePdf, downloadBlob } from "@/lib/certificateGenerator";
 
 const MyPage = () => {
   const { user, profile, refreshProfile } = useUser();
@@ -109,33 +110,67 @@ const MyPage = () => {
   });
 
   const [downloadingCertId, setDownloadingCertId] = useState<string | null>(null);
+  const [previewCert, setPreviewCert] = useState<any | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
-  const handleDownloadCert = async (cert: any) => {
+  const buildCertPayload = (cert: any) => {
+    const course = cert.courses;
+    const template = certTemplates.find((t: any) => t.course_id === cert.course_id);
+    const email = user?.email || "";
+    return {
+      studentName: profile?.full_name || "-",
+      studentEmail: email || "-",
+      studentLoginId: email ? email.split("@")[0] : "-",
+      branchName: (profile as any)?.department || "메타엠",
+      teamName: profile?.team_name || "-",
+      courseName: course?.title || "-",
+      issuedDate: new Date(cert.issued_at).toLocaleDateString("ko-KR"),
+      certificateNumber: cert.certificate_number,
+      titleText: template?.title_text || "수료증",
+      descText: template?.description_text || "위 사람은 본 교육과정을 성실히 이수하였기에 이 증서를 수여합니다.",
+      issuerName: template?.issuer_name || "",
+      backgroundImageUrl: template?.background_image_url || null,
+    };
+  };
+
+  const handleDownloadCert = async (cert: any, format: "png" | "pdf" = "pdf") => {
     setDownloadingCertId(cert.id);
     try {
-      const course = cert.courses;
-      const template = certTemplates.find((t: any) => t.course_id === cert.course_id);
-      const email = user?.email || "";
-      const blob = await generateCertificateImage({
-        studentName: profile?.full_name || "-",
-        studentEmail: email || "-",
-        studentLoginId: email ? email.split("@")[0] : "-",
-        branchName: (profile as any)?.department || "메타엠",
-        teamName: profile?.team_name || "-",
-        courseName: course?.title || "-",
-        issuedDate: new Date(cert.issued_at).toLocaleDateString("ko-KR"),
-        certificateNumber: cert.certificate_number,
-        titleText: template?.title_text || "수료증",
-        descText: template?.description_text || "위 사람은 본 교육과정을 성실히 이수하였기에 이 증서를 수여합니다.",
-        issuerName: template?.issuer_name || "",
-        backgroundImageUrl: template?.background_image_url || null,
-      });
-      downloadBlob(blob, `certificate_${cert.certificate_number}.png`);
+      const payload = buildCertPayload(cert);
+      if (format === "pdf") {
+        const blob = await generateCertificatePdf(payload);
+        downloadBlob(blob, `certificate_${cert.certificate_number}.pdf`);
+      } else {
+        const blob = await generateCertificateImage(payload);
+        downloadBlob(blob, `certificate_${cert.certificate_number}.png`);
+      }
     } catch (e: any) {
       toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     } finally {
       setDownloadingCertId(null);
     }
+  };
+
+  const handlePreviewCert = async (cert: any) => {
+    setPreviewCert(cert);
+    setPreviewLoading(true);
+    setPreviewUrl(null);
+    try {
+      const blob = await generateCertificateImage(buildCertPayload(cert));
+      setPreviewUrl(URL.createObjectURL(blob));
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
+      setPreviewCert(null);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setPreviewCert(null);
   };
 
 
