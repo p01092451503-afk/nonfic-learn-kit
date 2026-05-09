@@ -881,6 +881,8 @@ const UnifiedContentEditor = ({
   const [showEn, setShowEn] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [lastUploadFile, setLastUploadFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMango = content.source === "mangoboard";
   const isCard = content.source === "card";
@@ -918,9 +920,12 @@ const UnifiedContentEditor = ({
     if (!file) return;
     const MAX_MB = 5120;
     if (file.size > MAX_MB * 1024 * 1024) {
-      alert(`파일이 너무 큽니다 (최대 ${MAX_MB}MB)`);
+      setUploadError(`파일이 너무 큽니다 (최대 ${MAX_MB}MB)`);
+      setLastUploadFile(null);
       return;
     }
+    setUploadError(null);
+    setLastUploadFile(file);
     setUploadingVideo(true);
     setUploadProgress(0);
     try {
@@ -986,8 +991,10 @@ const UnifiedContentEditor = ({
       onChange("video_url", playUrl);
       onChange("video_provider", "upload");
       setUploadProgress(100);
+      setLastUploadFile(null);
     } catch (e: any) {
-      alert(`업로드 실패: ${e?.message || "알 수 없는 오류"}`);
+      setUploadError(e?.message || "알 수 없는 오류");
+      setUploadProgress(0);
     } finally {
       setUploadingVideo(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
