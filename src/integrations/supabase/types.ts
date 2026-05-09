@@ -1261,6 +1261,36 @@ export type Database = {
           },
         ]
       }
+      learning_notes: {
+        Row: {
+          content_id: string
+          course_id: string
+          created_at: string
+          id: string
+          note: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          course_id: string
+          created_at?: string
+          id?: string
+          note: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       media_package_items: {
         Row: {
           caption: string | null
