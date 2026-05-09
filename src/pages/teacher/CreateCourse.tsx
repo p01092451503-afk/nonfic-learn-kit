@@ -1130,7 +1130,6 @@ const UnifiedContentEditor = ({
             if (!content.title && title) onChange("title", title);
             if (duration_minutes != null) onChange("duration_minutes", duration_minutes);
             setUploadError(null);
-            toast({ title: "영상이 적용되었습니다", description: title });
           }}
         />
 
