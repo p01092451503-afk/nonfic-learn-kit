@@ -18,6 +18,8 @@ interface CertificateData {
 }
 
 export const generateCertificateImage = async (data: CertificateData): Promise<Blob> => {
+  // Load METAM logo (imported as URL so it's bundled correctly)
+  const logoUrl = (await import("@/assets/metam-logo.svg?url")).default;
   const canvas = document.createElement("canvas");
   // Landscape A4-ish proportions matching the reference design
   const W = 1754;
@@ -44,13 +46,19 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
   const HAIRLINE = "#E5E7EB";       // soft divider
   const PAD_X = 140;                // generous left/right padding
 
-  // === Top: brand (left) + certificate number (right) ===
-  ctx.textAlign = "left";
-  ctx.font = "700 28px 'Noto Sans KR', sans-serif";
-  ctx.fillStyle = BRAND;
-  ctx.letterSpacing = "2px";
-  ctx.fillText("메타엠 EDUCATION", PAD_X, 200);
-  ctx.letterSpacing = "0px";
+  // === Top: METAM logo (left) + certificate number (right) ===
+  try {
+    const logoImg = await loadImage(logoUrl);
+    const logoH = 70;
+    const logoW = (logoImg.width / logoImg.height) * logoH;
+    ctx.drawImage(logoImg, PAD_X, 160, logoW, logoH);
+  } catch {
+    // Fallback to text if SVG fails to load
+    ctx.textAlign = "left";
+    ctx.font = "700 28px 'Noto Sans KR', sans-serif";
+    ctx.fillStyle = BRAND;
+    ctx.fillText("메타엠 EDUCATION", PAD_X, 200);
+  }
 
   ctx.textAlign = "right";
   ctx.font = "400 20px 'Noto Sans KR', sans-serif";
