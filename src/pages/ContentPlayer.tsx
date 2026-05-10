@@ -797,7 +797,7 @@ const ContentPlayer = () => {
       )}
       {/* Mobile curriculum drawer */}
       <Drawer open={mobileCurriculumOpen} onOpenChange={setMobileCurriculumOpen}>
-        <DrawerContent className="max-h-[80vh]">
+        <DrawerContent className="max-h-[80vh] z-[70]">
           <DrawerHeader className="pb-2">
             <DrawerTitle className="text-base">{t("course.learningProgress")}</DrawerTitle>
             <div className="flex items-center gap-2 mt-1">
