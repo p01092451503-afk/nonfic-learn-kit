@@ -73,10 +73,10 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
   // === Title block ===
   ctx.textAlign = "left";
   ctx.fillStyle = INK;
-  ctx.font = "800 110px 'Noto Sans KR', sans-serif";
+  ctx.font = "800 77px 'Noto Sans KR', sans-serif";
   ctx.fillText(data.titleText || "수료증", PAD_X, 410);
 
-  ctx.font = "400 26px 'Noto Sans KR', sans-serif";
+  ctx.font = "400 18px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = SUB;
   ctx.letterSpacing = "6px";
   ctx.fillText("CERTIFICATE OF COMPLETION", PAD_X, 460);
