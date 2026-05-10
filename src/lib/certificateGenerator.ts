@@ -55,28 +55,28 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
   } catch {
     // Fallback to text if SVG fails to load
     ctx.textAlign = "left";
-    ctx.font = "700 28px 'Noto Sans KR', sans-serif";
+    ctx.font = "700 20px 'Noto Sans KR', sans-serif";
     ctx.fillStyle = BRAND;
     ctx.fillText("메타엠 EDUCATION", PAD_X, 200);
   }
 
   ctx.textAlign = "right";
-  ctx.font = "400 20px 'Noto Sans KR', sans-serif";
+  ctx.font = "400 14px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = SUB;
   ctx.letterSpacing = "3px";
   ctx.fillText("CERTIFICATE NO.", W - PAD_X, 195);
   ctx.letterSpacing = "0px";
-  ctx.font = "600 26px 'Noto Sans KR', sans-serif";
+  ctx.font = "600 18px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = INK;
   ctx.fillText(data.certificateNumber, W - PAD_X, 235);
 
   // === Title block ===
   ctx.textAlign = "left";
   ctx.fillStyle = INK;
-  ctx.font = "800 110px 'Noto Sans KR', sans-serif";
+  ctx.font = "800 77px 'Noto Sans KR', sans-serif";
   ctx.fillText(data.titleText || "수료증", PAD_X, 410);
 
-  ctx.font = "400 26px 'Noto Sans KR', sans-serif";
+  ctx.font = "400 18px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = SUB;
   ctx.letterSpacing = "6px";
   ctx.fillText("CERTIFICATE OF COMPLETION", PAD_X, 460);
@@ -95,7 +95,7 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
 
   ctx.textAlign = "left";
   ctx.fillStyle = "#334155";
-  ctx.font = "400 28px 'Noto Sans KR', sans-serif";
+  ctx.font = "400 20px 'Noto Sans KR', sans-serif";
 
   // Line 1 — mixed weight: "위 사람은 [bold course] 을(를) 성실히 이수하였기에"
   let cursorX = PAD_X + 36;
@@ -103,12 +103,12 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
   ctx.fillText(descPlain, cursorX, line1Y);
   cursorX += ctx.measureText(descPlain).width;
 
-  ctx.font = "700 28px 'Noto Sans KR', sans-serif";
+  ctx.font = "700 20px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = INK;
   ctx.fillText(descCourse, cursorX, line1Y);
   cursorX += ctx.measureText(descCourse).width;
 
-  ctx.font = "400 28px 'Noto Sans KR', sans-serif";
+  ctx.font = "400 20px 'Noto Sans KR', sans-serif";
   ctx.fillStyle = "#334155";
   ctx.fillText(descPlain2, cursorX, line1Y);
 
@@ -133,11 +133,11 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
     [row[0], row[1]].forEach(([label, value], j) => {
       const x = j === 0 ? leftX : rightX;
       // Label
-      ctx.font = "400 18px 'Noto Sans KR', sans-serif";
+      ctx.font = "400 13px 'Noto Sans KR', sans-serif";
       ctx.fillStyle = SUB;
       ctx.fillText(label, x, y - 38);
       // Value
-      ctx.font = "700 28px 'Noto Sans KR', sans-serif";
+      ctx.font = "700 20px 'Noto Sans KR', sans-serif";
       ctx.fillStyle = INK;
       ctx.fillText(value, x, y);
       // Underline
@@ -152,10 +152,10 @@ export const generateCertificateImage = async (data: CertificateData): Promise<B
 
   // === Issuer (small, bottom-left) ===
   if (data.issuerName) {
-    ctx.font = "400 18px 'Noto Sans KR', sans-serif";
+    ctx.font = "400 13px 'Noto Sans KR', sans-serif";
     ctx.fillStyle = SUB;
     ctx.fillText("발급기관", PAD_X, H - 110);
-    ctx.font = "600 22px 'Noto Sans KR', sans-serif";
+    ctx.font = "600 15px 'Noto Sans KR', sans-serif";
     ctx.fillStyle = INK;
     ctx.fillText(data.issuerName, PAD_X, H - 80);
   }
