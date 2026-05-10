@@ -19,7 +19,7 @@ interface CertificateData {
 
 export const generateCertificateImage = async (data: CertificateData): Promise<Blob> => {
   // Load METAM logo (imported as URL so it's bundled correctly)
-  const logoUrl = (await import("@/assets/metam-logo.svg?url")).default;
+  const logoUrl = (await import("@/assets/metam-logo-dark.svg?url")).default;
   const canvas = document.createElement("canvas");
   // Landscape A4-ish proportions matching the reference design
   const W = 1754;
