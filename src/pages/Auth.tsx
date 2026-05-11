@@ -122,7 +122,7 @@ const Auth = () => {
             <MetamLogo className="h-8 w-auto text-foreground" />
           </div>
           <div className="hidden lg:block">
-            <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">METAM Education</p>
+            <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">META-M&nbsp;&nbsp;Internal Education Platform</p>
           </div>
 
           <div className="space-y-2">
